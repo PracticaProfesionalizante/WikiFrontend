@@ -1,107 +1,218 @@
-<!-- Formulario de login con validación -->
 <template>
-  <!-- Formulario que previene el envío por defecto y llama a handleLogin -->
-  <v-form @submit.prevent="handleLogin">
-    <!-- Campo de email con validación -->
+  <v-card
+    class="mx-auto pa-12 pb-8"
+    elevation="8"
+    max-width="448"
+    rounded="lg"
+  >
+    <div class="text-subtitle-1 text-medium-emphasis">Cuenta</div>
+
     <v-text-field
-      v-model="form.email"
-      label="Email"
-      type="email"
-      required
-      :error-messages="errors.email"
-      prepend-inner-icon="mdi-email"
+      v-model="email"
+      density="compact"
+      placeholder="Correo electrónico"
+      prepend-inner-icon="mdi-email-outline"
+      variant="outlined"
+      :error-messages="emailErrors"
+      :disabled="loading"
+      @blur="validateEmail"
+      @keyup.enter="handleLogin"
     ></v-text-field>
-    
-    <!-- Campo de contraseña con toggle de visibilidad -->
+
+    <div class="text-subtitle-1 text-medium-emphasis d-flex align-center justify-space-between">
+      Contraseña
+      <a
+        class="text-caption text-decoration-none text-blue"
+        href="#"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        ¿Olvidaste tu contraseña?
+      </a>
+    </div>
+
     <v-text-field
-      v-model="form.password"
-      label="Contraseña"
-      :type="showPassword ? 'text' : 'password'"
-      required
-      :error-messages="errors.password"
-      prepend-inner-icon="mdi-lock"
-      :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-      @click:append-inner="showPassword = !showPassword"
+      v-model="password"
+      :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
+      :type="visible ? 'text' : 'password'"
+      density="compact"
+      placeholder="Ingresa tu contraseña"
+      prepend-inner-icon="mdi-lock-outline"
+      variant="outlined"
+      :error-messages="passwordErrors"
+      :disabled="loading"
+      @click:append-inner="visible = !visible"
+      @blur="validatePassword"
+      @keyup.enter="handleLogin"
     ></v-text-field>
-    
-    <!-- Alerta de error si hay problemas de autenticación -->
+
+    <!-- Mostrar errores de autenticación -->
     <v-alert
-      v-if="authStore.error"
+      v-if="authError"
       type="error"
+      variant="tonal"
       class="mb-4"
+      closable
+      @click:close="authError = ''"
     >
-      {{ authStore.error }}
+      {{ authError }}
     </v-alert>
-    
-    <!-- Botón de envío con estado de carga -->
-    <v-btn
-      type="submit"
+
+    <!-- Checkbox recordar sesión -->
+    <v-checkbox
+      v-model="rememberMe"
+      label="Recordar sesión"
       color="primary"
+      :disabled="loading"
+    ></v-checkbox>
+
+    <v-btn
+      class="mb-8"
+      color="blue"
+      size="large"
+      variant="tonal"
       block
-      :loading="authStore.loading"
-      :disabled="!isFormValid"
+      :loading="loading"
+      :disabled="!isFormValid || loading"
+      @click="handleLogin"
     >
       Iniciar Sesión
     </v-btn>
-  </v-form>
+  </v-card>
 </template>
 
 <script setup>
-// Importa funciones reactivas de Vue y el store
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
+// Composables
 const authStore = useAuthStore()
+const router = useRouter()
 
-// Estado reactivo del formulario
-const form = ref({
-  email: '',
-  password: ''
-})
+// Estado reactivo
+const email = ref('')
+const password = ref('')
+const visible = ref(false)
+const rememberMe = ref(false)
+const loading = ref(false)
+const authError = ref('')
 
-// Estado de errores de validación
-const errors = ref({
-  email: [],
-  password: []
-})
+// Errores de validación
+const emailErrors = ref([])
+const passwordErrors = ref([])
 
-// Control de visibilidad de la contraseña
-const showPassword = ref(false)
+// Validaciones
+const validateEmail = () => {
+  emailErrors.value = []
+  if (!email.value) {
+    emailErrors.value.push('El correo electrónico es requerido')
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+    emailErrors.value.push('Ingresa un correo electrónico válido')
+  }
+}
 
-// Computed que verifica si el formulario es válido
+const validatePassword = () => {
+  passwordErrors.value = []
+  if (!password.value) {
+    passwordErrors.value.push('La contraseña es requerida')
+  } else if (password.value.length < 6) {
+    passwordErrors.value.push('La contraseña debe tener al menos 6 caracteres')
+  }
+}
+
+// Computed
 const isFormValid = computed(() => {
-  return form.value.email && form.value.password
+  return email.value && 
+         password.value && 
+         emailErrors.value.length === 0 && 
+         passwordErrors.value.length === 0
 })
 
-// Función de validación del formulario
-const validateForm = () => {
-  // Resetea errores
-  errors.value = { email: [], password: [] }
+// Métodos
+const handleLogin = async () => {
+  // Validar formulario antes de enviar
+  validateEmail()
+  validatePassword()
   
-  // Validación del email
-  if (!form.value.email) {
-    errors.value.email.push('El email es requerido')
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email)) {
-    errors.value.email.push('El email no es válido')
+  if (!isFormValid.value) {
+    return
   }
-  
-  // Validación de la contraseña
-  if (!form.value.password) {
-    errors.value.password.push('La contraseña es requerida')
-  } else if (form.value.password.length < 6) {
-    errors.value.password.push('La contraseña debe tener al menos 6 caracteres')
+
+  loading.value = true
+  authError.value = ''
+
+  try {
+    console.log('🔐 Intentando iniciar sesión...', { email: email.value })
+    
+    await authStore.login({
+      email: email.value,
+      password: password.value,
+      remember: rememberMe.value
+    })
+
+    console.log('✅ Login exitoso, redirigiendo...')
+    
+    // Redireccionar después del login exitoso
+    const redirectTo = router.currentRoute.value.query.redirect || '/dashboard'
+    await router.push(redirectTo)
+    
+  } catch (error) {
+    console.error('❌ Error en login:', error)
+    
+    // Manejar diferentes tipos de errores
+    if (error.response?.status === 401) {
+      authError.value = 'Credenciales incorrectas. Verifica tu correo y contraseña.'
+    } else if (error.response?.status === 422) {
+      authError.value = 'Datos inválidos. Verifica la información ingresada.'
+    } else if (error.response?.status >= 500) {
+      authError.value = 'Error del servidor. Intenta nuevamente más tarde.'
+    } else if (error.code === 'NETWORK_ERROR') {
+      authError.value = 'Error de conexión. Verifica tu conexión a internet.'
+    } else {
+      authError.value = error.message || 'Error inesperado. Intenta nuevamente.'
+    }
+  } finally {
+    loading.value = false
   }
-  
-  // Retorna true si no hay errores
-  return errors.value.email.length === 0 && errors.value.password.length === 0
 }
 
-// Función que maneja el envío del formulario
-const handleLogin = async () => {
-  // Valida antes de enviar
-  if (!validateForm()) return
-  
-  // Llama al método login del store
-  await authStore.login(form.value.email, form.value.password)
+// Limpiar errores cuando el usuario empiece a escribir
+const clearErrors = () => {
+  authError.value = ''
+  emailErrors.value = []
+  passwordErrors.value = []
 }
+
+// Watchers para limpiar errores
+import { watch } from 'vue'
+watch([email, password], clearErrors)
 </script>
+
+<style scoped>
+.v-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+.v-theme--dark .v-card {
+  background: rgba(30, 30, 30, 0.9);
+}
+
+.text-blue {
+  color: rgb(var(--v-theme-primary)) !important;
+}
+
+.v-btn {
+  text-transform: none;
+  font-weight: 500;
+}
+
+.v-text-field {
+  margin-bottom: 8px;
+}
+
+.v-alert {
+  font-size: 0.875rem;
+}
+</style>

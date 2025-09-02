@@ -9,7 +9,7 @@ import DashboardView from '@/views/DashboardView.vue'
 const routes = [
   {
     path: '/',
-    redirect: '/dashboard' // Redirigir al dashboard por defecto
+    redirect: '/login' // Redirigir al login por defecto
   },
   {
     path: '/login',
@@ -45,7 +45,7 @@ const routes = [
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    redirect: '/dashboard'
+    redirect: '/login'
   }
 ]
 
