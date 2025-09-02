@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import authService from '@/services/auth'
+import router from '@/core/router'
 
 export const useAuthStore = defineStore('auth', () => {
   // Estado reactivo
@@ -64,14 +66,22 @@ export const useAuthStore = defineStore('auth', () => {
     setError(null)
   }
 
+  // LOGIN ACTUALIZADO - Conectado con authService
   const login = async (credentials) => {
     setLoading(true)
     setError(null)
     
     try {
-      // Aquí haremos la llamada a la API (próximo paso)
-      console.log('Login attempt with:', credentials)
-      // TODO: Implementar llamada a API
+      const response = await authService.login(credentials)
+      
+      // Guardar tokens y usuario
+      setTokens(response.access_token, response.refresh_token)
+      setUser(response.user)
+      
+      // Redirigir al dashboard
+      router.push('/dashboard')
+      
+      return response
     } catch (err) {
       setError(err.message || 'Error en el login')
       throw err
@@ -80,22 +90,60 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const logout = () => {
-    clearAuth()
-    // TODO: Redirigir al login (próximo paso)
+  // LOGOUT ACTUALIZADO - Conectado con authService
+  const logout = async () => {
+    try {
+      // Intentar logout en el backend
+      if (refreshToken.value) {
+        await authService.logout(refreshToken.value)
+      }
+    } catch (err) {
+      console.warn('Error en logout del backend:', err.message)
+    } finally {
+      // Limpiar estado local siempre
+      clearAuth()
+      router.push('/login')
+    }
   }
 
+  // REFRESH TOKEN ACTUALIZADO - Conectado con authService
   const refreshAccessToken = async () => {
     if (!refreshToken.value) {
       throw new Error('No refresh token available')
     }
     
     try {
-      // TODO: Implementar refresh de token (próximo paso)
-      console.log('Refreshing token...')
+      const response = await authService.refreshToken(refreshToken.value)
+      setTokens(response.access_token, response.refresh_token)
+      return response.access_token
     } catch (err) {
       clearAuth()
+      router.push('/login')
       throw err
+    }
+  }
+
+  // NUEVA FUNCIÓN - Obtener datos del usuario actual
+  const fetchCurrentUser = async () => {
+    try {
+      const userData = await authService.getCurrentUser()
+      setUser(userData)
+      return userData
+    } catch (err) {
+      setError('Error al obtener datos del usuario')
+      throw err
+    }
+  }
+
+  // NUEVA FUNCIÓN - Inicializar autenticación al cargar la app
+  const initializeAuth = async () => {
+    if (accessToken.value && !user.value) {
+      try {
+        await fetchCurrentUser()
+      } catch (err) {
+        // Si falla, limpiar tokens inválidos
+        clearAuth()
+      }
     }
   }
 
@@ -120,6 +168,8 @@ export const useAuthStore = defineStore('auth', () => {
     clearAuth,
     login,
     logout,
-    refreshAccessToken
+    refreshAccessToken,
+    fetchCurrentUser,
+    initializeAuth
   }
 })
