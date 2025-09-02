@@ -1,0 +1,44 @@
+{
+  "name": "wikifrontend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "lint": "run-s lint:*",
+    "dev": "vite",
+    "format": "prettier --write src/",
+    "lint:eslint": "eslint . --fix",
+    "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@mdi/font": "5.9.55",
+    "pinia": "^3.0.3",
+    "roboto-fontface": "*",
+    "vue": "^3.5.18",
+    "vue-router": "^4.5.1",
+    "vuetify": "^3.0.0-beta.0",
+    "webfontloader": "^1.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.31.0",
+    "@prettier/plugin-oxc": "^0.0.4",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "eslint": "^9.31.0",
+    "eslint-plugin-oxlint": "~1.8.0",
+    "eslint-plugin-vue": "~10.3.0",
+    "globals": "^16.3.0",
+    "npm-run-all2": "^8.0.4",
+    "oxlint": "~1.8.0",
+    "prettier": "3.6.2",
+    "vite": "npm:rolldown-vite@latest",
+    "vite-plugin-vue-devtools": "^8.0.0",
+    "vue-cli-plugin-vuetify": "~2.5.8",
+    "webpack-plugin-vuetify": "^3.1.2"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "type": "module"
+}
