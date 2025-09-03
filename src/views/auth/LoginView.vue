@@ -24,27 +24,33 @@
       <form @submit.prevent="handleLogin" class="login-form">
         <!-- Email Input -->
         <div class="input-group">
-          <input 
-            v-model="credentials.email"
-            type="email" 
-            placeholder="Email" 
-            class="form-input"
-            :class="{ 'error': emailError }"
-            @blur="validateEmail"
-          />
+          <div class="floating-input">
+            <input 
+              v-model="credentials.email"
+              type="email" 
+              id="email"
+              class="form-input"
+              :class="{ 'error': emailError, 'has-value': credentials.email || emailFocused }"
+              @focus="emailFocused = true"
+              @blur="emailFocused = false; validateEmail()"
+            />
+            <label for="email" class="floating-label">Email</label>
+          </div>
         </div>
 
         <!-- Password Input -->
         <div class="input-group">
-          <div class="password-wrapper">
+          <div class="floating-input password-wrapper">
             <input 
               v-model="credentials.password"
               :type="showPassword ? 'text' : 'password'" 
-              placeholder="Contraseña" 
+              id="password"
               class="form-input password-input"
-              :class="{ 'error': passwordError }"
-              @blur="validatePassword"
+              :class="{ 'error': passwordError, 'has-value': credentials.password || passwordFocused }"
+              @focus="passwordFocused = true"
+              @blur="passwordFocused = false; validatePassword()"
             />
+            <label for="password" class="floating-label">Contraseña</label>
             <button 
               type="button" 
               @click="showPassword = !showPassword" 
@@ -116,6 +122,8 @@ const showPassword = ref(false)
 const isAdvisor = ref(false)
 const emailError = ref(false)
 const passwordError = ref(false)
+const emailFocused = ref(false)
+const passwordFocused = ref(false)
 const error = ref('')
 
 // Credenciales del usuario
@@ -256,14 +264,19 @@ if (authStore.authError) {
   position: relative;
 }
 
+.floating-input {
+  position: relative;
+}
+
 .form-input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 1rem 1rem 0.5rem 1rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   font-size: 1rem;
   transition: all 0.2s ease;
   box-sizing: border-box;
+  background: transparent;
 }
 
 .form-input:focus {
@@ -274,6 +287,32 @@ if (authStore.authError) {
 
 .form-input.error {
   border-color: #ef4444;
+}
+
+.floating-label {
+  position: absolute;
+  left: 1rem;
+  top: 0.75rem;
+  font-size: 1rem;
+  color: #6b7280;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  transform-origin: left top;
+  background: #f9fafb;
+  padding: 0 0.25rem;
+}
+
+.form-input:focus + .floating-label,
+.form-input.has-value + .floating-label {
+  top: -0.5rem;
+  left: 0.75rem;
+  font-size: 0.75rem;
+  color: #3b82f6;
+  transform: scale(1);
+}
+
+.form-input.error + .floating-label {
+  color: #ef4444;
 }
 
 .password-wrapper {
