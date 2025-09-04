@@ -1,108 +1,123 @@
 <template>
   <div class="login-container">
-    <div class="login-form-wrapper">
-      <!-- TecLab Logo -->
-      <div class="logo-section">
-        <img 
-          src="https://ext.same-assets.com/1581574844/2857473926.png" 
-          alt="TecLab Logo" 
-          class="teclab-logo"
-        />
+    <!-- Background Image -->
+    <div class="background-image"></div>
+    
+    <!-- Content Layout -->
+    <div class="content-layout">
+      <!-- Left Section - Welcome Info -->
+      <div class="welcome-section">
+        <!-- TecLab Logo -->
+        <div class="logo-section">
+          <img 
+            src="https://ext.same-assets.com/1581574844/2857473926.png" 
+            alt="TecLab Logo" 
+            class="teclab-logo"
+          />
+        </div>
+
+        <!-- Greeting -->
+        <div class="greeting-content">
+          <h1 class="greeting-title">
+            ¡Hola! Qué bueno tenerte por aquí.
+          </h1>
+          <p class="greeting-subtitle">
+            Ingresá tu email y contraseña para acceder.
+          </p>
+        </div>
       </div>
 
-      <!-- Greeting -->
-      <div class="greeting-section">
-        <h1 class="greeting-title">
-          ¡Hola! Qué bueno tenerte por aquí.
-        </h1>
-        <p class="greeting-subtitle">
-          Ingresá tu email y contraseña para acceder.
-        </p>
-      </div>
+      <!-- Right Section - Login Form -->
+      <div class="form-section">
+        <div class="login-form-wrapper">
+          <!-- Form Title -->
+          <h2 class="form-title">Acceso a Social Learning Wiki</h2>
+          
+          <!-- Form -->
+          <form @submit.prevent="handleLogin" class="login-form">
+            <!-- Email Input -->
+            <div class="input-group">
+              <div class="floating-input">
+                <input 
+                  v-model="credentials.email"
+                  type="email" 
+                  id="email"
+                  class="form-input"
+                  :class="{ 'error': emailError, 'has-value': credentials.email || emailFocused }"
+                  @focus="emailFocused = true"
+                  @blur="emailFocused = false; validateEmail()"
+                />
+                <label for="email" class="floating-label">Email</label>
+              </div>
+            </div>
 
-      <!-- Form -->
-      <form @submit.prevent="handleLogin" class="login-form">
-        <!-- Email Input -->
-        <div class="input-group">
-          <div class="floating-input">
-            <input 
-              v-model="credentials.email"
-              type="email" 
-              id="email"
-              class="form-input"
-              :class="{ 'error': emailError, 'has-value': credentials.email || emailFocused }"
-              @focus="emailFocused = true"
-              @blur="emailFocused = false; validateEmail()"
-            />
-            <label for="email" class="floating-label">Email</label>
+            <!-- Password Input -->
+            <div class="input-group">
+              <div class="floating-input password-wrapper">
+                <input 
+                  v-model="credentials.password"
+                  :type="showPassword ? 'text' : 'password'" 
+                  id="password"
+                  class="form-input password-input"
+                  :class="{ 'error': passwordError, 'has-value': credentials.password || passwordFocused }"
+                  @focus="passwordFocused = true"
+                  @blur="passwordFocused = false; validatePassword()"
+                />
+                <label for="password" class="floating-label">Contraseña</label>
+                <button 
+                  type="button" 
+                  @click="showPassword = !showPassword" 
+                  class="password-toggle"
+                >
+                  <i v-if="showPassword" class="mdi mdi-eye-off"></i>
+                  <i v-else class="mdi mdi-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Forgot Password Link -->
+            <div class="forgot-password-section">
+              <button 
+                type="button" 
+                @click="handleForgotPassword" 
+                class="forgot-password-link"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
+
+            <!-- Bottom Row -->
+            <div class="bottom-row">
+              <!-- Advisor Checkbox -->
+              <div class="advisor-section">
+                <input 
+                  id="advisor" 
+                  v-model="isAdvisor"
+                  type="checkbox" 
+                  class="advisor-checkbox"
+                />
+                <label for="advisor" class="advisor-label">
+                  Soy SuperUser
+                </label>
+              </div>
+
+              <!-- Next Button -->
+              <button 
+                type="submit" 
+                :disabled="!isFormValid" 
+                class="next-button"
+                :class="{ 'disabled': !isFormValid }"
+              >
+                Siguiente
+              </button>
+            </div>
+          </form>
+
+          <!-- Error Display -->
+          <div v-if="error" class="error-message">
+            {{ error }}
           </div>
         </div>
-
-        <!-- Password Input -->
-        <div class="input-group">
-          <div class="floating-input password-wrapper">
-            <input 
-              v-model="credentials.password"
-              :type="showPassword ? 'text' : 'password'" 
-              id="password"
-              class="form-input password-input"
-              :class="{ 'error': passwordError, 'has-value': credentials.password || passwordFocused }"
-              @focus="passwordFocused = true"
-              @blur="passwordFocused = false; validatePassword()"
-            />
-            <label for="password" class="floating-label">Contraseña</label>
-            <button 
-              type="button" 
-              @click="showPassword = !showPassword" 
-              class="password-toggle"
-            >
-              <i v-if="showPassword" class="mdi mdi-eye-off"></i>
-              <i v-else class="mdi mdi-eye"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Forgot Password Link -->
-        <div class="forgot-password-section">
-          <button 
-            type="button" 
-            @click="handleForgotPassword" 
-            class="forgot-password-link"
-          >
-            ¿Olvidaste tu contraseña?
-          </button>
-        </div>
-
-        <!-- Bottom Row -->
-        <div class="bottom-row">
-          <!-- Advisor Checkbox -->
-          <div class="advisor-section">
-            <input 
-              id="advisor" 
-              v-model="isAdvisor"
-              type="checkbox" 
-              class="advisor-checkbox"
-            />
-            <label for="advisor" class="advisor-label">
-              Soy Asesor
-            </label>
-          </div>
-
-          <!-- Next Button -->
-          <button 
-            type="submit" 
-            :disabled="!isFormValid" 
-            class="next-button"
-            :class="{ 'disabled': !isFormValid }"
-          >
-            Siguiente
-          </button>
-        </div>
-      </form>
-
-      <!-- Error Display -->
-      <div v-if="error" class="error-message">
-        {{ error }}
       </div>
     </div>
   </div>
@@ -205,52 +220,107 @@ if (authStore.authError) {
 <style scoped>
 .login-container {
   min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/src/components/assets/teclab_fondo_login.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
+.content-layout {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f9fafb;
-  padding: 20px;
+  padding: 2rem;
+  gap: 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.login-form-wrapper {
-  width: 100%;
-  max-width: 28rem;
+/* Welcome Section - Left Side */
+.welcome-section {
+  flex: 1;
+  max-width: 450px;
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  color: white;
+  padding-right: 1rem;
 }
 
-/* Logo Section */
 .logo-section {
   display: flex;
   justify-content: flex-start;
 }
 
 .teclab-logo {
-  height: 3rem;
+  height: 4rem;
   width: auto;
+  filter: brightness(0) invert(1);
 }
 
-/* Greeting Section */
-.greeting-section {
-  text-align: left;
+.greeting-content {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
 .greeting-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #374151;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #49E9ED;
   margin: 0;
   line-height: 1.2;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .greeting-subtitle {
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.9);
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.2rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Form Section - Right Side */
+.form-section {
+  flex: 0 0 380px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding-left: 1rem;
+}
+
+.login-form-wrapper {
+  width: 100%;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.form-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  text-align: center;
+  margin-bottom: 2rem;
+  margin-top: 0;
 }
 
 /* Form */
@@ -427,27 +497,72 @@ if (authStore.authError) {
 }
 
 /* Responsive */
-@media (max-width: 640px) {
-  .login-container {
+@media (max-width: 1024px) {
+  .content-layout {
+    flex-direction: column;
+    padding: 2rem;
+    gap: 2rem;
+  }
+  
+  .welcome-section {
+    max-width: 100%;
+    text-align: center;
+  }
+  
+  .form-section {
+    flex: none;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .greeting-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-layout {
     padding: 1rem;
   }
   
   .login-form-wrapper {
-    gap: 1.5rem;
+    padding: 2rem 1.5rem;
   }
   
   .greeting-title {
-    font-size: 1.25rem;
+    font-size: 1.75rem;
+  }
+  
+  .greeting-subtitle {
+    font-size: 1rem;
   }
   
   .bottom-row {
     flex-direction: column;
-    gap: 1rem;
     align-items: stretch;
+    gap: 1rem;
   }
   
   .advisor-section {
     justify-content: center;
+  }
+  
+  .next-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .content-layout {
+    padding: 1rem;
+  }
+  
+  .login-form-wrapper {
+    padding: 1.5rem;
+  }
+  
+  .greeting-title {
+    font-size: 1.5rem;
   }
 }
 </style>
