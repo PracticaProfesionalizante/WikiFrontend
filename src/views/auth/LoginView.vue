@@ -10,7 +10,7 @@
         <!-- TecLab Logo -->
         <div class="logo-section">
           <img 
-            src="https://ext.same-assets.com/1581574844/2857473926.png" 
+            src="https://i.imgur.com/V1FlUad.png" 
             alt="TecLab Logo" 
             class="teclab-logo"
           />
@@ -19,7 +19,7 @@
         <!-- Greeting -->
         <div class="greeting-content">
           <h1 class="greeting-title">
-            ¡Hola! Qué bueno tenerte por aquí.
+            Bienvenido, accede a la Wiki para continuar.
           </h1>
           <p class="greeting-subtitle">
             Ingresá tu email y contraseña para acceder.
@@ -31,7 +31,7 @@
       <div class="form-section">
         <div class="login-form-wrapper">
           <!-- Form Title -->
-          <h2 class="form-title">Acceso a Social Learning Wiki</h2>
+          <h2 class="form-title">Entrá a Wiki</h2>
           
           <!-- Form -->
           <form @submit.prevent="handleLogin" class="login-form">
@@ -69,8 +69,8 @@
                   @click="showPassword = !showPassword" 
                   class="password-toggle"
                 >
-                  <i v-if="showPassword" class="mdi mdi-eye-off"></i>
-                  <i v-else class="mdi mdi-eye"></i>
+                  <i v-if="showPassword" class="mdi mdi-eye"></i>
+                  <i v-else class="mdi mdi-eye-off"></i>
                 </button>
               </div>
             </div>
@@ -88,19 +88,7 @@
 
             <!-- Bottom Row -->
             <div class="bottom-row">
-              <!-- Advisor Checkbox -->
-              <div class="advisor-section">
-                <input 
-                  id="advisor" 
-                  v-model="isAdvisor"
-                  type="checkbox" 
-                  class="advisor-checkbox"
-                />
-                <label for="advisor" class="advisor-label">
-                  Soy SuperUser
-                </label>
-              </div>
-
+              
               <!-- Next Button -->
               <button 
                 type="submit" 
@@ -230,7 +218,7 @@ if (authStore.authError) {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('/src/components/assets/teclab_fondo_login.png');
+  background-image: url('/src/components/assets/teclab_fondo_login.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -368,7 +356,7 @@ if (authStore.authError) {
   pointer-events: none;
   transition: all 0.2s ease;
   transform-origin: left top;
-  background: #f9fafb;
+  background: #F2F3F4;
   padding: 0 0.25rem;
 }
 
