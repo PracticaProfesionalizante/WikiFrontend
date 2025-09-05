@@ -484,7 +484,7 @@ if (authStore.authError) {
 .greeting-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #2563eb;
+  color: #49E9ED;
   margin: 0;
   line-height: 1.2;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
