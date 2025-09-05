@@ -1,22 +1,19 @@
 <template>
   <div class="login-container">
-    <!-- Background Image -->
     <div class="background-image"></div>
     
-    <!-- Content Layout -->
+    <div class="student-image-overlay"></div>
+
     <div class="content-layout">
-      <!-- Left Section - Welcome Info -->
       <div class="welcome-section">
-        <!-- TecLab Logo -->
-        <div class="logo-section">
-          <img 
-            src="https://i.imgur.com/V1FlUad.png" 
-            alt="TecLab Logo" 
-            class="teclab-logo"
+        <div class="logo-social-learning-section">
+          <img
+            src="@/components/assets/ui_images/LOGOSOCIALLEARNING.png"
+            alt="Social Learning Logo"
+            class="social-learning-logo"
           />
         </div>
 
-        <!-- Greeting -->
         <div class="greeting-content">
           <h1 class="greeting-title">
             Bienvenido, accede a la Wiki para continuar.
@@ -27,15 +24,11 @@
         </div>
       </div>
 
-      <!-- Right Section - Login Form -->
       <div class="form-section">
         <div class="login-form-wrapper">
-          <!-- Form Title -->
-          <h2 class="form-title">Entrá a Wiki</h2>
+          <h2 class="form-title">Entrá a la Wiki</h2>
           
-          <!-- Form -->
           <form @submit.prevent="handleLogin" class="login-form">
-            <!-- Email Input -->
             <div class="input-group">
               <div class="floating-input">
                 <input 
@@ -51,7 +44,6 @@
               </div>
             </div>
 
-            <!-- Password Input -->
             <div class="input-group">
               <div class="floating-input password-wrapper">
                 <input 
@@ -75,7 +67,6 @@
               </div>
             </div>
 
-            <!-- Forgot Password Link -->
             <div class="forgot-password-section">
               <button 
                 type="button" 
@@ -86,10 +77,7 @@
               </button>
             </div>
 
-            <!-- Bottom Row -->
             <div class="bottom-row">
-              
-              <!-- Next Button -->
               <button 
                 type="submit" 
                 :disabled="!isFormValid" 
@@ -101,7 +89,6 @@
             </div>
           </form>
 
-          <!-- Error Display -->
           <div v-if="error" class="error-message">
             {{ error }}
           </div>
@@ -189,14 +176,12 @@ const handleLogin = async () => {
 const handleForgotPassword = () => {
   // Implementar lógica de recuperación de contraseña
   console.log('Recuperar contraseña')
-  // Aquí podrías abrir un modal o redirigir a una página de recuperación
 }
 
 // Función para manejar login de asesor
 const handleAdvisorLogin = () => {
   // Implementar lógica para login de asesor
   console.log('Login de asesor')
-  // Aquí podrías redirigir a una página específica para asesores
 }
 
 // Limpiar errores cuando el componente se monta
@@ -225,9 +210,26 @@ if (authStore.authError) {
   z-index: 1;
 }
 
+.student-image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 54%; 
+  height: 100%;
+  background-image: url('@/components/assets/ui_images/user_studying.webp');
+  background-size: cover;
+  background-position: left center;
+  background-repeat: no-repeat;
+  
+  filter: brightness(0.4) saturate(1.5) hue-rotate(180deg) blur(2px);
+  
+  z-index: 1; 
+  pointer-events: none; 
+}
+
 .content-layout {
   position: relative;
-  z-index: 2;
+  z-index: 2; 
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -259,6 +261,22 @@ if (authStore.authError) {
   width: auto;
   filter: brightness(0) invert(1);
 }
+
+/* 📌 Inicio: Nuevos estilos para el logo de Social Learning */
+.logo-social-learning-section {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: -1rem; /* Ajusta el espacio entre logos y el texto */
+}
+
+.social-learning-logo {
+  height: 5rem;
+  width: auto;
+  /* 📌 Nuevos filtros para la paleta de colores celeste y azul oscuro */
+  filter: sepia(100%) hue-rotate(180deg) saturate(300%) brightness(1.2); 
+
+}
+/*Fin: Nuevos estilos para el logo de Social Learning*/
 
 .greeting-content {
   display: flex;
@@ -505,6 +523,10 @@ if (authStore.authError) {
   
   .greeting-title {
     font-size: 2rem;
+  }
+
+  .student-image-overlay {
+    display: none;
   }
 }
 
