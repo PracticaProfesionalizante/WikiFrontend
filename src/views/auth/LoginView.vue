@@ -400,6 +400,9 @@ if (authStore.authError) {
   background-position: center;
   background-repeat: no-repeat;
   z-index: 1;
+  /* Mejora: Overlay sutil para mejor contraste */
+  background-blend-mode: overlay;
+  background-color: rgba(0, 20, 40, 0.1);
 }
 
 .student-image-overlay {
@@ -413,7 +416,9 @@ if (authStore.authError) {
   background-position: left center;
   background-repeat: no-repeat;
   
-  filter: brightness(0.4) saturate(1.5) hue-rotate(180deg) blur(2px);
+  /* Mejora: Filtros más suaves y naturales */
+  filter: brightness(0.6) saturate(1.2) blur(1px);
+  opacity: 0.8;
   
   z-index: 1; 
   pointer-events: none; 
@@ -446,32 +451,41 @@ if (authStore.authError) {
 .logo-section {
   display: flex;
   justify-content: flex-start;
+  margin-bottom: 0.5rem;
 }
 
 .teclab-logo {
-  height: 4rem;
+  height: 4.5rem;
   width: auto;
-  filter: brightness(0) invert(1);
+  filter: brightness(0) invert(1) drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.teclab-logo:hover {
+  transform: translateY(-2px) scale(1.02);
+  filter: brightness(0) invert(1) drop-shadow(0 6px 12px rgba(0,0,0,0.3));
 }
 
 /* 📌 Inicio: Nuevos estilos para el logo de Social Learning */
 .logo-social-learning-section {
   display: flex;
   justify-content: flex-start;
-  margin-bottom: -1rem; /* Ajusta el espacio entre logos y el texto */
+  margin-bottom: 1rem; /* Mejor espaciado entre logos y texto */
 }
 
 .social-learning-logo {
-  height: 5rem;
+  height: 6rem;
   width: auto;
-  /* 📌 Nuevos filtros para la paleta de colores celeste y azul oscuro */
-  filter: sepia(100%) hue-rotate(180deg) saturate(300%) brightness(1.2);
-  transition: all 0.3s ease;
+  /* 📌 Filtros más suaves y elegantes */
+  filter: drop-shadow(0 6px 16px rgba(73, 233, 237, 0.3)) 
+          drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .social-learning-logo:hover {
-  transform: scale(1.05);
-  filter: sepia(100%) hue-rotate(180deg) saturate(400%) brightness(1.3);
+  transform: translateY(-3px) scale(1.03);
+  filter: drop-shadow(0 8px 20px rgba(73, 233, 237, 0.4)) 
+          drop-shadow(0 4px 8px rgba(0,0,0,0.15));
 }
 /*Fin: Nuevos estilos para el logo de Social Learning*/
 
@@ -482,19 +496,32 @@ if (authStore.authError) {
 }
 
 .greeting-title {
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-size: 3rem;
+  font-weight: 800;
   color: #49E9ED;
   margin: 0;
-  line-height: 1.2;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  /* Mejora: Sombra más elegante y profunda */
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 
+               0 2px 4px rgba(73, 233, 237, 0.3);
+  transition: all 0.3s ease;
+}
+
+.greeting-title:hover {
+  transform: translateY(-1px);
+  text-shadow: 0 6px 12px rgba(0, 0, 0, 0.5), 
+               0 3px 6px rgba(73, 233, 237, 0.4);
 }
 
 .greeting-subtitle {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
   margin: 0;
-  font-size: 1.2rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.4;
+  /* Mejora: Mejor legibilidad con sombra suave */
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 /* Form Section - Right Side */
@@ -509,21 +536,36 @@ if (authStore.authError) {
 .login-form-wrapper {
   width: 100%;
   max-width: 400px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
+  /* Mejora: Fondo más elegante y moderno */
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
   padding: 2.5rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  /* Mejora: Sombras más suaves y profundas */
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08),
+              0 0 0 1px rgba(255, 255, 255, 0.05),
+              0 8px 16px rgba(73, 233, 237, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.login-form-wrapper:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.12),
+              0 0 0 1px rgba(255, 255, 255, 0.08),
+              0 12px 24px rgba(73, 233, 237, 0.15);
 }
 
 .form-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a202c;
   text-align: center;
   margin-bottom: 2rem;
   margin-top: 0;
+  /* Mejora: Sombra sutil para mejor definición */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  letter-spacing: -0.01em;
 }
 
 /* Form */
@@ -545,8 +587,10 @@ if (authStore.authError) {
   width: 100%;
   padding: 1rem 1rem 0.5rem 1rem;
   border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
+  /* Mejora: Bordes más redondeados y modernos */
+  border-radius: 12px;
   font-size: 1rem;
+  font-weight: 400;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
   background: transparent;
@@ -554,14 +598,17 @@ if (authStore.authError) {
 
 .form-input:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(73, 233, 237, 0.1);
+  border-color: #49E9ED;
+  /* Mejora: Glow effect más elegante */
+  box-shadow: 0 0 0 4px rgba(73, 233, 237, 0.15),
+              0 4px 12px rgba(73, 233, 237, 0.1);
   transform: translateY(-2px);
 }
 
 .form-input:hover:not(:focus) {
   border-color: #9ca3af;
   transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .form-input.error {
@@ -579,12 +626,15 @@ if (authStore.authError) {
   left: 1rem;
   top: 0.75rem;
   font-size: 1rem;
+  font-weight: 500;
   color: #6b7280;
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: left top;
   background: #F2F3F4;
   padding: 0 0.25rem;
+  /* Mejora: Bordes más redondeados para el fondo */
+  border-radius: 4px;
 }
 
 .form-input:focus + .floating-label,
@@ -592,8 +642,12 @@ if (authStore.authError) {
   top: -0.75rem;
   left: 0.75rem;
   font-size: 0.75rem;
-  color: #2563eb;
+  font-weight: 600;
+  /* Mejora: Color consistente con el tema */
+  color: #49E9ED;
   transform: scale(1);
+  /* Mejora: Sombra sutil para mejor legibilidad */
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .form-input.error + .floating-label {
