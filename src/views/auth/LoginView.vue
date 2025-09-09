@@ -406,7 +406,7 @@ if (authStore.authError) {
   position: absolute;
   top: 0;
   left: 0;
-  width: 54%; 
+  width: 52%; 
   height: 100%;
   background-image: url('@/components/assets/ui_images/user_studying.webp');
   background-size: cover;
