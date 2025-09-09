@@ -12,8 +12,8 @@ export const authService = {
       })
       
       return {
-        access_token: response.data.access_token,
-        refresh_token: response.data.refresh_token,
+        access_token: response.data.accesToken || response.data.access_token,
+        refresh_token: response.data.refreshToken || response.data.refresh_token,
         user: response.data.user
       }
     } catch (error) {
@@ -38,8 +38,8 @@ export const authService = {
       })
       
       return {
-        access_token: response.data.access_token,
-        refresh_token: response.data.refresh_token || refreshToken
+        access_token: response.data.accesToken || response.data.access_token,
+        refresh_token: response.data.refreshToken || response.data.refresh_token || refreshToken
       }
     } catch (error) {
       if (error.response?.status === 401) {
