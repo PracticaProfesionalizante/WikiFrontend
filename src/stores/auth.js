@@ -60,6 +60,10 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = errorMessage
   }
 
+  const clearError = () => {
+    error.value = null
+  }
+
   const clearAuth = () => {
     setTokens(null, null)
     setUser(null)
@@ -83,7 +87,7 @@ export const useAuthStore = defineStore('auth', () => {
       
       return response
     } catch (err) {
-      setError(err.message || 'Error en el login')
+      // No establecer error aquí, dejar que el componente lo maneje
       throw err
     } finally {
       setLoading(false)
@@ -165,6 +169,7 @@ export const useAuthStore = defineStore('auth', () => {
     setUser,
     setLoading,
     setError,
+    clearError,
     clearAuth,
     login,
     logout,
