@@ -209,26 +209,32 @@ const handleLogin = async () => {
 
     isLoading.value = true
     error.value = ''
+    authStore.clearError() // Limpiar errores previos del store
     
     const result = await authStore.login({
       email: credentials.email,
       password: credentials.password
     })
     
-    if (result.success) {
-      successMessage.value = '¡Bienvenido! Redirigiendo...'
-      
-      // Pequeña pausa para mostrar el mensaje de éxito
-      setTimeout(async () => {
-        // Si el login es exitoso, obtener información del usuario
-        await authStore.fetchUserInfo()
-        
-        // Redirigir al dashboard o página principal
-        router.push('/')
-      }, 1000)
-    }
+    successMessage.value = '¡Bienvenido! Redirigiendo...'
+    
   } catch (err) {
-    error.value = 'Error al iniciar sesión. Verifica tus credenciales.'
+    // Manejar diferentes tipos de errores con mensajes específicos
+    if (err.message?.includes('Credenciales inválidas') || 
+        err.message?.includes('401') ||
+        err.message?.includes('unauthorized')) {
+      error.value = 'Error al iniciar sesión. Verifica tus credenciales.'
+    } else if (err.message?.includes('Usuario deshabilitado') || 
+               err.message?.includes('403')) {
+      error.value = 'Tu cuenta está deshabilitada. Contacta al administrador.'
+    } else if (err.message?.includes('conexión') || 
+               err.message?.includes('network') ||
+               err.message?.includes('fetch')) {
+      error.value = 'Error de conexión. Verifica tu internet e intenta nuevamente.'
+    } else {
+      error.value = 'Error al iniciar sesión. Verifica tus credenciales.'
+    }
+    
     console.error('Error durante el login:', err)
   } finally {
     isLoading.value = false
@@ -248,8 +254,8 @@ const handleAdvisorLogin = () => {
 }
 
 // Limpiar errores cuando el componente se monta
-if (authStore.authError) {
-  authStore.clearAuthError()
+if (authStore.error) {
+  authStore.clearError()
 }
 </script>
 
