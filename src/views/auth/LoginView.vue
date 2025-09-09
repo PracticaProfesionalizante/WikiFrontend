@@ -74,10 +74,6 @@
                 />
                 <label for="password" class="floating-label">Contraseña</label>
                 <div class="password-controls">
-                  <div class="input-feedback">
-                    <i v-if="!passwordError && credentials.password && credentials.password.length >= 6" class="mdi mdi-check-circle success-icon"></i>
-                    <i v-if="passwordError && credentials.password" class="mdi mdi-alert-circle error-icon"></i>
-                  </div>
                   <button 
                     type="button" 
                     @click="showPassword = !showPassword" 
@@ -86,6 +82,10 @@
                     <i v-if="showPassword" class="mdi mdi-eye"></i>
                     <i v-else class="mdi mdi-eye-off"></i>
                   </button>
+                  <div class="input-feedback">
+                    <i v-if="!passwordError && credentials.password && credentials.password.length >= 6" class="mdi mdi-check-circle success-icon"></i>
+                    <i v-if="passwordError && credentials.password" class="mdi mdi-alert-circle error-icon"></i>
+                  </div>
                 </div>
               </div>
               <div v-if="passwordError && credentials.password" class="field-error-message">
@@ -610,7 +610,7 @@ if (authStore.authError) {
 
 .input-feedback {
   position: absolute;
-  right: 3rem;
+  right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -657,7 +657,7 @@ if (authStore.authError) {
 }
 
 .password-input {
-  padding-right: 3rem;
+  padding-right: 4.5rem;
 }
 
 .password-toggle {
