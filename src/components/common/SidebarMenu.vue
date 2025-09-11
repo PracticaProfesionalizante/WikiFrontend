@@ -115,7 +115,7 @@ const menuItems = ref([
   },
   {
     id: 3,
-    icon: 'mdi mdi-note-plus-outline',
+    icon: 'mdi mdi-note-plus',
     text: 'Nuevas implementaciónes',
     active: false,
     route: '/nuevas-implementaciones'
