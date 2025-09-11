@@ -80,6 +80,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 
+// Emits
+const emit = defineEmits(['sidebar-toggle'])
+
 const isExpanded = ref(false)
 const isMobile = ref(false)
 const isMobileOpen = ref(false)
@@ -153,6 +156,7 @@ const menuItems = ref([
 const expandMenu = () => {
   if (!isMobile.value) {
     isExpanded.value = true
+    emit('sidebar-toggle', true)
     // Solo expandir submenús que contienen elementos activos
     menuItems.value.forEach(item => {
       if (item.submenu) {
@@ -187,6 +191,7 @@ const expandMenu = () => {
 const collapseMenu = () => {
   if (!isMobile.value) {
     isExpanded.value = false
+    emit('sidebar-toggle', false)
     // Colapsar submenús
     menuItems.value.forEach(item => {
       if (item.submenu) {

@@ -1,7 +1,8 @@
 <template>
   <div class="dashboard-layout">
-    <SidebarMenu />
-    <main class="main-content" :class="{ 'with-sidebar': true }">
+    <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
+    <AppHeader :sidebar-expanded="sidebarExpanded" />
+    <main class="main-content" :class="{ 'with-sidebar': true, 'with-header': true }">
       <div class="welcome-container">
         <div class="welcome-content">
           <h1 class="welcome-title">
@@ -18,11 +19,20 @@
 
 <script setup>
 import SidebarMenu from '@/components/common/SidebarMenu.vue'
+import AppHeader from '@/components/common/AppHeader.vue'
 import { useAuthStore } from '@/stores/auth'
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const authStore = useAuthStore()
 const { user } = authStore
+
+// Estado del sidebar
+const sidebarExpanded = ref(false)
+
+// Manejar toggle del sidebar
+const handleSidebarToggle = (expanded) => {
+  sidebarExpanded.value = expanded
+}
 
 onMounted(async () => {
   // Obtener información actualizada del usuario desde el backend
@@ -53,6 +63,10 @@ onMounted(async () => {
   background-position: center;
   background-repeat: no-repeat;
   position: relative;
+}
+
+.main-content.with-header {
+  padding-top: 70px;
 }
 
 .main-content::before {
@@ -124,6 +138,10 @@ onMounted(async () => {
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;
+  }
+  
+  .main-content.with-header {
+    padding-top: 70px;
   }
   
   .welcome-container {
