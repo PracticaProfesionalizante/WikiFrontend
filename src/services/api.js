@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/auth'
 
 // Configuración base de Axios
 const api = axios.create({
-  baseURL: 'http://practicas.teclab.edu.ar/api', // URL del backend
+  baseURL: 'http://practicas.teclab.edu.ar:8080', // URL del backend
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

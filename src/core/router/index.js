@@ -9,7 +9,15 @@ import DashboardView from '@/views/DashboardView.vue'
 const routes = [
   {
     path: '/',
-    redirect: '/login' // Redirigir al login por defecto
+    name: 'Home',
+    beforeEnter: (to, from, next) => {
+      const authStore = useAuthStore()
+      if (authStore.isAuthenticated) {
+        next({ name: 'Dashboard' })
+      } else {
+        next({ name: 'Login' })
+      }
+    }
   },
   {
     path: '/login',
@@ -63,7 +71,8 @@ router.beforeEach(async (to, from, next) => {
     try {
       await authStore.initializeAuth()
     } catch (error) {
-      console.warn('Error al inicializar autenticación:', error)
+      // Si falla la inicialización, limpiar tokens
+      authStore.clearAuth()
     }
   }
   

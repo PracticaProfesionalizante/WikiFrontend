@@ -127,6 +127,7 @@
               <div v-else key="forgot-form">
                 <div v-if="!forgotPasswordSuccess">
                   <div class="forgot-password-header">
+                    <h3 class="forgot-title">Recuperar Contraseña</h3>
                     <p class="forgot-subtitle">Ingresa tu email para recibir instrucciones</p>
                   </div>
                   
@@ -308,8 +309,6 @@ const handleLogin = async () => {
     } else {
       error.value = 'Error al iniciar sesión. Verifica tus credenciales.'
     }
-    
-    console.error('Error durante el login:', err)
   } finally {
     isLoading.value = false
   }
@@ -354,7 +353,6 @@ const handleSendResetEmail = async () => {
     successMessage.value = 'Se ha enviado un email con instrucciones para recuperar tu contraseña'
   } catch (err) {
     error.value = 'Error al enviar email de recuperación. Intenta nuevamente.'
-    console.error('Error al enviar email de recuperación:', err)
   } finally {
     forgotPasswordLoading.value = false
   }
@@ -363,7 +361,6 @@ const handleSendResetEmail = async () => {
 // Función para manejar login de asesor
 const handleAdvisorLogin = () => {
   // Implementar lógica para login de asesor
-  console.log('Login de asesor')
 }
 
 // Limpiar errores cuando el componente se monta
@@ -676,7 +673,7 @@ if (authStore.error) {
 }
 
 .form-title {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #1a202c;
   text-align: center;
@@ -999,6 +996,13 @@ if (authStore.error) {
   margin-bottom: 1.5rem;
 }
 
+.forgot-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
 .forgot-subtitle {
   font-size: 0.875rem;
   color: #6b7280;
@@ -1115,6 +1119,10 @@ if (authStore.error) {
   
   .forgot-password-header {
     margin-bottom: 1.5rem;
+  }
+  
+  .forgot-title {
+    font-size: 1.25rem;
   }
   
   .success-icon-large {

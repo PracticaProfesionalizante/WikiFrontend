@@ -82,8 +82,11 @@ export const useAuthStore = defineStore('auth', () => {
       setTokens(response.access_token, response.refresh_token)
       setUser(response.user)
       
+      // Pequeño delay para asegurar que el estado se actualice
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       // Redirigir al dashboard
-      router.push('/dashboard')
+      await router.push('/dashboard')
       
       return response
     } catch (err) {
