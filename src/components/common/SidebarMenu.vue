@@ -464,7 +464,7 @@ onUnmounted(() => {
 
 .sidebar-container.expanded .submenu {
   opacity: 1;
-  max-height: 300px;
+  max-height: 500px;
 }
 
 .submenu-item {
@@ -539,7 +539,7 @@ onUnmounted(() => {
 
 .sidebar-container.expanded .nested-submenu {
   opacity: 1;
-  max-height: 300px;
+  max-height: 400px;
 }
 
 .nested-submenu-item {
@@ -625,7 +625,7 @@ onUnmounted(() => {
   
   .sidebar-container.mobile-open .submenu {
     opacity: 1;
-    max-height: 300px;
+    max-height: 500px;
   }
   
   .sidebar-container.mobile-open .submenu-arrow-nested {
@@ -635,7 +635,7 @@ onUnmounted(() => {
   
   .sidebar-container.mobile-open .nested-submenu {
     opacity: 1;
-    max-height: 300px;
+    max-height: 400px;
   }
 }
 

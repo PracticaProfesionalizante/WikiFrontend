@@ -5,7 +5,7 @@
       <div class="welcome-container">
         <div class="welcome-content">
           <h1 class="welcome-title">
-            ¡Hola, {{ user?.name || 'Usuario' }}!
+            ¡Hola, {{ user?.username || 'Usuario' }}!
           </h1>
           <p class="welcome-message">
             Para realizar alguna gestión dirígete al menú lateral. Ahí encontrarás todas las opciones disponibles.
@@ -24,8 +24,15 @@ import { onMounted } from 'vue'
 const authStore = useAuthStore()
 const { user } = authStore
 
-onMounted(() => {
-  // Dashboard montado
+onMounted(async () => {
+  // Obtener información actualizada del usuario desde el backend
+  if (authStore.isAuthenticated && !user?.name) {
+    try {
+      await authStore.fetchCurrentUser()
+    } catch (error) {
+      console.error('Error al obtener datos del usuario:', error)
+    }
+  }
 })
 </script>
 
