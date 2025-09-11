@@ -715,10 +715,10 @@ if (authStore.error) {
 
 .form-input:focus {
   outline: none;
-  border-color: #49E9ED;
+  border-color: #2563eb;
   /* Mejora: Glow effect más elegante */
-  box-shadow: 0 0 0 4px rgba(73, 233, 237, 0.15),
-              0 4px 12px rgba(73, 233, 237, 0.1);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15),
+              0 4px 12px rgba(37, 99, 235, 0.1);
   transform: translateY(-2px);
 }
 
@@ -748,32 +748,42 @@ if (authStore.error) {
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: left top;
-  background: #F2F3F4;
-  padding: 0 0.25rem;
-  /* Mejora: Bordes más redondeados para el fondo */
-  border-radius: 4px;
+  background: transparent;
+  padding: 0;
   z-index: 2;
 }
 
 .form-input:focus + .floating-label,
 .form-input.has-value + .floating-label {
-  top: -0.75rem;
+  top: -0.6rem;
   left: 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
-  /* Mejora: Color consistente con el tema */
-  color: #49E9ED;
+  color: #2563eb;
   transform: scale(1);
-  /* Mejora: Sombra sutil para mejor legibilidad */
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0 0.5rem;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .form-input.error + .floating-label {
   color: #ef4444;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0 0.5rem;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
 }
 
 .form-input.success + .floating-label {
   color: #10b981;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0 0.5rem;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
 }
 
 .password-wrapper {
