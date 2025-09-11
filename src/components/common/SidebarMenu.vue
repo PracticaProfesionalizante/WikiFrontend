@@ -137,7 +137,7 @@ const menuItems = ref([
   {
     id: 6,
     icon: 'mdi mdi-lead-pencil',
-    text: 'Alta - Baja - Modificación de usuario (ABM)',
+    text: 'ABM de Usuarios',
     active: false,
     route: '/abm-usuarios'
   },
@@ -225,6 +225,11 @@ const selectItem = (item) => {
   // Toggle submenu si existe
   if (item.submenu) {
     item.showSubmenu = !item.showSubmenu
+  } else {
+    // Solo cerrar el menú móvil si no tiene submenu
+    if (isMobile.value) {
+      isMobileOpen.value = false
+    }
   }
   
   // Navegar si tiene ruta
@@ -258,6 +263,11 @@ const selectSubmenu = (submenu, parentItem) => {
   submenu.active = true
   parentItem.active = true
   
+  // Cerrar menú móvil al seleccionar elemento final
+  if (isMobile.value) {
+    isMobileOpen.value = false
+  }
+  
   // Navegar
   if (submenu.route) {
     console.log('Navegando a:', submenu.route)
@@ -282,6 +292,11 @@ const selectNestedSubmenu = (nestedSubmenu, parentSubmenu, grandParentItem) => {
   nestedSubmenu.active = true
   parentSubmenu.active = true
   grandParentItem.active = true
+  
+  // Cerrar menú móvil al seleccionar elemento anidado
+  if (isMobile.value) {
+    isMobileOpen.value = false
+  }
   
   // Navegar
   if (nestedSubmenu.route) {
@@ -320,7 +335,7 @@ onUnmounted(() => {
   position: fixed;
   top: 1rem;
   left: 1rem;
-  z-index: 1002;
+  z-index: 100000;
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: white;
   border: none;
@@ -593,7 +608,7 @@ onUnmounted(() => {
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+  z-index: 99998;
 }
 
 /* Responsive */
@@ -609,11 +624,15 @@ onUnmounted(() => {
   .sidebar-menu {
     width: 0;
     transform: translateX(-100%);
+    pointer-events: none;
   }
   
   .sidebar-container.mobile-open .sidebar-menu {
     width: 280px;
     transform: translateX(0);
+    pointer-events: auto;
+    z-index: 99999;
+    position: fixed;
   }
   
   .sidebar-container.mobile-open .logo-text,
