@@ -248,7 +248,7 @@
 import SidebarMenu from '@/components/common/SidebarMenu.vue'
 import AppHeader from '@/components/common/AppHeader.vue'
 import { useAuthStore } from '@/stores/auth'
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 
 // Composables
 const authStore = useAuthStore()
@@ -383,8 +383,11 @@ const updateProfile = async () => {
   clearMessages()
 
   try {
-    // Actualizar datos en el store
-    await authStore.updateProfile(profileData)
+    // Simular API call - aquí integrarías con tu backend
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    
+    // Actualizar datos en el store si es necesario
+    // await authStore.updateProfile(profileData)
     
     showMessage('Perfil actualizado correctamente', 'success')
   } catch (error) {
@@ -431,29 +434,14 @@ const updatePreferences = async () => {
   }
 }
 
-// Función para cargar datos del usuario
-const loadUserData = () => {
+// Inicializar datos
+onMounted(() => {
   if (user) {
     profileData.username = user.username || ''
     profileData.email = user.email || ''
     profileData.fullName = user.name || ''
     profileData.phone = user.phone || ''
   }
-}
-
-// Watcher para sincronizar datos cuando el usuario cambie
-watch(() => authStore.user, (newUser) => {
-  if (newUser) {
-    profileData.username = newUser.username || ''
-    profileData.email = newUser.email || ''
-    profileData.fullName = newUser.name || ''
-    profileData.phone = newUser.phone || ''
-  }
-}, { immediate: true, deep: true })
-
-// Inicializar datos
-onMounted(() => {
-  loadUserData()
 })
 </script>
 
