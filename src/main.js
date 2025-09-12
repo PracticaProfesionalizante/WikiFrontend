@@ -4,9 +4,12 @@ import App from './App.vue'
 import router from './core/router'
 import vuetify from './core/plugins/vuetify'  
 import './core/plugins/webfontloader'
+import './styles/themes.css'
 
 // Importar el store de autenticación
 import { useAuthStore } from './stores/auth'
+// Importar el sistema de temas
+import { useTheme } from './composables/useTheme'
 
 // Crear instancia de Pinia
 const pinia = createPinia()
@@ -37,6 +40,10 @@ const initializeAuth = async () => {
 // Inicializar la aplicación
 const startApp = async () => {
   try {
+    // Inicializar el sistema de temas
+    const { initTheme } = useTheme()
+    initTheme()
+    
     // Primero montar la aplicación
     app.mount('#app')
     

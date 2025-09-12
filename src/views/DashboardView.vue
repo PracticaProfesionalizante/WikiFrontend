@@ -50,7 +50,7 @@ onMounted(async () => {
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--bg-primary);
 }
 
 .main-content {
@@ -92,12 +92,12 @@ onMounted(async () => {
 
 .welcome-content {
   text-align: center;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--bg-primary);
   backdrop-filter: blur(20px);
   border-radius: 20px;
   padding: 3rem 2.5rem;
-  box-shadow: 0 20px 60px rgba(37, 99, 235, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 20px 60px var(--shadow-color);
+  border: 1px solid var(--border-color);
   max-width: 600px;
   width: 100%;
   animation: fadeInUp 0.8s ease-out;
@@ -106,10 +106,10 @@ onMounted(async () => {
 .welcome-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--text-primary);
   margin-bottom: 1.5rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  text-shadow: 0 2px 4px var(--shadow-color);
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -117,7 +117,7 @@ onMounted(async () => {
 
 .welcome-message {
   font-size: 1.2rem;
-  color: #4a5568;
+  color: var(--text-secondary);
   line-height: 1.6;
   margin: 0;
   font-weight: 500;

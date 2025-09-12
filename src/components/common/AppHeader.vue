@@ -116,10 +116,10 @@ onUnmounted(() => {
   left: 80px;
   right: 0;
   height: 70px;
-  background: rgba(255, 255, 255, 0.98);
+  background: var(--bg-primary);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(37, 99, 235, 0.1);
-  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.08);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px var(--shadow-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -163,26 +163,26 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.75rem;
   background: transparent;
-  border: 1px solid rgba(37, 99, 235, 0.1);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 0.5rem 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  color: #374151;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
 .profile-button:hover {
-  background: rgba(73, 233, 237, 0.05);
-  border-color: rgba(37, 99, 235, 0.2);
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 .profile-button.active {
-  background: rgba(37, 99, 235, 0.1);
-  border-color: #2563eb;
-  color: #2563eb;
+  background: var(--bg-active);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 .profile-avatar {
@@ -219,11 +219,11 @@ onUnmounted(() => {
   top: calc(100% + 8px);
   right: 0;
   min-width: 180px;
-  background: rgba(255, 255, 255, 0.98);
+  background: var(--bg-primary);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(37, 99, 235, 0.1);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 8px 32px var(--shadow-color);
   overflow: hidden;
   z-index: 1000;
 }
@@ -233,7 +233,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  color: #374151;
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 0.9rem;
@@ -241,8 +241,8 @@ onUnmounted(() => {
 }
 
 .dropdown-item:hover {
-  background: rgba(73, 233, 237, 0.08);
-  color: #2563eb;
+  background: var(--bg-hover);
+  color: var(--accent-color);
 }
 
 .dropdown-item.logout {
@@ -262,7 +262,7 @@ onUnmounted(() => {
 
 .dropdown-divider {
   height: 1px;
-  background: rgba(37, 99, 235, 0.1);
+  background: var(--border-color);
   margin: 0.25rem 0;
 }
 

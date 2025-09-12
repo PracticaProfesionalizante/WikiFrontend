@@ -248,11 +248,13 @@
 import SidebarMenu from '@/components/common/SidebarMenu.vue'
 import AppHeader from '@/components/common/AppHeader.vue'
 import { useAuthStore } from '@/stores/auth'
-import { ref, reactive, onMounted } from 'vue'
+import { useTheme } from '@/composables/useTheme'
+import { ref, reactive, onMounted, watch } from 'vue'
 
 // Composables
 const authStore = useAuthStore()
 const { user } = authStore
+const { isDarkMode, setTheme } = useTheme()
 
 // Estado del sidebar
 const sidebarExpanded = ref(false)
@@ -424,6 +426,9 @@ const changePassword = async () => {
 
 const updatePreferences = async () => {
   try {
+    // Actualizar el tema cuando cambie la preferencia
+    setTheme(preferences.darkMode)
+    
     // Simular API call - aquí integrarías con tu backend
     await new Promise(resolve => setTimeout(resolve, 500))
     
@@ -442,6 +447,14 @@ onMounted(() => {
     profileData.fullName = user.name || ''
     profileData.phone = user.phone || ''
   }
+  
+  // Sincronizar el estado inicial del tema
+  preferences.darkMode = isDarkMode.value
+})
+
+// Watcher para sincronizar cambios del tema global
+watch(isDarkMode, (newValue) => {
+  preferences.darkMode = newValue
 })
 </script>
 
@@ -495,24 +508,24 @@ onMounted(() => {
 .settings-header {
   text-align: center;
   margin-bottom: 3rem;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--bg-primary);
   backdrop-filter: blur(20px);
   border-radius: 20px;
   padding: 2rem;
-  box-shadow: 0 20px 60px rgba(37, 99, 235, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 20px 60px var(--shadow-color);
+  border: 1px solid var(--border-color);
 }
 
 .settings-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--text-primary);
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -520,13 +533,13 @@ onMounted(() => {
 
 .settings-title i {
   font-size: 2.5rem;
-  color: #2563eb;
-  -webkit-text-fill-color: #2563eb;
+  color: var(--accent-color);
+  -webkit-text-fill-color: var(--accent-color);
 }
 
 .settings-subtitle {
   font-size: 1.1rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -537,30 +550,30 @@ onMounted(() => {
 }
 
 .settings-section {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--bg-primary);
   backdrop-filter: blur(20px);
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(37, 99, 235, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 20px 60px var(--shadow-color);
+  border: 1px solid var(--border-color);
   overflow: hidden;
   transition: all 0.3s ease;
 }
 
 .settings-section:hover {
   transform: translateY(-2px);
-  box-shadow: 0 25px 70px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 25px 70px var(--shadow-color);
 }
 
 .section-header {
   padding: 1.5rem 2rem;
-  border-bottom: 1px solid rgba(37, 99, 235, 0.1);
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(29, 78, 216, 0.05));
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
 }
 
 .section-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1a202c;
+  color: var(--text-primary);
   margin: 0;
   display: flex;
   align-items: center;
@@ -568,7 +581,7 @@ onMounted(() => {
 }
 
 .section-title i {
-  color: #2563eb;
+  color: var(--accent-color);
   font-size: 1.5rem;
 }
 
@@ -598,30 +611,31 @@ onMounted(() => {
 .input-label {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
   margin-bottom: 0.25rem;
 }
 
 .form-input {
   width: 100%;
   padding: 0.875rem 1rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   font-size: 1rem;
   transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   box-sizing: border-box;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 4px var(--focus-shadow);
   transform: translateY(-1px);
 }
 
 .form-input:hover:not(:focus) {
-  border-color: #9ca3af;
+  border-color: var(--text-muted);
 }
 
 .form-input.error {
@@ -640,7 +654,7 @@ onMounted(() => {
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #6b7280;
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 0.25rem;
   border-radius: 4px;
@@ -648,8 +662,8 @@ onMounted(() => {
 }
 
 .password-toggle:hover {
-  color: #2563eb;
-  background: rgba(37, 99, 235, 0.1);
+  color: var(--accent-color);
+  background: var(--bg-hover);
 }
 
 .error-message {
@@ -679,14 +693,14 @@ onMounted(() => {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
   color: white;
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 15px var(--shadow-color);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 8px 25px var(--shadow-color);
   background: linear-gradient(135deg, #1d4ed8, #1e40af);
 }
 
@@ -707,14 +721,14 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  background: rgba(248, 250, 252, 0.8);
+  background: var(--bg-secondary);
   border-radius: 12px;
-  border: 1px solid rgba(37, 99, 235, 0.1);
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
 }
 
 .preference-item:hover {
-  background: rgba(37, 99, 235, 0.05);
+  background: var(--bg-hover);
   transform: translateX(4px);
 }
 
@@ -725,13 +739,13 @@ onMounted(() => {
 .preference-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #1a202c;
+  color: var(--text-primary);
   margin: 0 0 0.25rem 0;
 }
 
 .preference-description {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -755,7 +769,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #d1d5db;
+  background-color: var(--text-muted);
   transition: 0.3s;
   border-radius: 24px;
 }
@@ -774,7 +788,7 @@ onMounted(() => {
 }
 
 input:checked + .toggle-slider {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
 }
 
 input:checked + .toggle-slider:before {

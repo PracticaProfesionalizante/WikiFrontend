@@ -364,10 +364,10 @@ onUnmounted(() => {
 .sidebar-menu {
   width: 80px;
   height: 100%;
-  background: rgba(255, 255, 255, 0.98);
+  background: var(--bg-primary);
   backdrop-filter: blur(20px);
-  border-right: 1px solid rgba(37, 99, 235, 0.1);
-  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.1);
+  border-right: 1px solid var(--border-color);
+  box-shadow: 0 8px 32px var(--shadow-color);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   display: flex;
@@ -380,7 +380,7 @@ onUnmounted(() => {
 
 .menu-header {
   padding: 1.5rem 1rem;
-  border-bottom: 1px solid rgba(37, 99, 235, 0.1);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .logo-container {
@@ -399,7 +399,7 @@ onUnmounted(() => {
 .logo-text {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--text-primary);
   opacity: 0;
   transform: translateX(-10px);
   transition: all 0.3s ease;
@@ -424,7 +424,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   padding: 1rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
@@ -433,8 +433,8 @@ onUnmounted(() => {
 }
 
 .item-content:hover {
-  background: rgba(73, 233, 237, 0.1);
-  color: #2563eb;
+  background: var(--bg-hover);
+  color: var(--accent-color);
   transform: translateX(2px);
 }
 
@@ -492,7 +492,7 @@ onUnmounted(() => {
 
 .submenu-item {
   padding: 0.75rem 1rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
   border-radius: 6px;
@@ -509,24 +509,24 @@ onUnmounted(() => {
   transform: translateY(-50%);
   width: 4px;
   height: 4px;
-  background: #d1d5db;
+  background: var(--text-muted);
   border-radius: 50%;
 }
 
 .submenu-item:hover {
-  background: rgba(73, 233, 237, 0.05);
-  color: #2563eb;
+  background: var(--bg-hover);
+  color: var(--accent-color);
   transform: translateX(2px);
 }
 
 .submenu-item.active {
-  background: rgba(37, 99, 235, 0.1);
-  color: #2563eb;
+  background: var(--bg-active);
+  color: var(--accent-color);
   font-weight: 600;
 }
 
 .submenu-item.active::before {
-  background: #2563eb;
+  background: var(--accent-color);
 }
 
 .submenu-text {
@@ -567,7 +567,7 @@ onUnmounted(() => {
 
 .nested-submenu-item {
   padding: 0.5rem 1rem;
-  color: #9ca3af;
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s ease;
   border-radius: 4px;
@@ -585,19 +585,19 @@ onUnmounted(() => {
   transform: translateY(-50%);
   width: 3px;
   height: 3px;
-  background: #d1d5db;
+  background: var(--text-muted);
   border-radius: 50%;
 }
 
 .nested-submenu-item:hover {
-  background: rgba(73, 233, 237, 0.05);
-  color: #2563eb;
+  background: var(--bg-hover);
+  color: var(--accent-color);
   transform: translateX(2px);
 }
 
 .nested-submenu-item.active {
-  background: rgba(37, 99, 235, 0.08);
-  color: #2563eb;
+  background: var(--bg-active);
+  color: var(--accent-color);
   font-weight: 600;
 }
 
