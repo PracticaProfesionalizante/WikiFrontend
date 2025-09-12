@@ -8,7 +8,7 @@
       <div class="welcome-section animate-slide-in-left">
         <div class="logo-social-learning-section">
           <img
-            src="@/components/assets/ui_images/LOGOSOCIALLEARNING.png"
+            src="@/assets/images/logos/LOGOSOCIALLEARNING.png"
             alt="Social Learning Logo"
             class="social-learning-logo animate-fade-in"
           />
@@ -511,7 +511,7 @@ if (authStore.error) {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('/src/components/assets/teclab_fondo_login.webp');
+  background-image: url('/src/assets/images/backgrounds/teclab_fondo_login.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -527,7 +527,7 @@ if (authStore.error) {
   left: 0;
   width: 52%; 
   height: 100%;
-  background-image: url('@/components/assets/ui_images/user_studying.webp');
+  background-image: url('@/assets/images/illustrations/user_studying.webp');
   background-size: cover;
   background-position: left center;
   background-repeat: no-repeat;

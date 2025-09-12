@@ -58,7 +58,7 @@ onMounted(async () => {
   margin-left: 60px;
   transition: margin-left 0.3s ease;
   min-height: 100vh;
-  background-image: url('/src/components/assets/fondo_dash.webp');
+  background-image: url('/src/assets/images/backgrounds/fondo_dash.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

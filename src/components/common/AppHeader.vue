@@ -6,7 +6,7 @@
     <!-- Logo izquierdo -->
     <div class="header-left">
       <img
-        src="@/components/assets/ui_images/LOGOSOCIALLEARNING.png"
+        src="@/assets/images/logos/LOGOSOCIALLEARNING.png"
         alt="Social Learning Logo"
         class="header-logo"
       />

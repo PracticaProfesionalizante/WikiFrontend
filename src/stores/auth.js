@@ -156,6 +156,29 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // NUEVA FUNCIÓN - Actualizar perfil del usuario
+  const updateProfile = async (profileData) => {
+    try {
+      // Aquí integrarías con tu backend
+      // const updatedUser = await authService.updateProfile(profileData)
+      
+      // Por ahora, simulamos la actualización local
+      const updatedUser = {
+        ...user.value,
+        username: profileData.username,
+        email: profileData.email,
+        name: profileData.fullName,
+        phone: profileData.phone
+      }
+      
+      setUser(updatedUser)
+      return updatedUser
+    } catch (err) {
+      setError('Error al actualizar el perfil')
+      throw err
+    }
+  }
+
   return {
     // State
     accessToken,
@@ -180,6 +203,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     refreshAccessToken,
     fetchCurrentUser,
-    initializeAuth
+    initializeAuth,
+    updateProfile
   }
 })

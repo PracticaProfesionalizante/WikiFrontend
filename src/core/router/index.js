@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 // Importar vistas (las crearemos después)
 import LoginView from '@/views/auth/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
+import SettingsView from '@/views/SettingsView.vue'
 
 const routes = [
   {
@@ -36,6 +37,16 @@ const routes = [
     beforeEnter: requireAuth, // Solo usuarios autenticados
     meta: {
       title: 'Dashboard',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/configuracion',
+    name: 'Settings',
+    component: SettingsView,
+    beforeEnter: requireAuth,
+    meta: {
+      title: 'Configuración',
       requiresAuth: true
     }
   },

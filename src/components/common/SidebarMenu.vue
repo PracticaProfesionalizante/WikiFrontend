@@ -79,6 +79,10 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+// Composables
+const router = useRouter()
 
 // Emits
 const emit = defineEmits(['sidebar-toggle'])
@@ -239,8 +243,7 @@ const selectItem = (item) => {
   
   // Navegar si tiene ruta
   if (item.route) {
-    // Aquí puedes agregar navegación con Vue Router
-    console.log('Navegando a:', item.route)
+    router.push(item.route)
   }
 }
 
@@ -275,7 +278,7 @@ const selectSubmenu = (submenu, parentItem) => {
   
   // Navegar
   if (submenu.route) {
-    console.log('Navegando a:', submenu.route)
+    router.push(submenu.route)
   }
 }
 
@@ -305,7 +308,7 @@ const selectNestedSubmenu = (nestedSubmenu, parentSubmenu, grandParentItem) => {
   
   // Navegar
   if (nestedSubmenu.route) {
-    console.log('Navegando a:', nestedSubmenu.route)
+    router.push(nestedSubmenu.route)
   }
 }
 
