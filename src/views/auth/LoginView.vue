@@ -8,7 +8,7 @@
       <div class="welcome-section animate-slide-in-left">
         <div class="logo-social-learning-section">
           <img
-            src="@/components/assets/ui_images/LOGOSOCIALLEARNING.png"
+            src="@/assets/images/logos/LOGOSOCIALLEARNING.png"
             alt="Social Learning Logo"
             class="social-learning-logo animate-fade-in"
           />
@@ -26,97 +26,166 @@
 
       <div class="form-section">
         <div class="login-form-wrapper animate-slide-in-right">
-          <h2 class="form-title animate-fade-in-delay">Entrá a la Wiki</h2>
+          <h2 class="form-title animate-fade-in-delay">{{ showForgotPassword ? 'Recuperar Contraseña' : 'Entrá a la Wiki' }}</h2>
           
-          <form @submit.prevent="handleLogin" class="login-form">
-            <div class="input-group">
-              <div class="floating-input">
-                <input 
-                  v-model="credentials.email"
-                  type="email" 
-                  id="email"
-                  class="form-input"
-                  :class="{ 
-                    'error': emailError, 
-                    'success': !emailError && credentials.email && credentials.email.length > 0,
-                    'has-value': credentials.email || emailFocused 
-                  }"
-                  @focus="emailFocused = true"
-                  @blur="emailFocused = false; validateEmail()"
-                  @input="validateEmailRealTime"
-                />
-                <label for="email" class="floating-label">Email</label>
-                <div class="input-feedback">
-                  <i v-if="!emailError && credentials.email && credentials.email.length > 0" class="mdi mdi-check-circle success-icon"></i>
-                  <i v-if="emailError && credentials.email" class="mdi mdi-alert-circle error-icon"></i>
-                </div>
-              </div>
-              <div v-if="emailError && credentials.email" class="field-error-message">
-                Por favor ingresa un email válido
-              </div>
-            </div>
-
-            <div class="input-group">
-              <div class="floating-input password-wrapper">
-                <input 
-                  v-model="credentials.password"
-                  :type="showPassword ? 'text' : 'password'" 
-                  id="password"
-                  class="form-input password-input"
-                  :class="{ 
-                    'error': passwordError, 
-                    'success': !passwordError && credentials.password && credentials.password.length >= 6,
-                    'has-value': credentials.password || passwordFocused 
-                  }"
-                  @focus="passwordFocused = true"
-                  @blur="passwordFocused = false; validatePassword()"
-                  @input="validatePasswordRealTime"
-                />
-                <label for="password" class="floating-label">Contraseña</label>
-                <div class="password-controls">
-                  <button 
-                    type="button" 
-                    @click="showPassword = !showPassword" 
-                    class="password-toggle"
-                  >
-                    <i v-if="showPassword" class="mdi mdi-eye"></i>
-                    <i v-else class="mdi mdi-eye-off"></i>
-                  </button>
-                  <div class="input-feedback">
-                    <i v-if="!passwordError && credentials.password && credentials.password.length >= 6" class="mdi mdi-check-circle success-icon"></i>
-                    <i v-if="passwordError && credentials.password" class="mdi mdi-alert-circle error-icon"></i>
+          <form @submit.prevent="showForgotPassword ? handleSendResetEmail() : handleLogin()" class="login-form">
+            <!-- Transición con animación -->
+            <transition name="form-slide" mode="out-in">
+              <!-- Formulario de Login -->
+              <div v-if="!showForgotPassword" key="login-form">
+                <div class="input-group">
+                  <div class="floating-input">
+                    <input 
+                      v-model="credentials.email"
+                      type="email" 
+                      id="email"
+                      class="form-input"
+                      :class="{ 
+                        'error': emailError, 
+                        'success': !emailError && credentials.email && credentials.email.length > 0,
+                        'has-value': credentials.email || emailFocused 
+                      }"
+                      @focus="emailFocused = true"
+                      @blur="emailFocused = false; validateEmail()"
+                      @input="validateEmailRealTime"
+                    />
+                    <label for="email" class="floating-label">Email</label>
+                    <div class="input-feedback">
+                      <i v-if="!emailError && credentials.email && credentials.email.length > 0" class="mdi mdi-check-circle success-icon"></i>
+                      <i v-if="emailError && credentials.email" class="mdi mdi-alert-circle error-icon"></i>
+                    </div>
+                  </div>
+                  <div v-if="emailError && credentials.email" class="field-error-message">
+                    Por favor ingresa un email válido
                   </div>
                 </div>
-              </div>
-              <div v-if="passwordError && credentials.password" class="field-error-message">
-                La contraseña debe tener al menos 6 caracteres
-              </div>
-            </div>
 
-            <div class="forgot-password-section">
-              <button 
-                type="button" 
-                @click="handleForgotPassword" 
-                class="forgot-password-link"
-              >
-                ¿Olvidaste tu contraseña?
-              </button>
-            </div>
-
-            <div class="bottom-row">
-              <button 
-                type="submit" 
-                :disabled="!isFormValid || isLoading" 
-                class="next-button"
-                :class="{ 'disabled': !isFormValid || isLoading, 'loading': isLoading }"
-              >
-                <span v-if="!isLoading" class="button-text">Siguiente</span>
-                <div v-else class="loading-spinner">
-                  <div class="spinner"></div>
-                  <span class="loading-text">Ingresando...</span>
+                <div class="input-group">
+                  <div class="floating-input password-wrapper">
+                    <input 
+                      v-model="credentials.password"
+                      :type="showPassword ? 'text' : 'password'" 
+                      id="password"
+                      class="form-input password-input"
+                      :class="{ 
+                        'error': passwordError, 
+                        'success': !passwordError && credentials.password && credentials.password.length >= 6,
+                        'has-value': credentials.password || passwordFocused 
+                      }"
+                      @focus="passwordFocused = true"
+                      @blur="passwordFocused = false; validatePassword()"
+                      @input="validatePasswordRealTime"
+                    />
+                    <label for="password" class="floating-label">Contraseña</label>
+                    <div class="password-controls">
+                      <button 
+                        type="button" 
+                        @click="showPassword = !showPassword" 
+                        class="password-toggle"
+                      >
+                        <i v-if="showPassword" class="mdi mdi-eye"></i>
+                        <i v-else class="mdi mdi-eye-off"></i>
+                      </button>
+                      <div class="input-feedback">
+                        <i v-if="!passwordError && credentials.password && credentials.password.length >= 6" class="mdi mdi-check-circle success-icon"></i>
+                        <i v-if="passwordError && credentials.password" class="mdi mdi-alert-circle error-icon"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="passwordError && credentials.password" class="field-error-message">
+                    La contraseña debe tener al menos 6 caracteres
+                  </div>
                 </div>
-              </button>
-            </div>
+
+                <div class="forgot-password-section">
+                  <button 
+                    type="button" 
+                    @click="handleForgotPassword" 
+                    class="forgot-password-link"
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                </div>
+
+                <div class="bottom-row">
+                  <button 
+                    type="submit" 
+                    :disabled="!isFormValid || isLoading" 
+                    class="next-button"
+                    :class="{ 'disabled': !isFormValid || isLoading, 'loading': isLoading }"
+                  >
+                    <span v-if="!isLoading" class="button-text">Siguiente</span>
+                    <div v-else class="loading-spinner">
+                      <div class="spinner"></div>
+                      <span class="loading-text">Ingresando...</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Formulario de Recuperación -->
+              <div v-else key="forgot-form">
+                <div v-if="!forgotPasswordSuccess">
+                  <div class="forgot-password-header">
+                    <h3 class="forgot-title">Recuperar Contraseña</h3>
+                    <p class="forgot-subtitle">Ingresa tu email para recibir instrucciones</p>
+                  </div>
+                  
+                  <div class="input-group">
+                    <div class="floating-input">
+                      <input 
+                        v-model="forgotPasswordEmail"
+                        type="email" 
+                        id="forgot-email"
+                        class="form-input"
+                        :class="{ 'has-value': forgotPasswordEmail }"
+                      />
+                      <label for="forgot-email" class="floating-label">Email para recuperación</label>
+                    </div>
+                  </div>
+                  
+                  <div class="forgot-actions">
+                    <button 
+                      type="button" 
+                      @click="handleBackToLogin" 
+                      class="back-to-login-btn"
+                    >
+                      ← Volver al login
+                    </button>
+                    
+                    <button 
+                      type="submit" 
+                      :disabled="!forgotPasswordEmail || forgotPasswordLoading" 
+                      class="next-button"
+                      :class="{ 'disabled': !forgotPasswordEmail || forgotPasswordLoading, 'loading': forgotPasswordLoading }"
+                    >
+                      <span v-if="!forgotPasswordLoading" class="button-text">Enviar</span>
+                      <div v-else class="loading-spinner">
+                        <div class="spinner"></div>
+                        <span class="loading-text">Enviando...</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Mensaje de éxito -->
+                <div v-else class="forgot-success">
+                  <div class="success-icon-large">
+                    <i class="mdi mdi-email-check-outline"></i>
+                  </div>
+                  <h3 class="success-title">¡Email enviado!</h3>
+                  <p class="success-text">Revisa tu bandeja de entrada y sigue las instrucciones para recuperar tu contraseña.</p>
+                  
+                  <button 
+                    type="button" 
+                    @click="handleBackToLogin" 
+                    class="back-to-login-btn-success"
+                  >
+                    Volver al login
+                  </button>
+                </div>
+              </div>
+            </transition>
           </form>
 
           <div v-if="error" class="error-message animate-shake">
@@ -153,6 +222,12 @@ const passwordFocused = ref(false)
 const error = ref('')
 const successMessage = ref('')
 const isLoading = ref(false)
+
+// Estados para recuperación de contraseña
+const showForgotPassword = ref(false)
+const forgotPasswordEmail = ref('')
+const forgotPasswordLoading = ref(false)
+const forgotPasswordSuccess = ref(false)
 
 // Credenciales del usuario
 const credentials = reactive({
@@ -234,8 +309,6 @@ const handleLogin = async () => {
     } else {
       error.value = 'Error al iniciar sesión. Verifica tus credenciales.'
     }
-    
-    console.error('Error durante el login:', err)
   } finally {
     isLoading.value = false
   }
@@ -243,14 +316,51 @@ const handleLogin = async () => {
 
 // Función para manejar recuperación de contraseña
 const handleForgotPassword = () => {
-  // Implementar lógica de recuperación de contraseña
-  console.log('Recuperar contraseña')
+  showForgotPassword.value = true
+  forgotPasswordEmail.value = credentials.email // Pre-llenar con email actual
+  error.value = ''
+  successMessage.value = ''
+}
+
+const handleBackToLogin = () => {
+  showForgotPassword.value = false
+  forgotPasswordSuccess.value = false
+  forgotPasswordEmail.value = ''
+  error.value = ''
+  successMessage.value = ''
+}
+
+const handleSendResetEmail = async () => {
+  if (!forgotPasswordEmail.value) {
+    error.value = 'Por favor ingresa tu email'
+    return
+  }
+  
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(forgotPasswordEmail.value)) {
+    error.value = 'Por favor ingresa un email válido'
+    return
+  }
+  
+  forgotPasswordLoading.value = true
+  error.value = ''
+  
+  try {
+    // Simular llamada al backend (aquí harías la llamada real)
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    forgotPasswordSuccess.value = true
+    successMessage.value = 'Se ha enviado un email con instrucciones para recuperar tu contraseña'
+  } catch (err) {
+    error.value = 'Error al enviar email de recuperación. Intenta nuevamente.'
+  } finally {
+    forgotPasswordLoading.value = false
+  }
 }
 
 // Función para manejar login de asesor
 const handleAdvisorLogin = () => {
   // Implementar lógica para login de asesor
-  console.log('Login de asesor')
 }
 
 // Limpiar errores cuando el componente se monta
@@ -401,7 +511,7 @@ if (authStore.error) {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('/src/components/assets/teclab_fondo_login.webp');
+  background-image: url('/src/assets/images/backgrounds/teclab_fondo_login.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -417,7 +527,7 @@ if (authStore.error) {
   left: 0;
   width: 52%; 
   height: 100%;
-  background-image: url('@/components/assets/ui_images/user_studying.webp');
+  background-image: url('@/assets/images/illustrations/user_studying.webp');
   background-size: cover;
   background-position: left center;
   background-repeat: no-repeat;
@@ -546,7 +656,7 @@ if (authStore.error) {
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
   border-radius: 24px;
-  padding: 2.5rem;
+  padding: 2rem 2.5rem 2.5rem 2.5rem;
   /* Mejora: Sombras más suaves y profundas */
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08),
               0 0 0 1px rgba(255, 255, 255, 0.05),
@@ -567,7 +677,7 @@ if (authStore.error) {
   font-weight: 700;
   color: #1a202c;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.75rem;
   margin-top: 0;
   /* Mejora: Sombra sutil para mejor definición */
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -578,11 +688,12 @@ if (authStore.error) {
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .input-group {
   position: relative;
+  margin-bottom: 1.5rem;
 }
 
 .floating-input {
@@ -604,10 +715,10 @@ if (authStore.error) {
 
 .form-input:focus {
   outline: none;
-  border-color: #49E9ED;
+  border-color: #2563eb;
   /* Mejora: Glow effect más elegante */
-  box-shadow: 0 0 0 4px rgba(73, 233, 237, 0.15),
-              0 4px 12px rgba(73, 233, 237, 0.1);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15),
+              0 4px 12px rgba(37, 99, 235, 0.1);
   transform: translateY(-2px);
 }
 
@@ -637,35 +748,47 @@ if (authStore.error) {
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: left top;
-  background: #F2F3F4;
-  padding: 0 0.25rem;
-  /* Mejora: Bordes más redondeados para el fondo */
-  border-radius: 4px;
+  background: transparent;
+  padding: 0;
+  z-index: 2;
 }
 
 .form-input:focus + .floating-label,
 .form-input.has-value + .floating-label {
-  top: -0.75rem;
+  top: -0.6rem;
   left: 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
-  /* Mejora: Color consistente con el tema */
-  color: #49E9ED;
+  color: #2563eb;
   transform: scale(1);
-  /* Mejora: Sombra sutil para mejor legibilidad */
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0 0.5rem;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .form-input.error + .floating-label {
   color: #ef4444;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0 0.5rem;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
 }
 
 .form-input.success + .floating-label {
   color: #10b981;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0 0.5rem;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
 }
 
 .password-wrapper {
   position: relative;
+  margin-top: 0.5rem;
 }
 
 .input-feedback {
@@ -708,8 +831,8 @@ if (authStore.error) {
 .field-error-message {
   font-size: 0.75rem;
   color: #ef4444;
-  margin-top: 0.25rem;
-  margin-left: 0.5rem;
+  margin-top: 0.5rem;
+  margin-left: 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.25rem;
@@ -745,6 +868,7 @@ if (authStore.error) {
 .forgot-password-section {
   display: flex;
   justify-content: flex-end;
+  margin: 0.75rem 0 1rem 0;
 }
 
 .forgot-password-link {
@@ -771,6 +895,7 @@ if (authStore.error) {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: 1.5rem;
 }
 
 .advisor-section {
@@ -857,6 +982,167 @@ if (authStore.error) {
   border-top: 2px solid white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+/* Animaciones de transición para formularios */
+.form-slide-enter-active,
+.form-slide-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-slide-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.form-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+/* Estilos para recuperación de contraseña */
+.forgot-password-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.forgot-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.forgot-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.forgot-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.back-to-login-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.back-to-login-btn:hover {
+  color: #2563eb;
+  background-color: rgba(37, 99, 235, 0.1);
+}
+
+/* Estilos para mensaje de éxito */
+.forgot-success {
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.success-icon-large {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  animation: successPulse 0.6s ease-out;
+}
+
+.success-icon-large i {
+  font-size: 2.5rem;
+  color: white;
+}
+
+.success-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+}
+
+.success-text {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.back-to-login-btn-success {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+.back-to-login-btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive para móviles */
+@media (max-width: 640px) {
+  .forgot-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .back-to-login-btn {
+    text-align: center;
+    justify-content: center;
+  }
+  
+  .forgot-password-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .forgot-title {
+    font-size: 1.25rem;
+  }
+  
+  .success-icon-large {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .success-icon-large i {
+    font-size: 2rem;
+  }
 }
 
 .loading-text {

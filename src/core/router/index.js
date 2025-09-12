@@ -5,11 +5,20 @@ import { useAuthStore } from '@/stores/auth'
 // Importar vistas (las crearemos después)
 import LoginView from '@/views/auth/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
+import SettingsView from '@/views/SettingsView.vue'
 
 const routes = [
   {
     path: '/',
-    redirect: '/login' // Redirigir al login por defecto
+    name: 'Home',
+    beforeEnter: (to, from, next) => {
+      const authStore = useAuthStore()
+      if (authStore.isAuthenticated) {
+        next({ name: 'Dashboard' })
+      } else {
+        next({ name: 'Login' })
+      }
+    }
   },
   {
     path: '/login',
@@ -28,6 +37,16 @@ const routes = [
     beforeEnter: requireAuth, // Solo usuarios autenticados
     meta: {
       title: 'Dashboard',
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/configuracion',
+    name: 'Settings',
+    component: SettingsView,
+    beforeEnter: requireAuth,
+    meta: {
+      title: 'Configuración',
       requiresAuth: true
     }
   },
@@ -63,7 +82,8 @@ router.beforeEach(async (to, from, next) => {
     try {
       await authStore.initializeAuth()
     } catch (error) {
-      console.warn('Error al inicializar autenticación:', error)
+      // Si falla la inicialización, limpiar tokens
+      authStore.clearAuth()
     }
   }
   

@@ -1,36 +1,7 @@
 <template>
   <!-- Aplicación principal de Vuetify -->
   <v-app>
-    <!-- Barra de navegación superior -->
-    <v-app-bar 
-      v-if="authStore.isAuthenticated" 
-      app 
-      color="primary" 
-      dark
-    >
-      <v-app-bar-title>WikiFrontend</v-app-bar-title>
-      
-      <v-spacer></v-spacer>
-      
-      <!-- Información del usuario -->
-      <v-chip 
-        v-if="authStore.user" 
-        class="mr-4"
-        color="secondary"
-      >
-        <v-icon left>mdi-account</v-icon>
-        {{ authStore.user.name || authStore.user.email }}
-      </v-chip>
-      
-      <!-- Botón de logout -->
-      <v-btn 
-        icon 
-        @click="logout"
-        title="Cerrar Sesión"
-      >
-        <v-icon>mdi-logout</v-icon>
-      </v-btn>
-    </v-app-bar>
+    <!-- Barra de navegación superior removida para evitar duplicación con el sidebar -->
     
     <!-- Contenido principal -->
     <v-main>

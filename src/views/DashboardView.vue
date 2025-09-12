@@ -1,60 +1,177 @@
-<!-- Vista principal después del login -->
 <template>
-  <v-container>
-    <v-row>
-      <v-col cols="12">
-        <v-card>
-          <v-card-title>
-            <h1>Dashboard</h1>
-          </v-card-title>
-          <v-card-text>
-            <!-- Saludo personalizado con el nombre del usuario -->
-            <p>¡Bienvenido, {{ authStore.user?.name || 'Usuario' }}!</p>
-            <!-- Muestra el rol del usuario -->
-            <p>Rol: {{ authStore.user?.role || 'Sin rol' }}</p>
-            
-            <v-divider class="my-4"></v-divider>
-            
-            <!-- Botón de admin solo visible para roles Admin y SuperUser -->
-            <v-btn 
-              color="primary" 
-              @click="goToAdmin" 
-              v-if="authStore.hasRole('Admin') || authStore.hasRole('SuperUser')"
-              class="mr-2"
-            >
-              Ir a Administración
-            </v-btn>
-            
-            <!-- Botón para cerrar sesión -->
-            <v-btn 
-              color="error" 
-              @click="logout"
-            >
-              Cerrar Sesión
-            </v-btn>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+  <div class="dashboard-layout">
+    <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
+    <AppHeader :sidebar-expanded="sidebarExpanded" />
+    <main class="main-content" :class="{ 'with-sidebar': true, 'with-header': true }">
+      <div class="welcome-container">
+        <div class="welcome-content">
+          <h1 class="welcome-title">
+            ¡Hola, {{ user?.username || 'Usuario' }}!
+          </h1>
+          <p class="welcome-message">
+            Para realizar alguna gestión dirígete al menú lateral. Ahí encontrarás todas las opciones disponibles.
+          </p>
+        </div>
+      </div>
+    </main>
+  </div>
 </template>
 
 <script setup>
-// Importa el store de autenticación y el router
+import SidebarMenu from '@/components/common/SidebarMenu.vue'
+import AppHeader from '@/components/common/AppHeader.vue'
 import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
 
-// Instancias del store y router
 const authStore = useAuthStore()
-const router = useRouter()
+const { user } = authStore
 
-// Función para navegar a la página de administración
-const goToAdmin = () => {
-  router.push('/admin')
+// Estado del sidebar
+const sidebarExpanded = ref(false)
+
+// Manejar toggle del sidebar
+const handleSidebarToggle = (expanded) => {
+  sidebarExpanded.value = expanded
 }
 
-// Función para cerrar sesión (llama al método del store)
-const logout = async () => {
-  await authStore.logout()
-}
+onMounted(async () => {
+  // Obtener información actualizada del usuario desde el backend
+  if (authStore.isAuthenticated && !user?.name) {
+    try {
+      await authStore.fetchCurrentUser()
+    } catch (error) {
+      console.error('Error al obtener datos del usuario:', error)
+    }
+  }
+})
 </script>
+
+<style scoped>
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 60px;
+  transition: margin-left 0.3s ease;
+  min-height: 100vh;
+  background-image: url('/src/assets/images/backgrounds/fondo_dash.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.main-content.with-header {
+  padding-top: 70px;
+}
+
+.main-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 20, 40, 0.7);
+  z-index: 1;
+}
+
+.welcome-container {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.welcome-content {
+  text-align: center;
+  background: var(--bg-primary);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 3rem 2.5rem;
+  box-shadow: 0 20px 60px var(--shadow-color);
+  border: 1px solid var(--border-color);
+  max-width: 600px;
+  width: 100%;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.welcome-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  text-shadow: 0 2px 4px var(--shadow-color);
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.welcome-message {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  font-weight: 500;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .main-content.with-header {
+    padding-top: 70px;
+  }
+  
+  .welcome-container {
+    padding: 1rem;
+  }
+  
+  .welcome-content {
+    padding: 2rem 1.5rem;
+  }
+  
+  .welcome-title {
+    font-size: 2rem;
+  }
+  
+  .welcome-message {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-content {
+    padding: 1.5rem 1rem;
+  }
+  
+  .welcome-title {
+    font-size: 1.8rem;
+  }
+  
+  .welcome-message {
+    font-size: 1rem;
+  }
+}
+</style>

@@ -12,8 +12,8 @@ export const authService = {
       })
       
       return {
-        access_token: response.data.accesToken || response.data.access_token,
-        refresh_token: response.data.refreshToken || response.data.refresh_token,
+        access_token: response.data.accessToken,
+        refresh_token: response.data.refreshToken,
         user: response.data.user
       }
     } catch (error) {
