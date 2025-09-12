@@ -78,11 +78,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
 // Composables
 const router = useRouter()
+const route = useRoute()
 
 // Emits
 const emit = defineEmits(['sidebar-toggle'])
@@ -319,9 +320,66 @@ const checkMobile = () => {
   }
 }
 
+// Función para actualizar el estado activo basado en la ruta actual
+const updateActiveState = (currentRoute) => {
+  // Desactivar todos los elementos
+  menuItems.value.forEach(item => {
+    item.active = false
+    if (item.submenu) {
+      item.submenu.forEach(sub => {
+        sub.active = false
+        if (sub.submenu) {
+          sub.submenu.forEach(nested => nested.active = false)
+        }
+      })
+    }
+  })
+
+  // Buscar y activar el elemento correspondiente a la ruta actual
+  menuItems.value.forEach(item => {
+    // Verificar item principal
+    if (item.route === currentRoute) {
+      item.active = true
+      return
+    }
+
+    // Verificar submenús
+    if (item.submenu) {
+      item.submenu.forEach(sub => {
+        if (sub.route === currentRoute) {
+          sub.active = true
+          item.active = true
+          item.showSubmenu = true
+          return
+        }
+
+        // Verificar submenús anidados
+        if (sub.submenu) {
+          sub.submenu.forEach(nested => {
+            if (nested.route === currentRoute) {
+              nested.active = true
+              sub.active = true
+              item.active = true
+              item.showSubmenu = true
+              sub.showSubmenu = true
+            }
+          })
+        }
+      })
+    }
+  })
+}
+
+// Watcher para detectar cambios de ruta
+watch(() => route.path, (newPath) => {
+  updateActiveState(newPath)
+}, { immediate: true })
+
 onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
+  // Inicializar estado activo basado en la ruta actual
+  updateActiveState(route.path)
 })
 
 onUnmounted(() => {
