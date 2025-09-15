@@ -117,7 +117,7 @@
                     <span v-if="!isLoading" class="button-text">Siguiente</span>
                     <div v-else class="loading-spinner">
                       <div class="spinner"></div>
-                      <span class="loading-text">Ingresando...</span>
+                      <span class="loading-text">{{ successMessage ? 'Redirigiendo...' : 'Ingresando...' }}</span>
                     </div>
                   </button>
                 </div>
@@ -292,6 +292,7 @@ const handleLogin = async () => {
     })
     
     successMessage.value = '¡Bienvenido! Redirigiendo...'
+    // No resetear isLoading aquí para mantener el botón deshabilitado durante la redirección
     
   } catch (err) {
     // Manejar diferentes tipos de errores con mensajes específicos
@@ -309,7 +310,7 @@ const handleLogin = async () => {
     } else {
       error.value = 'Error al iniciar sesión. Verifica tus credenciales.'
     }
-  } finally {
+    // Solo resetear isLoading en caso de error
     isLoading.value = false
   }
 }

@@ -85,10 +85,10 @@ export const useAuthStore = defineStore('auth', () => {
       // Pequeño delay para asegurar que el estado se actualice
       await new Promise(resolve => setTimeout(resolve, 100))
       
-      // Esperar 5 segundos antes de redirigir al dashboard
+      // Esperar 1 segundo antes de redirigir al dashboard
       setTimeout(() => {
         router.push('/dashboard')
-      }, 5000)
+      }, 1000)
       
       return response
     } catch (err) {
