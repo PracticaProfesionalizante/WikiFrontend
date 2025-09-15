@@ -786,6 +786,8 @@ img {
   /* Mejora: Sombra sutil para mejor definición */
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   letter-spacing: -0.01em;
+  /* Evitar que el texto se divida en múltiples líneas */
+  white-space: nowrap;
 }
 
 /* Form */
