@@ -462,7 +462,7 @@ watch(isDarkMode, (newValue) => {
 .settings-layout {
   display: flex;
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--bg-primary);
 }
 
 .main-content {
@@ -471,10 +471,10 @@ watch(isDarkMode, (newValue) => {
   transition: margin-left 0.3s ease;
   min-height: 100vh;
   background-image: url('/src/assets/images/backgrounds/ajustes-usuario.webp');
-  background-size: contain;
-  background-position: center center;
+  background-size: cover;
+  background-position: center right;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-attachment: local;
   position: relative;
 }
 
@@ -834,6 +834,7 @@ input:checked + .toggle-slider:before {
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;
+    background-position: center center;
   }
   
   .settings-container {
