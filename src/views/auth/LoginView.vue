@@ -16,7 +16,7 @@
 
         <div class="greeting-content">
           <h1 class="greeting-title animate-slide-up">
-            Bienvenido, accede a la Wiki para continuar.
+            Bienvenido a nuestra Wiki.
           </h1>
           <p class="greeting-subtitle animate-slide-up-delay">
             Ingresá tu email y contraseña para acceder.
@@ -26,7 +26,7 @@
 
       <div class="form-section">
         <div class="login-form-wrapper animate-slide-in-right">
-          <h2 class="form-title animate-fade-in-delay">{{ showForgotPassword ? 'Recuperar Contraseña' : 'Entrá a la Wiki' }}</h2>
+          <h2 class="form-title animate-fade-in-delay"v-if="!forgotPasswordSuccess">{{ showForgotPassword ? 'Recuperar Contraseña' : 'Iniciar sesión' }}</h2>
           
           <form @submit.prevent="showForgotPassword ? handleSendResetEmail() : handleLogin()" class="login-form">
             <!-- Transición con animación -->
@@ -127,7 +127,7 @@
               <div v-else key="forgot-form">
                 <div v-if="!forgotPasswordSuccess">
                   <div class="forgot-password-header">
-                    <h3 class="forgot-title">Recuperar Contraseña</h3>
+                   <!-- <h3 class="forgot-title">Recuperar Contraseña</h3> -->
                     <p class="forgot-subtitle">Ingresa tu email para recibir instrucciones</p>
                   </div>
                   
