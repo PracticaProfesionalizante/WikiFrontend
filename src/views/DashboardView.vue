@@ -57,7 +57,8 @@ onMounted(async () => {
   flex: 1;
   margin-left: 60px;
   transition: margin-left 0.3s ease;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background-image: url('/src/assets/images/backgrounds/fondo_dash.webp');
   background-size: cover;
   background-position: center;
@@ -86,7 +87,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  height: calc(100vh - 70px);
   padding: 2rem;
 }
 
@@ -138,6 +139,7 @@ onMounted(async () => {
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;
+    height: 100vh;
   }
   
   .main-content.with-header {
@@ -146,6 +148,7 @@ onMounted(async () => {
   
   .welcome-container {
     padding: 1rem;
+    height: calc(100vh - 70px);
   }
   
   .welcome-content {
@@ -162,6 +165,11 @@ onMounted(async () => {
 }
 
 @media (max-width: 480px) {
+  .welcome-container {
+    padding: 0.5rem;
+    height: calc(100vh - 70px);
+  }
+  
   .welcome-content {
     padding: 1.5rem 1rem;
   }
