@@ -22,7 +22,7 @@
               @click="goToDashboard"
               class="mr-2"
             >
-              Volver al Dashboard
+              Volver al inicio
             </v-btn>
             
             <!-- Botón para cerrar sesión -->

@@ -22,7 +22,7 @@
       <div class="menu-header">
         <div class="logo-container">
           <i class="mdi mdi-school menu-logo"></i>
-          <span class="logo-text">Wiki Portal</span>
+          <span class="logo-text">Portal Wiki</span>
         </div>
       </div>
       
@@ -96,7 +96,7 @@ const menuItems = ref([
   {
     id: 1,
     icon: 'mdi mdi-view-dashboard',
-    text: 'Dashboard',
+    text: 'Inicio',
     active: true,
     route: '/dashboard'
   },
@@ -137,24 +137,24 @@ const menuItems = ref([
   },
   {
     id: 5,
-    icon: 'mdi mdi-help-box',
-    text: 'Ayuda',
-    active: false,
-    route: '/ayuda'
-  },
-  {
-    id: 6,
     icon: 'mdi mdi-lead-pencil',
     text: 'ABM de Usuarios',
     active: false,
     route: '/abm-usuarios'
   },
   {
-    id: 7,
+    id: 6,
     icon: 'mdi mdi-cog',
     text: 'Configuración',
     active: false,
     route: '/configuracion'
+  },
+  {
+    id: 7,
+    icon: 'mdi mdi-help-circle',
+    text: 'Ayuda',
+    active: false,
+    route: '/Ayuda'
   }
 ])
 
