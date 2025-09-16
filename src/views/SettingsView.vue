@@ -90,7 +90,7 @@
               <div class="section-header">
                 <h2 class="section-title">
                   <i class="mdi mdi-lock"></i>
-                  Seguridad
+                  Cambiar contraseña
                 </h2>
               </div>
               <div class="section-content">
@@ -137,7 +137,7 @@
                       <span v-if="errors.newPassword" class="error-message">{{ errors.newPassword }}</span>
                     </div>
                     <div class="input-group">
-                      <label class="input-label">Confirmar Nueva Contraseña</label>
+                      <label class="input-label">Confirmar Contraseña</label>
                       <div class="password-input-wrapper">
                         <input 
                           v-model="passwordData.confirmPassword"

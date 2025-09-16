@@ -16,7 +16,7 @@
 
         <div class="greeting-content">
           <h1 class="greeting-title animate-slide-up">
-            Bienvenido, accede a la Wiki para continuar.
+            Bienvenido a nuestra Wiki.
           </h1>
           <p class="greeting-subtitle animate-slide-up-delay">
             Ingresá tu email y contraseña para acceder.
@@ -26,7 +26,7 @@
 
       <div class="form-section">
         <div class="login-form-wrapper animate-slide-in-right">
-          <h2 class="form-title animate-fade-in-delay">{{ showForgotPassword ? 'Recuperar Contraseña' : 'Entrá a la Wiki' }}</h2>
+          <h2 class="form-title animate-fade-in-delay" v-if="!forgotPasswordSuccess">{{ showForgotPassword ? 'Recuperar Contraseña' : 'Iniciar sesión' }}</h2>
           
           <form @submit.prevent="showForgotPassword ? handleSendResetEmail() : handleLogin()" class="login-form">
             <!-- Transición con animación -->
@@ -117,7 +117,7 @@
                     <span v-if="!isLoading" class="button-text">Siguiente</span>
                     <div v-else class="loading-spinner">
                       <div class="spinner"></div>
-                      <span class="loading-text">Ingresando...</span>
+                      <span class="loading-text">{{ successMessage ? 'Redirigiendo...' : 'Ingresando...' }}</span>
                     </div>
                   </button>
                 </div>
@@ -127,7 +127,7 @@
               <div v-else key="forgot-form">
                 <div v-if="!forgotPasswordSuccess">
                   <div class="forgot-password-header">
-                    <h3 class="forgot-title">Recuperar Contraseña</h3>
+                   <!-- <h3 class="forgot-title">Recuperar Contraseña</h3> -->
                     <p class="forgot-subtitle">Ingresa tu email para recibir instrucciones</p>
                   </div>
                   
@@ -292,6 +292,7 @@ const handleLogin = async () => {
     })
     
     successMessage.value = '¡Bienvenido! Redirigiendo...'
+    // No resetear isLoading aquí para mantener el botón deshabilitado durante la redirección
     
   } catch (err) {
     // Manejar diferentes tipos de errores con mensajes específicos
@@ -309,7 +310,7 @@ const handleLogin = async () => {
     } else {
       error.value = 'Error al iniciar sesión. Verifica tus credenciales.'
     }
-  } finally {
+    // Solo resetear isLoading en caso de error
     isLoading.value = false
   }
 }
@@ -499,6 +500,18 @@ if (authStore.error) {
   animation: bounceIn 0.6s ease-out;
 }
 
+/* Mejora global: Optimización de renderizado de imágenes */
+* {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
 .login-container {
   min-height: 100vh;
   position: relative;
@@ -511,14 +524,20 @@ if (authStore.error) {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('/src/assets/images/backgrounds/teclab_fondo_login.webp');
+  background-image: url('/src/assets/images/backgrounds/teclab_fondo_login.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   z-index: 1;
   /* Mejora: Overlay sutil para mejor contraste */
   background-blend-mode: overlay;
-  background-color: rgba(0, 20, 40, 0.1);
+  background-color: rgba(0, 20, 40, 0.05);
+  /* Optimización para máxima calidad de imagen */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: high-quality;
+  image-rendering: crisp-edges;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .student-image-overlay {
@@ -529,15 +548,22 @@ if (authStore.error) {
   height: 100%;
   background-image: url('@/assets/images/illustrations/user_studying.webp');
   background-size: cover;
-  background-position: left center;
+  background-position: -350px center;
   background-repeat: no-repeat;
   
-  /* Mejora: Filtros más suaves y naturales */
-  filter: brightness(0.6) saturate(1.2) blur(1px);
-  opacity: 0.8;
+  /* Mejora: Filtros optimizados para mejor calidad */
+  filter: brightness(0.8) saturate(1.05) contrast(1.05);
+  opacity: 0.95;
   
   z-index: 1; 
   pointer-events: none; 
+  
+  /* Mejora: Propiedades para imágenes de máxima calidad */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: high-quality;
+  image-rendering: crisp-edges;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .content-layout {
@@ -559,9 +585,20 @@ if (authStore.error) {
   max-width: 450px;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem; /* Reducido de 2rem a 1rem para mejor distribución */
   color: white;
   padding-right: 1rem;
+  /* Mejora: Fondo semi-transparente para mejor contraste del texto */
+  background: linear-gradient(135deg, 
+    rgba(0, 0, 0, 0.3) 0%, 
+    rgba(0, 0, 0, 0.1) 50%, 
+    rgba(0, 0, 0, 0.2) 100%);
+  backdrop-filter: blur(2px);
+  border-radius: 16px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* Mejora: Centrado vertical para mejor distribución */
+  justify-content: center;
 }
 
 .logo-section {
@@ -575,6 +612,9 @@ if (authStore.error) {
   width: auto;
   filter: brightness(0) invert(1) drop-shadow(0 4px 8px rgba(0,0,0,0.2));
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
 }
 
 .teclab-logo:hover {
@@ -585,30 +625,87 @@ if (authStore.error) {
 /* 📌 Inicio: Nuevos estilos para el logo de Social Learning */
 .logo-social-learning-section {
   display: flex;
-  justify-content: flex-start;
-  margin-bottom: 1rem; /* Mejor espaciado entre logos y texto */
+  justify-content: center; /* Centrado para mayor prominencia */
+  align-items: center;
+  margin-bottom: 0.75rem; /* Reducido para acercar al texto */
+  padding: 0.5rem 0; /* Reducido padding para menos espacio */
+  /* 📌 Mejora: Fondo sutil para destacar el logo */
+  background: radial-gradient(ellipse at center, 
+    rgba(73, 233, 237, 0.08) 0%, 
+    rgba(73, 233, 237, 0.03) 40%, 
+    transparent 70%);
+  border-radius: 20px;
+  position: relative;
 }
 
 .social-learning-logo {
   height: 6rem;
   width: auto;
-  /* 📌 Filtros más suaves y elegantes */
-  filter: drop-shadow(0 6px 16px rgba(73, 233, 237, 0.3)) 
-          drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  /* 📌 Mejora: Sombras más intensas y múltiples capas para máxima visibilidad */
+  filter: drop-shadow(0 8px 20px rgba(73, 233, 237, 0.6)) 
+          drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4))
+          drop-shadow(0 2px 6px rgba(73, 233, 237, 0.8))
+          brightness(1.1) contrast(1.15);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  /* 📌 Mejora: Resplandor adicional para destacar */
+  position: relative;
+  /* 📌 Mejora: Efecto de resplandor con pseudo-elemento */
+}
+
+.social-learning-logo::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: radial-gradient(ellipse at center, 
+    rgba(73, 233, 237, 0.15) 0%, 
+    rgba(73, 233, 237, 0.08) 30%, 
+    transparent 60%);
+  border-radius: 50%;
+  z-index: -1;
+  opacity: 0.8;
+  animation: logoGlow 3s ease-in-out infinite alternate;
 }
 
 .social-learning-logo:hover {
-  transform: translateY(-3px) scale(1.03);
-  filter: drop-shadow(0 8px 20px rgba(73, 233, 237, 0.4)) 
-          drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+  transform: translateY(-4px) scale(1.05);
+  filter: drop-shadow(0 12px 28px rgba(73, 233, 237, 0.8)) 
+          drop-shadow(0 6px 16px rgba(0, 0, 0, 0.5))
+          drop-shadow(0 3px 8px rgba(73, 233, 237, 1))
+          brightness(1.2) contrast(1.2);
 }
-/*Fin: Nuevos estilos para el logo de Social Learning*/
+
+.social-learning-logo:hover::before {
+  opacity: 1;
+  transform: scale(1.1);
+  background: radial-gradient(ellipse at center, 
+    rgba(73, 233, 237, 0.25) 0%, 
+    rgba(73, 233, 237, 0.15) 30%, 
+    transparent 60%);
+}
+
+/* 📌 Animación para el resplandor del logo */
+@keyframes logoGlow {
+  0% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+/* 📌 Fin: Nuevos estilos para el logo de Social Learning */
 
 .greeting-content {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem; /* Reducido para acercar título y subtítulo */
+  margin-top: 0.5rem; /* Pequeño margen para separar del logo */
 }
 
 .greeting-title {
@@ -618,26 +715,34 @@ if (authStore.error) {
   margin: 0;
   line-height: 1.1;
   letter-spacing: -0.02em;
-  /* Mejora: Sombra más elegante y profunda */
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), 
-               0 2px 4px rgba(73, 233, 237, 0.3);
+  /* Mejora: Sombras más intensas para mejor visibilidad */
+  text-shadow: 0 6px 12px rgba(0, 0, 0, 0.7), 
+               0 3px 6px rgba(73, 233, 237, 0.5),
+               0 1px 3px rgba(0, 0, 0, 0.9);
   transition: all 0.3s ease;
+  /* Mejora: Contorno sutil para mayor definición */
+  -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.3);
 }
 
 .greeting-title:hover {
   transform: translateY(-1px);
-  text-shadow: 0 6px 12px rgba(0, 0, 0, 0.5), 
-               0 3px 6px rgba(73, 233, 237, 0.4);
+  text-shadow: 0 8px 16px rgba(0, 0, 0, 0.8), 
+               0 4px 8px rgba(73, 233, 237, 0.6),
+               0 2px 4px rgba(0, 0, 0, 0.9);
 }
 
 .greeting-subtitle {
-  color: rgba(255, 255, 255, 0.95);
+  color: rgba(255, 255, 255, 0.98);
   margin: 0;
   font-size: 1.3rem;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.4;
-  /* Mejora: Mejor legibilidad con sombra suave */
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  /* Mejora: Sombras más intensas para mejor legibilidad */
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.8),
+               0 2px 4px rgba(0, 0, 0, 0.6),
+               0 1px 2px rgba(0, 0, 0, 0.9);
+  /* Mejora: Contorno sutil para mayor definición */
+  -webkit-text-stroke: 0.3px rgba(0, 0, 0, 0.4);
 }
 
 /* Form Section - Right Side */
@@ -682,6 +787,8 @@ if (authStore.error) {
   /* Mejora: Sombra sutil para mejor definición */
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   letter-spacing: -0.01em;
+  /* Evitar que el texto se divida en múltiples líneas */
+  white-space: nowrap;
 }
 
 /* Form */
