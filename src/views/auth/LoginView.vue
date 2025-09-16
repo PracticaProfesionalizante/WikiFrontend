@@ -548,7 +548,7 @@ img {
   height: 100%;
   background-image: url('@/assets/images/illustrations/user_studying.webp');
   background-size: cover;
-  background-position: left center;
+  background-position: -350px center;
   background-repeat: no-repeat;
   
   /* Mejora: Filtros optimizados para mejor calidad */
