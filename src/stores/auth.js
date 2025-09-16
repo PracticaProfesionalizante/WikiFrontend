@@ -133,13 +133,16 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // NUEVA FUNCIÓN - Obtener datos del usuario actual
-  const fetchCurrentUser = async () => {
+  const fetchCurrentUser = async (showErrorToUser = false) => {
     try {
       const userData = await authService.getCurrentUser()
       setUser(userData)
       return userData
     } catch (err) {
-      setError('Error al obtener datos del usuario')
+      // Solo mostrar error al usuario si se especifica explícitamente
+      if (showErrorToUser) {
+        setError('Error al obtener datos del usuario')
+      }
       throw err
     }
   }
@@ -148,7 +151,8 @@ export const useAuthStore = defineStore('auth', () => {
   const initializeAuth = async () => {
     if (accessToken.value && !user.value) {
       try {
-        await fetchCurrentUser()
+        // No mostrar error al usuario durante la inicialización silenciosa
+        await fetchCurrentUser(false)
       } catch (err) {
         // Si falla, limpiar tokens inválidos
         clearAuth()

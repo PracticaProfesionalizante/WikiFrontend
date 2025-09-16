@@ -38,7 +38,8 @@ onMounted(async () => {
   // Obtener información actualizada del usuario desde el backend
   if (authStore.isAuthenticated && !user?.name) {
     try {
-      await authStore.fetchCurrentUser()
+      // Pasar true para mostrar error solo si es crítico para el dashboard
+      await authStore.fetchCurrentUser(true)
     } catch (error) {
       console.error('Error al obtener datos del usuario:', error)
     }
