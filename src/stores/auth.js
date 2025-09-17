@@ -107,7 +107,8 @@ export const useAuthStore = defineStore('auth', () => {
         await authService.logout(refreshToken.value)
       }
     } catch (err) {
-      console.warn('Error en logout del backend:', err.message)
+      // Error silencioso - solo log para debugging, no mostrar al usuario
+      console.warn('Error en logout del backend (silencioso):', err.message)
     } finally {
       // Limpiar estado local siempre
       clearAuth()
@@ -126,6 +127,8 @@ export const useAuthStore = defineStore('auth', () => {
       setTokens(response.access_token, response.refresh_token)
       return response.access_token
     } catch (err) {
+      // Error silencioso - solo log para debugging, no mostrar al usuario
+      console.error('Error al renovar token (silencioso):', err.message)
       clearAuth()
       router.push('/login')
       throw err

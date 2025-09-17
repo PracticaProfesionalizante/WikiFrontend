@@ -71,8 +71,8 @@ export const authService = {
         refresh_token: refreshToken
       })
     } catch (error) {
-      // No es crítico si falla el logout en el backend
-      console.warn('Error al hacer logout en el backend:', error.message)
+      // No es crítico si falla el logout en el backend - error silencioso
+      console.warn('Error al hacer logout en el backend (silencioso):', error.message)
     }
   },
 
