@@ -4,7 +4,6 @@
     :class="{ 'expanded': isExpanded, 'mobile-open': isMobileOpen }"
   >
     
-    <!-- Botón hamburguesa para móvil -->
     <button 
       class="mobile-toggle"
       @click="toggleMobile"
@@ -13,7 +12,6 @@
       <i class="mdi mdi-menu"></i>
     </button>
     
-    <!-- Menú lateral -->
     <nav 
       class="sidebar-menu"
       @mouseenter="expandMenu"
@@ -27,48 +25,74 @@
       </div>
       
       <div class="menu-items">
-        <div v-for="item in menuItems" :key="item.id" class="menu-item">
-          <div 
-            class="item-content" 
-            :class="{ 'active': item.active }"
-            @click="selectItem(item)"
-          >
-            <i :class="item.icon" class="item-icon"></i>
-            <span class="item-text">{{ item.text }}</span>
-            <i v-if="item.submenu" class="mdi mdi-chevron-right submenu-arrow"></i>
-          </div>
-          
-          <!-- Submenú -->
-          <div v-if="item.submenu && item.showSubmenu" class="submenu">
-            <template v-for="sub in item.submenu" :key="sub.id">
-              <div 
-                class="submenu-item"
-                :class="{ 'active': sub.active, 'has-submenu': sub.submenu }"
-                @click="selectSubmenu(sub, item)"
-              >
-                <span class="submenu-text">{{ sub.text }}</span>
-                <i v-if="sub.submenu" class="mdi mdi-chevron-right submenu-arrow-nested"></i>
-              </div>
-              
-              <!-- Submenú anidado (segundo nivel) -->
-              <div v-if="sub.submenu && sub.showSubmenu" class="nested-submenu">
+        <template v-if="currentView === 'main'">
+          <div v-for="item in menuItems" :key="item.id" class="menu-item">
+            <div 
+              class="item-content" 
+              :class="{ 'active': item.active }"
+              @click="selectItem(item)"
+            >
+              <i :class="item.icon" class="item-icon"></i>
+              <span class="item-text">{{ item.text }}</span>
+              <i v-if="item.submenu" class="mdi mdi-chevron-right submenu-arrow"></i>
+            </div>
+            
+            <div v-if="item.submenu && item.showSubmenu && item.id !== 2" class="submenu">
+              <template v-for="sub in item.submenu" :key="sub.id">
                 <div 
-                  v-for="nestedSub in sub.submenu" 
-                  :key="nestedSub.id" 
-                  class="nested-submenu-item"
-                  :class="{ 'active': nestedSub.active }"
-                  @click="selectNestedSubmenu(nestedSub, sub, item)"
+                  class="submenu-item"
+                  :class="{ 'active': sub.active, 'has-submenu': sub.submenu }"
+                  @click="selectSubmenu(sub, item)"
                 >
-                  <span class="nested-submenu-text">{{ nestedSub.text }}</span>
+                  <span class="submenu-text">{{ sub.text }}</span>
+                  <i v-if="sub.submenu" class="mdi mdi-chevron-right submenu-arrow-nested"></i>
                 </div>
-              </div>
-            </template>
+                
+                <div v-if="sub.submenu && sub.showSubmenu" class="nested-submenu">
+                  <div 
+                    v-for="nestedSub in sub.submenu" 
+                    :key="nestedSub.id" 
+                    class="nested-submenu-item"
+                    :class="{ 'active': nestedSub.active }"
+                    @click="selectNestedSubmenu(nestedSub, sub, item)"
+                  >
+                    <span class="nested-submenu-text">{{ nestedSub.text }}</span>
+                  </div>
+                </div>
+              </template>
+            </div>
           </div>
-        </div>
+        </template>
+
+        <template v-else-if="currentView === 'documentation'">
+          <div 
+            class="menu-item"
+            @click="goBackToMain"
+          >
+            <div class="item-content">
+              <i class="mdi mdi-arrow-left item-icon"></i>
+              <span class="item-text">Volver</span>
+            </div>
+          </div>
+
+          <div class="menu-section-title">
+            <span class="title-text">Documentación</span>
+          </div>
+
+          <div v-for="item in documentationItems" :key="item.id" class="menu-item">
+            <div 
+              class="item-content"
+              :class="{ 'active': item.active }"
+              @click="selectDocumentationItem(item)"
+            >
+              <i class="mdi mdi-circle-small item-icon"></i>
+              <span class="item-text">{{ item.text }}</span>
+            </div>
+          </div>
+        </template>
       </div>
     </nav>
     
-    <!-- Overlay para móvil -->
     <div 
       v-if="isMobile && isMobileOpen" 
       class="mobile-overlay"
@@ -81,16 +105,15 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
-// Composables
 const router = useRouter()
 const route = useRoute()
 
-// Emits
 const emit = defineEmits(['sidebar-toggle'])
 
 const isExpanded = ref(false)
 const isMobile = ref(false)
 const isMobileOpen = ref(false)
+const currentView = ref('main')
 
 const menuItems = ref([
   {
@@ -105,26 +128,12 @@ const menuItems = ref([
     icon: 'mdi mdi-note-multiple-outline',
     text: 'Documentación',
     active: false,
-    showSubmenu: false,
-    submenu: [
-      { id: 21, text: 'TECLAB', active: false, route: '/teclab' },
-      { id: 22, text: 'OMEX', active: false, route: '/omex' },
-      { id: 23, text: 'IPP', active: false, route: '/ipp' },
-      { id: 24, text: 'Reglas de Negocio', active: false, route: '/reglas-negocio', showSubmenu: false,
-        submenu: [
-          { id: 241, text: 'Reglas', active: false, route: '/reglas-negocio/reglas' },
-          { id: 242, text: 'Obsidián', active: false, route: '/reglas-negocio/obsidian' },
-          { id: 243, text: 'Diagrama de flujo', active: false, route: '/reglas-negocio/diagrama-flujo' },
-          { id: 244, text: 'Mapeo de procesos', active: false, route: '/reglas-negocio/mapeo-procesos' }
-        ]
-       },
-      { id: 25, text: 'Status Page', active: false, route: '/status-page' }
-    ]
+    submenu: true // Se cambió a 'true' para que se renderice el ícono de flecha
   },
   {
     id: 3,
     icon: 'mdi mdi-note-plus',
-    text: 'Nuevas implementaciónes',
+    text: 'Nuevas implementaciones',
     active: false,
     route: '/nuevas-implementaciones'
   },
@@ -154,42 +163,22 @@ const menuItems = ref([
     icon: 'mdi mdi-help-circle',
     text: 'Ayuda',
     active: false,
-    route: '/Ayuda'
+    route: '/ayuda'
   }
+])
+
+const documentationItems = ref([
+  { id: 21, text: 'Institutos', route: '/institutos', active: false },
+  { id: 22, text: 'Status Page', route: '/status-page', active: false },
+  { id: 23, text: 'Reglas de Negocio', route: '/reglas-negocio', active: false },  
+  { id: 24, text: 'Gestión de Incidencias', route: '/gestion-de-incidencias', active: false },
+  { id: 25, text: 'Stack Tecnologico', route: '/stack-tecnologico', active: false },
 ])
 
 const expandMenu = () => {
   if (!isMobile.value) {
     isExpanded.value = true
     emit('sidebar-toggle', true)
-    // Solo expandir submenús que contienen elementos activos
-    menuItems.value.forEach(item => {
-      if (item.submenu) {
-        // Verificar si el item principal está activo
-        if (item.active) {
-          item.showSubmenu = true
-        }
-        // Verificar si algún subitem está activo
-        const hasActiveSubmenu = item.submenu.some(sub => {
-          if (sub.active) return true
-          // Verificar submenús anidados
-          if (sub.submenu) {
-            return sub.submenu.some(nested => nested.active)
-          }
-          return false
-        })
-        
-        if (hasActiveSubmenu) {
-          item.showSubmenu = true
-          // Expandir submenús anidados que contienen elementos activos
-          item.submenu.forEach(sub => {
-            if (sub.submenu && (sub.active || sub.submenu.some(nested => nested.active))) {
-              sub.showSubmenu = true
-            }
-          })
-        }
-      }
-    })
   }
 }
 
@@ -197,18 +186,11 @@ const collapseMenu = () => {
   if (!isMobile.value) {
     isExpanded.value = false
     emit('sidebar-toggle', false)
-    // Colapsar submenús
     menuItems.value.forEach(item => {
       if (item.submenu) {
         item.showSubmenu = false
-        // También colapsar submenús anidados
-        item.submenu.forEach(sub => {
-          if (sub.submenu) {
-            sub.showSubmenu = false
-          }
-        })
       }
-    })
+    });
   }
 }
 
@@ -220,174 +202,166 @@ const closeMobile = () => {
   isMobileOpen.value = false
 }
 
+const goBackToMain = () => {
+  currentView.value = 'main'
+  updateActiveState(route.path) // Actualiza el estado activo al volver
+}
+
 const selectItem = (item) => {
-  // Desactivar todos los items
+  // Desactiva todos los elementos principales y los submenús
   menuItems.value.forEach(menuItem => {
-    menuItem.active = false
+    menuItem.active = false;
     if (menuItem.submenu) {
-      menuItem.submenu.forEach(sub => sub.active = false)
+      menuItem.showSubmenu = false;
     }
-  })
-  
-  // Activar el item seleccionado
-  item.active = true
-  
-  // Toggle submenu si existe
-  if (item.submenu) {
-    item.showSubmenu = !item.showSubmenu
-  } else {
-    // Solo cerrar el menú móvil si no tiene submenu
-    if (isMobile.value) {
-      isMobileOpen.value = false
-    }
+  });
+  documentationItems.value.forEach(docItem => docItem.active = false);
+
+  if (item.id === 2) {
+    item.active = true;
+    currentView.value = 'documentation';
+    return;
   }
   
-  // Navegar si tiene ruta
+  item.active = true;
+  
   if (item.route) {
-    router.push(item.route)
+    router.push(item.route);
+    if (isMobile.value) {
+      isMobileOpen.value = false;
+    }
   }
 }
 
-const selectSubmenu = (submenu, parentItem) => {
-  // Si tiene submenú anidado, toggle su visibilidad
-  if (submenu.submenu) {
-    submenu.showSubmenu = !submenu.showSubmenu
-    return
-  }
-  
-  // Desactivar todos
-  menuItems.value.forEach(menuItem => {
-    menuItem.active = false
-    if (menuItem.submenu) {
-      menuItem.submenu.forEach(sub => {
-        sub.active = false
-        if (sub.submenu) {
-          sub.submenu.forEach(nested => nested.active = false)
-        }
-      })
-    }
-  })
-  
-  // Activar submenu y parent
-  submenu.active = true
-  parentItem.active = true
-  
-  // Cerrar menú móvil al seleccionar elemento final
+const selectDocumentationItem = (item) => {
+  documentationItems.value.forEach(docItem => docItem.active = false);
+  item.active = true;
   if (isMobile.value) {
-    isMobileOpen.value = false
+    isMobileOpen.value = false;
+  }
+  router.push(item.route);
+}
+
+const selectSubmenu = (submenu, parentItem) => {
+  // Lógica para submenús que se despliegan (si los hay)
+  if (submenu.submenu) {
+    submenu.showSubmenu = !submenu.showSubmenu;
+    return;
   }
   
-  // Navegar
+  menuItems.value.forEach(menuItem => {
+    menuItem.active = false;
+    if (menuItem.submenu) {
+      menuItem.submenu.forEach(sub => sub.active = false);
+    }
+  });
+  submenu.active = true;
+  parentItem.active = true;
+  
+  if (isMobile.value) {
+    isMobileOpen.value = false;
+  }
+  
   if (submenu.route) {
-    router.push(submenu.route)
+    router.push(submenu.route);
   }
 }
 
 const selectNestedSubmenu = (nestedSubmenu, parentSubmenu, grandParentItem) => {
-  // Desactivar todos
+  // Lógica para submenús anidados
   menuItems.value.forEach(menuItem => {
-    menuItem.active = false
+    menuItem.active = false;
     if (menuItem.submenu) {
       menuItem.submenu.forEach(sub => {
-        sub.active = false
+        sub.active = false;
         if (sub.submenu) {
-          sub.submenu.forEach(nested => nested.active = false)
+          sub.submenu.forEach(nested => nested.active = false);
         }
-      })
+      });
     }
-  })
+  });
+  nestedSubmenu.active = true;
+  parentSubmenu.active = true;
+  grandParentItem.active = true;
   
-  // Activar nested submenu, parent submenu y grandparent
-  nestedSubmenu.active = true
-  parentSubmenu.active = true
-  grandParentItem.active = true
-  
-  // Cerrar menú móvil al seleccionar elemento anidado
   if (isMobile.value) {
-    isMobileOpen.value = false
+    isMobileOpen.value = false;
   }
   
-  // Navegar
   if (nestedSubmenu.route) {
-    router.push(nestedSubmenu.route)
+    router.push(nestedSubmenu.route);
   }
 }
 
 const checkMobile = () => {
-  isMobile.value = window.innerWidth <= 768
+  isMobile.value = window.innerWidth <= 768;
   if (!isMobile.value) {
-    isMobileOpen.value = false
+    isMobileOpen.value = false;
   }
 }
 
-// Función para actualizar el estado activo basado en la ruta actual
 const updateActiveState = (currentRoute) => {
-  // Desactivar todos los elementos
+  // Primero, desactivar todos los estados activos
   menuItems.value.forEach(item => {
-    item.active = false
+    item.active = false;
     if (item.submenu) {
-      item.submenu.forEach(sub => {
-        sub.active = false
-        if (sub.submenu) {
-          sub.submenu.forEach(nested => nested.active = false)
-        }
-      })
+      if (Array.isArray(item.submenu)) {
+        item.submenu.forEach(sub => {
+          sub.active = false;
+          if (sub.submenu) {
+            sub.submenu.forEach(nested => nested.active = false);
+          }
+        });
+      }
     }
-  })
+  });
+  documentationItems.value.forEach(docItem => docItem.active = false);
 
-  // Buscar y activar el elemento correspondiente a la ruta actual
+  // Luego, activar el estado correcto
+  let found = false;
   menuItems.value.forEach(item => {
-    // Verificar item principal
     if (item.route === currentRoute) {
-      item.active = true
-      return
+      item.active = true;
+      found = true;
+      // Asegurarse de que el menú principal está visible
+      currentView.value = 'main';
     }
+  });
 
-    // Verificar submenús
-    if (item.submenu) {
-      item.submenu.forEach(sub => {
-        if (sub.route === currentRoute) {
-          sub.active = true
-          item.active = true
-          item.showSubmenu = true
-          return
+  if (!found) {
+    documentationItems.value.forEach(item => {
+      if (item.route === currentRoute) {
+        item.active = true;
+        found = true;
+        // Si se encuentra una ruta de documentación, mostrar el menú de documentación
+        currentView.value = 'documentation';
+        // Activar el ítem principal de documentación
+        const docMainItem = menuItems.value.find(item => item.id === 2);
+        if (docMainItem) {
+          docMainItem.active = true;
         }
-
-        // Verificar submenús anidados
-        if (sub.submenu) {
-          sub.submenu.forEach(nested => {
-            if (nested.route === currentRoute) {
-              nested.active = true
-              sub.active = true
-              item.active = true
-              item.showSubmenu = true
-              sub.showSubmenu = true
-            }
-          })
-        }
-      })
-    }
-  })
+      }
+    });
+  }
 }
 
-// Watcher para detectar cambios de ruta
 watch(() => route.path, (newPath) => {
-  updateActiveState(newPath)
-}, { immediate: true })
+  updateActiveState(newPath);
+}, { immediate: true });
 
 onMounted(() => {
-  checkMobile()
-  window.addEventListener('resize', checkMobile)
-  // Inicializar estado activo basado en la ruta actual
-  updateActiveState(route.path)
-})
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+  updateActiveState(route.path);
+});
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkMobile)
-})
+  window.removeEventListener('resize', checkMobile);
+});
 </script>
 
 <style scoped>
+/* Las clases de estilo se mantienen igual */
 .sidebar-container {
   position: fixed;
   top: 0;
@@ -514,8 +488,6 @@ onUnmounted(() => {
   position: relative;
 }
 
-
-
 .item-icon {
   font-size: 1.5rem;
   min-width: 28px;
@@ -613,8 +585,6 @@ onUnmounted(() => {
   position: relative;
 }
 
-
-
 .submenu-item.active::before {
   background: var(--accent-color);
 }
@@ -695,8 +665,6 @@ onUnmounted(() => {
   position: relative;
 }
 
-
-
 .nested-submenu-item.active::before {
   background: #2563eb;
 }
@@ -715,6 +683,23 @@ onUnmounted(() => {
   height: 100vh;
   background: rgba(0, 0, 0, 0.5);
   z-index: 99998;
+}
+
+/* NUEVO ESTILO PARA EL TÍTULO DE LA SECCIÓN */
+.menu-section-title {
+  padding: 1rem 1rem 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.sidebar-container.expanded .menu-section-title {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /* Responsive */
@@ -761,6 +746,11 @@ onUnmounted(() => {
   .sidebar-container.mobile-open .nested-submenu {
     opacity: 1;
     max-height: 400px;
+  }
+
+  .sidebar-container.mobile-open .menu-section-title {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
