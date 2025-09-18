@@ -107,7 +107,8 @@ export const useAuthStore = defineStore('auth', () => {
         await authService.logout(refreshToken.value)
       }
     } catch (err) {
-      console.warn('Error en logout del backend:', err.message)
+      // Error silencioso - solo log para debugging, no mostrar al usuario
+      console.warn('Error en logout del backend (silencioso):', err.message)
     } finally {
       // Limpiar estado local siempre
       clearAuth()
@@ -126,6 +127,8 @@ export const useAuthStore = defineStore('auth', () => {
       setTokens(response.access_token, response.refresh_token)
       return response.access_token
     } catch (err) {
+      // Error silencioso - solo log para debugging, no mostrar al usuario
+      console.error('Error al renovar token (silencioso):', err.message)
       clearAuth()
       router.push('/login')
       throw err
@@ -133,13 +136,16 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // NUEVA FUNCIÓN - Obtener datos del usuario actual
-  const fetchCurrentUser = async () => {
+  const fetchCurrentUser = async (showErrorToUser = false) => {
     try {
       const userData = await authService.getCurrentUser()
       setUser(userData)
       return userData
     } catch (err) {
-      setError('Error al obtener datos del usuario')
+      // Solo mostrar error al usuario si se especifica explícitamente
+      if (showErrorToUser) {
+        setError('Error al obtener datos del usuario')
+      }
       throw err
     }
   }
@@ -148,7 +154,8 @@ export const useAuthStore = defineStore('auth', () => {
   const initializeAuth = async () => {
     if (accessToken.value && !user.value) {
       try {
-        await fetchCurrentUser()
+        // No mostrar error al usuario durante la inicialización silenciosa
+        await fetchCurrentUser(false)
       } catch (err) {
         // Si falla, limpiar tokens inválidos
         clearAuth()

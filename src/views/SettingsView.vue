@@ -18,13 +18,16 @@
           <div class="settings-sections">
             <!-- Información Personal -->
             <div class="settings-section">
-              <div class="section-header">
+              <div class="section-header" @click="toggleSection('personal')">
                 <h2 class="section-title">
                   <i class="mdi mdi-account-circle"></i>
                   Información Personal
                 </h2>
+                <button class="accordion-toggle" :class="{ 'expanded': expandedSections.personal }">
+                  <i class="mdi" :class="expandedSections.personal ? 'mdi-minus' : 'mdi-plus'"></i>
+                </button>
               </div>
-              <div class="section-content">
+              <div class="section-content" v-show="expandedSections.personal" :class="{ 'expanded': expandedSections.personal }">
                 <form @submit.prevent="updateProfile" class="profile-form">
                   <div class="form-row">
                     <div class="input-group">
@@ -87,13 +90,16 @@
 
             <!-- Cambio de Contraseña -->
             <div class="settings-section">
-              <div class="section-header">
+              <div class="section-header" @click="toggleSection('password')">
                 <h2 class="section-title">
                   <i class="mdi mdi-lock"></i>
                   Cambiar contraseña
                 </h2>
+                <button class="accordion-toggle" :class="{ 'expanded': expandedSections.password }">
+                  <i class="mdi" :class="expandedSections.password ? 'mdi-minus' : 'mdi-plus'"></i>
+                </button>
               </div>
-              <div class="section-content">
+              <div class="section-content" v-show="expandedSections.password" :class="{ 'expanded': expandedSections.password }">
                 <form @submit.prevent="changePassword" class="password-form">
                   <div class="input-group">
                     <label class="input-label">Contraseña Actual</label>
@@ -174,13 +180,16 @@
 
             <!-- Preferencias -->
             <div class="settings-section">
-              <div class="section-header">
+              <div class="section-header" @click="toggleSection('preferences')">
                 <h2 class="section-title">
                   <i class="mdi mdi-tune"></i>
                   Preferencias
                 </h2>
+                <button class="accordion-toggle" :class="{ 'expanded': expandedSections.preferences }">
+                  <i class="mdi" :class="expandedSections.preferences ? 'mdi-minus' : 'mdi-plus'"></i>
+                </button>
               </div>
-              <div class="section-content">
+              <div class="section-content" v-show="expandedSections.preferences" :class="{ 'expanded': expandedSections.preferences }">
                 <div class="preferences-grid">
                   <div class="preference-item">
                     <div class="preference-info">
@@ -268,6 +277,13 @@ const showCurrentPassword = ref(false)
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
 
+// Estados del acordeón
+const expandedSections = reactive({
+  personal: false,
+  password: false,
+  preferences: false
+})
+
 // Mensajes
 const successMessage = ref('')
 const errorMessage = ref('')
@@ -306,6 +322,10 @@ const errors = reactive({
 // Métodos
 const handleSidebarToggle = (expanded) => {
   sidebarExpanded.value = expanded
+}
+
+const toggleSection = (section) => {
+  expandedSections[section] = !expandedSections[section]
 }
 
 const clearErrors = () => {
@@ -393,7 +413,8 @@ const updateProfile = async () => {
     
     showMessage('Perfil actualizado correctamente', 'success')
   } catch (error) {
-    console.error('Error al actualizar perfil:', error)
+    // Error silencioso para debugging - el usuario ya ve el mensaje de error en la UI
+    console.error('Error al actualizar perfil (silencioso):', error)
     showMessage('Error al actualizar el perfil. Inténtalo de nuevo.', 'error')
   } finally {
     isUpdatingProfile.value = false
@@ -417,7 +438,8 @@ const changePassword = async () => {
     
     showMessage('Contraseña cambiada correctamente', 'success')
   } catch (error) {
-    console.error('Error al cambiar contraseña:', error)
+    // Error silencioso para debugging - el usuario ya ve el mensaje de error en la UI
+    console.error('Error al cambiar contraseña (silencioso):', error)
     showMessage('Error al cambiar la contraseña. Verifica tu contraseña actual.', 'error')
   } finally {
     isChangingPassword.value = false
@@ -434,7 +456,8 @@ const updatePreferences = async () => {
     
     showMessage('Preferencias actualizadas', 'success')
   } catch (error) {
-    console.error('Error al actualizar preferencias:', error)
+    // Error silencioso para debugging - el usuario ya ve el mensaje de error en la UI
+    console.error('Error al actualizar preferencias (silencioso):', error)
     showMessage('Error al actualizar las preferencias', 'error')
   }
 }
@@ -474,7 +497,7 @@ watch(isDarkMode, (newValue) => {
   background-size: cover;
   background-position: center right;
   background-repeat: no-repeat;
-  background-attachment: local;
+  background-attachment: fixed;
   position: relative;
 }
 
@@ -568,6 +591,15 @@ watch(isDarkMode, (newValue) => {
   padding: 1.5rem 2rem;
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-header:hover {
+  background: var(--bg-hover);
 }
 
 .section-title {
@@ -585,8 +617,74 @@ watch(isDarkMode, (newValue) => {
   font-size: 1.5rem;
 }
 
+.accordion-toggle {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.accordion-toggle:hover {
+  background: var(--bg-hover);
+  color: var(--accent-color);
+  transform: scale(1.1);
+}
+
+.accordion-toggle i {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.accordion-toggle.expanded i {
+  transform: rotate(180deg);
+}
+
 .section-content {
   padding: 2rem;
+  transition: all 0.4s ease;
+  overflow: hidden;
+}
+
+.section-content:not(.expanded) {
+  animation: slideUp 0.4s ease-out;
+}
+
+.section-content.expanded {
+  animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 1000px;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 1000px;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+    max-height: 0;
+  }
 }
 
 .profile-form,
