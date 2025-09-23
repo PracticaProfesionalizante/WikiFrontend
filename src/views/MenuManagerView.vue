@@ -142,115 +142,18 @@
         <!-- Vista de árbol jerárquico -->
         <div class="menu-tree-view" v-if="!isLoading && viewMode === 'tree'">
           <div class="tree-container">
-            <div 
-              v-for="rootMenu in hierarchicalMenus" 
+            <MenuTreeNode
+              v-for="rootMenu in hierarchicalMenus"
               :key="rootMenu.id"
-              class="tree-node root-node"
-            >
-              <!-- Menú raíz -->
-              <div class="node-content">
-                <div class="node-header">
-                  <button 
-                    v-if="rootMenu.children && rootMenu.children.length > 0"
-                    class="expand-toggle"
-                    @click="toggleExpand(rootMenu.id)"
-                    :class="{ expanded: expandedNodes.includes(rootMenu.id) }"
-                  >
-                    <i class="mdi mdi-chevron-right"></i>
-                  </button>
-                  <div class="node-spacer" v-else></div>
-                  
-                  <div class="node-icon">
-                    <i :class="rootMenu.icon || 'mdi mdi-folder-outline'"></i>
-                  </div>
-                  
-                  <div class="node-info">
-                    <h4 class="node-name">{{ rootMenu.name }}</h4>
-                    <span class="node-path">{{ rootMenu.path }}</span>
-                    <div class="node-meta">
-                      <span class="node-order">Orden: {{ rootMenu.order }}</span>
-                      <span v-if="rootMenu.children && rootMenu.children.length > 0" class="children-count">
-                        {{ rootMenu.children.length }} submenú(s)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="node-actions">
-                  <button 
-                    class="add-submenu-btn small"
-                    @click="createSubmenu(rootMenu)"
-                    title="Agregar submenú"
-                  >
-                    <i class="mdi mdi-plus"></i>
-                  </button>
-                  <button 
-                    class="edit-btn small"
-                    @click="editMenu(rootMenu)"
-                    title="Editar menú"
-                  >
-                    <i class="mdi mdi-pencil"></i>
-                  </button>
-                  <button 
-                    class="delete-btn small"
-                    @click="deleteMenu(rootMenu.id)"
-                    title="Eliminar menú"
-                  >
-                    <i class="mdi mdi-delete"></i>
-                  </button>
-                </div>
-              </div>
-              
-              <!-- Submenús -->
-              <div 
-                v-if="rootMenu.children && rootMenu.children.length > 0 && expandedNodes.includes(rootMenu.id)"
-                class="children-container"
-              >
-                <div 
-                  v-for="child in rootMenu.children" 
-                  :key="child.id"
-                  class="tree-node child-node"
-                >
-                  <div class="node-content">
-                    <div class="node-header">
-                      <div class="child-connector">
-                        <i class="mdi mdi-subdirectory-arrow-right"></i>
-                      </div>
-                      
-                      <div class="node-icon">
-                        <i :class="child.icon || 'mdi mdi-circle-outline'"></i>
-                      </div>
-                      
-                      <div class="node-info">
-                        <h5 class="node-name">{{ child.name }}</h5>
-                        <span class="node-path">{{ child.path }}</span>
-                        <div class="node-meta">
-                          <span class="node-order">Orden: {{ child.order }}</span>
-                          <span class="submenu-indicator">Submenú</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div class="node-actions">
-                      <button 
-                        class="edit-btn small"
-                        @click="editMenu(child)"
-                        title="Editar submenú"
-                      >
-                        <i class="mdi mdi-pencil"></i>
-                      </button>
-                      <button 
-                        class="delete-btn small"
-                        @click="deleteMenu(child.id)"
-                        title="Eliminar submenú"
-                      >
-                        <i class="mdi mdi-delete"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+              :menu="rootMenu"
+              :level="0"
+              :all-menus="menus"
+              :available-roles="availableRoles"
+              @edit="editMenu"
+              @delete="deleteMenu"
+              @move="moveMenu"
+              @create-submenu="createSubmenu"
+            />
           </div>
         </div>
 
@@ -514,35 +417,26 @@
                   
                   <!-- Selector de menú padre (solo si es submenú) -->
                   <div v-if="menuForm.parentId !== null" class="form-group">
-                    <label for="menuParent" class="form-label">
+                    <label class="form-label">
                       <i class="mdi mdi-file-tree"></i>
                       Menú Padre *
                     </label>
-                    <select
-                      id="menuParent"
-                      v-model="menuForm.parentId"
-                      class="form-input"
-                      :class="{ 'error': validationErrors.parentId }"
-                    >
-                      <option value="">Selecciona un menú padre</option>
-                      <option 
-                        v-for="menu in availableParentMenus" 
-                        :key="menu.id" 
-                        :value="menu.id"
-                      >
-                        {{ menu.name }}
-                        <span v-if="getMenuChildren(menu.id).length > 0">
-                          ({{ getMenuChildren(menu.id).length }} submenús)
-                        </span>
-                      </option>
-                    </select>
+                    
+                    <!-- Selector de árbol jerárquico -->
+                    <MenuTreeSelector
+                      :menus="menus"
+                      :selected-id="menuForm.parentId"
+                      :excluded-id="isEditing ? menuForm.id : null"
+                      @select="handleParentSelect"
+                    />
+                    
                     <div v-if="validationErrors.parentId" class="error-message">
                       <i class="mdi mdi-alert-circle"></i>
                       {{ validationErrors.parentId }}
                     </div>
                     <div class="help-text">
                       <i class="mdi mdi-information"></i>
-                      Este submenú aparecerá dentro del menú seleccionado
+                      Selecciona el menú padre donde aparecerá este submenú. Puedes expandir los nodos para ver la estructura completa.
                     </div>
                   </div>
 
@@ -570,18 +464,27 @@
                   <div class="form-group">
                     <label class="form-label">
                       <i class="mdi mdi-sort-numeric-ascending"></i>
-                      Orden en el menú
+                      Posición en el menú
                     </label>
-                    <input
+                    <select
                       v-model.number="menuForm.order"
-                      type="number"
                       class="form-input"
-                      min="0"
-                      placeholder="0"
-                    />
+                    >
+                      <option 
+                        v-for="position in availablePositions" 
+                        :key="position.value"
+                        :value="position.value"
+                      >
+                        {{ position.label }}
+                      </option>
+                    </select>
                     <div class="help-text">
                       <i class="mdi mdi-information"></i>
-                      {{ menuForm.parentId ? 'Orden dentro del submenú' : 'Orden en el menú principal' }}
+                      {{ menuForm.parentId ? 'Selecciona dónde colocar este elemento dentro del submenú. El orden determina cómo aparecerán los elementos en la navegación.' : 'Selecciona dónde colocar este elemento en el menú principal. Los elementos se mostrarán en el orden que elijas.' }}
+                    </div>
+                    <div class="help-text" style="margin-top: 8px; color: #6b7280;">
+                      <i class="mdi mdi-lightbulb-outline"></i>
+                      💡 <strong>Consejo:</strong> Puedes reorganizar los menús más tarde editándolos y cambiando su posición.
                     </div>
                   </div>
 
@@ -745,6 +648,7 @@ import { useRouter } from 'vue-router'
 import SidebarMenu from '@/components/common/SidebarMenu.vue'
 import AppHeader from '@/components/common/AppHeader.vue'
 import MenuTreeNode from '@/components/MenuTreeNode.vue'
+import MenuTreeSelector from '@/components/MenuTreeSelector.vue'
 import menuService from '@/services/menuService'
 import authService from '@/services/auth'
 
@@ -760,6 +664,7 @@ const handleSidebarToggle = (expanded) => {
 // Estado del formulario
 const showDialog = ref(false)
 const isEditing = ref(false)
+const editingMenuId = ref(null)
 const menuForm = ref({
   name: '',
   path: '',
@@ -985,16 +890,85 @@ const filteredMenus = computed(() => {
 })
 
 const availableParentMenus = computed(() => {
-  // Filtrar menús que no sean el actual (para evitar referencias circulares)
-  return menus.value.filter(menu => 
-    !isEditing.value || menu.id !== menuForm.value.id
-  )
+  // Función recursiva para obtener todos los menús y submenús disponibles
+  const getAllMenusRecursive = (menuList, level = 0) => {
+    let result = []
+    
+    for (const menu of menuList) {
+      // Evitar referencias circulares - no incluir el menú actual si estamos editando
+      if (isEditing.value && menu.id === menuForm.value.id) {
+        continue
+      }
+      
+      // Agregar el menú actual con indicador de nivel
+      const menuWithLevel = {
+        ...menu,
+        displayName: '  '.repeat(level) + (level > 0 ? '└─ ' : '') + menu.name,
+        level: level
+      }
+      result.push(menuWithLevel)
+      
+      // Si tiene hijos, agregarlos recursivamente
+      const children = getMenuChildren(menu.id)
+      if (children.length > 0) {
+        result = [...result, ...getAllMenusRecursive(children, level + 1)]
+      }
+    }
+    
+    return result
+  }
+  
+  // Obtener todos los menús raíz y sus descendientes
+  const rootMenus = menus.value.filter(menu => !menu.parentId)
+  return getAllMenusRecursive(rootMenus)
 })
 
 const rootMenus = computed(() => {
   return menus.value
     .filter(menu => !menu.parentId)
     .sort((a, b) => a.order - b.order)
+})
+
+const availablePositions = computed(() => {
+  let siblingMenus = []
+  
+  if (menuForm.parentId) {
+    // Si es un submenú, obtener los hermanos del mismo padre
+    siblingMenus = menus.value
+      .filter(menu => menu.parentId === menuForm.parentId && menu.id !== editingMenuId.value)
+      .sort((a, b) => a.order - b.order)
+  } else {
+    // Si es un menú raíz, obtener todos los menús raíz
+    siblingMenus = menus.value
+      .filter(menu => !menu.parentId && menu.id !== editingMenuId.value)
+      .sort((a, b) => a.order - b.order)
+  }
+  
+  const positions = []
+  
+  // Opción para colocar al principio
+  positions.push({
+    value: 0,
+    label: '🔝 Al principio'
+  })
+  
+  // Opciones para colocar después de cada menú existente
+  siblingMenus.forEach((menu, index) => {
+    positions.push({
+      value: menu.order + 1,
+      label: `📍 Después de "${menu.name}"`
+    })
+  })
+  
+  // Si no hay menús hermanos, agregar opción por defecto
+  if (siblingMenus.length === 0) {
+    positions.push({
+      value: 1,
+      label: '📍 Primera posición'
+    })
+  }
+  
+  return positions
 })
 
 const displayedIcons = computed(() => {
@@ -1022,52 +996,110 @@ const openDialog = () => {
 
 const closeDialog = () => {
   showDialog.value = false
-  resetForm()
+  if (!isEditing.value) {
+    resetForm()
+  } else {
+    // Solo resetear el estado de edición, mantener los datos del formulario
+    isEditing.value = false
+    validationErrors.value = {}
+  }
 }
 
 const editMenu = (menu) => {
-  menuForm.value = { ...menu }
+  console.log('🔍 editMenu - Menú original recibido:', JSON.stringify(menu, null, 2))
+  console.log('🔍 editMenu - Tipo de roles en menú original:', typeof menu.roles, 'Valor:', menu.roles)
+  
+  // Crear una copia del menú y asegurar que roles sea un array
+  const menuCopy = { ...menu }
+  
+  // Procesar roles para asegurar que sea un array
+  if (typeof menu.roles === 'string') {
+    // Si roles es un string, convertir a array
+    if (menu.roles.includes(',')) {
+      menuCopy.roles = menu.roles.split(',').map(role => role.trim())
+    } else {
+      menuCopy.roles = [menu.roles]
+    }
+  } else if (!Array.isArray(menu.roles)) {
+    // Si no es array ni string, inicializar como array vacío
+    menuCopy.roles = []
+  }
+  
+  console.log('🔍 editMenu - Menú procesado:', JSON.stringify(menuCopy, null, 2))
+  console.log('🔍 editMenu - Roles procesados:', menuCopy.roles)
+  
+  menuForm.value = menuCopy
+  editingMenuId.value = menu.id
   isEditing.value = true
   showDialog.value = true
 }
 
-const deleteMenu = async (menu) => {
-  // Verificar si el menú tiene submenús
-  const children = getMenuChildren(menu.id)
-  let confirmMessage = `¿Estás seguro de que quieres eliminar el menú "${menu.name}"?`
+const deleteMenu = async (menuData) => {
+  // Extraer el ID del menú, ya sea que venga como objeto o como ID directo
+  const menuId = typeof menuData === 'object' ? menuData.id : menuData
+  console.log(`🗑️ deleteMenu iniciado para ID: ${menuId}`)
   
-  if (children.length > 0) {
-    confirmMessage = `El menú "${menu.name}" tiene ${children.length} submenú(s). Al eliminarlo, también se eliminarán todos sus submenús. ¿Estás seguro de continuar?`
-  }
-  
-  if (confirm(confirmMessage)) {
+  try {
+    // Buscar el menú usando la nueva función auxiliar
+    const menu = findMenuById(menuId)
+    
+    if (!menu) {
+      console.error(`❌ Menú no encontrado: ${menuId}`)
+      alert(`Menú no encontrado: ${menuId}`)
+      return
+    }
+    
+    console.log(`✅ Menú encontrado: ${menu.name} (ID: ${menuId})`)
+    
+    // Obtener hijos del menú
+    const children = getMenuChildren(menuId)
+    console.log(`🔍 Hijos encontrados para menú ${menuId}:`, children.length)
+    
+    // Determinar el mensaje de confirmación
+    let confirmMessage
+    if (children.length > 0) {
+      confirmMessage = `¿Estás seguro de que deseas eliminar el menú "${menu.name}" y todos sus ${children.length} submenús?`
+    } else {
+      confirmMessage = `¿Estás seguro de que deseas eliminar el menú "${menu.name}"?`
+    }
+    
+    // Confirmar eliminación
+    const confirmed = confirm(confirmMessage)
+    
+    if (!confirmed) {
+      console.log('❌ Eliminación cancelada por el usuario')
+      return
+    }
+    
+    console.log(`🗑️ Procediendo con eliminación de menú: ${menu.name}`)
     isLoading.value = true
     error.value = null
     
-    try {
-      console.log('🗑️ Eliminando menú:', menu.name)
-      
-      // Si tiene hijos, eliminarlos primero
-      if (children.length > 0) {
-        console.log(`🗑️ Eliminando ${children.length} submenús...`)
-        for (const child of children) {
-          await menuService.deleteMenu(child.id)
-          console.log(`✅ Submenú "${child.name}" eliminado`)
-        }
+    // Eliminar hijos primero (si existen)
+    if (children.length > 0) {
+      console.log(`🗑️ Eliminando ${children.length} submenús primero...`)
+      for (const child of children) {
+        console.log(`🗑️ Eliminando submenú: ${child.name} (ID: ${child.id})`)
+        await menuService.deleteMenu(child.id)
+        console.log(`✅ Submenú eliminado: ${child.name}`)
       }
-      
-      // Eliminar el menú principal
-      await menuService.deleteMenu(menu.id)
-      console.log('✅ Menú eliminado exitosamente')
-      
-      // Recargar la lista de menús
-      await loadMenus()
-    } catch (err) {
-      console.error('❌ Error al eliminar menú:', err)
-      error.value = err.message
-    } finally {
-      isLoading.value = false
     }
+    
+    // Eliminar el menú principal
+    console.log(`🗑️ Eliminando menú principal: ${menu.name} (ID: ${menuId})`)
+    await menuService.deleteMenu(menuId)
+    console.log(`✅ Menú principal eliminado: ${menu.name}`)
+    
+    // Recargar la lista de menús
+    console.log('🔄 Recargando lista de menús...')
+    await loadMenus()
+    console.log('✅ Lista de menús recargada')
+    
+  } catch (error) {
+    console.error('❌ Error al eliminar menú:', error)
+    error.value = error.message
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -1138,6 +1170,7 @@ const resetForm = () => {
     isActive: true
   }
   isEditing.value = false
+  editingMenuId.value = null
   validationErrors.value = {}
 }
 
@@ -1249,8 +1282,74 @@ const setMenuType = (type) => {
   validateForm()
 }
 
+const handleParentSelect = (parentId) => {
+  menuForm.value.parentId = parentId
+  validateForm()
+}
+
 const getMenuChildren = (menuId) => {
-  return menus.value.filter(menu => menu.parentId === menuId)
+  // Buscar en la estructura plana de menus.value
+  const flatChildren = menus.value.filter(menu => menu.parentId === menuId)
+  
+  // También buscar en la estructura jerárquica si existe
+  const findChildrenInHierarchy = (menuList) => {
+    let children = []
+    for (const menu of menuList) {
+      if (menu.id === menuId && menu.children) {
+        children = [...children, ...menu.children]
+      }
+      if (menu.children && menu.children.length > 0) {
+        children = [...children, ...findChildrenInHierarchy(menu.children)]
+      }
+    }
+    return children
+  }
+  
+  const hierarchyChildren = findChildrenInHierarchy(hierarchicalMenus.value || [])
+  
+  // Combinar y deduplicar por ID
+  const allChildren = [...flatChildren, ...hierarchyChildren]
+  const uniqueChildren = allChildren.filter((child, index, self) => 
+    index === self.findIndex(c => c.id === child.id)
+  )
+  
+  console.log(`🔍 getMenuChildren(${menuId}) - Encontrados:`, uniqueChildren.length, 'hijos')
+  console.log(`🔍 getMenuChildren(${menuId}) - IDs de hijos:`, uniqueChildren.map(c => c.id))
+  
+  return uniqueChildren
+}
+
+// Función auxiliar para buscar un menú por ID en cualquier estructura
+const findMenuById = (menuId) => {
+  // Buscar en la estructura plana
+  let menu = menus.value.find(m => m.id === menuId)
+  if (menu) {
+    console.log(`🔍 findMenuById(${menuId}) - Encontrado en estructura plana:`, menu.name)
+    return menu
+  }
+  
+  // Buscar en la estructura jerárquica
+  const findInHierarchy = (menuList) => {
+    for (const m of menuList) {
+      if (m.id === menuId) {
+        return m
+      }
+      if (m.children && m.children.length > 0) {
+        const found = findInHierarchy(m.children)
+        if (found) return found
+      }
+    }
+    return null
+  }
+  
+  menu = findInHierarchy(hierarchicalMenus.value || [])
+  if (menu) {
+    console.log(`🔍 findMenuById(${menuId}) - Encontrado en estructura jerárquica:`, menu.name)
+    return menu
+  }
+  
+  console.log(`❌ findMenuById(${menuId}) - No encontrado en ninguna estructura`)
+  return null
 }
 
 // Función para construir jerarquía de menús (adaptada para datos ya jerárquicos del backend)
@@ -1313,17 +1412,22 @@ const createSubmenu = (parentMenu) => {
   })
 }
 
-const moveMenu = async (menuId, newParentId, newOrder) => {
+const moveMenu = async (moveData) => {
   try {
+    console.log('🔄 MenuManagerView.moveMenu - Datos recibidos:', moveData)
     isLoading.value = true
-    await menuService.updateMenuOrder({
-      menuId,
-      parentId: newParentId,
-      order: newOrder
+    
+    // Usar el nuevo método específico para mover menús
+    await menuService.moveMenu({
+      menuId: moveData.menuId,
+      parentId: moveData.newParentId,
+      order: moveData.newOrder
     })
+    
+    console.log('✅ MenuManagerView.moveMenu - Menú movido exitosamente')
     await loadMenus() // Recargar la lista
   } catch (err) {
-    console.error('Error al mover menú:', err)
+    console.error('❌ MenuManagerView.moveMenu - Error:', err)
     error.value = err.message
   } finally {
     isLoading.value = false

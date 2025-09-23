@@ -25,49 +25,58 @@
       </div>
       
       <div class="menu-items">
+        <!-- Vista principal del menú -->
         <template v-if="currentView === 'main'">
           <div v-for="item in menuItems" :key="item.id" class="menu-item">
             <div 
               class="item-content" 
-              :class="{ 'active': activeMenuId === item.id }"
+              :class="{ 'active': activeMenuId === item.id && !item.submenu }"
               @click="selectItem(item)"
             >
               <i :class="item.icon" class="item-icon"></i>
               <span class="item-text">{{ item.text }}</span>
               <i v-if="item.submenu" class="mdi mdi-chevron-right submenu-arrow"></i>
             </div>
-            
-            <div v-if="item.submenu && item.showSubmenu && item.id !== 2" class="submenu">
-              <template v-for="sub in item.submenu" :key="sub.id">
-                <div 
-                  class="submenu-item"
-                  :class="{ 'active': sub.active, 'has-submenu': sub.submenu }"
-                  @click="selectSubmenu(sub, item)"
-                >
-                  <i :class="sub.icon || 'mdi mdi-circle-small'" class="submenu-icon"></i>
-                  <span class="submenu-text">{{ sub.text }}</span>
-                  <i v-if="sub.submenu" class="mdi mdi-chevron-right submenu-arrow-nested"></i>
-                </div>
-                
-                <div v-if="sub.submenu && sub.showSubmenu" class="nested-submenu">
-                  <div 
-                    v-for="nestedSub in sub.submenu" 
-                    :key="nestedSub.id" 
-                    class="nested-submenu-item"
-                    :class="{ 'active': nestedSub.active }"
-                    @click="selectNestedSubmenu(nestedSub, sub, item)"
-                  >
-                    <span class="nested-submenu-text">{{ nestedSub.text }}</span>
-                  </div>
-                </div>
-              </template>
+          </div>
+        </template>
+
+        <!-- Vista de submenús -->
+        <template v-else-if="currentView === 'submenu'">
+          <!-- Botón volver -->
+          <div 
+            class="menu-item back-item"
+            @click="goBackToMain"
+          >
+            <div class="item-content">
+              <i class="mdi mdi-arrow-left item-icon"></i>
+              <span class="item-text">Volver</span>
+            </div>
+          </div>
+
+          <!-- Título del menú padre -->
+          <div class="menu-section-title">
+            <i :class="currentParentMenu.icon" class="title-icon"></i>
+            <span class="title-text">{{ currentParentMenu.text }}</span>
+          </div>
+
+          <!-- Lista de submenús -->
+          <div v-for="submenu in currentSubmenus" :key="submenu.id" class="menu-item">
+            <div 
+              class="item-content"
+              :class="{ 'active': activeSubmenuId === submenu.id && !submenu.submenu }"
+              @click="selectSubmenu(submenu)"
+            >
+              <i :class="submenu.icon || 'mdi mdi-circle-small'" class="item-icon"></i>
+              <span class="item-text">{{ submenu.text }}</span>
+              <i v-if="submenu.submenu" class="mdi mdi-chevron-right submenu-arrow"></i>
             </div>
           </div>
         </template>
 
+        <!-- Vista de documentación (mantener existente) -->
         <template v-else-if="currentView === 'documentation'">
           <div 
-            class="menu-item"
+            class="menu-item back-item"
             @click="goBackToMain"
           >
             <div class="item-content">
@@ -142,22 +151,18 @@ const menuItems = computed(() => {
   }
   
   // Transformar menús del backend al formato esperado por el componente
-  return authStore.menus.map(menu => ({
+  const transformMenu = (menu) => ({
     id: menu.id,
     icon: menu.icon || 'mdi mdi-circle-outline',
     text: menu.name,
     active: false,
     route: menu.path,
-    submenu: menu.children && menu.children.length > 0 ? menu.children.map(child => ({
-      id: child.id,
-      text: child.name,
-      route: child.path,
-      icon: child.icon,
-      active: false
-    })) : null,
+    submenu: menu.children && menu.children.length > 0 ? menu.children.map(child => transformMenu(child)) : null,
     showSubmenu: false,
     children: menu.children || []
-  }))
+  })
+  
+  return authStore.menus.map(menu => transformMenu(menu))
 })
 
 const documentationItems = ref([
@@ -198,18 +203,39 @@ const closeMobile = () => {
 }
 
 const goBackToMain = () => {
+  // Si hay historial de navegación, volver al nivel anterior
+  if (navigationHistory.value.length > 0) {
+    const previousLevel = navigationHistory.value.pop()
+    currentParentMenu.value = previousLevel.parent
+    currentSubmenus.value = previousLevel.submenus
+    activeSubmenuId.value = null
+    return
+  }
+  
+  // Si no hay historial, volver al menú principal
   currentView.value = 'main'
+  currentParentMenu.value = null
+  currentSubmenus.value = []
+  activeSubmenuId.value = null
+  navigationHistory.value = []
   updateActiveState(route.path) // Actualiza el estado activo al volver
 }
 
 // Estado reactivo para manejar elementos activos
 const activeMenuId = ref(null)
 const activeDocumentationId = ref(null)
+const activeSubmenuId = ref(null)
+
+// Estado para la vista de submenús
+const currentParentMenu = ref(null)
+const currentSubmenus = ref([])
+const navigationHistory = ref([]) // Historial de navegación para submenús anidados
 
 const selectItem = (item) => {
   // Limpiar estados activos
   activeMenuId.value = null
   activeDocumentationId.value = null
+  activeSubmenuId.value = null
 
   // Manejar submenús especiales (como documentación)
   if (item.submenu && item.id === 2) {
@@ -218,13 +244,17 @@ const selectItem = (item) => {
     return
   }
   
-  // Si el item tiene submenús, alternar su visibilidad
-  if (item.submenu) {
-    item.showSubmenu = !item.showSubmenu
+  // Si el item tiene submenús, cambiar a vista de submenús
+  if (item.submenu && item.submenu.length > 0) {
+    currentView.value = 'submenu'
+    currentParentMenu.value = item
+    currentSubmenus.value = item.submenu
     activeMenuId.value = item.id
+    navigationHistory.value = [] // Limpiar historial al entrar desde el menú principal
     return
   }
   
+  // Si no tiene submenús, navegar directamente
   activeMenuId.value = item.id
   
   if (item.route) {
@@ -250,47 +280,30 @@ const navigateToMenuManager = () => {
   }
 }
 
-const selectSubmenu = (submenu, parentItem) => {
-  // Lógica para submenús que se despliegan (si los hay)
-  if (submenu.submenu) {
-    submenu.showSubmenu = !submenu.showSubmenu
+const selectSubmenu = (submenu) => {
+  // Si el submenú tiene sus propios submenús, navegar a ellos
+  if (submenu.submenu && submenu.submenu.length > 0) {
+    // Guardar el estado actual en el historial
+    navigationHistory.value.push({
+      parent: currentParentMenu.value,
+      submenus: currentSubmenus.value
+    })
+    
+    currentParentMenu.value = submenu
+    currentSubmenus.value = submenu.submenu
+    activeSubmenuId.value = null
     return
   }
   
-  activeMenuId.value = parentItem.id
+  // Si no tiene submenús, es un elemento final
+  activeSubmenuId.value = submenu.id
   
   if (isMobile.value) {
-    isMobileOpen.value = false;
+    isMobileOpen.value = false
   }
   
   if (submenu.route) {
-    router.push(submenu.route);
-  }
-}
-
-const selectNestedSubmenu = (nestedSubmenu, parentSubmenu, grandParentItem) => {
-  // Lógica para submenús anidados
-  menuItems.value.forEach(menuItem => {
-    menuItem.active = false;
-    if (menuItem.submenu) {
-      menuItem.submenu.forEach(sub => {
-        sub.active = false;
-        if (sub.submenu) {
-          sub.submenu.forEach(nested => nested.active = false);
-        }
-      });
-    }
-  });
-  nestedSubmenu.active = true;
-  parentSubmenu.active = true;
-  grandParentItem.active = true;
-  
-  if (isMobile.value) {
-    isMobileOpen.value = false;
-  }
-  
-  if (nestedSubmenu.route) {
-    router.push(nestedSubmenu.route);
+    router.push(submenu.route)
   }
 }
 
@@ -305,6 +318,7 @@ const updateActiveState = (currentRoute) => {
   // Limpiar estados activos
   activeMenuId.value = null
   activeDocumentationId.value = null
+  activeSubmenuId.value = null
 
   // Buscar en menús principales
   let found = false
@@ -313,6 +327,20 @@ const updateActiveState = (currentRoute) => {
       activeMenuId.value = item.id
       found = true
       currentView.value = 'main'
+      return
+    }
+    
+    // Buscar en submenús
+    if (item.submenu) {
+      item.submenu.forEach(submenu => {
+        if (submenu.route === currentRoute) {
+          activeSubmenuId.value = submenu.id
+          currentParentMenu.value = item
+          currentSubmenus.value = item.submenu
+          currentView.value = 'submenu'
+          found = true
+        }
+      })
     }
   })
 
