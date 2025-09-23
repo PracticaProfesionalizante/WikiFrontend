@@ -84,6 +84,20 @@ export const authService = {
     } catch (error) {
       return false
     }
+  },
+
+  // Obtener menús dinámicos basados en permisos del usuario
+  async fetchMenus() {
+    try {
+      const response = await api.get('/menu')
+      return response.data
+    } catch (error) {
+      if (error.response?.status === 401) {
+        throw new Error('Token inválido para obtener menús')
+      } else {
+        throw new Error('Error al obtener menús del servidor')
+      }
+    }
   }
 }
 

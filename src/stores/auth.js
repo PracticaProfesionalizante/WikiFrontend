@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref(localStorage.getItem('access_token') || null)
   const refreshToken = ref(localStorage.getItem('refresh_token') || null)
   const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
+  const menus = ref(JSON.parse(localStorage.getItem('menus') || '[]'))
   const isLoading = ref(false)
   const error = ref(null)
 
@@ -52,6 +53,15 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const setMenus = (menuData) => {
+    menus.value = menuData
+    if (menuData && menuData.length > 0) {
+      localStorage.setItem('menus', JSON.stringify(menuData))
+    } else {
+      localStorage.removeItem('menus')
+    }
+  }
+
   const setLoading = (loading) => {
     isLoading.value = loading
   }
@@ -67,6 +77,7 @@ export const useAuthStore = defineStore('auth', () => {
   const clearAuth = () => {
     setTokens(null, null)
     setUser(null)
+    setMenus([])
     setError(null)
   }
 
@@ -81,6 +92,16 @@ export const useAuthStore = defineStore('auth', () => {
       // Guardar tokens y usuario
       setTokens(response.access_token, response.refresh_token)
       setUser(response.user)
+      
+      // Cargar menús dinámicos después del login exitoso
+      try {
+        const menuData = await authService.fetchMenus()
+        setMenus(menuData)
+      } catch (menuError) {
+        // Error silencioso - si fallan los menús, continuar con menús vacíos
+        console.warn('Error al cargar menús (silencioso):', menuError.message)
+        setMenus([])
+      }
       
       // Pequeño delay para asegurar que el estado se actualice
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -156,6 +177,17 @@ export const useAuthStore = defineStore('auth', () => {
       try {
         // No mostrar error al usuario durante la inicialización silenciosa
         await fetchCurrentUser(false)
+        
+        // Cargar menús si no están disponibles
+        if (menus.value.length === 0) {
+          try {
+            const menuData = await authService.fetchMenus()
+            setMenus(menuData)
+          } catch (menuError) {
+            // Error silencioso - continuar sin menús
+            console.warn('Error al cargar menús durante inicialización (silencioso):', menuError.message)
+          }
+        }
       } catch (err) {
         // Si falla, limpiar tokens inválidos
         clearAuth()
@@ -163,11 +195,26 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // NUEVA FUNCIÓN - Recargar menús manualmente
+  const refreshMenus = async () => {
+    try {
+      const menuData = await authService.fetchMenus()
+      setMenus(menuData)
+      return menuData
+    } catch (err) {
+      console.error('Error al recargar menús:', err.message)
+      throw err
+    }
+  }
+
+
+
   return {
     // State
     accessToken,
     refreshToken,
     user,
+    menus,
     isLoading,
     error,
     
@@ -179,6 +226,7 @@ export const useAuthStore = defineStore('auth', () => {
     // Actions
     setTokens,
     setUser,
+    setMenus,
     setLoading,
     setError,
     clearError,
@@ -187,6 +235,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     refreshAccessToken,
     fetchCurrentUser,
-    initializeAuth
+    initializeAuth,
+    refreshMenus
   }
 })

@@ -19,8 +19,8 @@
     >
       <div class="menu-header">
         <div class="logo-container">
-          <i class="mdi mdi-school menu-logo"></i>
-          <span class="logo-text">Portal Wiki</span>
+          <i class="menu-logo mdi mdi-school"></i>
+          <span class="logo-text" v-show="!isCollapsed">Portal Wiki</span>
         </div>
       </div>
       
@@ -29,7 +29,7 @@
           <div v-for="item in menuItems" :key="item.id" class="menu-item">
             <div 
               class="item-content" 
-              :class="{ 'active': item.active }"
+              :class="{ 'active': activeMenuId === item.id }"
               @click="selectItem(item)"
             >
               <i :class="item.icon" class="item-icon"></i>
@@ -44,6 +44,7 @@
                   :class="{ 'active': sub.active, 'has-submenu': sub.submenu }"
                   @click="selectSubmenu(sub, item)"
                 >
+                  <i :class="sub.icon || 'mdi mdi-circle-small'" class="submenu-icon"></i>
                   <span class="submenu-text">{{ sub.text }}</span>
                   <i v-if="sub.submenu" class="mdi mdi-chevron-right submenu-arrow-nested"></i>
                 </div>
@@ -82,7 +83,7 @@
           <div v-for="item in documentationItems" :key="item.id" class="menu-item">
             <div 
               class="item-content"
-              :class="{ 'active': item.active }"
+              :class="{ 'active': activeDocumentationId === item.id }"
               @click="selectDocumentationItem(item)"
             >
               <i class="mdi mdi-circle-small item-icon"></i>
@@ -90,6 +91,21 @@
             </div>
           </div>
         </template>
+      </div>
+      
+      <!-- Sección de administración (solo para SuperAdmin) -->
+       <div v-if="authStore.hasRole('ROLE_SUPER_USER')" class="menu-footer">
+        <div class="menu-divider"></div>
+        <div class="menu-item admin-item">
+          <div 
+            class="item-content"
+            :class="{ 'active': route.path === '/gestion-menus' }"
+            @click="navigateToMenuManager"
+          >
+            <i class="mdi mdi-pencil-outline item-icon"></i>
+            <span class="item-text">Editar</span>
+          </div>
+        </div>
       </div>
     </nav>
     
@@ -102,11 +118,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 
 const emit = defineEmits(['sidebar-toggle'])
 
@@ -115,57 +133,32 @@ const isMobile = ref(false)
 const isMobileOpen = ref(false)
 const currentView = ref('main')
 
-const menuItems = ref([
-  {
-    id: 1,
-    icon: 'mdi mdi-view-dashboard',
-    text: 'Inicio',
-    active: true,
-    route: '/dashboard'
-  },
-  {
-    id: 2,
-    icon: 'mdi mdi-note-multiple-outline',
-    text: 'Documentación',
-    active: false,
-    submenu: true // Se cambió a 'true' para que se renderice el ícono de flecha
-  },
-  {
-    id: 3,
-    icon: 'mdi mdi-note-plus',
-    text: 'Nuevas implementaciones',
-    active: false,
-    route: '/nuevas-implementaciones'
-  },
-  {
-    id: 4,
-    icon: 'mdi mdi-calendar-month',
-    text: 'Calendario Académico',
-    active: false,
-    route: '/calendario-academico'
-  },
-  {
-    id: 5,
-    icon: 'mdi mdi-lead-pencil',
-    text: 'ABM de Usuarios',
-    active: false,
-    route: '/abm-usuarios'
-  },
-  {
-    id: 6,
-    icon: 'mdi mdi-cog',
-    text: 'Configuración',
-    active: false,
-    route: '/configuracion'
-  },
-  {
-    id: 7,
-    icon: 'mdi mdi-help-circle',
-    text: 'Ayuda',
-    active: false,
-    route: '/ayuda'
+
+// Usar menús dinámicos del store en lugar de hardcodeados
+const menuItems = computed(() => {
+  // Solo mostrar menús si están disponibles del backend
+  if (!authStore.menus || authStore.menus.length === 0) {
+    return []
   }
-])
+  
+  // Transformar menús del backend al formato esperado por el componente
+  return authStore.menus.map(menu => ({
+    id: menu.id,
+    icon: menu.icon || 'mdi mdi-circle-outline',
+    text: menu.name,
+    active: false,
+    route: menu.path,
+    submenu: menu.children && menu.children.length > 0 ? menu.children.map(child => ({
+      id: child.id,
+      text: child.name,
+      route: child.path,
+      icon: child.icon,
+      active: false
+    })) : null,
+    showSubmenu: false,
+    children: menu.children || []
+  }))
+})
 
 const documentationItems = ref([
   { id: 21, text: 'Institutos', route: '/institutos', active: false },
@@ -186,11 +179,13 @@ const collapseMenu = () => {
   if (!isMobile.value) {
     isExpanded.value = false
     emit('sidebar-toggle', false)
-    menuItems.value.forEach(item => {
-      if (item.submenu) {
-        item.showSubmenu = false
+    // Cerrar todos los submenús cuando se colapsa el menú
+    authStore.menus.forEach(menu => {
+      const menuItem = menuItems.value.find(item => item.id === menu.id)
+      if (menuItem && menuItem.submenu) {
+        menuItem.showSubmenu = false
       }
-    });
+    })
   }
 }
 
@@ -207,56 +202,62 @@ const goBackToMain = () => {
   updateActiveState(route.path) // Actualiza el estado activo al volver
 }
 
-const selectItem = (item) => {
-  // Desactiva todos los elementos principales y los submenús
-  menuItems.value.forEach(menuItem => {
-    menuItem.active = false;
-    if (menuItem.submenu) {
-      menuItem.showSubmenu = false;
-    }
-  });
-  documentationItems.value.forEach(docItem => docItem.active = false);
+// Estado reactivo para manejar elementos activos
+const activeMenuId = ref(null)
+const activeDocumentationId = ref(null)
 
-  if (item.id === 2) {
-    item.active = true;
-    currentView.value = 'documentation';
-    return;
+const selectItem = (item) => {
+  // Limpiar estados activos
+  activeMenuId.value = null
+  activeDocumentationId.value = null
+
+  // Manejar submenús especiales (como documentación)
+  if (item.submenu && item.id === 2) {
+    activeMenuId.value = item.id
+    currentView.value = 'documentation'
+    return
   }
   
-  item.active = true;
+  // Si el item tiene submenús, alternar su visibilidad
+  if (item.submenu) {
+    item.showSubmenu = !item.showSubmenu
+    activeMenuId.value = item.id
+    return
+  }
+  
+  activeMenuId.value = item.id
   
   if (item.route) {
-    router.push(item.route);
+    router.push(item.route)
     if (isMobile.value) {
-      isMobileOpen.value = false;
+      isMobileOpen.value = false
     }
   }
 }
 
 const selectDocumentationItem = (item) => {
-  documentationItems.value.forEach(docItem => docItem.active = false);
-  item.active = true;
+  activeDocumentationId.value = item.id
+  router.push(item.route)
   if (isMobile.value) {
-    isMobileOpen.value = false;
+    closeMobile()
   }
-  router.push(item.route);
+}
+
+const navigateToMenuManager = () => {
+  router.push('/gestion-menus')
+  if (isMobile.value) {
+    closeMobile()
+  }
 }
 
 const selectSubmenu = (submenu, parentItem) => {
   // Lógica para submenús que se despliegan (si los hay)
   if (submenu.submenu) {
-    submenu.showSubmenu = !submenu.showSubmenu;
-    return;
+    submenu.showSubmenu = !submenu.showSubmenu
+    return
   }
   
-  menuItems.value.forEach(menuItem => {
-    menuItem.active = false;
-    if (menuItem.submenu) {
-      menuItem.submenu.forEach(sub => sub.active = false);
-    }
-  });
-  submenu.active = true;
-  parentItem.active = true;
+  activeMenuId.value = parentItem.id
   
   if (isMobile.value) {
     isMobileOpen.value = false;
@@ -301,47 +302,36 @@ const checkMobile = () => {
 }
 
 const updateActiveState = (currentRoute) => {
-  // Primero, desactivar todos los estados activos
-  menuItems.value.forEach(item => {
-    item.active = false;
-    if (item.submenu) {
-      if (Array.isArray(item.submenu)) {
-        item.submenu.forEach(sub => {
-          sub.active = false;
-          if (sub.submenu) {
-            sub.submenu.forEach(nested => nested.active = false);
-          }
-        });
-      }
-    }
-  });
-  documentationItems.value.forEach(docItem => docItem.active = false);
+  // Limpiar estados activos
+  activeMenuId.value = null
+  activeDocumentationId.value = null
 
-  // Luego, activar el estado correcto
-  let found = false;
+  // Buscar en menús principales
+  let found = false
   menuItems.value.forEach(item => {
     if (item.route === currentRoute) {
-      item.active = true;
-      found = true;
-      // Asegurarse de que el menú principal está visible
-      currentView.value = 'main';
+      activeMenuId.value = item.id
+      found = true
+      currentView.value = 'main'
     }
-  });
+  })
 
+  // Si no se encuentra, buscar en documentación
   if (!found) {
     documentationItems.value.forEach(item => {
       if (item.route === currentRoute) {
-        item.active = true;
-        found = true;
-        // Si se encuentra una ruta de documentación, mostrar el menú de documentación
-        currentView.value = 'documentation';
-        // Activar el ítem principal de documentación
-        const docMainItem = menuItems.value.find(item => item.id === 2);
-        if (docMainItem) {
-          docMainItem.active = true;
-        }
+        activeDocumentationId.value = item.id
+        activeMenuId.value = 2 // Activar también el menú principal de documentación
+        found = true
+        currentView.value = 'documentation'
       }
-    });
+    })
+  }
+
+  // Si no se encuentra en ningún lado, activar dashboard por defecto
+  if (!found && currentRoute === '/dashboard') {
+    activeMenuId.value = 1
+    currentView.value = 'main'
   }
 }
 
@@ -413,12 +403,12 @@ onUnmounted(() => {
 }
 
 .menu-header {
-  padding: 0 1rem;
+  padding: 1rem;
   border-bottom: 1px solid var(--border-color);
-  height: 70px;
+  height: 60px;
   display: flex;
   align-items: center;
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(29, 78, 216, 0.05));
+  background: var(--sidebar-bg);
 }
 
 .logo-container {
@@ -559,16 +549,25 @@ onUnmounted(() => {
   align-items: center;
 }
 
-.submenu-item::before {
-  content: '';
+.submenu-icon {
+  font-size: 1rem;
+  min-width: 20px;
+  text-align: center;
+  transition: all 0.2s ease;
   position: absolute;
   left: -1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 4px;
-  background: var(--text-muted);
-  border-radius: 50%;
+}
+
+.submenu-item:hover .submenu-icon {
+  color: var(--accent-color);
+}
+
+.submenu-item.active .submenu-icon {
+  color: white;
+}
+
+.submenu-item::before {
+  display: none;
 }
 
 .submenu-item:hover {
@@ -586,7 +585,7 @@ onUnmounted(() => {
 }
 
 .submenu-item.active::before {
-  background: var(--accent-color);
+  display: none;
 }
 
 .submenu-text {
@@ -770,5 +769,40 @@ onUnmounted(() => {
 
 .menu-items::-webkit-scrollbar-thumb:hover {
   background: rgba(37, 99, 235, 0.4);
+}
+
+/* Estilos para la sección de administración */
+.menu-footer {
+  margin-top: auto;
+  padding: 0.5rem 0;
+}
+
+.menu-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0.5rem 1rem;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.3s ease;
+}
+
+.sidebar-container.expanded .menu-divider {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.admin-item .item-content {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(29, 78, 216, 0.1));
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.admin-item .item-content:hover {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(29, 78, 216, 0.2));
+  border-color: rgba(37, 99, 235, 0.4);
+}
+
+.admin-item .item-content.active {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border-color: #2563eb;
 }
 </style>

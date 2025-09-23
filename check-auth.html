@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verificar Estado de Autenticación</title>
+</head>
+<body>
+    <h1>Estado de Autenticación</h1>
+    <div id="auth-info"></div>
+    
+    <script>
+        // Verificar tokens en localStorage
+        const accessToken = localStorage.getItem('access_token');
+        const refreshToken = localStorage.getItem('refresh_token');
+        const user = localStorage.getItem('user');
+        
+        const authInfo = document.getElementById('auth-info');
+        
+        authInfo.innerHTML = `
+            <h2>Tokens JWT:</h2>
+            <p><strong>Access Token:</strong> ${accessToken ? 'Presente ✅' : 'No encontrado ❌'}</p>
+            <p><strong>Refresh Token:</strong> ${refreshToken ? 'Presente ✅' : 'No encontrado ❌'}</p>
+            <p><strong>Usuario:</strong> ${user ? 'Presente ✅' : 'No encontrado ❌'}</p>
+            
+            <h2>Detalles:</h2>
+            <p><strong>Access Token:</strong><br><code>${accessToken || 'null'}</code></p>
+            <p><strong>Usuario:</strong><br><code>${user || 'null'}</code></p>
+            
+            <h2>Estado:</h2>
+            <p style="color: ${accessToken ? 'green' : 'red'}; font-weight: bold;">
+                ${accessToken ? '✅ Usuario autenticado' : '❌ Usuario NO autenticado'}
+            </p>
+        `;
+        
+        console.log('🔍 Estado de autenticación:');
+        console.log('Access Token:', accessToken);
+        console.log('Refresh Token:', refreshToken);
+        console.log('Usuario:', user);
+    </script>
+</body>
+</html>
