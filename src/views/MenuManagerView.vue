@@ -157,6 +157,15 @@
           </div>
         </div>
 
+        <!-- Modal de eliminación avanzada -->
+        <DeleteMenuModal
+          :show="showDeleteModal"
+          :menu="menuToDelete"
+          :children="menuToDeleteChildren"
+          @close="closeDeleteModal"
+          @confirm="handleDeleteConfirm"
+        />
+
         <!-- Modal de creación/edición -->
         <div v-if="showDialog" class="dialog-overlay" @click="closeDialog">
           <div class="dialog-content" @click.stop>
@@ -649,6 +658,7 @@ import SidebarMenu from '@/components/common/SidebarMenu.vue'
 import AppHeader from '@/components/common/AppHeader.vue'
 import MenuTreeNode from '@/components/MenuTreeNode.vue'
 import MenuTreeSelector from '@/components/MenuTreeSelector.vue'
+import DeleteMenuModal from '@/components/DeleteMenuModal.vue'
 import menuService from '@/services/menuService'
 import authService from '@/services/auth'
 
@@ -686,6 +696,11 @@ const previewMenu = ref(null)
 // Estado de carga y errores
 const isLoading = ref(false)
 const error = ref(null)
+
+// Estado del modal de eliminación
+const showDeleteModal = ref(false)
+const menuToDelete = ref(null)
+const menuToDeleteChildren = ref([])
 
 // Estado de iconos
 const searchQuery = ref('')
@@ -1055,45 +1070,90 @@ const deleteMenu = async (menuData) => {
     const children = getMenuChildren(menuId)
     console.log(`🔍 Hijos encontrados para menú ${menuId}:`, children.length)
     
-    // Determinar el mensaje de confirmación
-    let confirmMessage
-    if (children.length > 0) {
-      confirmMessage = `¿Estás seguro de que deseas eliminar el menú "${menu.name}" y todos sus ${children.length} submenús?`
-    } else {
-      confirmMessage = `¿Estás seguro de que deseas eliminar el menú "${menu.name}"?`
-    }
+    // Configurar el modal de eliminación
+    menuToDelete.value = menu
+    menuToDeleteChildren.value = children
+    showDeleteModal.value = true
     
-    // Confirmar eliminación
-    const confirmed = confirm(confirmMessage)
-    
-    if (!confirmed) {
-      console.log('❌ Eliminación cancelada por el usuario')
-      return
-    }
-    
-    console.log(`🗑️ Procediendo con eliminación de menú: ${menu.name}`)
+  } catch (error) {
+    console.error('❌ Error al preparar eliminación de menú:', error)
+    error.value = error.message
+  }
+}
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+  menuToDelete.value = null
+  menuToDeleteChildren.value = []
+}
+
+const handleDeleteConfirm = async (confirmData) => {
+  console.log('🗑️ handleDeleteConfirm - Datos de confirmación:', confirmData)
+  
+  try {
     isLoading.value = true
     error.value = null
     
-    // Eliminar hijos primero (si existen)
-    if (children.length > 0) {
-      console.log(`🗑️ Eliminando ${children.length} submenús primero...`)
-      for (const child of children) {
-        console.log(`🗑️ Eliminando submenú: ${child.name} (ID: ${child.id})`)
-        await menuService.deleteMenu(child.id)
-        console.log(`✅ Submenú eliminado: ${child.name}`)
-      }
+    const { menuId, mode, selectedChildren, allChildren } = confirmData
+    
+    switch (mode) {
+      case 'delete-all':
+        // Eliminar todos los submenús primero, luego el menú principal
+        console.log('🗑️ Modo: Eliminar todo')
+        for (const childId of allChildren) {
+          console.log(`🗑️ Eliminando submenú: ${childId}`)
+          await menuService.deleteMenu(childId)
+        }
+        await menuService.deleteMenu(menuId)
+        break
+        
+      case 'selective':
+        // Eliminar solo los submenús seleccionados, luego el menú principal
+        console.log('🗑️ Modo: Eliminación selectiva')
+        for (const childId of selectedChildren) {
+          console.log(`🗑️ Eliminando submenú seleccionado: ${childId}`)
+          await menuService.deleteMenu(childId)
+        }
+        
+        // Mover los submenús no seleccionados al nivel raíz
+        const childrenToKeep = allChildren.filter(id => !selectedChildren.includes(id))
+        for (const childId of childrenToKeep) {
+          console.log(`🔄 Moviendo submenú al nivel raíz: ${childId}`)
+          const childMenu = findMenuById(childId)
+          if (childMenu) {
+            await menuService.updateMenu(childId, { ...childMenu, parentId: null })
+          }
+        }
+        
+        await menuService.deleteMenu(menuId)
+        break
+        
+      case 'keep-children':
+        // Solo eliminar el menú principal, mover todos los hijos al nivel raíz
+        console.log('🗑️ Modo: Mantener hijos')
+        for (const childId of allChildren) {
+          console.log(`🔄 Moviendo submenú al nivel raíz: ${childId}`)
+          const childMenu = findMenuById(childId)
+          if (childMenu) {
+            await menuService.updateMenu(childId, { ...childMenu, parentId: null })
+          }
+        }
+        await menuService.deleteMenu(menuId)
+        break
+        
+      default:
+        throw new Error(`Modo de eliminación no válido: ${mode}`)
     }
     
-    // Eliminar el menú principal
-    console.log(`🗑️ Eliminando menú principal: ${menu.name} (ID: ${menuId})`)
-    await menuService.deleteMenu(menuId)
-    console.log(`✅ Menú principal eliminado: ${menu.name}`)
+    console.log('✅ Eliminación completada exitosamente')
     
     // Recargar la lista de menús
     console.log('🔄 Recargando lista de menús...')
     await loadMenus()
     console.log('✅ Lista de menús recargada')
+    
+    // Cerrar el modal
+    closeDeleteModal()
     
   } catch (error) {
     console.error('❌ Error al eliminar menú:', error)
