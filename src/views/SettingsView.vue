@@ -2,7 +2,7 @@
   <div class="settings-layout">
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
-    <main class="main-content" :class="{ 'with-sidebar': true, 'with-header': true }">
+    <main class="main-content" :class="{ 'with-sidebar': true, 'with-header': true, 'sidebar-expanded': sidebarExpanded }">
       <div class="settings-container">
         <div class="settings-content">
           <div class="settings-header">
@@ -487,7 +487,7 @@ watch(isDarkMode, (newValue) => {
 
 .main-content {
   flex: 1;
-  margin-left: 60px;
+  margin-left: 80px;
   transition: margin-left 0.3s ease;
   min-height: 100vh;
   background-image: url('/src/assets/images/backgrounds/ajustes-usuario.webp');
@@ -500,6 +500,10 @@ watch(isDarkMode, (newValue) => {
 
 .main-content.with-header {
   padding-top: 70px;
+}
+
+.main-content.sidebar-expanded {
+  margin-left: 280px;
 }
 
 .main-content::before {

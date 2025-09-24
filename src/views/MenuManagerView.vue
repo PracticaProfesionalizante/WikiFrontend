@@ -3,7 +3,7 @@
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
     
-    <div class="main-content" :class="{ 'with-header': true }">
+    <div class="main-content" :class="{ 'with-header': true, 'sidebar-expanded': sidebarExpanded }">
       <div class="menu-manager-container">
         <div class="manager-header">
           <h1 class="manager-title">
@@ -1441,9 +1441,13 @@ onMounted(() => {
 
 .main-content {
   flex: 1;
-  margin-left: 280px;
+  margin-left: 80px;
   padding-top: 80px;
   transition: margin-left 0.3s ease;
+}
+
+.main-content.sidebar-expanded {
+  margin-left: 280px;
 }
 
 .main-content.with-header {
@@ -1553,6 +1557,16 @@ onMounted(() => {
   justify-content: center;
   color: white;
   font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.menu-icon i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  line-height: 1;
 }
 
 .menu-info h3 {
