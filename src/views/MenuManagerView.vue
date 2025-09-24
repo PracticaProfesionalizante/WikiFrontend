@@ -666,7 +666,7 @@ const authStore = useAuthStore()
 const router = useRouter()
 
 // Estado del sidebar
-const sidebarExpanded = ref(true)
+const sidebarExpanded = ref(false)
 const handleSidebarToggle = (expanded) => {
   sidebarExpanded.value = expanded
 }
@@ -864,12 +864,6 @@ const availableRoles = [
     label: 'Colaborador',
     icon: 'mdi mdi-account-group',
     description: 'Acceso a funciones básicas'
-  },
-  {
-    value: 'ROLE_USER',
-    label: 'Usuario',
-    icon: 'mdi mdi-account',
-    description: 'Acceso limitado de solo lectura'
   }
 ]
 
@@ -1748,12 +1742,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--error-color);
+  color: #dc2626 !important;
   font-size: 0.875rem;
   margin-top: 0.5rem;
   padding: 0.5rem;
-  background: rgba(220, 38, 38, 0.1);
-  border: 1px solid rgba(220, 38, 38, 0.2);
+  background: rgba(220, 38, 38, 0.1) !important;
+  border: 1px solid rgba(220, 38, 38, 0.2) !important;
   border-radius: 6px;
 }
 
@@ -2332,11 +2326,11 @@ onMounted(() => {
   align-items: center;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
-  background: var(--error-bg, #fee);
-  border: 1px solid var(--error-color);
+  background: rgba(220, 38, 38, 0.1) !important;
+  border: 1px solid rgba(220, 38, 38, 0.2) !important;
   border-radius: 8px;
   margin-bottom: 2rem;
-  color: var(--error-color);
+  color: #dc2626 !important;
 }
 
 .error-message i {
@@ -2346,8 +2340,8 @@ onMounted(() => {
 .retry-btn {
   margin-left: auto;
   padding: 0.5rem 1rem;
-  background: var(--error-color);
-  color: white;
+  background: #dc2626 !important;
+  color: white !important;
   border: none;
   border-radius: 6px;
   cursor: pointer;

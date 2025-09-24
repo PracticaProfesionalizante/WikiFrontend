@@ -1,7 +1,9 @@
 import { ref, watch } from 'vue'
+import { useTheme as useVuetifyTheme } from 'vuetify'
 
 // Estado global del tema
 const isDarkMode = ref(false)
+let vuetifyTheme = null
 
 // Función para alternar el tema
 const toggleTheme = () => {
@@ -17,15 +19,22 @@ const setTheme = (darkMode) => {
   saveThemePreference()
 }
 
-// Aplicar el tema al DOM
+// Aplicar el tema al DOM y Vuetify
 const applyTheme = () => {
   const root = document.documentElement
+  
+  // Aplicar clases CSS personalizadas
   if (isDarkMode.value) {
     root.classList.add('dark-theme')
     root.classList.remove('light-theme')
   } else {
     root.classList.add('light-theme')
     root.classList.remove('dark-theme')
+  }
+  
+  // Sincronizar con Vuetify si está disponible
+  if (vuetifyTheme) {
+    vuetifyTheme.global.name.value = isDarkMode.value ? 'dark' : 'light'
   }
 }
 
@@ -61,6 +70,15 @@ const initTheme = () => {
 
 // Composable principal
 export const useTheme = () => {
+  // Inicializar Vuetify theme si no está inicializado
+  if (!vuetifyTheme) {
+    try {
+      vuetifyTheme = useVuetifyTheme()
+    } catch (error) {
+      console.warn('Vuetify theme not available:', error)
+    }
+  }
+  
   return {
     isDarkMode,
     toggleTheme,

@@ -48,9 +48,13 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useTheme } from '@/composables/useTheme'
 
 // Store de autenticación
 const authStore = useAuthStore()
+
+// Composable de tema
+const { initTheme } = useTheme()
 
 // Computed para mostrar errores
 const showError = computed({
@@ -70,6 +74,9 @@ const clearError = () => {
 
 // Inicializar autenticación al montar el componente
 onMounted(async () => {
+  // Inicializar el tema
+  initTheme()
+  
   // Solo inicializar si hay tokens pero no hay usuario
   if (authStore.accessToken && !authStore.user) {
     try {
@@ -86,11 +93,6 @@ onMounted(async () => {
 body {
   margin: 0;
   font-family: 'Roboto', sans-serif;
-}
-
-/* Tema oscuro por defecto */
-.v-application {
-  background: #121212 !important;
 }
 
 /* Estilos para el overlay de loading */
