@@ -818,6 +818,19 @@ img {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
   background: transparent;
+  /* Asegurar que el texto sea siempre visible independientemente del tema */
+  color: #111827 !important;
+}
+
+/* Estilos específicos para autocompletado del navegador */
+.form-input:-webkit-autofill,
+.form-input:-webkit-autofill:hover,
+.form-input:-webkit-autofill:focus,
+.form-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px transparent inset !important;
+  -webkit-text-fill-color: #111827 !important;
+  color: #111827 !important;
+  background-color: transparent !important;
 }
 
 .form-input:focus {
@@ -851,7 +864,7 @@ img {
   top: 0.75rem;
   font-size: 1rem;
   font-weight: 500;
-  color: #6b7280;
+  color: #6b7280 !important;
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: left top;
@@ -866,7 +879,7 @@ img {
   left: 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #2563eb;
+  color: #2563eb !important;
   transform: scale(1);
   background: rgba(255, 255, 255, 0.95);
   padding: 0 0.5rem;
@@ -876,7 +889,7 @@ img {
 }
 
 .form-input.error + .floating-label {
-  color: #ef4444;
+  color: #ef4444 !important;
   background: rgba(255, 255, 255, 0.95);
   padding: 0 0.5rem;
   border-radius: 6px;
@@ -885,7 +898,7 @@ img {
 }
 
 .form-input.success + .floating-label {
-  color: #10b981;
+  color: #10b981 !important;
   background: rgba(255, 255, 255, 0.95);
   padding: 0 0.5rem;
   border-radius: 6px;
@@ -953,7 +966,7 @@ img {
 .password-toggle {
   background: none;
   border: none;
-  color: #6b7280;
+  color: #6b7280 !important;
   cursor: pointer;
   padding: 0;
   display: flex;
@@ -966,8 +979,8 @@ img {
 }
 
 .password-toggle:hover {
-  color: #2563eb;
-  background-color: rgba(73, 233, 237, 0.1);
+  color: #2563eb !important;
+  background-color: rgba(37, 99, 235, 0.1);
   transform: scale(1.1);
 }
 

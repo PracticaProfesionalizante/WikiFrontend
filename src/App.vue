@@ -48,9 +48,13 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useTheme } from '@/composables/useTheme'
 
 // Store de autenticación
 const authStore = useAuthStore()
+
+// Composable de tema
+const { initTheme, initVuetifyTheme } = useTheme()
 
 // Computed para mostrar errores
 const showError = computed({
@@ -70,13 +74,18 @@ const clearError = () => {
 
 // Inicializar autenticación al montar el componente
 onMounted(async () => {
+  // Inicializar el tema de Vuetify primero (dentro de setup function)
+  initVuetifyTheme()
+  
+  // Luego inicializar el tema general
+  initTheme()
+  
   // Solo inicializar si hay tokens pero no hay usuario
   if (authStore.accessToken && !authStore.user) {
     try {
       await authStore.initializeAuth()
     } catch (error) {
-      // Error silencioso - solo log para debugging, no mostrar al usuario
-      console.warn('Error al inicializar autenticación (silencioso):', error)
+      // Error silencioso - no mostrar al usuario
     }
   }
 })
@@ -87,11 +96,6 @@ onMounted(async () => {
 body {
   margin: 0;
   font-family: 'Roboto', sans-serif;
-}
-
-/* Tema oscuro por defecto */
-.v-application {
-  background: #121212 !important;
 }
 
 /* Estilos para el overlay de loading */

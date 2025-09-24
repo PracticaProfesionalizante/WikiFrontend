@@ -41,7 +41,6 @@ onMounted(async () => {
       // Pasar false para no mostrar error al usuario, solo log interno
       await authStore.fetchCurrentUser(false)
     } catch (error) {
-      console.error('Error al obtener datos del usuario:', error)
       // Error silencioso - no mostrar al usuario
     }
   }
@@ -69,7 +68,7 @@ onMounted(async () => {
 }
 
 .main-content.with-header {
-  padding-top: 70px;
+  padding-top: 60px;
 }
 
 .main-content::before {
@@ -145,12 +144,12 @@ onMounted(async () => {
   }
   
   .main-content.with-header {
-    padding-top: 70px;
+    padding-top: 60px;
   }
   
   .welcome-container {
     padding: 1rem;
-    height: calc(100vh - 70px);
+    height: calc(100vh - 60px);
   }
   
   .welcome-content {

@@ -4,11 +4,30 @@ import { useAuthStore } from '@/stores/auth'
 // Configuración base de Axios
 const api = axios.create({
   baseURL: 'http://practicas.teclab.edu.ar:8080', // URL del backend
-  timeout: 10000,
+  timeout: 15000, // Aumentar timeout para conexiones lentas
   headers: {
     'Content-Type': 'application/json',
   }
 })
+
+// Logging para debugging
+api.interceptors.request.use(
+  (config) => {
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
+api.interceptors.response.use(
+  (response) => {
+    return response
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
 
 // Variable para evitar múltiples refresh simultáneos
 let isRefreshing = false

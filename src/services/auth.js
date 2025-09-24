@@ -72,7 +72,6 @@ export const authService = {
       })
     } catch (error) {
       // No es crítico si falla el logout en el backend - error silencioso
-      console.warn('Error al hacer logout en el backend (silencioso):', error.message)
     }
   },
 
@@ -83,6 +82,20 @@ export const authService = {
       return response.data.valid
     } catch (error) {
       return false
+    }
+  },
+
+  // Obtener menús dinámicos basados en permisos del usuario
+  async fetchMenus() {
+    try {
+      const response = await api.get('/menu')
+      return response.data
+    } catch (error) {
+      if (error.response?.status === 401) {
+        throw new Error('Token inválido para obtener menús')
+      } else {
+        throw new Error('Error al obtener menús del servidor')
+      }
     }
   }
 }

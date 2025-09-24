@@ -62,6 +62,17 @@ const routes = [
     }
   },
   {
+    path: '/gestion-menus',
+    name: 'MenuManager',
+    component: () => import('@/views/MenuManagerView.vue'), // Lazy loading
+    beforeEnter: requireAuth,
+    meta: {
+      title: 'Gestión de Menús',
+      requiresAuth: true,
+      roles: ['ROLE_SUPER_USER'] // Solo usuarios con rol ROLE_SUPER_USER
+    }
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     redirect: '/login'
@@ -89,7 +100,11 @@ router.beforeEach(async (to, from, next) => {
   
   // Verificar roles específicos si la ruta los requiere
   if (to.meta.roles && authStore.isAuthenticated) {
-    const hasRequiredRole = to.meta.roles.some(role => authStore.hasRole(role))
+    const hasRequiredRole = to.meta.roles.some(role => {
+      const hasRole = authStore.hasRole(role)
+      return hasRole
+    })
+    
     if (!hasRequiredRole) {
       next({ name: 'Dashboard' })
       return

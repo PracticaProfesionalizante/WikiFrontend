@@ -1,7 +1,9 @@
 import { ref, watch } from 'vue'
+import { useTheme as useVuetifyTheme } from 'vuetify'
 
 // Estado global del tema
 const isDarkMode = ref(false)
+let vuetifyTheme = null
 
 // Función para alternar el tema
 const toggleTheme = () => {
@@ -17,15 +19,33 @@ const setTheme = (darkMode) => {
   saveThemePreference()
 }
 
-// Aplicar el tema al DOM
+// Aplicar el tema al DOM y Vuetify
 const applyTheme = () => {
   const root = document.documentElement
+  
+  // Aplicar clases CSS personalizadas
   if (isDarkMode.value) {
     root.classList.add('dark-theme')
     root.classList.remove('light-theme')
   } else {
     root.classList.add('light-theme')
     root.classList.remove('dark-theme')
+  }
+  
+  // Sincronizar con Vuetify si está disponible
+  if (vuetifyTheme) {
+    try {
+      const themeName = isDarkMode.value ? 'dark' : 'light'
+      
+      // Verificar si el tema ya está aplicado para evitar warnings innecesarios
+      if (vuetifyTheme.global && vuetifyTheme.global.name && vuetifyTheme.global.name.value !== themeName) {
+        // Usar el método correcto para Vuetify 3.x: asignar directamente al nombre
+        // En versiones más recientes de Vuetify 3, se debe usar theme.global.name directamente
+        vuetifyTheme.global.name = themeName
+      }
+    } catch (error) {
+      console.warn('Error applying Vuetify theme:', error)
+    }
   }
 }
 
@@ -59,12 +79,24 @@ const initTheme = () => {
   })
 }
 
+// Función para inicializar Vuetify theme (debe llamarse desde un componente)
+const initVuetifyTheme = () => {
+  if (!vuetifyTheme) {
+    try {
+      vuetifyTheme = useVuetifyTheme()
+    } catch (error) {
+      console.warn('Vuetify theme not available:', error)
+    }
+  }
+}
+
 // Composable principal
 export const useTheme = () => {
   return {
     isDarkMode,
     toggleTheme,
     setTheme,
-    initTheme
+    initTheme,
+    initVuetifyTheme
   }
 }

@@ -1,76 +1,124 @@
 <template>
-  <div 
+  <div
     class="sidebar-container"
     :class="{ 'expanded': isExpanded, 'mobile-open': isMobileOpen }"
   >
-    
-    <!-- Botón hamburguesa para móvil -->
-    <button 
+
+    <button
       class="mobile-toggle"
       @click="toggleMobile"
       v-show="isMobile"
     >
       <i class="mdi mdi-menu"></i>
     </button>
-    
-    <!-- Menú lateral -->
-    <nav 
+
+    <nav
       class="sidebar-menu"
       @mouseenter="expandMenu"
       @mouseleave="collapseMenu"
     >
       <div class="menu-header">
         <div class="logo-container">
-          <i class="mdi mdi-school menu-logo"></i>
-          <span class="logo-text">Portal Wiki</span>
+          <i class="menu-logo mdi mdi-school"></i>
+          <span class="logo-text" v-show="isExpanded">Portal Wiki</span>
         </div>
       </div>
-      
+
       <div class="menu-items">
-        <div v-for="item in menuItems" :key="item.id" class="menu-item">
-          <div 
-            class="item-content" 
-            :class="{ 'active': item.active }"
-            @click="selectItem(item)"
-          >
-            <i :class="item.icon" class="item-icon"></i>
-            <span class="item-text">{{ item.text }}</span>
-            <i v-if="item.submenu" class="mdi mdi-chevron-right submenu-arrow"></i>
+        <!-- Vista principal del menú -->
+        <template v-if="currentView === 'main'">
+          <div v-for="item in menuItems" :key="item.id" class="menu-item">
+            <div
+              class="item-content"
+              :class="{ 'active': activeMenuId === item.id && !item.submenu }"
+              @click="selectItem(item)"
+            >
+              <i :class="item.icon" class="item-icon"></i>
+              <span class="item-text">{{ item.text }}</span>
+              <i v-if="item.submenu" class="mdi mdi-chevron-right submenu-arrow"></i>
+            </div>
           </div>
-          
-          <!-- Submenú -->
-          <div v-if="item.submenu && item.showSubmenu" class="submenu">
-            <template v-for="sub in item.submenu" :key="sub.id">
-              <div 
-                class="submenu-item"
-                :class="{ 'active': sub.active, 'has-submenu': sub.submenu }"
-                @click="selectSubmenu(sub, item)"
-              >
-                <span class="submenu-text">{{ sub.text }}</span>
-                <i v-if="sub.submenu" class="mdi mdi-chevron-right submenu-arrow-nested"></i>
+        </template>
+
+        <!-- Vista de submenús -->
+        <template v-else-if="currentView === 'submenu'">
+          <!-- Título del menú padre mejorado con icono clickeable -->
+          <div class="menu-section-title parent-menu-title">
+            <div class="parent-title-content">
+              <i 
+                class="mdi mdi-arrow-left title-icon parent-icon clickable-back-icon"
+                @click="goBackToMain"
+                title="Volver al menú principal"
+              ></i>
+              <div class="title-info">
+                <span class="title-text parent-name">{{ currentParentMenu.text }}</span>
+                <span class="title-subtitle">Menú principal</span>
               </div>
-              
-              <!-- Submenú anidado (segundo nivel) -->
-              <div v-if="sub.submenu && sub.showSubmenu" class="nested-submenu">
-                <div 
-                  v-for="nestedSub in sub.submenu" 
-                  :key="nestedSub.id" 
-                  class="nested-submenu-item"
-                  :class="{ 'active': nestedSub.active }"
-                  @click="selectNestedSubmenu(nestedSub, sub, item)"
-                >
-                  <span class="nested-submenu-text">{{ nestedSub.text }}</span>
-                </div>
-              </div>
-            </template>
+            </div>
+            <div class="title-divider"></div>
+          </div>
+
+          <!-- Lista de submenús -->
+          <div v-for="submenu in currentSubmenus" :key="submenu.id" class="menu-item">
+            <div
+              class="item-content"
+              :class="{ 'active': activeSubmenuId === submenu.id && !submenu.submenu }"
+              @click="selectSubmenu(submenu)"
+            >
+              <i :class="submenu.icon || 'mdi mdi-circle-small'" class="item-icon"></i>
+              <span class="item-text">{{ submenu.text }}</span>
+              <i v-if="submenu.submenu" class="mdi mdi-chevron-right submenu-arrow"></i>
+            </div>
+          </div>
+        </template>
+
+        <!-- Vista de documentación (mantener existente) -->
+        <template v-else-if="currentView === 'documentation'">
+          <div
+            class="menu-item back-item"
+            @click="goBackToMain"
+          >
+            <div class="item-content">
+              <i class="mdi mdi-arrow-left item-icon"></i>
+              <span class="item-text">Volver</span>
+            </div>
+          </div>
+
+          <div class="menu-section-title">
+            <span class="title-text">Documentación</span>
+          </div>
+
+          <div v-for="item in documentationItems" :key="item.id" class="menu-item">
+            <div
+              class="item-content"
+              :class="{ 'active': activeDocumentationId === item.id }"
+              @click="selectDocumentationItem(item)"
+            >
+              <i class="mdi mdi-circle-small item-icon"></i>
+              <span class="item-text">{{ item.text }}</span>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Sección de administración (solo para SuperAdmin) -->
+       <div v-if="authStore.hasRole('ROLE_SUPER_USER')" class="menu-footer">
+        <div class="menu-divider"></div>
+        <div class="menu-item admin-item">
+          <div
+            class="item-content"
+            :class="{ 'active': route.path === '/gestion-menus' }"
+            @click="navigateToMenuManager"
+          >
+            <i class="mdi mdi-pencil-outline item-icon"></i>
+            <span class="item-text">Editar</span>
           </div>
         </div>
       </div>
     </nav>
-    
-    <!-- Overlay para móvil -->
-    <div 
-      v-if="isMobile && isMobileOpen" 
+
+    <div
+      v-if="isMobile && isMobileOpen"
       class="mobile-overlay"
       @click="closeMobile"
     ></div>
@@ -78,118 +126,56 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
-// Composables
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 
-// Emits
 const emit = defineEmits(['sidebar-toggle'])
 
 const isExpanded = ref(false)
 const isMobile = ref(false)
 const isMobileOpen = ref(false)
+const currentView = ref('main')
 
-const menuItems = ref([
-  {
-    id: 1,
-    icon: 'mdi mdi-view-dashboard',
-    text: 'Inicio',
-    active: true,
-    route: '/dashboard'
-  },
-  {
-    id: 2,
-    icon: 'mdi mdi-note-multiple-outline',
-    text: 'Documentación',
-    active: false,
-    showSubmenu: false,
-    submenu: [
-      { id: 21, text: 'TECLAB', active: false, route: '/teclab' },
-      { id: 22, text: 'OMEX', active: false, route: '/omex' },
-      { id: 23, text: 'IPP', active: false, route: '/ipp' },
-      { id: 24, text: 'Reglas de Negocio', active: false, route: '/reglas-negocio', showSubmenu: false,
-        submenu: [
-          { id: 241, text: 'Reglas', active: false, route: '/reglas-negocio/reglas' },
-          { id: 242, text: 'Obsidián', active: false, route: '/reglas-negocio/obsidian' },
-          { id: 243, text: 'Diagrama de flujo', active: false, route: '/reglas-negocio/diagrama-flujo' },
-          { id: 244, text: 'Mapeo de procesos', active: false, route: '/reglas-negocio/mapeo-procesos' }
-        ]
-       },
-      { id: 25, text: 'Status Page', active: false, route: '/status-page' }
-    ]
-  },
-  {
-    id: 3,
-    icon: 'mdi mdi-note-plus',
-    text: 'Nuevas implementaciónes',
-    active: false,
-    route: '/nuevas-implementaciones'
-  },
-  {
-    id: 4,
-    icon: 'mdi mdi-calendar-month',
-    text: 'Calendario Académico',
-    active: false,
-    route: '/calendario-academico'
-  },
-  {
-    id: 5,
-    icon: 'mdi mdi-lead-pencil',
-    text: 'ABM de Usuarios',
-    active: false,
-    route: '/abm-usuarios'
-  },
-  {
-    id: 6,
-    icon: 'mdi mdi-cog',
-    text: 'Configuración',
-    active: false,
-    route: '/configuracion'
-  },
-  {
-    id: 7,
-    icon: 'mdi mdi-help-circle',
-    text: 'Ayuda',
-    active: false,
-    route: '/Ayuda'
+
+// Usar menús dinámicos del store en lugar de hardcodeados
+const menuItems = computed(() => {
+  // Solo mostrar menús si están disponibles del backend
+  if (!authStore.menus || authStore.menus.length === 0) {
+    return []
   }
+
+  // Transformar menús del backend al formato esperado por el componente
+  const transformMenu = (menu) => ({
+    id: menu.id,
+    icon: menu.icon || 'mdi mdi-circle-outline',
+    text: menu.name,
+    active: false,
+    route: menu.path,
+    submenu: menu.children && menu.children.length > 0 ? menu.children.map(child => transformMenu(child)) : null,
+    showSubmenu: false,
+    children: menu.children || []
+  })
+
+  return authStore.menus.map(menu => transformMenu(menu))
+})
+
+const documentationItems = ref([
+  { id: 21, text: 'Institutos', route: '/institutos', active: false },
+  { id: 22, text: 'Status Page', route: '/status-page', active: false },
+  { id: 23, text: 'Reglas de Negocio', route: '/reglas-negocio', active: false },
+  { id: 24, text: 'Gestión de Incidencias', route: '/gestion-de-incidencias', active: false },
+  { id: 25, text: 'Stack Tecnologico', route: '/stack-tecnologico', active: false },
 ])
 
 const expandMenu = () => {
   if (!isMobile.value) {
     isExpanded.value = true
     emit('sidebar-toggle', true)
-    // Solo expandir submenús que contienen elementos activos
-    menuItems.value.forEach(item => {
-      if (item.submenu) {
-        // Verificar si el item principal está activo
-        if (item.active) {
-          item.showSubmenu = true
-        }
-        // Verificar si algún subitem está activo
-        const hasActiveSubmenu = item.submenu.some(sub => {
-          if (sub.active) return true
-          // Verificar submenús anidados
-          if (sub.submenu) {
-            return sub.submenu.some(nested => nested.active)
-          }
-          return false
-        })
-        
-        if (hasActiveSubmenu) {
-          item.showSubmenu = true
-          // Expandir submenús anidados que contienen elementos activos
-          item.submenu.forEach(sub => {
-            if (sub.submenu && (sub.active || sub.submenu.some(nested => nested.active))) {
-              sub.showSubmenu = true
-            }
-          })
-        }
-      }
-    })
   }
 }
 
@@ -197,16 +183,11 @@ const collapseMenu = () => {
   if (!isMobile.value) {
     isExpanded.value = false
     emit('sidebar-toggle', false)
-    // Colapsar submenús
-    menuItems.value.forEach(item => {
-      if (item.submenu) {
-        item.showSubmenu = false
-        // También colapsar submenús anidados
-        item.submenu.forEach(sub => {
-          if (sub.submenu) {
-            sub.showSubmenu = false
-          }
-        })
+    // Cerrar todos los submenús cuando se colapsa el menú
+    authStore.menus.forEach(menu => {
+      const menuItem = menuItems.value.find(item => item.id === menu.id)
+      if (menuItem && menuItem.submenu) {
+        menuItem.showSubmenu = false
       }
     })
   }
@@ -220,174 +201,184 @@ const closeMobile = () => {
   isMobileOpen.value = false
 }
 
+const goBackToMain = () => {
+  // Si hay historial de navegación, volver al nivel anterior
+  if (navigationHistory.value.length > 0) {
+    const previousLevel = navigationHistory.value.pop()
+    currentParentMenu.value = previousLevel.parent
+    currentSubmenus.value = previousLevel.submenus
+    activeSubmenuId.value = null
+    return
+  }
+
+  // Si no hay historial, volver al menú principal
+  currentView.value = 'main'
+  currentParentMenu.value = null
+  currentSubmenus.value = []
+  activeSubmenuId.value = null
+  navigationHistory.value = []
+  updateActiveState(route.path) // Actualiza el estado activo al volver
+}
+
+// Estado reactivo para manejar elementos activos
+const activeMenuId = ref(null)
+const activeDocumentationId = ref(null)
+const activeSubmenuId = ref(null)
+
+// Estado para la vista de submenús
+const currentParentMenu = ref(null)
+const currentSubmenus = ref([])
+const navigationHistory = ref([]) // Historial de navegación para submenús anidados
+
 const selectItem = (item) => {
-  // Desactivar todos los items
-  menuItems.value.forEach(menuItem => {
-    menuItem.active = false
-    if (menuItem.submenu) {
-      menuItem.submenu.forEach(sub => sub.active = false)
-    }
-  })
-  
-  // Activar el item seleccionado
-  item.active = true
-  
-  // Toggle submenu si existe
-  if (item.submenu) {
-    item.showSubmenu = !item.showSubmenu
-  } else {
-    // Solo cerrar el menú móvil si no tiene submenu
+  // Limpiar estados activos
+  activeMenuId.value = null
+  activeDocumentationId.value = null
+  activeSubmenuId.value = null
+
+  // Manejar submenús especiales (como documentación)
+  if (item.submenu && item.id === 2) {
+    activeMenuId.value = item.id
+    currentView.value = 'documentation'
+    return
+  }
+
+  // Si el item tiene submenús, cambiar a vista de submenús
+  if (item.submenu && item.submenu.length > 0) {
+    currentView.value = 'submenu'
+    currentParentMenu.value = item
+    currentSubmenus.value = item.submenu
+    activeMenuId.value = item.id
+    navigationHistory.value = [] // Limpiar historial al entrar desde el menú principal
+    return
+  }
+
+  // Si no tiene submenús, navegar directamente
+  activeMenuId.value = item.id
+
+  if (item.route) {
+    router.push(item.route)
     if (isMobile.value) {
       isMobileOpen.value = false
     }
   }
-  
-  // Navegar si tiene ruta
-  if (item.route) {
-    router.push(item.route)
+}
+
+const selectDocumentationItem = (item) => {
+  activeDocumentationId.value = item.id
+  router.push(item.route)
+  if (isMobile.value) {
+    closeMobile()
   }
 }
 
-const selectSubmenu = (submenu, parentItem) => {
-  // Si tiene submenú anidado, toggle su visibilidad
-  if (submenu.submenu) {
-    submenu.showSubmenu = !submenu.showSubmenu
+const navigateToMenuManager = () => {
+  router.push('/gestion-menus')
+  if (isMobile.value) {
+    closeMobile()
+  }
+}
+
+const selectSubmenu = (submenu) => {
+  // Si el submenú tiene sus propios submenús, navegar a ellos
+  if (submenu.submenu && submenu.submenu.length > 0) {
+    // Guardar el estado actual en el historial
+    navigationHistory.value.push({
+      parent: currentParentMenu.value,
+      submenus: currentSubmenus.value
+    })
+
+    currentParentMenu.value = submenu
+    currentSubmenus.value = submenu.submenu
+    activeSubmenuId.value = null
     return
   }
-  
-  // Desactivar todos
-  menuItems.value.forEach(menuItem => {
-    menuItem.active = false
-    if (menuItem.submenu) {
-      menuItem.submenu.forEach(sub => {
-        sub.active = false
-        if (sub.submenu) {
-          sub.submenu.forEach(nested => nested.active = false)
-        }
-      })
-    }
-  })
-  
-  // Activar submenu y parent
-  submenu.active = true
-  parentItem.active = true
-  
-  // Cerrar menú móvil al seleccionar elemento final
+
+  // Si no tiene submenús, es un elemento final
+  activeSubmenuId.value = submenu.id
+
   if (isMobile.value) {
     isMobileOpen.value = false
   }
-  
-  // Navegar
+
   if (submenu.route) {
     router.push(submenu.route)
   }
 }
 
-const selectNestedSubmenu = (nestedSubmenu, parentSubmenu, grandParentItem) => {
-  // Desactivar todos
-  menuItems.value.forEach(menuItem => {
-    menuItem.active = false
-    if (menuItem.submenu) {
-      menuItem.submenu.forEach(sub => {
-        sub.active = false
-        if (sub.submenu) {
-          sub.submenu.forEach(nested => nested.active = false)
-        }
-      })
-    }
-  })
-  
-  // Activar nested submenu, parent submenu y grandparent
-  nestedSubmenu.active = true
-  parentSubmenu.active = true
-  grandParentItem.active = true
-  
-  // Cerrar menú móvil al seleccionar elemento anidado
-  if (isMobile.value) {
-    isMobileOpen.value = false
-  }
-  
-  // Navegar
-  if (nestedSubmenu.route) {
-    router.push(nestedSubmenu.route)
-  }
-}
-
 const checkMobile = () => {
-  isMobile.value = window.innerWidth <= 768
+  isMobile.value = window.innerWidth <= 768;
   if (!isMobile.value) {
-    isMobileOpen.value = false
+    isMobileOpen.value = false;
   }
 }
 
-// Función para actualizar el estado activo basado en la ruta actual
 const updateActiveState = (currentRoute) => {
-  // Desactivar todos los elementos
-  menuItems.value.forEach(item => {
-    item.active = false
-    if (item.submenu) {
-      item.submenu.forEach(sub => {
-        sub.active = false
-        if (sub.submenu) {
-          sub.submenu.forEach(nested => nested.active = false)
-        }
-      })
-    }
-  })
+  // Limpiar estados activos
+  activeMenuId.value = null
+  activeDocumentationId.value = null
+  activeSubmenuId.value = null
 
-  // Buscar y activar el elemento correspondiente a la ruta actual
+  // Buscar en menús principales
+  let found = false
   menuItems.value.forEach(item => {
-    // Verificar item principal
     if (item.route === currentRoute) {
-      item.active = true
+      activeMenuId.value = item.id
+      found = true
+      currentView.value = 'main'
       return
     }
 
-    // Verificar submenús
+    // Buscar en submenús
     if (item.submenu) {
-      item.submenu.forEach(sub => {
-        if (sub.route === currentRoute) {
-          sub.active = true
-          item.active = true
-          item.showSubmenu = true
-          return
-        }
-
-        // Verificar submenús anidados
-        if (sub.submenu) {
-          sub.submenu.forEach(nested => {
-            if (nested.route === currentRoute) {
-              nested.active = true
-              sub.active = true
-              item.active = true
-              item.showSubmenu = true
-              sub.showSubmenu = true
-            }
-          })
+      item.submenu.forEach(submenu => {
+        if (submenu.route === currentRoute) {
+          activeSubmenuId.value = submenu.id
+          currentParentMenu.value = item
+          currentSubmenus.value = item.submenu
+          currentView.value = 'submenu'
+          found = true
         }
       })
     }
   })
+
+  // Si no se encuentra, buscar en documentación
+  if (!found) {
+    documentationItems.value.forEach(item => {
+      if (item.route === currentRoute) {
+        activeDocumentationId.value = item.id
+        activeMenuId.value = 2 // Activar también el menú principal de documentación
+        found = true
+        currentView.value = 'documentation'
+      }
+    })
+  }
+
+  // Si no se encuentra en ningún lado, activar dashboard por defecto
+  if (!found && currentRoute === '/dashboard') {
+    activeMenuId.value = 1
+    currentView.value = 'main'
+  }
 }
 
-// Watcher para detectar cambios de ruta
 watch(() => route.path, (newPath) => {
-  updateActiveState(newPath)
-}, { immediate: true })
+  updateActiveState(newPath);
+}, { immediate: true });
 
 onMounted(() => {
-  checkMobile()
-  window.addEventListener('resize', checkMobile)
-  // Inicializar estado activo basado en la ruta actual
-  updateActiveState(route.path)
-})
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+  updateActiveState(route.path);
+});
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkMobile)
-})
+  window.removeEventListener('resize', checkMobile);
+});
 </script>
 
 <style scoped>
+/* Las clases de estilo se mantienen igual */
 .sidebar-container {
   position: fixed;
   top: 0;
@@ -439,12 +430,12 @@ onUnmounted(() => {
 }
 
 .menu-header {
-  padding: 0 1rem;
+  padding: 1rem;
   border-bottom: 1px solid var(--border-color);
-  height: 70px;
+  height: 60px;
   display: flex;
   align-items: center;
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(29, 78, 216, 0.05));
+  background: var(--sidebar-bg);
 }
 
 .logo-container {
@@ -513,8 +504,6 @@ onUnmounted(() => {
   box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
   position: relative;
 }
-
-
 
 .item-icon {
   font-size: 1.5rem;
@@ -587,16 +576,25 @@ onUnmounted(() => {
   align-items: center;
 }
 
-.submenu-item::before {
-  content: '';
+.submenu-icon {
+  font-size: 1rem;
+  min-width: 20px;
+  text-align: center;
+  transition: all 0.2s ease;
   position: absolute;
   left: -1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 4px;
-  background: var(--text-muted);
-  border-radius: 50%;
+}
+
+.submenu-item:hover .submenu-icon {
+  color: var(--accent-color);
+}
+
+.submenu-item.active .submenu-icon {
+  color: white;
+}
+
+.submenu-item::before {
+  display: none;
 }
 
 .submenu-item:hover {
@@ -613,10 +611,8 @@ onUnmounted(() => {
   position: relative;
 }
 
-
-
 .submenu-item.active::before {
-  background: var(--accent-color);
+  display: none;
 }
 
 .submenu-text {
@@ -695,8 +691,6 @@ onUnmounted(() => {
   position: relative;
 }
 
-
-
 .nested-submenu-item.active::before {
   background: #2563eb;
 }
@@ -717,22 +711,252 @@ onUnmounted(() => {
   z-index: 99998;
 }
 
+/* NUEVO ESTILO PARA EL TÍTULO DE LA SECCIÓN */
+.menu-section-title {
+  padding: 1rem 1rem 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+/* Estilos mejorados para el título del menú padre */
+.parent-menu-title {
+  padding: 1.25rem 1rem 1rem;
+  margin-bottom: 0.5rem;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg,
+    rgba(var(--primary-color-rgb), 0.08) 0%,
+    rgba(var(--primary-color-rgb), 0.03) 50%,
+    transparent 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(var(--primary-color-rgb), 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.parent-menu-title::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg,
+    var(--primary-color) 0%,
+    rgba(var(--primary-color-rgb), 0.7) 50%,
+    var(--primary-color) 100%);
+  opacity: 0.8;
+}
+
+.parent-title-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+/* Estilos para el icono clickeable de volver */
+.clickable-back-icon {
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.clickable-back-icon:hover {
+  transform: translateX(-3px) scale(1.1);
+  box-shadow: 0 5px 15px rgba(var(--primary-color-rgb), 0.4);
+}
+
+.clickable-back-icon:active {
+  transform: translateX(-2px) scale(1.05);
+}
+
+.parent-icon {
+  font-size: 1.5rem;
+  color: white;
+  background: linear-gradient(135deg,
+    var(--primary-color) 0%,
+    rgba(var(--primary-color-rgb), 0.8) 100%);
+  padding: 0.5rem;
+  border-radius: 10px;
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.title-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.parent-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg,
+    var(--text-primary) 0%,
+    var(--primary-color) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.title-subtitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+  opacity: 0.9;
+}
+
+.title-divider {
+  height: 3px;
+  background: linear-gradient(90deg,
+    var(--primary-color) 0%,
+    rgba(var(--primary-color-rgb), 0.6) 30%,
+    rgba(var(--primary-color-rgb), 0.3) 70%,
+    transparent 100%);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.title-divider::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.sidebar-container.expanded .menu-section-title {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Estilos específicos para el título del menú padre en estado expandido */
+.sidebar-container.expanded .parent-menu-title {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.sidebar-container.expanded .parent-menu-title:hover {
+  transform: translateX(2px) translateY(-1px);
+  box-shadow: 0 8px 25px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.sidebar-container.expanded .parent-menu-title:hover .parent-icon {
+  transform: scale(1.05) rotate(5deg);
+  box-shadow: 0 6px 20px rgba(var(--primary-color-rgb), 0.4);
+}
+
+.sidebar-container.expanded .parent-menu-title:hover .title-divider::after {
+  animation-duration: 1s;
+}
+
+/* Estilos para el título del menú padre en estado colapsado */
+.sidebar-container:not(.expanded) .parent-menu-title {
+  padding: 0.75rem 0;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  transform: translateX(0);
+  background: linear-gradient(135deg,
+    rgba(var(--primary-color-rgb), 0.1) 0%,
+    rgba(var(--primary-color-rgb), 0.05) 100%);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.sidebar-container:not(.expanded) .parent-menu-title:hover {
+  background: linear-gradient(135deg,
+    rgba(var(--primary-color-rgb), 0.15) 0%,
+    rgba(var(--primary-color-rgb), 0.08) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(var(--primary-color-rgb), 0.3);
+}
+
+.sidebar-container:not(.expanded) .parent-title-content {
+  justify-content: center;
+  margin-bottom: 0;
+  gap: 0;
+}
+
+/* Mostrar solo el icono del menú padre cuando está colapsado */
+.sidebar-container:not(.expanded) .parent-menu-title .parent-icon {
+  opacity: 1;
+  transform: translateX(0);
+  margin: 0;
+  font-size: 1.25rem;
+  min-width: 36px;
+  height: 36px;
+  padding: 0.375rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-container:not(.expanded) .parent-menu-title:hover .parent-icon {
+  transform: scale(1.1) rotate(-5deg);
+  box-shadow: 0 6px 18px rgba(var(--primary-color-rgb), 0.4);
+}
+
+.sidebar-container:not(.expanded) .parent-menu-title .title-info,
+.sidebar-container:not(.expanded) .parent-menu-title .title-divider {
+  display: none;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .mobile-toggle {
     display: block;
   }
-  
+
   .hover-trigger {
     display: none;
   }
-  
+
   .sidebar-menu {
     width: 0;
     transform: translateX(-100%);
     pointer-events: none;
   }
-  
+
   .sidebar-container.mobile-open .sidebar-menu {
     width: 280px;
     transform: translateX(0);
@@ -740,27 +964,32 @@ onUnmounted(() => {
     z-index: 99999;
     position: fixed;
   }
-  
+
   .sidebar-container.mobile-open .logo-text,
   .sidebar-container.mobile-open .item-text,
   .sidebar-container.mobile-open .submenu-arrow {
     opacity: 1;
     transform: translateX(0);
   }
-  
+
   .sidebar-container.mobile-open .submenu {
     opacity: 1;
     max-height: 500px;
   }
-  
+
   .sidebar-container.mobile-open .submenu-arrow-nested {
     opacity: 1;
     transform: translateX(0);
   }
-  
+
   .sidebar-container.mobile-open .nested-submenu {
     opacity: 1;
     max-height: 400px;
+  }
+
+  .sidebar-container.mobile-open .menu-section-title {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -780,5 +1009,40 @@ onUnmounted(() => {
 
 .menu-items::-webkit-scrollbar-thumb:hover {
   background: rgba(37, 99, 235, 0.4);
+}
+
+/* Estilos para la sección de administración */
+.menu-footer {
+  margin-top: auto;
+  padding: 0.5rem 0;
+}
+
+.menu-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0.5rem 1rem;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.3s ease;
+}
+
+.sidebar-container.expanded .menu-divider {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.admin-item .item-content {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(29, 78, 216, 0.1));
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.admin-item .item-content:hover {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(29, 78, 216, 0.2));
+  border-color: rgba(37, 99, 235, 0.4);
+}
+
+.admin-item .item-content.active {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border-color: #2563eb;
 }
 </style>

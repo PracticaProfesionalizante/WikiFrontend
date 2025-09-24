@@ -23,6 +23,9 @@
   --accent-danger: #ef4444;
   --accent-color: #2563eb;
   
+  --primary-color: #2563eb;
+  --primary-color-rgb: 37, 99, 235;
+  
   --input-bg: #ffffff;
   --input-border: #d1d5db;
   --input-focus: #3b82f6;
@@ -60,6 +63,9 @@
   --accent-warning: #fbbf24;
   --accent-danger: #f87171;
   --accent-color: #60a5fa;
+  
+  --primary-color: #60a5fa;
+  --primary-color-rgb: 96, 165, 250;
   
   --input-bg: #334155;
   --input-border: #475569;

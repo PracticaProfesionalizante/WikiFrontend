@@ -2,7 +2,7 @@
   <div class="settings-layout">
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
-    <main class="main-content" :class="{ 'with-sidebar': true, 'with-header': true }">
+    <main class="main-content" :class="{ 'with-sidebar': true, 'with-header': true, 'sidebar-expanded': sidebarExpanded }">
       <div class="settings-container">
         <div class="settings-content">
           <div class="settings-header">
@@ -414,7 +414,6 @@ const updateProfile = async () => {
     showMessage('Perfil actualizado correctamente', 'success')
   } catch (error) {
     // Error silencioso para debugging - el usuario ya ve el mensaje de error en la UI
-    console.error('Error al actualizar perfil (silencioso):', error)
     showMessage('Error al actualizar el perfil. Inténtalo de nuevo.', 'error')
   } finally {
     isUpdatingProfile.value = false
@@ -439,7 +438,6 @@ const changePassword = async () => {
     showMessage('Contraseña cambiada correctamente', 'success')
   } catch (error) {
     // Error silencioso para debugging - el usuario ya ve el mensaje de error en la UI
-    console.error('Error al cambiar contraseña (silencioso):', error)
     showMessage('Error al cambiar la contraseña. Verifica tu contraseña actual.', 'error')
   } finally {
     isChangingPassword.value = false
@@ -457,7 +455,6 @@ const updatePreferences = async () => {
     showMessage('Preferencias actualizadas', 'success')
   } catch (error) {
     // Error silencioso para debugging - el usuario ya ve el mensaje de error en la UI
-    console.error('Error al actualizar preferencias (silencioso):', error)
     showMessage('Error al actualizar las preferencias', 'error')
   }
 }
@@ -490,7 +487,7 @@ watch(isDarkMode, (newValue) => {
 
 .main-content {
   flex: 1;
-  margin-left: 60px;
+  margin-left: 80px;
   transition: margin-left 0.3s ease;
   min-height: 100vh;
   background-image: url('/src/assets/images/backgrounds/ajustes-usuario.webp');
@@ -502,7 +499,11 @@ watch(isDarkMode, (newValue) => {
 }
 
 .main-content.with-header {
-  padding-top: 70px;
+  padding-top: 60px;
+}
+
+.main-content.sidebar-expanded {
+  margin-left: 280px;
 }
 
 .main-content::before {
