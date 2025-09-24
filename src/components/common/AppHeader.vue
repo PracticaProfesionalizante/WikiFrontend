@@ -115,7 +115,7 @@ onUnmounted(() => {
   top: 0;
   left: 80px;
   right: 0;
-  height: 70px;
+  height: 60px;
   background: var(--bg-primary);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);

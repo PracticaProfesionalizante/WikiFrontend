@@ -282,7 +282,7 @@ onMounted(() => {
 }
 
 .main-content.with-header {
-  padding-top: 70px;
+  padding-top: 60px;
 }
 
 .form-container {

@@ -499,7 +499,7 @@ watch(isDarkMode, (newValue) => {
 }
 
 .main-content.with-header {
-  padding-top: 70px;
+  padding-top: 60px;
 }
 
 .main-content.sidebar-expanded {
