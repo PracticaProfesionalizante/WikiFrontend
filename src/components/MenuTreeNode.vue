@@ -42,7 +42,7 @@
       <!-- Información del menú -->
       <div class="menu-info">
         <div class="menu-header">
-          <i :class="menu.icon || 'fas fa-link'" class="menu-icon"></i>
+          <i :class="['mdi', menu.icon] || 'fas fa-link'" class="menu-icon"></i>
           <span class="menu-name">{{ menu.name }}</span>
           <span class="menu-order">#{{ menu.order }}</span>
         </div>

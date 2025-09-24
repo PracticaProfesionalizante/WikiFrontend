@@ -75,7 +75,7 @@
           >
             <div class="menu-card-header">
               <div class="menu-icon">
-                <i :class="menu.icon || 'mdi mdi-circle-outline'"></i>
+                <i :class="['mdi', menu.icon] || 'mdi mdi-circle-outline'"></i>
               </div>
               <div class="menu-info">
                 <div class="menu-title-row">
@@ -279,7 +279,7 @@
                       @click="menuForm.template = template.value; validateForm()"
                     >
                       <div class="template-preview">
-                        <i :class="template.icon"></i>
+                        <i :class="['mdi', template.icon]"></i>
                         <div class="template-mockup">
                           <!-- Mockup para Vista Básica -->
                           <div v-if="template.value === 'basic'" class="mockup-basic">
@@ -415,7 +415,7 @@
                         <i class="mdi mdi-subdirectory-arrow-right"></i>
                       </div>
                       <div class="hierarchy-item child">
-                        <i :class="menuForm.icon || 'mdi mdi-circle-outline'"></i>
+                        <i :class="['mdi', menuForm.icon] || 'mdi mdi-circle-outline'"></i>
                         <span>{{ menuForm.name || 'Nuevo submenú' }}</span>
                       </div>
                     </div>
@@ -467,7 +467,7 @@
                             class="form-checkbox"
                           />
                           <span class="checkbox-text">
-                            <i :class="role.icon"></i>
+                            <i :class="['mdi', role.icon]"></i>
                             {{ role.label }}
                           </span>
                         </label>
@@ -549,7 +549,7 @@
               <div class="sidebar-preview">
                 <h4>Cómo se verá en el menú lateral:</h4>
                 <div class="menu-item-preview">
-                  <i :class="previewMenu?.icon"></i>
+                  <i :class="['mdi', previewMenu?.icon]"></i>
                   <span>{{ previewMenu?.name }}</span>
                 </div>
               </div>
@@ -565,7 +565,7 @@
                 </div>
                 <div class="detail-item">
                   <strong>Icono:</strong> 
-                  <i :class="previewMenu?.icon"></i>
+                  <i :class="['mdi', previewMenu?.icon]"></i>
                   {{ previewMenu?.icon }}
                 </div>
                 <div class="detail-item">

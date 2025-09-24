@@ -15,7 +15,7 @@
         <!-- Información del menú a eliminar -->
         <div class="menu-info">
           <div class="menu-item">
-            <i :class="menu?.icon || 'mdi mdi-menu'" class="menu-icon"></i>
+            <i :class="['mdi', menu?.icon] || 'mdi mdi-menu'" class="menu-icon"></i>
             <div class="menu-details">
               <h3>{{ menu?.name || 'Sin nombre' }}</h3>
               <p class="menu-path">{{ menu?.path || 'Sin ruta' }}</p>
@@ -31,15 +31,15 @@
           </div>
 
           <div class="submenu-list">
-            <div
-              v-for="child in children"
+            <div 
+              v-for="child in children" 
               :key="child.id"
               class="submenu-item"
               :class="{ 'selected-for-deletion': selectedChildren.includes(child.id) }"
             >
               <div class="submenu-checkbox">
-                <input
-                  type="checkbox"
+                <input 
+                  type="checkbox" 
                   :id="`child-${child.id}`"
                   :value="child.id"
                   v-model="selectedChildren"
@@ -47,7 +47,7 @@
                 />
               </div>
               <div class="submenu-info">
-                <i :class="child.icon || 'mdi mdi-menu'" class="submenu-icon"></i>
+                <i :class="['mdi', child.icon] || 'mdi mdi-menu'" class="submenu-icon"></i>
                 <div class="submenu-details">
                   <span class="submenu-name">{{ child.name }}</span>
                   <span class="submenu-path">{{ child.path }}</span>
@@ -59,12 +59,12 @@
           <!-- Opciones de eliminación -->
           <div class="deletion-options">
             <h4>¿Qué deseas hacer?</h4>
-
+            
             <div class="option-group">
               <label class="option-item">
-                <input
-                  type="radio"
-                  value="delete-all"
+                <input 
+                  type="radio" 
+                  value="delete-all" 
                   v-model="deletionMode"
                   @change="handleModeChange"
                 />
@@ -80,9 +80,9 @@
               </label>
 
               <label class="option-item">
-                <input
-                  type="radio"
-                  value="selective"
+                <input 
+                  type="radio" 
+                  value="selective" 
                   v-model="deletionMode"
                   @change="handleModeChange"
                 />
@@ -98,9 +98,9 @@
               </label>
 
               <label class="option-item">
-                <input
-                  type="radio"
-                  value="keep-children"
+                <input 
+                  type="radio" 
+                  value="keep-children" 
                   v-model="deletionMode"
                   @change="handleModeChange"
                 />
@@ -146,8 +146,8 @@
         <button class="cancel-btn" @click="$emit('close')">
           Cancelar
         </button>
-        <button
-          class="delete-btn"
+        <button 
+          class="delete-btn" 
           @click="handleConfirm"
           :disabled="deletionMode === 'selective' && selectedChildren.length === 0"
         >
@@ -215,14 +215,13 @@ const getConfirmButtonText = () => {
   if (!hasChildren.value) {
     return 'Eliminar Menú'
   }
-
+  
   switch (deletionMode.value) {
     case 'delete-all':
       return `Eliminar Todo (${props.children.length + 1})`
-    case 'selective': {
+    case 'selective':
       const selectedCount = selectedChildren.value.length
       return selectedCount > 0 ? `Eliminar Seleccionados (${selectedCount + 1})` : 'Selecciona submenús'
-    }
     case 'keep-children':
       return 'Eliminar Solo Menú Principal'
     default:
@@ -232,7 +231,7 @@ const getConfirmButtonText = () => {
 
 const handleConfirm = () => {
   if (!props.menu) return // Salir si no hay menú
-
+  
   if (deletionMode.value === 'selective' && selectedChildren.value.length === 0) {
     return // No hacer nada si no hay selección en modo selectivo
   }
