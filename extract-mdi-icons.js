@@ -1,0 +1,868 @@
+import fs from 'fs';
+import path from 'path';
+import { readFileSync } from 'fs';
+
+// Importar los iconos MDI desde el paquete oficial
+const mdiIcons = JSON.parse(readFileSync('./node_modules/@iconify-json/mdi/icons.json', 'utf8'));
+
+console.log('Extrayendo iconos MDI...');
+console.log(`Total de iconos encontrados: ${Object.keys(mdiIcons.icons).length}`);
+
+// Función para categorizar iconos basado en sus nombres
+function categorizeIcon(iconName) {
+  const name = iconName.toLowerCase();
+  
+  // Navegación
+  if (name.includes('arrow') || name.includes('chevron') || name.includes('navigation') || 
+      name.includes('menu') || name.includes('home') || name.includes('back') || 
+      name.includes('forward') || name.includes('up') || name.includes('down') ||
+      name.includes('compass') || name.includes('map') || name.includes('location') ||
+      name.includes('marker') || name.includes('direction')) {
+    return 'navigation';
+  }
+  
+  // Acciones
+  if (name.includes('plus') || name.includes('add') || name.includes('delete') || 
+      name.includes('remove') || name.includes('edit') || name.includes('save') ||
+      name.includes('download') || name.includes('upload') || name.includes('share') ||
+      name.includes('copy') || name.includes('paste') || name.includes('cut') ||
+      name.includes('undo') || name.includes('redo') || name.includes('refresh') ||
+      name.includes('sync') || name.includes('play') || name.includes('pause') ||
+      name.includes('stop') || name.includes('record') || name.includes('check') ||
+      name.includes('close') || name.includes('cancel') || name.includes('confirm')) {
+    return 'actions';
+  }
+  
+  // Datos
+  if (name.includes('database') || name.includes('server') || name.includes('cloud') ||
+      name.includes('file') || name.includes('folder') || name.includes('document') ||
+      name.includes('table') || name.includes('chart') || name.includes('graph') ||
+      name.includes('calendar') || name.includes('clock') || name.includes('timer') ||
+      name.includes('list') || name.includes('grid') || name.includes('view') ||
+      name.includes('filter') || name.includes('sort') || name.includes('search') ||
+      name.includes('account') || name.includes('user') || name.includes('profile')) {
+    return 'data';
+  }
+  
+  // UI
+  if (name.includes('settings') || name.includes('config') || name.includes('gear') ||
+      name.includes('cog') || name.includes('wrench') || name.includes('tool') ||
+      name.includes('palette') || name.includes('color') || name.includes('theme') ||
+      name.includes('brightness') || name.includes('contrast') || name.includes('eye') ||
+      name.includes('visibility') || name.includes('show') || name.includes('hide') ||
+      name.includes('notification') || name.includes('bell') || name.includes('alert') ||
+      name.includes('warning') || name.includes('error') || name.includes('info') ||
+      name.includes('help') || name.includes('question') || name.includes('tooltip') ||
+      name.includes('dialog') || name.includes('modal') || name.includes('popup') ||
+      name.includes('window') || name.includes('application') || name.includes('widget') ||
+      name.includes('toggle') || name.includes('switch') || name.includes('checkbox') ||
+      name.includes('radio') || name.includes('slider') || name.includes('progress') ||
+      name.includes('loading') || name.includes('spinner')) {
+    return 'ui';
+  }
+  
+  // Comunicación
+  if (name.includes('email') || name.includes('mail') || name.includes('message') ||
+      name.includes('chat') || name.includes('comment') || name.includes('phone') ||
+      name.includes('call') || name.includes('cellphone') || name.includes('mobile') ||
+      name.includes('wifi') || name.includes('signal') || name.includes('bluetooth') ||
+      name.includes('nfc') || name.includes('rss') || name.includes('podcast') ||
+      name.includes('broadcast') || name.includes('antenna') || name.includes('satellite') ||
+      name.includes('radio') || name.includes('walkie') || name.includes('lan') ||
+      name.includes('router') || name.includes('network') || name.includes('web') ||
+      name.includes('internet') || name.includes('link') || name.includes('url')) {
+    return 'communication';
+  }
+  
+  // Media
+  if (name.includes('video') || name.includes('audio') || name.includes('music') ||
+      name.includes('sound') || name.includes('volume') || name.includes('speaker') ||
+      name.includes('microphone') || name.includes('camera') || name.includes('photo') ||
+      name.includes('image') || name.includes('picture') || name.includes('gallery') ||
+      name.includes('album') || name.includes('movie') || name.includes('film') ||
+      name.includes('television') || name.includes('tv') || name.includes('monitor') ||
+      name.includes('screen') || name.includes('display') || name.includes('projector') ||
+      name.includes('headphones') || name.includes('earbuds') || name.includes('playlist') ||
+      name.includes('track') || name.includes('song') || name.includes('artist') ||
+      name.includes('album') || name.includes('disc') || name.includes('cd') ||
+      name.includes('dvd') || name.includes('bluray') || name.includes('cassette') ||
+      name.includes('vinyl') || name.includes('radio-fm') || name.includes('radio-am')) {
+    return 'media';
+  }
+  
+  // Dispositivos
+  if (name.includes('computer') || name.includes('laptop') || name.includes('desktop') ||
+      name.includes('tablet') || name.includes('smartphone') || name.includes('watch') ||
+      name.includes('keyboard') || name.includes('mouse') || name.includes('printer') ||
+      name.includes('scanner') || name.includes('usb') || name.includes('hdmi') ||
+      name.includes('ethernet') || name.includes('cable') || name.includes('adapter') ||
+      name.includes('charger') || name.includes('battery') || name.includes('power') ||
+      name.includes('gamepad') || name.includes('controller') || name.includes('joystick') ||
+      name.includes('console') || name.includes('gaming') || name.includes('vr') ||
+      name.includes('ar') || name.includes('drone') || name.includes('robot') ||
+      name.includes('sensor') || name.includes('chip') || name.includes('cpu') ||
+      name.includes('gpu') || name.includes('memory') || name.includes('storage') ||
+      name.includes('harddisk') || name.includes('ssd') || name.includes('flash')) {
+    return 'devices';
+  }
+  
+  // Social
+  if (name.includes('facebook') || name.includes('twitter') || name.includes('instagram') ||
+      name.includes('linkedin') || name.includes('youtube') || name.includes('tiktok') ||
+      name.includes('snapchat') || name.includes('whatsapp') || name.includes('telegram') ||
+      name.includes('discord') || name.includes('slack') || name.includes('skype') ||
+      name.includes('zoom') || name.includes('teams') || name.includes('github') ||
+      name.includes('gitlab') || name.includes('bitbucket') || name.includes('stackoverflow') ||
+      name.includes('reddit') || name.includes('pinterest') || name.includes('tumblr') ||
+      name.includes('medium') || name.includes('blogger') || name.includes('wordpress') ||
+      name.includes('dribbble') || name.includes('behance') || name.includes('figma') ||
+      name.includes('sketch') || name.includes('adobe') || name.includes('google') ||
+      name.includes('microsoft') || name.includes('apple') || name.includes('amazon') ||
+      name.includes('netflix') || name.includes('spotify') || name.includes('paypal') ||
+      name.includes('visa') || name.includes('mastercard') || name.includes('bitcoin') ||
+      name.includes('ethereum') || name.includes('cryptocurrency') || name.includes('wallet')) {
+    return 'social';
+  }
+  
+  // Business
+  if (name.includes('office') || name.includes('business') || name.includes('briefcase') ||
+      name.includes('tie') || name.includes('suit') || name.includes('meeting') ||
+      name.includes('presentation') || name.includes('chart') || name.includes('finance') ||
+      name.includes('money') || name.includes('cash') || name.includes('credit') ||
+      name.includes('bank') || name.includes('invoice') || name.includes('receipt') ||
+      name.includes('calculator') || name.includes('accounting') || name.includes('budget') ||
+      name.includes('profit') || name.includes('loss') || name.includes('growth') ||
+      name.includes('trend') || name.includes('analytics') || name.includes('report') ||
+      name.includes('dashboard') || name.includes('kpi') || name.includes('metric') ||
+      name.includes('target') || name.includes('goal') || name.includes('strategy') ||
+      name.includes('plan') || name.includes('project') || name.includes('task') ||
+      name.includes('deadline') || name.includes('schedule') || name.includes('agenda')) {
+    return 'business';
+  }
+  
+  // Weather
+  if (name.includes('weather') || name.includes('sun') || name.includes('moon') ||
+      name.includes('cloud') || name.includes('rain') || name.includes('snow') ||
+      name.includes('storm') || name.includes('lightning') || name.includes('wind') ||
+      name.includes('temperature') || name.includes('thermometer') || name.includes('humidity') ||
+      name.includes('pressure') || name.includes('forecast') || name.includes('climate') ||
+      name.includes('season') || name.includes('umbrella') || name.includes('rainbow') ||
+      name.includes('fog') || name.includes('mist') || name.includes('hail') ||
+      name.includes('tornado') || name.includes('hurricane') || name.includes('cyclone')) {
+    return 'weather';
+  }
+  
+  // Transport
+  if (name.includes('car') || name.includes('bus') || name.includes('train') ||
+      name.includes('plane') || name.includes('airplane') || name.includes('ship') ||
+      name.includes('boat') || name.includes('bicycle') || name.includes('motorcycle') ||
+      name.includes('truck') || name.includes('van') || name.includes('taxi') ||
+      name.includes('uber') || name.includes('subway') || name.includes('metro') ||
+      name.includes('tram') || name.includes('ferry') || name.includes('helicopter') ||
+      name.includes('rocket') || name.includes('scooter') || name.includes('skateboard') ||
+      name.includes('rollerblade') || name.includes('wheelchair') || name.includes('stroller') ||
+      name.includes('traffic') || name.includes('road') || name.includes('highway') ||
+      name.includes('bridge') || name.includes('tunnel') || name.includes('parking') ||
+      name.includes('garage') || name.includes('gas') || name.includes('fuel') ||
+      name.includes('charging') || name.includes('electric')) {
+    return 'transport';
+  }
+  
+  // Food
+  if (name.includes('food') || name.includes('restaurant') || name.includes('cafe') ||
+      name.includes('coffee') || name.includes('tea') || name.includes('drink') ||
+      name.includes('beer') || name.includes('wine') || name.includes('cocktail') ||
+      name.includes('pizza') || name.includes('burger') || name.includes('sandwich') ||
+      name.includes('bread') || name.includes('cake') || name.includes('cookie') ||
+      name.includes('ice-cream') || name.includes('fruit') || name.includes('apple') ||
+      name.includes('banana') || name.includes('orange') || name.includes('grape') ||
+      name.includes('vegetable') || name.includes('carrot') || name.includes('tomato') ||
+      name.includes('pepper') || name.includes('onion') || name.includes('potato') ||
+      name.includes('meat') || name.includes('fish') || name.includes('chicken') ||
+      name.includes('egg') || name.includes('milk') || name.includes('cheese') ||
+      name.includes('butter') || name.includes('salt') || name.includes('sugar') ||
+      name.includes('spice') || name.includes('herb') || name.includes('kitchen') ||
+      name.includes('cooking') || name.includes('chef') || name.includes('recipe') ||
+      name.includes('menu') || name.includes('dining') || name.includes('cutlery') ||
+      name.includes('fork') || name.includes('knife') || name.includes('spoon') ||
+      name.includes('plate') || name.includes('bowl') || name.includes('cup') ||
+      name.includes('glass') || name.includes('bottle') || name.includes('can')) {
+    return 'food';
+  }
+  
+  // Health
+  if (name.includes('health') || name.includes('medical') || name.includes('hospital') ||
+      name.includes('doctor') || name.includes('nurse') || name.includes('patient') ||
+      name.includes('medicine') || name.includes('pill') || name.includes('tablet') ||
+      name.includes('injection') || name.includes('syringe') || name.includes('bandage') ||
+      name.includes('thermometer') || name.includes('stethoscope') || name.includes('heart') ||
+      name.includes('pulse') || name.includes('blood') || name.includes('pressure') ||
+      name.includes('surgery') || name.includes('operation') || name.includes('ambulance') ||
+      name.includes('emergency') || name.includes('first-aid') || name.includes('cross') ||
+      name.includes('pharmacy') || name.includes('prescription') || name.includes('vaccine') ||
+      name.includes('virus') || name.includes('bacteria') || name.includes('germ') ||
+      name.includes('mask') || name.includes('gloves') || name.includes('sanitizer') ||
+      name.includes('wheelchair') || name.includes('crutch') || name.includes('prosthetic') ||
+      name.includes('dental') || name.includes('tooth') || name.includes('eye') ||
+      name.includes('glasses') || name.includes('hearing') || name.includes('aid') ||
+      name.includes('fitness') || name.includes('exercise') || name.includes('gym') ||
+      name.includes('weight') || name.includes('dumbbell') || name.includes('yoga') ||
+      name.includes('meditation') || name.includes('sleep') || name.includes('bed') ||
+      name.includes('pillow') || name.includes('blanket')) {
+    return 'health';
+  }
+  
+  // Education
+  if (name.includes('school') || name.includes('education') || name.includes('student') ||
+      name.includes('teacher') || name.includes('professor') || name.includes('book') ||
+      name.includes('library') || name.includes('notebook') || name.includes('pencil') ||
+      name.includes('pen') || name.includes('eraser') || name.includes('ruler') ||
+      name.includes('calculator') || name.includes('backpack') || name.includes('desk') ||
+      name.includes('chair') || name.includes('blackboard') || name.includes('whiteboard') ||
+      name.includes('chalk') || name.includes('marker') || name.includes('graduation') ||
+      name.includes('diploma') || name.includes('certificate') || name.includes('degree') ||
+      name.includes('university') || name.includes('college') || name.includes('campus') ||
+      name.includes('classroom') || name.includes('lecture') || name.includes('seminar') ||
+      name.includes('workshop') || name.includes('course') || name.includes('lesson') ||
+      name.includes('homework') || name.includes('assignment') || name.includes('test') ||
+      name.includes('exam') || name.includes('quiz') || name.includes('grade') ||
+      name.includes('score') || name.includes('result') || name.includes('report') ||
+      name.includes('transcript') || name.includes('scholarship') || name.includes('tuition') ||
+      name.includes('learning') || name.includes('study') || name.includes('research') ||
+      name.includes('science') || name.includes('math') || name.includes('physics') ||
+      name.includes('chemistry') || name.includes('biology') || name.includes('history') ||
+      name.includes('geography') || name.includes('language') || name.includes('literature') ||
+      name.includes('art') || name.includes('music') || name.includes('sports') ||
+      name.includes('physical') || name.includes('education')) {
+    return 'education';
+  }
+  
+  // Security
+  if (name.includes('security') || name.includes('lock') || name.includes('unlock') ||
+      name.includes('key') || name.includes('password') || name.includes('shield') ||
+      name.includes('protection') || name.includes('safe') || name.includes('vault') ||
+      name.includes('fingerprint') || name.includes('biometric') || name.includes('face') ||
+      name.includes('recognition') || name.includes('scan') || name.includes('camera') ||
+      name.includes('surveillance') || name.includes('monitor') || name.includes('alarm') ||
+      name.includes('warning') || name.includes('danger') || name.includes('hazard') ||
+      name.includes('fire') || name.includes('smoke') || name.includes('detector') ||
+      name.includes('emergency') || name.includes('exit') || name.includes('escape') ||
+      name.includes('police') || name.includes('guard') || name.includes('officer') ||
+      name.includes('badge') || name.includes('uniform') || name.includes('handcuffs') ||
+      name.includes('prison') || name.includes('jail') || name.includes('court') ||
+      name.includes('judge') || name.includes('lawyer') || name.includes('legal') ||
+      name.includes('law') || name.includes('justice') || name.includes('gavel') ||
+      name.includes('scale') || name.includes('balance') || name.includes('contract') ||
+      name.includes('signature') || name.includes('seal') || name.includes('stamp') ||
+      name.includes('certificate') || name.includes('license') || name.includes('permit') ||
+      name.includes('id') || name.includes('card') || name.includes('passport') ||
+      name.includes('visa') || name.includes('border') || name.includes('customs') ||
+      name.includes('checkpoint') || name.includes('barrier') || name.includes('fence') ||
+      name.includes('gate') || name.includes('door') || name.includes('window') ||
+      name.includes('glass') || name.includes('break') || name.includes('shatter')) {
+    return 'security';
+  }
+  
+  // Tools
+  if (name.includes('tool') || name.includes('hammer') || name.includes('screwdriver') ||
+      name.includes('wrench') || name.includes('pliers') || name.includes('saw') ||
+      name.includes('drill') || name.includes('nail') || name.includes('screw') ||
+      name.includes('bolt') || name.includes('nut') || name.includes('washer') ||
+      name.includes('tape') || name.includes('measure') || name.includes('level') ||
+      name.includes('square') || name.includes('compass') || name.includes('protractor') ||
+      name.includes('construction') || name.includes('building') || name.includes('house') ||
+      name.includes('home') || name.includes('repair') || name.includes('fix') ||
+      name.includes('maintenance') || name.includes('service') || name.includes('work') ||
+      name.includes('labor') || name.includes('worker') || name.includes('engineer') ||
+      name.includes('architect') || name.includes('blueprint') || name.includes('plan') ||
+      name.includes('design') || name.includes('draft') || name.includes('sketch') ||
+      name.includes('draw') || name.includes('paint') || name.includes('brush') ||
+      name.includes('roller') || name.includes('spray') || name.includes('bucket') ||
+      name.includes('ladder') || name.includes('scaffold') || name.includes('crane') ||
+      name.includes('bulldozer') || name.includes('excavator') || name.includes('truck') ||
+      name.includes('cement') || name.includes('concrete') || name.includes('brick') ||
+      name.includes('stone') || name.includes('wood') || name.includes('lumber') ||
+      name.includes('metal') || name.includes('steel') || name.includes('iron') ||
+      name.includes('aluminum') || name.includes('copper') || name.includes('wire') ||
+      name.includes('cable') || name.includes('pipe') || name.includes('tube') ||
+      name.includes('valve') || name.includes('faucet') || name.includes('sink') ||
+      name.includes('toilet') || name.includes('shower') || name.includes('bath') ||
+      name.includes('plumbing') || name.includes('electrical') || name.includes('wiring') ||
+      name.includes('outlet') || name.includes('switch') || name.includes('light') ||
+      name.includes('bulb') || name.includes('lamp') || name.includes('fixture')) {
+    return 'tools';
+  }
+  
+  // Gaming
+  if (name.includes('game') || name.includes('gaming') || name.includes('play') ||
+      name.includes('player') || name.includes('controller') || name.includes('gamepad') ||
+      name.includes('joystick') || name.includes('console') || name.includes('xbox') ||
+      name.includes('playstation') || name.includes('nintendo') || name.includes('steam') ||
+      name.includes('pc') || name.includes('computer') || name.includes('keyboard') ||
+      name.includes('mouse') || name.includes('headset') || name.includes('microphone') ||
+      name.includes('speaker') || name.includes('monitor') || name.includes('screen') ||
+      name.includes('display') || name.includes('graphics') || name.includes('fps') ||
+      name.includes('rpg') || name.includes('mmo') || name.includes('strategy') ||
+      name.includes('puzzle') || name.includes('arcade') || name.includes('racing') ||
+      name.includes('sports') || name.includes('fighting') || name.includes('shooting') ||
+      name.includes('adventure') || name.includes('action') || name.includes('simulation') ||
+      name.includes('sandbox') || name.includes('survival') || name.includes('horror') ||
+      name.includes('mystery') || name.includes('detective') || name.includes('crime') ||
+      name.includes('war') || name.includes('battle') || name.includes('combat') ||
+      name.includes('weapon') || name.includes('sword') || name.includes('gun') ||
+      name.includes('bow') || name.includes('arrow') || name.includes('shield') ||
+      name.includes('armor') || name.includes('helmet') || name.includes('magic') ||
+      name.includes('spell') || name.includes('potion') || name.includes('treasure') ||
+      name.includes('coin') || name.includes('gem') || name.includes('crystal') ||
+      name.includes('key') || name.includes('door') || name.includes('chest') ||
+      name.includes('map') || name.includes('compass') || name.includes('quest') ||
+      name.includes('mission') || name.includes('level') || name.includes('score') ||
+      name.includes('point') || name.includes('achievement') || name.includes('trophy') ||
+      name.includes('medal') || name.includes('award') || name.includes('prize') ||
+      name.includes('winner') || name.includes('champion') || name.includes('tournament') ||
+      name.includes('competition') || name.includes('league') || name.includes('team') ||
+      name.includes('clan') || name.includes('guild') || name.includes('alliance') ||
+      name.includes('friend') || name.includes('enemy') || name.includes('boss') ||
+      name.includes('monster') || name.includes('dragon') || name.includes('zombie') ||
+      name.includes('ghost') || name.includes('alien') || name.includes('robot') ||
+      name.includes('cyborg') || name.includes('mech') || name.includes('tank') ||
+      name.includes('ship') || name.includes('spaceship') || name.includes('rocket') ||
+      name.includes('planet') || name.includes('star') || name.includes('galaxy') ||
+      name.includes('universe') || name.includes('space') || name.includes('astronaut') ||
+      name.includes('satellite') || name.includes('ufo') || name.includes('meteor') ||
+      name.includes('comet') || name.includes('asteroid') || name.includes('black-hole') ||
+      name.includes('wormhole') || name.includes('portal') || name.includes('dimension') ||
+      name.includes('time') || name.includes('travel') || name.includes('future') ||
+      name.includes('past') || name.includes('present') || name.includes('clock') ||
+      name.includes('timer') || name.includes('stopwatch') || name.includes('countdown') ||
+      name.includes('alarm') || name.includes('bell') || name.includes('notification') ||
+      name.includes('message') || name.includes('chat') || name.includes('voice') ||
+      name.includes('video') || name.includes('stream') || name.includes('broadcast') ||
+      name.includes('record') || name.includes('capture') || name.includes('screenshot') ||
+      name.includes('share') || name.includes('upload') || name.includes('download') ||
+      name.includes('save') || name.includes('load') || name.includes('backup') ||
+      name.includes('restore') || name.includes('sync') || name.includes('cloud') ||
+      name.includes('server') || name.includes('network') || name.includes('internet') ||
+      name.includes('wifi') || name.includes('bluetooth') || name.includes('usb') ||
+      name.includes('cable') || name.includes('wireless') || name.includes('connection') ||
+      name.includes('signal') || name.includes('antenna') || name.includes('tower') ||
+      name.includes('satellite') || name.includes('radar') || name.includes('sonar') ||
+      name.includes('gps') || name.includes('location') || name.includes('position') ||
+      name.includes('coordinate') || name.includes('latitude') || name.includes('longitude') ||
+      name.includes('altitude') || name.includes('elevation') || name.includes('depth') ||
+      name.includes('distance') || name.includes('speed') || name.includes('velocity') ||
+      name.includes('acceleration') || name.includes('force') || name.includes('power') ||
+      name.includes('energy') || name.includes('battery') || name.includes('charge') ||
+      name.includes('electric') || name.includes('voltage') || name.includes('current') ||
+      name.includes('resistance') || name.includes('capacitor') || name.includes('inductor') ||
+      name.includes('transistor') || name.includes('diode') || name.includes('led') ||
+      name.includes('laser') || name.includes('fiber') || name.includes('optic') ||
+      name.includes('lens') || name.includes('mirror') || name.includes('prism') ||
+      name.includes('spectrum') || name.includes('rainbow') || name.includes('color') ||
+      name.includes('red') || name.includes('green') || name.includes('blue') ||
+      name.includes('yellow') || name.includes('orange') || name.includes('purple') ||
+      name.includes('pink') || name.includes('brown') || name.includes('black') ||
+      name.includes('white') || name.includes('gray') || name.includes('silver') ||
+      name.includes('gold') || name.includes('bronze') || name.includes('copper') ||
+      name.includes('platinum') || name.includes('diamond') || name.includes('ruby') ||
+      name.includes('emerald') || name.includes('sapphire') || name.includes('pearl') ||
+      name.includes('jade') || name.includes('amber') || name.includes('coral') ||
+      name.includes('shell') || name.includes('fossil') || name.includes('bone') ||
+      name.includes('skull') || name.includes('skeleton') || name.includes('spine') ||
+      name.includes('rib') || name.includes('arm') || name.includes('leg') ||
+      name.includes('hand') || name.includes('foot') || name.includes('finger') ||
+      name.includes('toe') || name.includes('nail') || name.includes('hair') ||
+      name.includes('beard') || name.includes('mustache') || name.includes('eyebrow') ||
+      name.includes('eyelash') || name.includes('eye') || name.includes('nose') ||
+      name.includes('mouth') || name.includes('lip') || name.includes('tongue') ||
+      name.includes('tooth') || name.includes('ear') || name.includes('neck') ||
+      name.includes('shoulder') || name.includes('chest') || name.includes('back') ||
+      name.includes('stomach') || name.includes('waist') || name.includes('hip') ||
+      name.includes('knee') || name.includes('ankle') || name.includes('heel') ||
+      name.includes('sole') || name.includes('palm') || name.includes('wrist') ||
+      name.includes('elbow') || name.includes('bicep') || name.includes('muscle') ||
+      name.includes('tendon') || name.includes('ligament') || name.includes('joint') ||
+      name.includes('cartilage') || name.includes('tissue') || name.includes('organ') ||
+      name.includes('heart') || name.includes('lung') || name.includes('liver') ||
+      name.includes('kidney') || name.includes('brain') || name.includes('nerve') ||
+      name.includes('blood') || name.includes('vessel') || name.includes('artery') ||
+      name.includes('vein') || name.includes('capillary') || name.includes('cell') ||
+      name.includes('dna') || name.includes('gene') || name.includes('chromosome') ||
+      name.includes('protein') || name.includes('enzyme') || name.includes('hormone') ||
+      name.includes('vitamin') || name.includes('mineral') || name.includes('nutrient') ||
+      name.includes('calorie') || name.includes('fat') || name.includes('carb') ||
+      name.includes('sugar') || name.includes('salt') || name.includes('water') ||
+      name.includes('oxygen') || name.includes('carbon') || name.includes('nitrogen') ||
+      name.includes('hydrogen') || name.includes('helium') || name.includes('neon') ||
+      name.includes('argon') || name.includes('krypton') || name.includes('xenon') ||
+      name.includes('radon') || name.includes('francium') || name.includes('cesium') ||
+      name.includes('rubidium') || name.includes('potassium') || name.includes('sodium') ||
+      name.includes('lithium') || name.includes('beryllium') || name.includes('magnesium') ||
+      name.includes('calcium') || name.includes('strontium') || name.includes('barium') ||
+      name.includes('radium') || name.includes('scandium') || name.includes('titanium') ||
+      name.includes('vanadium') || name.includes('chromium') || name.includes('manganese') ||
+      name.includes('iron') || name.includes('cobalt') || name.includes('nickel') ||
+      name.includes('copper') || name.includes('zinc') || name.includes('gallium') ||
+      name.includes('germanium') || name.includes('arsenic') || name.includes('selenium') ||
+      name.includes('bromine') || name.includes('krypton') || name.includes('rubidium') ||
+      name.includes('strontium') || name.includes('yttrium') || name.includes('zirconium') ||
+      name.includes('niobium') || name.includes('molybdenum') || name.includes('technetium') ||
+      name.includes('ruthenium') || name.includes('rhodium') || name.includes('palladium') ||
+      name.includes('silver') || name.includes('cadmium') || name.includes('indium') ||
+      name.includes('tin') || name.includes('antimony') || name.includes('tellurium') ||
+      name.includes('iodine') || name.includes('xenon') || name.includes('cesium') ||
+      name.includes('barium') || name.includes('lanthanum') || name.includes('cerium') ||
+      name.includes('praseodymium') || name.includes('neodymium') || name.includes('promethium') ||
+      name.includes('samarium') || name.includes('europium') || name.includes('gadolinium') ||
+      name.includes('terbium') || name.includes('dysprosium') || name.includes('holmium') ||
+      name.includes('erbium') || name.includes('thulium') || name.includes('ytterbium') ||
+      name.includes('lutetium') || name.includes('hafnium') || name.includes('tantalum') ||
+      name.includes('tungsten') || name.includes('rhenium') || name.includes('osmium') ||
+      name.includes('iridium') || name.includes('platinum') || name.includes('gold') ||
+      name.includes('mercury') || name.includes('thallium') || name.includes('lead') ||
+      name.includes('bismuth') || name.includes('polonium') || name.includes('astatine') ||
+      name.includes('radon') || name.includes('francium') || name.includes('radium') ||
+      name.includes('actinium') || name.includes('thorium') || name.includes('protactinium') ||
+      name.includes('uranium') || name.includes('neptunium') || name.includes('plutonium') ||
+      name.includes('americium') || name.includes('curium') || name.includes('berkelium') ||
+      name.includes('californium') || name.includes('einsteinium') || name.includes('fermium') ||
+      name.includes('mendelevium') || name.includes('nobelium') || name.includes('lawrencium') ||
+      name.includes('rutherfordium') || name.includes('dubnium') || name.includes('seaborgium') ||
+      name.includes('bohrium') || name.includes('hassium') || name.includes('meitnerium') ||
+      name.includes('darmstadtium') || name.includes('roentgenium') || name.includes('copernicium') ||
+      name.includes('nihonium') || name.includes('flerovium') || name.includes('moscovium') ||
+      name.includes('livermorium') || name.includes('tennessine') || name.includes('oganesson')) {
+    return 'gaming';
+  }
+  
+  // Sports
+  if (name.includes('sport') || name.includes('football') || name.includes('soccer') ||
+      name.includes('basketball') || name.includes('baseball') || name.includes('tennis') ||
+      name.includes('golf') || name.includes('hockey') || name.includes('volleyball') ||
+      name.includes('badminton') || name.includes('ping-pong') || name.includes('cricket') ||
+      name.includes('rugby') || name.includes('swimming') || name.includes('diving') ||
+      name.includes('surfing') || name.includes('skiing') || name.includes('snowboard') ||
+      name.includes('skating') || name.includes('cycling') || name.includes('running') ||
+      name.includes('marathon') || name.includes('sprint') || name.includes('jumping') ||
+      name.includes('pole-vault') || name.includes('high-jump') || name.includes('long-jump') ||
+      name.includes('shot-put') || name.includes('discus') || name.includes('javelin') ||
+      name.includes('hammer') || name.includes('wrestling') || name.includes('boxing') ||
+      name.includes('martial-arts') || name.includes('karate') || name.includes('judo') ||
+      name.includes('taekwondo') || name.includes('kung-fu') || name.includes('aikido') ||
+      name.includes('fencing') || name.includes('archery') || name.includes('shooting') ||
+      name.includes('hunting') || name.includes('fishing') || name.includes('sailing') ||
+      name.includes('rowing') || name.includes('kayak') || name.includes('canoe') ||
+      name.includes('rafting') || name.includes('climbing') || name.includes('mountaineering') ||
+      name.includes('hiking') || name.includes('camping') || name.includes('backpacking') ||
+      name.includes('trekking') || name.includes('adventure') || name.includes('extreme') ||
+      name.includes('bungee') || name.includes('parachute') || name.includes('skydiving') ||
+      name.includes('paragliding') || name.includes('hang-gliding') || name.includes('base-jumping') ||
+      name.includes('wingsuit') || name.includes('free-fall') || name.includes('zip-line') ||
+      name.includes('rope') || name.includes('harness') || name.includes('helmet') ||
+      name.includes('goggles') || name.includes('mask') || name.includes('fins') ||
+      name.includes('snorkel') || name.includes('scuba') || name.includes('wetsuit') ||
+      name.includes('drysuit') || name.includes('tank') || name.includes('regulator') ||
+      name.includes('compass') || name.includes('depth') || name.includes('gauge') ||
+      name.includes('underwater') || name.includes('submarine') || name.includes('torpedo') ||
+      name.includes('sonar') || name.includes('radar') || name.includes('periscope') ||
+      name.includes('anchor') || name.includes('buoy') || name.includes('lighthouse') ||
+      name.includes('beacon') || name.includes('signal') || name.includes('flag') ||
+      name.includes('whistle') || name.includes('horn') || name.includes('siren') ||
+      name.includes('alarm') || name.includes('emergency') || name.includes('rescue') ||
+      name.includes('lifeguard') || name.includes('life-jacket') || name.includes('life-ring') ||
+      name.includes('life-boat') || name.includes('raft') || name.includes('float') ||
+      name.includes('swim') || name.includes('pool') || name.includes('lane') ||
+      name.includes('lap') || name.includes('stroke') || name.includes('freestyle') ||
+      name.includes('backstroke') || name.includes('breaststroke') || name.includes('butterfly') ||
+      name.includes('medley') || name.includes('relay') || name.includes('team') ||
+      name.includes('individual') || name.includes('competition') || name.includes('tournament') ||
+      name.includes('championship') || name.includes('league') || name.includes('season') ||
+      name.includes('playoff') || name.includes('final') || name.includes('semifinal') ||
+      name.includes('quarterfinal') || name.includes('round') || name.includes('match') ||
+      name.includes('game') || name.includes('set') || name.includes('point') ||
+      name.includes('score') || name.includes('goal') || name.includes('touchdown') ||
+      name.includes('home-run') || name.includes('slam-dunk') || name.includes('ace') ||
+      name.includes('strike') || name.includes('spare') || name.includes('birdie') ||
+      name.includes('eagle') || name.includes('albatross') || name.includes('hole-in-one') ||
+      name.includes('par') || name.includes('bogey') || name.includes('double-bogey') ||
+      name.includes('triple-bogey') || name.includes('quadruple-bogey') || name.includes('snowman') ||
+      name.includes('driver') || name.includes('iron') || name.includes('wedge') ||
+      name.includes('putter') || name.includes('tee') || name.includes('ball') ||
+      name.includes('club') || name.includes('bag') || name.includes('cart') ||
+      name.includes('caddy') || name.includes('green') || name.includes('fairway') ||
+      name.includes('rough') || name.includes('bunker') || name.includes('sand') ||
+      name.includes('trap') || name.includes('water') || name.includes('hazard') ||
+      name.includes('pin') || name.includes('flag') || name.includes('cup') ||
+      name.includes('hole') || name.includes('course') || name.includes('range') ||
+      name.includes('practice') || name.includes('lesson') || name.includes('instructor') ||
+      name.includes('coach') || name.includes('trainer') || name.includes('player') ||
+      name.includes('athlete') || name.includes('professional') || name.includes('amateur') ||
+      name.includes('rookie') || name.includes('veteran') || name.includes('captain') ||
+      name.includes('manager') || name.includes('owner') || name.includes('fan') ||
+      name.includes('spectator') || name.includes('crowd') || name.includes('stadium') ||
+      name.includes('arena') || name.includes('field') || name.includes('court') ||
+      name.includes('track') || name.includes('rink') || name.includes('gym') ||
+      name.includes('fitness') || name.includes('workout') || name.includes('exercise') ||
+      name.includes('training') || name.includes('drill') || name.includes('routine') ||
+      name.includes('program') || name.includes('schedule') || name.includes('calendar') ||
+      name.includes('season') || name.includes('off-season') || name.includes('preseason') ||
+      name.includes('regular') || name.includes('postseason') || name.includes('draft') ||
+      name.includes('trade') || name.includes('free-agent') || name.includes('contract') ||
+      name.includes('salary') || name.includes('bonus') || name.includes('incentive') ||
+      name.includes('performance') || name.includes('statistics') || name.includes('record') ||
+      name.includes('achievement') || name.includes('milestone') || name.includes('hall-of-fame') ||
+      name.includes('legend') || name.includes('icon') || name.includes('superstar') ||
+      name.includes('mvp') || name.includes('rookie-of-the-year') || name.includes('comeback') ||
+      name.includes('defensive') || name.includes('offensive') || name.includes('special-teams') ||
+      name.includes('penalty') || name.includes('foul') || name.includes('violation') ||
+      name.includes('technical') || name.includes('flagrant') || name.includes('ejection') ||
+      name.includes('suspension') || name.includes('fine') || name.includes('warning') ||
+      name.includes('caution') || name.includes('yellow') || name.includes('red') ||
+      name.includes('card') || name.includes('referee') || name.includes('umpire') ||
+      name.includes('judge') || name.includes('official') || name.includes('linesmen') ||
+      name.includes('scorer') || name.includes('timekeeper') || name.includes('announcer') ||
+      name.includes('commentator') || name.includes('broadcaster') || name.includes('reporter') ||
+      name.includes('journalist') || name.includes('photographer') || name.includes('cameraman') ||
+      name.includes('producer') || name.includes('director') || name.includes('editor') ||
+      name.includes('graphics') || name.includes('replay') || name.includes('slow-motion') ||
+      name.includes('highlight') || name.includes('lowlight') || name.includes('blooper') ||
+      name.includes('blunder') || name.includes('mistake') || name.includes('error') ||
+      name.includes('fumble') || name.includes('interception') || name.includes('turnover') ||
+      name.includes('steal') || name.includes('block') || name.includes('tackle') ||
+      name.includes('sack') || name.includes('hit') || name.includes('check') ||
+      name.includes('collision') || name.includes('crash') || name.includes('injury') ||
+      name.includes('concussion') || name.includes('sprain') || name.includes('strain') ||
+      name.includes('fracture') || name.includes('break') || name.includes('tear') ||
+      name.includes('surgery') || name.includes('rehabilitation') || name.includes('recovery') ||
+      name.includes('comeback') || name.includes('return') || name.includes('retirement') ||
+      name.includes('farewell') || name.includes('tribute') || name.includes('ceremony') ||
+      name.includes('celebration') || name.includes('victory') || name.includes('defeat') ||
+      name.includes('loss') || name.includes('tie') || name.includes('draw') ||
+      name.includes('overtime') || name.includes('shootout') || name.includes('sudden-death') ||
+      name.includes('golden-goal') || name.includes('silver-goal') || name.includes('penalty-kick') ||
+      name.includes('free-kick') || name.includes('corner-kick') || name.includes('throw-in') ||
+      name.includes('offside') || name.includes('handball') || name.includes('slide-tackle') ||
+      name.includes('header') || name.includes('volley') || name.includes('bicycle-kick') ||
+      name.includes('scissor-kick') || name.includes('overhead-kick') || name.includes('chip') ||
+      name.includes('lob') || name.includes('cross') || name.includes('pass') ||
+      name.includes('assist') || name.includes('dribble') || name.includes('nutmeg') ||
+      name.includes('rainbow') || name.includes('stepover') || name.includes('feint') ||
+      name.includes('dummy') || name.includes('fake') || name.includes('juke') ||
+      name.includes('spin') || name.includes('turn') || name.includes('pivot') ||
+      name.includes('cut') || name.includes('slash') || name.includes('drive') ||
+      name.includes('rush') || name.includes('charge') || name.includes('blitz') ||
+      name.includes('pressure') || name.includes('coverage') || name.includes('zone') ||
+      name.includes('man-to-man') || name.includes('double-team') || name.includes('triple-team') ||
+      name.includes('help') || name.includes('switch') || name.includes('rotation') ||
+      name.includes('communication') || name.includes('signal') || name.includes('call') ||
+      name.includes('audible') || name.includes('timeout') || name.includes('substitution') ||
+      name.includes('bench') || name.includes('starter') || name.includes('reserve') ||
+      name.includes('sixth-man') || name.includes('utility') || name.includes('specialist') ||
+      name.includes('role-player') || name.includes('star') || name.includes('franchise') ||
+      name.includes('cornerstone') || name.includes('building-block') || name.includes('foundation') ||
+      name.includes('chemistry') || name.includes('teamwork') || name.includes('unity') ||
+      name.includes('cohesion') || name.includes('synergy') || name.includes('harmony') ||
+      name.includes('balance') || name.includes('depth') || name.includes('versatility') ||
+      name.includes('flexibility') || name.includes('adaptability') || name.includes('resilience') ||
+      name.includes('toughness') || name.includes('grit') || name.includes('determination') ||
+      name.includes('perseverance') || name.includes('dedication') || name.includes('commitment') ||
+      name.includes('passion') || name.includes('love') || name.includes('heart') ||
+      name.includes('soul') || name.includes('spirit') || name.includes('fire') ||
+      name.includes('intensity') || name.includes('energy') || name.includes('enthusiasm') ||
+      name.includes('excitement') || name.includes('thrill') || name.includes('adrenaline') ||
+      name.includes('rush') || name.includes('high') || name.includes('zone') ||
+      name.includes('flow') || name.includes('rhythm') || name.includes('tempo') ||
+      name.includes('pace') || name.includes('speed') || name.includes('quickness') ||
+      name.includes('agility') || name.includes('mobility') || name.includes('flexibility') ||
+      name.includes('coordination') || name.includes('balance') || name.includes('stability') ||
+      name.includes('control') || name.includes('precision') || name.includes('accuracy') ||
+      name.includes('consistency') || name.includes('reliability') || name.includes('dependability') ||
+      name.includes('trustworthiness') || name.includes('loyalty') || name.includes('respect') ||
+      name.includes('honor') || name.includes('integrity') || name.includes('character') ||
+      name.includes('sportsmanship') || name.includes('fair-play') || name.includes('ethics') ||
+      name.includes('morals') || name.includes('values') || name.includes('principles') ||
+      name.includes('standards') || name.includes('expectations') || name.includes('goals') ||
+      name.includes('objectives') || name.includes('targets') || name.includes('milestones') ||
+      name.includes('benchmarks') || name.includes('metrics') || name.includes('kpis') ||
+      name.includes('analytics') || name.includes('data') || name.includes('statistics') ||
+      name.includes('numbers') || name.includes('figures') || name.includes('percentages') ||
+      name.includes('ratios') || name.includes('averages') || name.includes('totals') ||
+      name.includes('sums') || name.includes('counts') || name.includes('frequencies') ||
+      name.includes('distributions') || name.includes('patterns') || name.includes('trends') ||
+      name.includes('correlations') || name.includes('relationships') || name.includes('connections') ||
+      name.includes('links') || name.includes('associations') || name.includes('dependencies') ||
+      name.includes('influences') || name.includes('impacts') || name.includes('effects') ||
+      name.includes('consequences') || name.includes('outcomes') || name.includes('results') ||
+      name.includes('findings') || name.includes('discoveries') || name.includes('insights') ||
+      name.includes('revelations') || name.includes('breakthroughs') || name.includes('innovations') ||
+      name.includes('improvements') || name.includes('enhancements') || name.includes('upgrades') ||
+      name.includes('modifications') || name.includes('adjustments') || name.includes('tweaks') ||
+      name.includes('fine-tuning') || name.includes('optimization') || name.includes('maximization') ||
+      name.includes('minimization') || name.includes('efficiency') || name.includes('effectiveness') ||
+      name.includes('productivity') || name.includes('performance') || name.includes('output') ||
+      name.includes('throughput') || name.includes('capacity') || name.includes('capability') ||
+      name.includes('potential') || name.includes('possibility') || name.includes('opportunity') ||
+      name.includes('chance') || name.includes('probability') || name.includes('likelihood') ||
+      name.includes('risk') || name.includes('uncertainty') || name.includes('variability') ||
+      name.includes('volatility') || name.includes('instability') || name.includes('unpredictability') ||
+      name.includes('randomness') || name.includes('chaos') || name.includes('disorder') ||
+      name.includes('confusion') || name.includes('complexity') || name.includes('complication') ||
+      name.includes('difficulty') || name.includes('challenge') || name.includes('obstacle') ||
+      name.includes('barrier') || name.includes('hurdle') || name.includes('impediment') ||
+      name.includes('hindrance') || name.includes('setback') || name.includes('delay') ||
+      name.includes('postponement') || name.includes('cancellation') || name.includes('suspension') ||
+      name.includes('interruption') || name.includes('disruption') || name.includes('interference') ||
+      name.includes('disturbance') || name.includes('distraction') || name.includes('noise') ||
+      name.includes('static') || name.includes('feedback') || name.includes('echo') ||
+      name.includes('reverb') || name.includes('delay') || name.includes('chorus') ||
+      name.includes('flanger') || name.includes('phaser') || name.includes('distortion') ||
+      name.includes('overdrive') || name.includes('fuzz') || name.includes('wah') ||
+      name.includes('filter') || name.includes('equalizer') || name.includes('compressor') ||
+      name.includes('limiter') || name.includes('gate') || name.includes('expander') ||
+      name.includes('enhancer') || name.includes('exciter') || name.includes('maximizer') ||
+      name.includes('normalizer') || name.includes('analyzer') || name.includes('spectrum') ||
+      name.includes('frequency') || name.includes('amplitude') || name.includes('phase') ||
+      name.includes('waveform') || name.includes('sine') || name.includes('cosine') ||
+      name.includes('triangle') || name.includes('square') || name.includes('sawtooth') ||
+      name.includes('pulse') || name.includes('noise') || name.includes('white') ||
+      name.includes('pink') || name.includes('brown') || name.includes('blue') ||
+      name.includes('violet') || name.includes('red') || name.includes('orange') ||
+      name.includes('yellow') || name.includes('green') || name.includes('cyan') ||
+      name.includes('magenta') || name.includes('black') || name.includes('gray') ||
+      name.includes('silver') || name.includes('gold') || name.includes('bronze') ||
+      name.includes('copper') || name.includes('brass') || name.includes('steel') ||
+      name.includes('iron') || name.includes('aluminum') || name.includes('titanium') ||
+      name.includes('carbon') || name.includes('fiber') || name.includes('glass') ||
+      name.includes('plastic') || name.includes('rubber') || name.includes('leather') ||
+      name.includes('fabric') || name.includes('cotton') || name.includes('wool') ||
+      name.includes('silk') || name.includes('linen') || name.includes('polyester') ||
+      name.includes('nylon') || name.includes('spandex') || name.includes('lycra') ||
+      name.includes('elastane') || name.includes('mesh') || name.includes('net') ||
+      name.includes('web') || name.includes('grid') || name.includes('matrix') ||
+      name.includes('array') || name.includes('table') || name.includes('list') ||
+      name.includes('queue') || name.includes('stack') || name.includes('heap') ||
+      name.includes('tree') || name.includes('graph') || name.includes('network') ||
+      name.includes('node') || name.includes('edge') || name.includes('vertex') ||
+      name.includes('connection') || name.includes('link') || name.includes('bridge') ||
+      name.includes('gateway') || name.includes('router') || name.includes('switch') ||
+      name.includes('hub') || name.includes('repeater') || name.includes('amplifier') ||
+      name.includes('booster') || name.includes('extender') || name.includes('expander') ||
+      name.includes('splitter') || name.includes('combiner') || name.includes('mixer') ||
+      name.includes('blender') || name.includes('processor') || name.includes('controller') ||
+      name.includes('manager') || name.includes('supervisor') || name.includes('administrator') ||
+      name.includes('operator') || name.includes('user') || name.includes('guest') ||
+      name.includes('visitor') || name.includes('member') || name.includes('subscriber') ||
+      name.includes('follower') || name.includes('fan') || name.includes('supporter') ||
+      name.includes('advocate') || name.includes('champion') || name.includes('defender') ||
+      name.includes('protector') || name.includes('guardian') || name.includes('keeper') ||
+      name.includes('custodian') || name.includes('caretaker') || name.includes('steward') ||
+      name.includes('trustee') || name.includes('fiduciary') || name.includes('agent') ||
+      name.includes('representative') || name.includes('delegate') || name.includes('ambassador') ||
+      name.includes('envoy') || name.includes('emissary') || name.includes('messenger') ||
+      name.includes('courier') || name.includes('delivery') || name.includes('transport') ||
+      name.includes('shipping') || name.includes('logistics') || name.includes('supply') ||
+      name.includes('chain') || name.includes('distribution') || name.includes('warehouse') ||
+      name.includes('storage') || name.includes('inventory') || name.includes('stock') ||
+      name.includes('reserve') || name.includes('backup') || name.includes('spare') ||
+      name.includes('replacement') || name.includes('substitute') || name.includes('alternative') ||
+      name.includes('option') || name.includes('choice') || name.includes('selection') ||
+      name.includes('preference') || name.includes('favorite') || name.includes('best') ||
+      name.includes('top') || name.includes('premium') || name.includes('deluxe') ||
+      name.includes('luxury') || name.includes('exclusive') || name.includes('limited') ||
+      name.includes('special') || name.includes('unique') || name.includes('rare') ||
+      name.includes('uncommon') || name.includes('unusual') || name.includes('extraordinary') ||
+      name.includes('exceptional') || name.includes('outstanding') || name.includes('remarkable') ||
+      name.includes('notable') || name.includes('noteworthy') || name.includes('significant') ||
+      name.includes('important') || name.includes('critical') || name.includes('essential') ||
+      name.includes('vital') || name.includes('crucial') || name.includes('key') ||
+      name.includes('primary') || name.includes('main') || name.includes('principal') ||
+      name.includes('chief') || name.includes('head') || name.includes('leader') ||
+      name.includes('boss') || name.includes('manager') || name.includes('director') ||
+      name.includes('executive') || name.includes('officer') || name.includes('president') ||
+      name.includes('ceo') || name.includes('cfo') || name.includes('cto') ||
+      name.includes('coo') || name.includes('cmo') || name.includes('cso') ||
+      name.includes('cpo') || name.includes('cdo') || name.includes('cio') ||
+      name.includes('cro') || name.includes('cco') || name.includes('clo') ||
+      name.includes('cno') || name.includes('cvo') || name.includes('cwo') ||
+      name.includes('cxo') || name.includes('founder') || name.includes('co-founder') ||
+      name.includes('owner') || name.includes('partner') || name.includes('shareholder') ||
+      name.includes('stakeholder') || name.includes('investor') || name.includes('venture') ||
+      name.includes('capital') || name.includes('fund') || name.includes('equity') ||
+      name.includes('debt') || name.includes('loan') || name.includes('credit') ||
+      name.includes('debit') || name.includes('balance') || name.includes('account') ||
+      name.includes('statement') || name.includes('report') || name.includes('summary') ||
+      name.includes('overview') || name.includes('abstract') || name.includes('synopsis') ||
+      name.includes('outline') || name.includes('agenda') || name.includes('schedule') ||
+      name.includes('timeline') || name.includes('roadmap') || name.includes('plan') ||
+      name.includes('strategy') || name.includes('tactic') || name.includes('approach') ||
+      name.includes('method') || name.includes('technique') || name.includes('procedure') ||
+      name.includes('process') || name.includes('workflow') || name.includes('pipeline') ||
+      name.includes('funnel') || name.includes('channel') || name.includes('pathway') ||
+      name.includes('route') || name.includes('direction') || name.includes('course') ||
+      name.includes('path') || name.includes('trail') || name.includes('track') ||
+      name.includes('line') || name.includes('curve') || name.includes('arc') ||
+      name.includes('circle') || name.includes('oval') || name.includes('ellipse') ||
+      name.includes('rectangle') || name.includes('square') || name.includes('triangle') ||
+      name.includes('diamond') || name.includes('rhombus') || name.includes('parallelogram') ||
+      name.includes('trapezoid') || name.includes('pentagon') || name.includes('hexagon') ||
+      name.includes('heptagon') || name.includes('octagon') || name.includes('nonagon') ||
+      name.includes('decagon') || name.includes('polygon') || name.includes('polyhedron') ||
+      name.includes('cube') || name.includes('sphere') || name.includes('cylinder') ||
+      name.includes('cone') || name.includes('pyramid') || name.includes('prism') ||
+      name.includes('tetrahedron') || name.includes('octahedron') || name.includes('dodecahedron') ||
+      name.includes('icosahedron') || name.includes('torus') || name.includes('helix') ||
+      name.includes('spiral') || name.includes('coil') || name.includes('spring') ||
+      name.includes('wave') || name.includes('ripple') || name.includes('vibration') ||
+      name.includes('oscillation') || name.includes('fluctuation') || name.includes('variation') ||
+      name.includes('change') || name.includes('shift') || name.includes('transition') ||
+      name.includes('transformation') || name.includes('evolution') || name.includes('development') ||
+      name.includes('growth') || name.includes('expansion') || name.includes('extension') ||
+      name.includes('enlargement') || name.includes('increase') || name.includes('increment') ||
+      name.includes('addition') || name.includes('supplement') || name.includes('complement') ||
+      name.includes('enhancement') || name.includes('improvement') ||
+      name.includes('upgrade') || name.includes('update') || name.includes('patch') ||
+      name.includes('fix') || name.includes('repair') || name.includes('maintenance')) {
+    return 'gaming';
+  }
+  
+  // Sports
+  if (name.includes('sport') || name.includes('football') || name.includes('soccer') ||
+      name.includes('basketball') || name.includes('baseball') || name.includes('tennis') ||
+      name.includes('golf') || name.includes('hockey') || name.includes('volleyball') ||
+      name.includes('badminton') || name.includes('ping-pong') || name.includes('cricket') ||
+      name.includes('rugby') || name.includes('swimming') || name.includes('diving') ||
+      name.includes('surfing') || name.includes('skiing') || name.includes('snowboard') ||
+      name.includes('skating') || name.includes('cycling') || name.includes('running') ||
+      name.includes('marathon') || name.includes('sprint') || name.includes('jumping') ||
+      name.includes('pole-vault') || name.includes('high-jump') || name.includes('long-jump') ||
+      name.includes('shot-put') || name.includes('discus') || name.includes('javelin') ||
+      name.includes('hammer') || name.includes('wrestling') || name.includes('boxing') ||
+      name.includes('martial-arts') || name.includes('karate') || name.includes('judo') ||
+      name.includes('taekwondo') || name.includes('kung-fu') || name.includes('aikido') ||
+      name.includes('fencing') || name.includes('archery') || name.includes('shooting') ||
+      name.includes('hunting') || name.includes('fishing') || name.includes('sailing') ||
+      name.includes('rowing') || name.includes('kayak') || name.includes('canoe') ||
+      name.includes('rafting') || name.includes('climbing') || name.includes('mountaineering') ||
+      name.includes('hiking') || name.includes('camping') || name.includes('backpacking') ||
+      name.includes('trekking') || name.includes('adventure') || name.includes('extreme')) {
+    return 'sports';
+  }
+  
+  // Nature
+  if (name.includes('tree') || name.includes('flower') || name.includes('leaf') ||
+      name.includes('plant') || name.includes('grass') || name.includes('forest') ||
+      name.includes('mountain') || name.includes('river') || name.includes('lake') ||
+      name.includes('ocean') || name.includes('sea') || name.includes('beach') ||
+      name.includes('desert') || name.includes('volcano') || name.includes('earthquake') ||
+      name.includes('fire') || name.includes('water') || name.includes('earth') ||
+      name.includes('air') || name.includes('wind') || name.includes('storm') ||
+      name.includes('lightning') || name.includes('thunder') || name.includes('rainbow') ||
+      name.includes('sun') || name.includes('moon') || name.includes('star') ||
+      name.includes('planet') || name.includes('galaxy') || name.includes('universe') ||
+      name.includes('space') || name.includes('asteroid') || name.includes('comet') ||
+      name.includes('meteor') || name.includes('satellite') || name.includes('rocket') ||
+      name.includes('animal') || name.includes('bird') || name.includes('fish') ||
+      name.includes('insect') || name.includes('butterfly') || name.includes('bee') ||
+      name.includes('spider') || name.includes('snake') || name.includes('lizard') ||
+      name.includes('frog') || name.includes('turtle') || name.includes('dolphin') ||
+      name.includes('whale') || name.includes('shark') || name.includes('octopus') ||
+      name.includes('crab') || name.includes('lobster') || name.includes('shrimp') ||
+      name.includes('jellyfish') || name.includes('starfish') || name.includes('seahorse') ||
+      name.includes('coral') || name.includes('seaweed') || name.includes('algae') ||
+      name.includes('mushroom') || name.includes('fungus') || name.includes('bacteria') ||
+      name.includes('virus') || name.includes('cell') || name.includes('dna') ||
+      name.includes('gene') || name.includes('evolution') || name.includes('fossil')) {
+    return 'nature';
+  }
+  
+  // Science
+  if (name.includes('science') || name.includes('chemistry') || name.includes('physics') ||
+      name.includes('biology') || name.includes('math') || name.includes('formula') ||
+      name.includes('equation') || name.includes('calculator') || name.includes('microscope') ||
+      name.includes('telescope') || name.includes('laboratory') || name.includes('experiment') ||
+      name.includes('research') || name.includes('study') || name.includes('analysis') ||
+      name.includes('test') || name.includes('sample') || name.includes('specimen') ||
+      name.includes('molecule') || name.includes('atom') || name.includes('electron') ||
+      name.includes('proton') || name.includes('neutron') || name.includes('nucleus') ||
+      name.includes('radiation') || name.includes('radioactive') || name.includes('nuclear') ||
+      name.includes('energy') || name.includes('force') || name.includes('gravity') ||
+      name.includes('magnetism') || name.includes('electricity') || name.includes('light') ||
+      name.includes('laser') || name.includes('x-ray') || name.includes('ultrasound') ||
+      name.includes('mri') || name.includes('ct-scan') || name.includes('pet-scan') ||
+      name.includes('thermometer') || name.includes('barometer') || name.includes('hygrometer') ||
+      name.includes('seismometer') || name.includes('geiger') || name.includes('counter') ||
+      name.includes('scale') || name.includes('balance') || name.includes('weight') ||
+      name.includes('measure') || name.includes('ruler') || name.includes('compass') ||
+      name.includes('protractor') || name.includes('beaker') || name.includes('flask') ||
+      name.includes('test-tube') || name.includes('petri') || name.includes('dish') ||
+      name.includes('pipette') || name.includes('burette') || name.includes('funnel') ||
+      name.includes('filter') || name.includes('centrifuge') || name.includes('incubator') ||
+      name.includes('autoclave') || name.includes('bunsen') || name.includes('burner')) {
+    return 'science';
+  }
+  
+  // Default category
+  return 'misc';
+}
+
+// Extraer todos los iconos y categorizarlos
+const categorizedIcons = {};
+const iconNames = Object.keys(mdiIcons.icons);
+
+iconNames.forEach(iconName => {
+  const category = categorizeIcon(iconName);
+  if (!categorizedIcons[category]) {
+    categorizedIcons[category] = [];
+  }
+  categorizedIcons[category].push(`mdi-${iconName}`);
+});
+
+// Ordenar iconos dentro de cada categoría
+Object.keys(categorizedIcons).forEach(category => {
+  categorizedIcons[category].sort();
+});
+
+console.log('\nIconos por categoría:');
+Object.keys(categorizedIcons).forEach(category => {
+  console.log(`${category}: ${categorizedIcons[category].length} iconos`);
+});
+
+// Generar el código JavaScript para MenuManagerView.vue
+const generateIconsCode = () => {
+  let code = 'const availableIcons = {\n';
+  
+  Object.keys(categorizedIcons).sort().forEach(category => {
+    code += `  ${category}: [\n`;
+    const icons = categorizedIcons[category];
+    
+    // Dividir en líneas de máximo 5 iconos para mejor legibilidad
+    for (let i = 0; i < icons.length; i += 5) {
+      const chunk = icons.slice(i, i + 5);
+      code += `    ${chunk.map(icon => `'${icon}'`).join(', ')},\n`;
+    }
+    
+    code += '  ],\n';
+  });
+  
+  code += '};\n';
+  return code;
+};
+
+const iconsCode = generateIconsCode();
+
+// Guardar el código en un archivo
+fs.writeFileSync('mdi-icons-generated.js', iconsCode);
+
+console.log('\n✅ Archivo generado: mdi-icons-generated.js');
+console.log(`📊 Total de iconos procesados: ${iconNames.length}`);
+console.log(`📂 Total de categorías: ${Object.keys(categorizedIcons).length}`);
+
+// Mostrar estadísticas detalladas
+console.log('\n📈 Estadísticas por categoría:');
+Object.keys(categorizedIcons).sort().forEach(category => {
+  const count = categorizedIcons[category].length;
+  const percentage = ((count / iconNames.length) * 100).toFixed(1);
+  console.log(`  ${category.padEnd(15)}: ${count.toString().padStart(4)} iconos (${percentage}%)`);
+});
+
+console.log('\n🎯 Script completado exitosamente!');

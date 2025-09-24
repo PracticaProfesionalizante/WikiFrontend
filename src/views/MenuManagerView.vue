@@ -249,59 +249,10 @@
                     {{ validationErrors.icon }}
                   </div>
                   
-                  <div class="icon-selector">
-                    <!-- Icono seleccionado -->
-                    <div v-if="menuForm.icon" class="selected-icon">
-                      <i :class="menuForm.icon"></i>
-                      <span>{{ menuForm.icon }}</span>
-                      <button type="button" @click="menuForm.icon = ''" class="clear-icon">
-                        <i class="mdi mdi-close"></i>
-                      </button>
-                    </div>
-
-                    <!-- Búsqueda de iconos -->
-                    <div class="icon-search">
-                      <input
-                        v-model="searchQuery"
-                        type="text"
-                        placeholder="Buscar iconos..."
-                        class="search-input"
-                      />
-                      <i class="mdi mdi-magnify search-icon"></i>
-                    </div>
-
-                    <!-- Categorías -->
-                    <div class="icon-categories">
-                      <button
-                        v-for="category in iconCategories"
-                        :key="category.id"
-                        type="button"
-                        class="category-btn"
-                        :class="{ active: selectedCategory === category.id }"
-                        @click="selectedCategory = category.id"
-                      >
-                        {{ category.name }}
-                      </button>
-                    </div>
-
-                    <!-- Grid de iconos -->
-                    <div class="icon-grid">
-                      <div
-                        v-for="icon in displayedIcons"
-                        :key="icon"
-                        class="icon-item"
-                        :class="{ selected: menuForm.icon === icon }"
-                        @click="menuForm.icon = icon; validateForm()"
-                      >
-                        <i :class="icon"></i>
-                      </div>
-                    </div>
-
-                    <div v-if="displayedIcons.length === 0" class="no-icons-found">
-                      <i class="mdi mdi-emoticon-sad-outline"></i>
-                      <p>No se encontraron iconos</p>
-                    </div>
-                  </div>
+                  <IconSelector 
+                    v-model="menuForm.icon" 
+                    @update:modelValue="validateForm"
+                  />
                 </div>
 
                 <!-- Selector de plantillas -->
@@ -659,6 +610,7 @@ import AppHeader from '@/components/common/AppHeader.vue'
 import MenuTreeNode from '@/components/MenuTreeNode.vue'
 import MenuTreeSelector from '@/components/MenuTreeSelector.vue'
 import DeleteMenuModal from '@/components/DeleteMenuModal.vue'
+import IconSelector from '@/components/IconSelector.vue'
 import menuService from '@/services/menuService'
 import authService from '@/services/auth'
 
@@ -702,9 +654,9 @@ const showDeleteModal = ref(false)
 const menuToDelete = ref(null)
 const menuToDeleteChildren = ref([])
 
-// Estado de iconos
-const searchQuery = ref('')
-const selectedCategory = ref('all')
+// Estado de iconos - Eliminado, ahora se maneja en IconSelector
+// const searchQuery = ref('')
+// const selectedCategory = ref('all')
 
 // Estado de vista
 const viewMode = ref('grid') // 'grid' o 'tree'
@@ -780,38 +732,7 @@ const loadMenus = async () => {
   }
 }
 
-// Categorías de iconos
-const iconCategories = [
-  { id: 'all', name: 'Todos' },
-  { id: 'navigation', name: 'Navegación' },
-  { id: 'actions', name: 'Acciones' },
-  { id: 'data', name: 'Datos' },
-  { id: 'ui', name: 'Interfaz' }
-]
-
-// Iconos disponibles por categoría
-const availableIcons = {
-  navigation: [
-    'mdi mdi-home', 'mdi mdi-view-dashboard', 'mdi mdi-menu',
-    'mdi mdi-arrow-left', 'mdi mdi-arrow-right', 'mdi mdi-chevron-up',
-    'mdi mdi-chevron-down', 'mdi mdi-navigation'
-  ],
-  actions: [
-    'mdi mdi-plus', 'mdi mdi-pencil', 'mdi mdi-delete',
-    'mdi mdi-content-save', 'mdi mdi-refresh', 'mdi mdi-download',
-    'mdi mdi-upload', 'mdi mdi-share'
-  ],
-  data: [
-    'mdi mdi-account-group', 'mdi mdi-table', 'mdi mdi-chart-line',
-    'mdi mdi-database', 'mdi mdi-file-document', 'mdi mdi-folder',
-    'mdi mdi-calendar', 'mdi mdi-clock'
-  ],
-  ui: [
-    'mdi mdi-cog', 'mdi mdi-palette', 'mdi mdi-eye',
-    'mdi mdi-heart', 'mdi mdi-star', 'mdi mdi-bell',
-    'mdi mdi-message', 'mdi mdi-help-circle'
-  ]
-}
+// Iconos ahora se manejan en IconSelector.vue
 
 // Plantillas de vista
 const viewTemplates = [
@@ -954,22 +875,7 @@ const availablePositions = computed(() => {
   return positions
 })
 
-const displayedIcons = computed(() => {
-  let icons = []
-  
-  if (selectedCategory.value === 'all') {
-    icons = Object.values(availableIcons).flat()
-  } else {
-    icons = availableIcons[selectedCategory.value] || []
-  }
-  
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    icons = icons.filter(icon => icon.toLowerCase().includes(query))
-  }
-  
-  return icons
-})
+// displayedIcons ahora se maneja en IconSelector.vue
 
 // Métodos
 const openDialog = () => {
