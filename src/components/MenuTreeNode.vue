@@ -147,6 +147,10 @@ const props = defineProps({
     type: Object,
     required: true
   },
+  level: {
+    type: Number,
+    default: 0
+  },
   allMenus: {
     type: Array,
     required: true
