@@ -688,3 +688,39 @@ const handleCreateSubmenu = () => {
   margin: 4px 0;
 }
 </style>
+export default {
+  name: 'MenuTreeNode',
+  props: {
+    menu: {
+      type: Object,
+      required: true
+    },
+    level: {
+      type: Number,
+      default: 0
+    }
+  },
+  emits: ['update', 'delete', 'move', 'context-menu'],
+  data() {
+    return {
+      expanded: false,
+      dropZone: null,
+      isDragging: false,
+      contextMenuVisible: false,
+      contextMenuPosition: { x: 0, y: 0 }
+    }
+  },
+  computed: {
+    hasChildren() {
+      return this.menu.children && this.menu.children.length > 0
+    },
+    
+    // Memoizar el cálculo de estilos para mejor rendimiento
+    nodeStyles() {
+      return {
+        paddingLeft: `${this.level * 20}px`
+      }
+    }
+  },
+  // ... existing code ...
+}

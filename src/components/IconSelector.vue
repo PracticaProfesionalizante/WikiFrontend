@@ -5,13 +5,13 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Buscar entre {{ totalIcons }} iconos... (ej: casa, usuario, configuración)"
+          placeholder="Busca lo que necesites... (por ejemplo: casa, usuario, configuración)"
           class="icon-search"
           @input="onSearchInput"
         />
         <i class="mdi mdi-magnify search-icon"></i>
       </div>
-      
+
       <div class="category-filter">
         <select v-model="selectedCategory" @change="handleCategoryChange" class="category-select">
           <option value="">Todas las categorías ({{ totalIcons }} iconos)</option>
@@ -27,21 +27,20 @@
         <i class="mdi mdi-loading mdi-spin"></i>
         <span>Cargando iconos...</span>
       </div>
-      
+
       <div v-else-if="filteredIcons.length === 0" class="empty-state">
         <i class="mdi mdi-emoticon-sad-outline"></i>
         <p>No se encontraron iconos</p>
         <small>Intenta con otros términos de búsqueda</small>
       </div>
-      
-      <div v-else class="icon-grid" :style="{ height: gridHeight + 'px' }">
+
+      <div v-else class="icon-grid">
         <div
-          v-for="(icon, index) in filteredIcons"
+          v-for="(icon, index) in visibleIcons"
           :key="icon"
           class="icon-item"
           :class="{ selected: selectedIcon === icon }"
           @click="selectIcon(icon)"
-          :style="getIconPosition(index)"
         >
           <i :class="['mdi', icon]" class="icon-preview"></i>
           <span class="icon-name">{{ getIconDisplayName(icon) }}</span>
@@ -55,7 +54,10 @@
         <span class="selected-name">{{ selectedIcon }}</span>
       </div>
       <div class="icon-count">
-        Mostrando {{ filteredIcons.length }} de {{ filteredIcons.length }} iconos
+        Mostrando {{ currentlyLoaded }} de {{ filteredIcons.length }} iconos
+        <span v-if="isLoadingMore" class="loading-more">
+          <i class="mdi mdi-loading mdi-spin"></i> Cargando más...
+        </span>
       </div>
     </div>
   </div>
@@ -80,82 +82,90 @@ export default {
       selectedCategory: '',
       selectedIcon: this.modelValue,
       isLoading: false,
-      
-      // Virtualización
+
+      // Scroll infinito
       itemHeight: 80,
       itemsPerRow: 6,
       containerHeight: 400,
       scrollTop: 0,
       
-      // Debounce para búsqueda
-      searchTimeout: null
+      // Progressive loading con scroll infinito
+      initialLoadSize: 90, // Cargar 90 iconos inicialmente
+      loadMoreSize: 60,    // Cargar 60 iconos más cada vez
+      currentlyLoaded: 90, // Cantidad actualmente cargada
+      isLoadingMore: false,
+      
+      // Debounce para búsqueda y scroll
+      searchTimeout: null,
+      renderTimeout: null,
+      scrollTimeout: null
     }
   },
   computed: {
     totalIcons() {
       return Object.values(this.availableIcons).reduce((total, icons) => total + icons.length, 0)
     },
-    
+
     filteredIcons() {
       let icons = []
-      
+
       // Filtrar por categoría
       if (this.selectedCategory) {
         icons = [...this.availableIcons[this.selectedCategory]]
       } else {
         icons = Object.values(this.availableIcons).flat()
       }
-      
+
       // Filtrar por búsqueda con debounce mejorado
       if (this.searchQuery.trim()) {
         const query = this.searchQuery.toLowerCase().trim()
         icons = icons.filter(icon => {
           const iconName = icon.replace('mdi-', '').replace(/-/g, ' ')
           const keywords = this.getIconKeywords(icon)
-          
+
           // Búsqueda exacta tiene prioridad
           if (iconName.includes(query) || icon.includes(query)) {
             return true
           }
-          
+
           // Búsqueda por palabras clave y sinónimos
-          return keywords.some(keyword => 
+          return keywords.some(keyword =>
             keyword.toLowerCase().includes(query) ||
             query.includes(keyword.toLowerCase())
           )
         })
-        
+
         // Ordenar resultados por relevancia
         icons.sort((a, b) => {
           const aName = a.replace('mdi-', '').replace(/-/g, ' ')
           const bName = b.replace('mdi-', '').replace(/-/g, ' ')
-          
+
           // Priorizar coincidencias exactas al inicio
           if (aName.startsWith(query) && !bName.startsWith(query)) return -1
           if (!aName.startsWith(query) && bName.startsWith(query)) return 1
-          
+
           // Luego por longitud (más corto = más relevante)
           return aName.length - bName.length
         })
       }
-      
+
       return icons
     },
-    
+
     gridHeight() {
       const rows = Math.ceil(this.filteredIcons.length / this.itemsPerRow)
       return rows * this.itemHeight
     },
-    
+
     visibleIconsCount() {
-      const visibleRows = Math.ceil(this.containerHeight / this.itemHeight) + 2
-      return visibleRows * this.itemsPerRow
+      // Aumentar significativamente el buffer para mostrar más iconos
+      const visibleRows = Math.ceil(this.containerHeight / this.itemHeight) + 10 // Buffer más grande
+      return Math.min(this.filteredIcons.length, visibleRows * this.itemsPerRow)
     },
-    
+
     visibleIcons() {
-      const startIndex = Math.max(0, Math.floor(this.scrollTop / this.itemHeight) * this.itemsPerRow - this.itemsPerRow)
-      const endIndex = Math.min(this.filteredIcons.length, startIndex + this.visibleIconsCount)
-      return this.filteredIcons.slice(startIndex, endIndex)
+      // Scroll infinito: mostrar solo los iconos cargados hasta ahora
+      return this.filteredIcons.slice(0, this.currentlyLoaded)
     }
   },
   watch: {
@@ -164,6 +174,10 @@ export default {
     },
     selectedIcon(newValue) {
       this.$emit('update:modelValue', newValue)
+    },
+    // Resetear carga cuando cambian los filtros
+    filteredIcons() {
+      this.currentlyLoaded = Math.min(this.initialLoadSize, this.filteredIcons.length)
     }
   },
   mounted() {
@@ -180,7 +194,7 @@ export default {
         }
       }, 300)
     },
-    
+
     handleCategoryChange() {
       this.searchQuery = ''
       this.scrollTop = 0
@@ -188,11 +202,11 @@ export default {
         this.$refs.gridContainer.scrollTop = 0
       }
     },
-    
+
     selectIcon(icon) {
       this.selectedIcon = icon
     },
-    
+
     getCategoryDisplayName(category) {
       const names = {
         actions: 'Acciones',
@@ -218,16 +232,16 @@ export default {
       }
       return names[category] || category
     },
-    
+
     getIconDisplayName(icon) {
       return icon.replace('mdi-', '').replace(/-/g, ' ')
     },
-    
+
     getIconKeywords(icon) {
       // Generar palabras clave basadas en el nombre del icono
       const name = icon.replace('mdi-', '')
       const parts = name.split('-')
-      
+
       // Agregar sinónimos y palabras relacionadas
       const synonyms = {
         'home': ['casa', 'inicio', 'principal'],
@@ -270,22 +284,24 @@ export default {
         'battery': ['batería', 'energía'],
         'power': ['energía', 'encender', 'apagar']
       }
-      
+
       let keywords = [...parts, name]
-      
+
       // Agregar sinónimos
       parts.forEach(part => {
         if (synonyms[part]) {
           keywords = keywords.concat(synonyms[part])
         }
       })
-      
+
       return keywords
     },
-    
+
     getIconPosition(index) {
-      const row = Math.floor(index / this.itemsPerRow)
-      const col = index % this.itemsPerRow
+      const startIndex = Math.max(0, Math.floor(this.scrollTop / this.itemHeight) * this.itemsPerRow - this.itemsPerRow)
+      const actualIndex = startIndex + index
+      const row = Math.floor(actualIndex / this.itemsPerRow)
+      const col = actualIndex % this.itemsPerRow
       return {
         position: 'absolute',
         top: (row * this.itemHeight) + 'px',
@@ -294,19 +310,52 @@ export default {
         height: this.itemHeight + 'px'
       }
     },
-    
+
     setupVirtualScrolling() {
       const container = this.$refs.gridContainer
       if (container) {
-        container.addEventListener('scroll', this.handleScroll)
+        container.addEventListener('scroll', this.handleScroll, { passive: true })
       }
     },
-    
+
     handleScroll(event) {
-      this.scrollTop = event.target.scrollTop
+      // Simplificar completamente el manejo del scroll
+      const container = event.target
+      const scrollHeight = container.scrollHeight
+      const scrollTop = container.scrollTop
+      const clientHeight = container.clientHeight
+      
+      // Detectar si está cerca del final para cargar más iconos
+      if (scrollHeight - scrollTop - clientHeight < 300 && !this.isLoadingMore) {
+        this.loadMoreIcons()
+      }
+    },
+
+    loadMoreIcons() {
+      // Solo cargar más si hay más iconos disponibles
+      if (this.currentlyLoaded >= this.filteredIcons.length) {
+        return
+      }
+
+      this.isLoadingMore = true
+      
+      // Cargar inmediatamente sin delay
+      setTimeout(() => {
+        const newLoadSize = Math.min(
+          this.loadMoreSize,
+          this.filteredIcons.length - this.currentlyLoaded
+        )
+        
+        this.currentlyLoaded += newLoadSize
+        this.isLoadingMore = false
+      }, 50) // Delay mínimo
+    },
+
+    onSearchInput() {
+      this.handleSearch()
     }
   },
-  
+
   beforeUnmount() {
     const container = this.$refs.gridContainer
     if (container) {
@@ -401,7 +450,9 @@ export default {
 }
 
 .icon-grid {
-  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
   padding: 16px;
 }
 
@@ -416,6 +467,7 @@ export default {
   cursor: pointer;
   transition: all 0.2s;
   background: white;
+  min-height: 72px;
 }
 
 .icon-item:hover {
@@ -479,20 +531,30 @@ export default {
   color: #666;
 }
 
+.loading-more {
+  margin-left: 8px;
+  font-size: 11px;
+  color: #007bff;
+}
+
+.loading-more i {
+  font-size: 12px;
+  margin-right: 4px;
+}
 /* Responsive */
 @media (max-width: 768px) {
   .icon-grid {
     padding: 8px;
   }
-  
+
   .icon-item {
     padding: 6px;
   }
-  
+
   .icon-preview {
     font-size: 20px;
   }
-  
+
   .icon-name {
     font-size: 9px;
   }
