@@ -54,7 +54,7 @@ import { useTheme } from '@/composables/useTheme'
 const authStore = useAuthStore()
 
 // Composable de tema
-const { initTheme } = useTheme()
+const { initTheme, initVuetifyTheme } = useTheme()
 
 // Computed para mostrar errores
 const showError = computed({
@@ -74,7 +74,10 @@ const clearError = () => {
 
 // Inicializar autenticación al montar el componente
 onMounted(async () => {
-  // Inicializar el tema
+  // Inicializar el tema de Vuetify primero (dentro de setup function)
+  initVuetifyTheme()
+  
+  // Luego inicializar el tema general
   initTheme()
   
   // Solo inicializar si hay tokens pero no hay usuario
