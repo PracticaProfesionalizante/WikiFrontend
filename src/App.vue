@@ -75,8 +75,7 @@ onMounted(async () => {
     try {
       await authStore.initializeAuth()
     } catch (error) {
-      // Error silencioso - solo log para debugging, no mostrar al usuario
-      console.warn('Error al inicializar autenticación (silencioso):', error)
+      // Error silencioso - no mostrar al usuario
     }
   }
 })

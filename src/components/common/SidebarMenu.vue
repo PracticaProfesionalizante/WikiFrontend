@@ -20,7 +20,7 @@
       <div class="menu-header">
         <div class="logo-container">
           <i class="menu-logo mdi mdi-school"></i>
-          <span class="logo-text" v-show="!isCollapsed">Portal Wiki</span>
+          <span class="logo-text" v-show="isExpanded">Portal Wiki</span>
         </div>
       </div>
       

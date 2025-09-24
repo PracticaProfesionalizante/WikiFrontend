@@ -41,7 +41,6 @@ onMounted(async () => {
       // Pasar false para no mostrar error al usuario, solo log interno
       await authStore.fetchCurrentUser(false)
     } catch (error) {
-      console.error('Error al obtener datos del usuario:', error)
       // Error silencioso - no mostrar al usuario
     }
   }

@@ -274,7 +274,6 @@ const handleDrop = (event, zone) => {
     
     // No permitir crear referencias circulares para la zona 'inside'
     if (zone === 'inside' && isDescendant(draggedData.id, props.menu.id)) {
-      console.warn('No se puede mover un menú a uno de sus descendientes')
       return
     }
     
@@ -315,10 +314,9 @@ const handleDrop = (event, zone) => {
       }
     }
     
-    console.log('🎯 Drop en zona:', zone, 'Datos de movimiento:', moveData)
     emit('move', moveData)
   } catch (error) {
-    console.error('Error al procesar drop:', error)
+    // Error silencioso para evitar logs innecesarios
   }
 }
 

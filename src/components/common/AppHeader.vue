@@ -89,7 +89,6 @@ const handleLogout = async () => {
     router.push('/login')
   } catch (error) {
     // Error silencioso para debugging - el logout local siempre funciona
-    console.error('Error al cerrar sesión (silencioso):', error)
   }
 }
 

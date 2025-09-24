@@ -99,7 +99,6 @@ export const useAuthStore = defineStore('auth', () => {
         setMenus(menuData)
       } catch (menuError) {
         // Error silencioso - si fallan los menús, continuar con menús vacíos
-        console.warn('Error al cargar menús (silencioso):', menuError.message)
         setMenus([])
       }
       
@@ -129,7 +128,6 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } catch (err) {
       // Error silencioso - solo log para debugging, no mostrar al usuario
-      console.warn('Error en logout del backend (silencioso):', err.message)
     } finally {
       // Limpiar estado local siempre
       clearAuth()
@@ -149,7 +147,6 @@ export const useAuthStore = defineStore('auth', () => {
       return response.access_token
     } catch (err) {
       // Error silencioso - solo log para debugging, no mostrar al usuario
-      console.error('Error al renovar token (silencioso):', err.message)
       clearAuth()
       router.push('/login')
       throw err
@@ -185,7 +182,6 @@ export const useAuthStore = defineStore('auth', () => {
             setMenus(menuData)
           } catch (menuError) {
             // Error silencioso - continuar sin menús
-            console.warn('Error al cargar menús durante inicialización (silencioso):', menuError.message)
           }
         }
       } catch (err) {
@@ -202,7 +198,6 @@ export const useAuthStore = defineStore('auth', () => {
       setMenus(menuData)
       return menuData
     } catch (err) {
-      console.error('Error al recargar menús:', err.message)
       throw err
     }
   }

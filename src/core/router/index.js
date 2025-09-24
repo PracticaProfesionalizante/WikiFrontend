@@ -100,25 +100,14 @@ router.beforeEach(async (to, from, next) => {
   
   // Verificar roles específicos si la ruta los requiere
   if (to.meta.roles && authStore.isAuthenticated) {
-    console.log('🔍 Router Debug - Verificando roles para:', to.path)
-    console.log('🔍 Roles requeridos:', to.meta.roles)
-    console.log('🔍 Roles del usuario:', authStore.userRoles)
-    console.log('🔍 Usuario autenticado:', authStore.isAuthenticated)
-    
     const hasRequiredRole = to.meta.roles.some(role => {
       const hasRole = authStore.hasRole(role)
-      console.log(`🔍 ¿Tiene rol ${role}?`, hasRole)
       return hasRole
     })
     
-    console.log('🔍 ¿Tiene algún rol requerido?', hasRequiredRole)
-    
     if (!hasRequiredRole) {
-      console.log('❌ Acceso denegado - Redirigiendo al Dashboard')
       next({ name: 'Dashboard' })
       return
-    } else {
-      console.log('✅ Acceso permitido')
     }
   }
   

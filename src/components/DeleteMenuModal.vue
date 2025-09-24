@@ -1,5 +1,5 @@
 <template>
-  <div v-if="show" class="modal-overlay" @click="handleOverlayClick">
+  <div v-if="show && menu" class="modal-overlay" @click="handleOverlayClick">
     <div class="modal-container" @click.stop>
       <div class="modal-header">
         <div class="modal-icon">
@@ -15,10 +15,10 @@
         <!-- Información del menú a eliminar -->
         <div class="menu-info">
           <div class="menu-item">
-            <i :class="menu.icon || 'mdi mdi-menu'" class="menu-icon"></i>
+            <i :class="menu?.icon || 'mdi mdi-menu'" class="menu-icon"></i>
             <div class="menu-details">
-              <h3>{{ menu.name }}</h3>
-              <p class="menu-path">{{ menu.path }}</p>
+              <h3>{{ menu?.name || 'Sin nombre' }}</h3>
+              <p class="menu-path">{{ menu?.path || 'Sin ruta' }}</p>
             </div>
           </div>
         </div>
@@ -137,7 +137,7 @@
 
         <!-- Mensaje simple si no hay submenús -->
         <div v-else class="no-children-message">
-          <p>¿Estás seguro de que deseas eliminar el menú "<strong>{{ menu.name }}</strong>"?</p>
+          <p>¿Estás seguro de que deseas eliminar el menú "<strong>{{ menu?.name || 'Sin nombre' }}</strong>"?</p>
           <p class="warning-text">Esta acción no se puede deshacer.</p>
         </div>
       </div>
@@ -170,7 +170,7 @@ const props = defineProps({
   },
   menu: {
     type: Object,
-    required: true
+    default: null
   },
   children: {
     type: Array,
@@ -230,6 +230,8 @@ const getConfirmButtonText = () => {
 }
 
 const handleConfirm = () => {
+  if (!props.menu) return // Salir si no hay menú
+  
   if (deletionMode.value === 'selective' && selectedChildren.value.length === 0) {
     return // No hacer nada si no hay selección en modo selectivo
   }

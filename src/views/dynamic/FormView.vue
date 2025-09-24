@@ -225,13 +225,11 @@ const handleSidebarToggle = (expanded) => {
 const handleSubmit = async () => {
   try {
     // Aquí iría la lógica para enviar los datos al backend
-    console.log('Datos del formulario:', formData.value)
     
     // Simular envío exitoso
     alert('Formulario enviado correctamente')
     resetForm()
   } catch (error) {
-    console.error('Error al enviar formulario:', error)
     alert('Error al enviar el formulario')
   }
 }

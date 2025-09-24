@@ -92,12 +92,10 @@ const expandedNodes = ref(new Set())
 const hierarchicalMenus = computed(() => {
   // Si los menús ya vienen con estructura jerárquica (con children), usarlos directamente
   if (props.menus.length > 0 && props.menus[0].children !== undefined) {
-    console.log('🔍 MenuTreeSelector - Usando estructura jerárquica del backend')
     return props.menus.sort((a, b) => a.order - b.order)
   }
   
   // Fallback: construir jerarquía desde estructura plana
-  console.log('🔍 MenuTreeSelector - Construyendo jerarquía desde estructura plana')
   const buildHierarchy = (menuList, parentId = null) => {
     return menuList
       .filter(menu => menu.parentId === parentId)

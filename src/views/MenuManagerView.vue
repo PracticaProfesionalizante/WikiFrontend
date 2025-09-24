@@ -729,7 +729,6 @@ const toggleExpand = (nodeId) => {
 // Función para verificar y renovar token si es necesario
 const verifyAndRefreshToken = async () => {
   if (!authStore.accessToken) {
-    console.log('❌ No hay token de acceso - redirigiendo al login')
     router.push('/login')
     return false
   }
@@ -737,16 +736,12 @@ const verifyAndRefreshToken = async () => {
   try {
     // Verificar si el token es válido
     await authService.verifyToken()
-    console.log('✅ Token válido')
     return true
   } catch (error) {
-    console.log('⚠️ Token inválido, intentando renovar...')
     try {
       await authStore.refreshAccessToken()
-      console.log('✅ Token renovado exitosamente')
       return true
     } catch (refreshError) {
-      console.log('❌ No se pudo renovar el token - redirigiendo al login')
       authStore.logout()
       router.push('/login')
       return false
@@ -759,45 +754,24 @@ const loadMenus = async () => {
   error.value = null
   
   try {
-    console.log('🔄 Cargando menús usando la misma estrategia que el sidebar...')
-    
     // Usar la misma función que usa el sidebar (authService.fetchMenus)
     // que apunta a /menu en lugar de /menus
     const menuData = await authService.fetchMenus()
-    console.log('✅ Menús cargados desde authService:', menuData)
-    console.log('📊 Cantidad de menús recibidos:', menuData?.length || 0)
     
     // Inspeccionar estructura de cada menú
     if (Array.isArray(menuData) && menuData.length > 0) {
-      console.log('🔍 Estructura del primer menú:', menuData[0])
-      menuData.forEach((menu, index) => {
-        console.log(`🔍 Menú ${index + 1}:`, {
-          id: menu.id,
-          name: menu.name,
-          parentId: menu.parentId,
-          hasChildren: menu.children && menu.children.length > 0,
-          childrenCount: menu.children ? menu.children.length : 0
-        })
-      })
-      
       menus.value = menuData
-      console.log('✅ Menús asignados correctamente')
       
       // También actualizar el store para mantener consistencia
       authStore.setMenus(menuData)
     } else {
-      console.warn('⚠️ Backend devolvió datos vacíos o inválidos')
       menus.value = []
     }
   } catch (err) {
-    console.error('❌ Error al cargar menús:', err)
-    
     // Si hay error, intentar usar los menús ya cargados en el store
     if (authStore.menus && authStore.menus.length > 0) {
-      console.log('🔄 Usando menús del store como fallback')
       menus.value = authStore.menus
     } else {
-      console.log('❌ No hay menús disponibles en el store')
       error.value = `Error al cargar menús: ${err.message}`
       menus.value = []
     }
@@ -1021,9 +995,6 @@ const closeDialog = () => {
 }
 
 const editMenu = (menu) => {
-  console.log('🔍 editMenu - Menú original recibido:', JSON.stringify(menu, null, 2))
-  console.log('🔍 editMenu - Tipo de roles en menú original:', typeof menu.roles, 'Valor:', menu.roles)
-  
   // Crear una copia del menú y asegurar que roles sea un array
   const menuCopy = { ...menu }
   
@@ -1040,9 +1011,6 @@ const editMenu = (menu) => {
     menuCopy.roles = []
   }
   
-  console.log('🔍 editMenu - Menú procesado:', JSON.stringify(menuCopy, null, 2))
-  console.log('🔍 editMenu - Roles procesados:', menuCopy.roles)
-  
   menuForm.value = menuCopy
   editingMenuId.value = menu.id
   isEditing.value = true
@@ -1052,23 +1020,18 @@ const editMenu = (menu) => {
 const deleteMenu = async (menuData) => {
   // Extraer el ID del menú, ya sea que venga como objeto o como ID directo
   const menuId = typeof menuData === 'object' ? menuData.id : menuData
-  console.log(`🗑️ deleteMenu iniciado para ID: ${menuId}`)
   
   try {
     // Buscar el menú usando la nueva función auxiliar
     const menu = findMenuById(menuId)
     
     if (!menu) {
-      console.error(`❌ Menú no encontrado: ${menuId}`)
       alert(`Menú no encontrado: ${menuId}`)
       return
     }
     
-    console.log(`✅ Menú encontrado: ${menu.name} (ID: ${menuId})`)
-    
     // Obtener hijos del menú
     const children = getMenuChildren(menuId)
-    console.log(`🔍 Hijos encontrados para menú ${menuId}:`, children.length)
     
     // Configurar el modal de eliminación
     menuToDelete.value = menu
@@ -1076,7 +1039,6 @@ const deleteMenu = async (menuData) => {
     showDeleteModal.value = true
     
   } catch (error) {
-    console.error('❌ Error al preparar eliminación de menú:', error)
     error.value = error.message
   }
 }
@@ -1088,8 +1050,6 @@ const closeDeleteModal = () => {
 }
 
 const handleDeleteConfirm = async (confirmData) => {
-  console.log('🗑️ handleDeleteConfirm - Datos de confirmación:', confirmData)
-  
   try {
     isLoading.value = true
     error.value = null
@@ -1099,9 +1059,7 @@ const handleDeleteConfirm = async (confirmData) => {
     switch (mode) {
       case 'delete-all':
         // Eliminar todos los submenús primero, luego el menú principal
-        console.log('🗑️ Modo: Eliminar todo')
         for (const childId of allChildren) {
-          console.log(`🗑️ Eliminando submenú: ${childId}`)
           await menuService.deleteMenu(childId)
         }
         await menuService.deleteMenu(menuId)
@@ -1109,16 +1067,13 @@ const handleDeleteConfirm = async (confirmData) => {
         
       case 'selective':
         // Eliminar solo los submenús seleccionados, luego el menú principal
-        console.log('🗑️ Modo: Eliminación selectiva')
         for (const childId of selectedChildren) {
-          console.log(`🗑️ Eliminando submenú seleccionado: ${childId}`)
           await menuService.deleteMenu(childId)
         }
         
         // Mover los submenús no seleccionados al nivel raíz
         const childrenToKeep = allChildren.filter(id => !selectedChildren.includes(id))
         for (const childId of childrenToKeep) {
-          console.log(`🔄 Moviendo submenú al nivel raíz: ${childId}`)
           const childMenu = findMenuById(childId)
           if (childMenu) {
             await menuService.updateMenu(childId, { ...childMenu, parentId: null })
@@ -1130,9 +1085,7 @@ const handleDeleteConfirm = async (confirmData) => {
         
       case 'keep-children':
         // Solo eliminar el menú principal, mover todos los hijos al nivel raíz
-        console.log('🗑️ Modo: Mantener hijos')
         for (const childId of allChildren) {
-          console.log(`🔄 Moviendo submenú al nivel raíz: ${childId}`)
           const childMenu = findMenuById(childId)
           if (childMenu) {
             await menuService.updateMenu(childId, { ...childMenu, parentId: null })
@@ -1145,18 +1098,13 @@ const handleDeleteConfirm = async (confirmData) => {
         throw new Error(`Modo de eliminación no válido: ${mode}`)
     }
     
-    console.log('✅ Eliminación completada exitosamente')
-    
     // Recargar la lista de menús
-    console.log('🔄 Recargando lista de menús...')
     await loadMenus()
-    console.log('✅ Lista de menús recargada')
     
     // Cerrar el modal
     closeDeleteModal()
     
   } catch (error) {
-    console.error('❌ Error al eliminar menú:', error)
     error.value = error.message
   } finally {
     isLoading.value = false
@@ -1164,54 +1112,26 @@ const handleDeleteConfirm = async (confirmData) => {
 }
 
 const saveMenu = async () => {
-  console.log('🔍 Iniciando saveMenu...')
-  console.log('📋 Datos del formulario:', JSON.stringify(menuForm.value, null, 2))
-  
   if (!validateForm()) {
-    console.log('❌ Validación del formulario falló')
-    console.log('🚫 Errores de validación:', validationErrors.value)
     return
   }
-  
-  console.log('✅ Validación del formulario exitosa')
   
   isLoading.value = true
   error.value = null
   
   try {
     if (isEditing.value) {
-      console.log('✏️ Actualizando menú:', menuForm.value.name)
-      console.log('🆔 ID del menú a actualizar:', menuForm.value.id)
-      console.log('📤 Datos a enviar:', JSON.stringify(menuForm.value, null, 2))
-      
       const result = await menuService.updateMenu(menuForm.value.id, menuForm.value)
-      console.log('✅ Menú actualizado exitosamente')
-      console.log('📥 Respuesta del servidor:', result)
     } else {
-      console.log('➕ Creando nuevo menú:', menuForm.value.name)
-      console.log('📤 Datos a enviar:', JSON.stringify(menuForm.value, null, 2))
-      
       const result = await menuService.createMenu(menuForm.value)
-      console.log('✅ Menú creado exitosamente')
-      console.log('📥 Respuesta del servidor:', result)
     }
     
     // Recargar la lista de menús
-    console.log('🔄 Recargando lista de menús...')
     await loadMenus()
     
     // Cerrar el diálogo
-    console.log('🚪 Cerrando diálogo...')
     closeDialog()
   } catch (err) {
-    console.error('❌ Error al guardar menú:', err)
-    console.error('🔍 Detalles del error:')
-    console.error('  - Mensaje:', err.message)
-    console.error('  - Código de estado:', err.response?.status)
-    console.error('  - Datos de respuesta:', err.response?.data)
-    console.error('  - Headers:', err.response?.headers)
-    console.error('  - Stack trace:', err.stack)
-    
     error.value = err.message
   } finally {
     isLoading.value = false
@@ -1373,9 +1293,6 @@ const getMenuChildren = (menuId) => {
     index === self.findIndex(c => c.id === child.id)
   )
   
-  console.log(`🔍 getMenuChildren(${menuId}) - Encontrados:`, uniqueChildren.length, 'hijos')
-  console.log(`🔍 getMenuChildren(${menuId}) - IDs de hijos:`, uniqueChildren.map(c => c.id))
-  
   return uniqueChildren
 }
 
@@ -1384,7 +1301,6 @@ const findMenuById = (menuId) => {
   // Buscar en la estructura plana
   let menu = menus.value.find(m => m.id === menuId)
   if (menu) {
-    console.log(`🔍 findMenuById(${menuId}) - Encontrado en estructura plana:`, menu.name)
     return menu
   }
   
@@ -1404,19 +1320,14 @@ const findMenuById = (menuId) => {
   
   menu = findInHierarchy(hierarchicalMenus.value || [])
   if (menu) {
-    console.log(`🔍 findMenuById(${menuId}) - Encontrado en estructura jerárquica:`, menu.name)
     return menu
   }
   
-  console.log(`❌ findMenuById(${menuId}) - No encontrado en ninguna estructura`)
   return null
 }
 
 // Función para construir jerarquía de menús (adaptada para datos ya jerárquicos del backend)
 const buildMenuHierarchy = () => {
-  console.log('🔍 buildMenuHierarchy - Datos de entrada:', menus.value)
-  console.log('🔍 buildMenuHierarchy - Cantidad total de menús:', menus.value.length)
-  
   // El backend ya devuelve los menús con estructura jerárquica
   // Solo necesitamos asegurar que la estructura esté completa
   const processMenu = (menu) => {
@@ -1424,27 +1335,18 @@ const buildMenuHierarchy = () => {
       ...menu,
       children: menu.children ? menu.children.map(child => processMenu(child)) : []
     }
-    console.log(`🔍 processMenu - Procesando menú "${menu.name}":`, {
-      id: menu.id,
-      name: menu.name,
-      hasChildren: menu.children && menu.children.length > 0,
-      childrenCount: menu.children ? menu.children.length : 0
-    })
     return processedMenu
   }
   
   // Procesar todos los menús (que ya son menús raíz del backend)
   const hierarchy = menus.value.map(menu => processMenu(menu))
   
-  console.log('🔍 buildMenuHierarchy - Jerarquía final:', hierarchy)
   return hierarchy
 }
 
 // Computed para obtener menús con jerarquía
 const hierarchicalMenus = computed(() => {
-  console.log('🔍 hierarchicalMenus computed - Ejecutándose...')
   const result = buildMenuHierarchy()
-  console.log('🔍 hierarchicalMenus computed - Resultado:', result)
   return result
 })
 
@@ -1474,7 +1376,6 @@ const createSubmenu = (parentMenu) => {
 
 const moveMenu = async (moveData) => {
   try {
-    console.log('🔄 MenuManagerView.moveMenu - Datos recibidos:', moveData)
     isLoading.value = true
     
     // Usar el nuevo método específico para mover menús
@@ -1484,10 +1385,8 @@ const moveMenu = async (moveData) => {
       order: moveData.newOrder
     })
     
-    console.log('✅ MenuManagerView.moveMenu - Menú movido exitosamente')
     await loadMenus() // Recargar la lista
   } catch (err) {
-    console.error('❌ MenuManagerView.moveMenu - Error:', err)
     error.value = err.message
   } finally {
     isLoading.value = false
@@ -1496,19 +1395,12 @@ const moveMenu = async (moveData) => {
 
 // Verificar permisos de SuperAdmin
 const checkSuperAdminAccess = () => {
-  console.log('🔍 MenuManagerView - Verificando acceso SuperAdmin')
-  console.log('🔍 Usuario completo:', authStore.user)
-  console.log('🔍 Roles del usuario:', authStore.userRoles)
-  console.log('🔍 ¿Tiene ROLE_SUPER_USER?', authStore.hasRole('ROLE_SUPER_USER'))
-  
   // Usar la misma lógica de roles que el resto de la aplicación
   if (!authStore.hasRole('ROLE_SUPER_USER')) {
-    console.log('❌ Acceso denegado en MenuManagerView - Redirigiendo al dashboard')
     router.push('/dashboard')
     return false
   }
   
-  console.log('✅ Acceso permitido en MenuManagerView')
   return true
 }
 

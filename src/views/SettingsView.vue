@@ -414,7 +414,6 @@ const updateProfile = async () => {
     showMessage('Perfil actualizado correctamente', 'success')
   } catch (error) {
     // Error silencioso para debugging - el usuario ya ve el mensaje de error en la UI
-    console.error('Error al actualizar perfil (silencioso):', error)
     showMessage('Error al actualizar el perfil. Inténtalo de nuevo.', 'error')
   } finally {
     isUpdatingProfile.value = false
@@ -439,7 +438,6 @@ const changePassword = async () => {
     showMessage('Contraseña cambiada correctamente', 'success')
   } catch (error) {
     // Error silencioso para debugging - el usuario ya ve el mensaje de error en la UI
-    console.error('Error al cambiar contraseña (silencioso):', error)
     showMessage('Error al cambiar la contraseña. Verifica tu contraseña actual.', 'error')
   } finally {
     isChangingPassword.value = false
@@ -457,7 +455,6 @@ const updatePreferences = async () => {
     showMessage('Preferencias actualizadas', 'success')
   } catch (error) {
     // Error silencioso para debugging - el usuario ya ve el mensaje de error en la UI
-    console.error('Error al actualizar preferencias (silencioso):', error)
     showMessage('Error al actualizar las preferencias', 'error')
   }
 }
