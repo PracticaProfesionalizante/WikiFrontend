@@ -1,18 +1,18 @@
 <template>
-  <div 
+  <div
     class="sidebar-container"
     :class="{ 'expanded': isExpanded, 'mobile-open': isMobileOpen }"
   >
-    
-    <button 
+
+    <button
       class="mobile-toggle"
       @click="toggleMobile"
       v-show="isMobile"
     >
       <i class="mdi mdi-menu"></i>
     </button>
-    
-    <nav 
+
+    <nav
       class="sidebar-menu"
       @mouseenter="expandMenu"
       @mouseleave="collapseMenu"
@@ -23,13 +23,13 @@
           <span class="logo-text" v-show="isExpanded">Portal Wiki</span>
         </div>
       </div>
-      
+
       <div class="menu-items">
         <!-- Vista principal del menú -->
         <template v-if="currentView === 'main'">
           <div v-for="item in menuItems" :key="item.id" class="menu-item">
-            <div 
-              class="item-content" 
+            <div
+              class="item-content"
               :class="{ 'active': activeMenuId === item.id && !item.submenu }"
               @click="selectItem(item)"
             >
@@ -42,21 +42,14 @@
 
         <!-- Vista de submenús -->
         <template v-else-if="currentView === 'submenu'">
-          <!-- Botón volver mejorado -->
-          <div 
-            class="menu-item back-item"
-            @click="goBackToMain"
-          >
-            <div class="item-content back-content">
-              <span class="back-icon-text">←</span>
-              <span class="item-text back-text">Volver</span>
-            </div>
-          </div>
-
-          <!-- Título del menú padre mejorado -->
+          <!-- Título del menú padre mejorado con icono clickeable -->
           <div class="menu-section-title parent-menu-title">
             <div class="parent-title-content">
-              <i :class="currentParentMenu.icon" class="title-icon parent-icon"></i>
+              <i 
+                class="mdi mdi-arrow-left title-icon parent-icon clickable-back-icon"
+                @click="goBackToMain"
+                title="Volver al menú principal"
+              ></i>
               <div class="title-info">
                 <span class="title-text parent-name">{{ currentParentMenu.text }}</span>
                 <span class="title-subtitle">Menú principal</span>
@@ -67,7 +60,7 @@
 
           <!-- Lista de submenús -->
           <div v-for="submenu in currentSubmenus" :key="submenu.id" class="menu-item">
-            <div 
+            <div
               class="item-content"
               :class="{ 'active': activeSubmenuId === submenu.id && !submenu.submenu }"
               @click="selectSubmenu(submenu)"
@@ -81,7 +74,7 @@
 
         <!-- Vista de documentación (mantener existente) -->
         <template v-else-if="currentView === 'documentation'">
-          <div 
+          <div
             class="menu-item back-item"
             @click="goBackToMain"
           >
@@ -96,7 +89,7 @@
           </div>
 
           <div v-for="item in documentationItems" :key="item.id" class="menu-item">
-            <div 
+            <div
               class="item-content"
               :class="{ 'active': activeDocumentationId === item.id }"
               @click="selectDocumentationItem(item)"
@@ -107,12 +100,12 @@
           </div>
         </template>
       </div>
-      
+
       <!-- Sección de administración (solo para SuperAdmin) -->
        <div v-if="authStore.hasRole('ROLE_SUPER_USER')" class="menu-footer">
         <div class="menu-divider"></div>
         <div class="menu-item admin-item">
-          <div 
+          <div
             class="item-content"
             :class="{ 'active': route.path === '/gestion-menus' }"
             @click="navigateToMenuManager"
@@ -123,9 +116,9 @@
         </div>
       </div>
     </nav>
-    
-    <div 
-      v-if="isMobile && isMobileOpen" 
+
+    <div
+      v-if="isMobile && isMobileOpen"
       class="mobile-overlay"
       @click="closeMobile"
     ></div>
@@ -155,7 +148,7 @@ const menuItems = computed(() => {
   if (!authStore.menus || authStore.menus.length === 0) {
     return []
   }
-  
+
   // Transformar menús del backend al formato esperado por el componente
   const transformMenu = (menu) => ({
     id: menu.id,
@@ -167,14 +160,14 @@ const menuItems = computed(() => {
     showSubmenu: false,
     children: menu.children || []
   })
-  
+
   return authStore.menus.map(menu => transformMenu(menu))
 })
 
 const documentationItems = ref([
   { id: 21, text: 'Institutos', route: '/institutos', active: false },
   { id: 22, text: 'Status Page', route: '/status-page', active: false },
-  { id: 23, text: 'Reglas de Negocio', route: '/reglas-negocio', active: false },  
+  { id: 23, text: 'Reglas de Negocio', route: '/reglas-negocio', active: false },
   { id: 24, text: 'Gestión de Incidencias', route: '/gestion-de-incidencias', active: false },
   { id: 25, text: 'Stack Tecnologico', route: '/stack-tecnologico', active: false },
 ])
@@ -217,7 +210,7 @@ const goBackToMain = () => {
     activeSubmenuId.value = null
     return
   }
-  
+
   // Si no hay historial, volver al menú principal
   currentView.value = 'main'
   currentParentMenu.value = null
@@ -249,7 +242,7 @@ const selectItem = (item) => {
     currentView.value = 'documentation'
     return
   }
-  
+
   // Si el item tiene submenús, cambiar a vista de submenús
   if (item.submenu && item.submenu.length > 0) {
     currentView.value = 'submenu'
@@ -259,10 +252,10 @@ const selectItem = (item) => {
     navigationHistory.value = [] // Limpiar historial al entrar desde el menú principal
     return
   }
-  
+
   // Si no tiene submenús, navegar directamente
   activeMenuId.value = item.id
-  
+
   if (item.route) {
     router.push(item.route)
     if (isMobile.value) {
@@ -294,20 +287,20 @@ const selectSubmenu = (submenu) => {
       parent: currentParentMenu.value,
       submenus: currentSubmenus.value
     })
-    
+
     currentParentMenu.value = submenu
     currentSubmenus.value = submenu.submenu
     activeSubmenuId.value = null
     return
   }
-  
+
   // Si no tiene submenús, es un elemento final
   activeSubmenuId.value = submenu.id
-  
+
   if (isMobile.value) {
     isMobileOpen.value = false
   }
-  
+
   if (submenu.route) {
     router.push(submenu.route)
   }
@@ -335,7 +328,7 @@ const updateActiveState = (currentRoute) => {
       currentView.value = 'main'
       return
     }
-    
+
     // Buscar en submenús
     if (item.submenu) {
       item.submenu.forEach(submenu => {
@@ -737,9 +730,9 @@ onUnmounted(() => {
   opacity: 0;
   transform: translateX(-10px);
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, 
-    rgba(var(--primary-color-rgb), 0.08) 0%, 
-    rgba(var(--primary-color-rgb), 0.03) 50%, 
+  background: linear-gradient(135deg,
+    rgba(var(--primary-color-rgb), 0.08) 0%,
+    rgba(var(--primary-color-rgb), 0.03) 50%,
     transparent 100%);
   border-radius: 12px;
   border: 1px solid rgba(var(--primary-color-rgb), 0.1);
@@ -754,9 +747,9 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, 
-    var(--primary-color) 0%, 
-    rgba(var(--primary-color-rgb), 0.7) 50%, 
+  background: linear-gradient(90deg,
+    var(--primary-color) 0%,
+    rgba(var(--primary-color-rgb), 0.7) 50%,
     var(--primary-color) 100%);
   opacity: 0.8;
 }
@@ -771,11 +764,27 @@ onUnmounted(() => {
   z-index: 1;
 }
 
+/* Estilos para el icono clickeable de volver */
+.clickable-back-icon {
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.clickable-back-icon:hover {
+  transform: translateX(-3px) scale(1.1);
+  box-shadow: 0 5px 15px rgba(var(--primary-color-rgb), 0.4);
+}
+
+.clickable-back-icon:active {
+  transform: translateX(-2px) scale(1.05);
+}
+
 .parent-icon {
   font-size: 1.5rem;
   color: white;
-  background: linear-gradient(135deg, 
-    var(--primary-color) 0%, 
+  background: linear-gradient(135deg,
+    var(--primary-color) 0%,
     rgba(var(--primary-color-rgb), 0.8) 100%);
   padding: 0.5rem;
   border-radius: 10px;
@@ -801,8 +810,8 @@ onUnmounted(() => {
 .parent-name {
   font-size: 1.1rem;
   font-weight: 700;
-  background: linear-gradient(135deg, 
-    var(--text-primary) 0%, 
+  background: linear-gradient(135deg,
+    var(--text-primary) 0%,
     var(--primary-color) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -825,8 +834,8 @@ onUnmounted(() => {
 
 .title-divider {
   height: 3px;
-  background: linear-gradient(90deg, 
-    var(--primary-color) 0%, 
+  background: linear-gradient(90deg,
+    var(--primary-color) 0%,
     rgba(var(--primary-color-rgb), 0.6) 30%,
     rgba(var(--primary-color-rgb), 0.3) 70%,
     transparent 100%);
@@ -843,9 +852,9 @@ onUnmounted(() => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(255, 255, 255, 0.4) 50%, 
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
     transparent 100%);
   animation: shimmer 2s infinite;
 }
@@ -853,180 +862,6 @@ onUnmounted(() => {
 @keyframes shimmer {
   0% { left: -100%; }
   100% { left: 100%; }
-}
-
-/* Estilos mejorados para el botón volver */
-.back-item {
-  margin-bottom: 0.75rem;
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-  background: linear-gradient(135deg, 
-    rgba(var(--primary-color-rgb), 0.05) 0%, 
-    rgba(var(--primary-color-rgb), 0.02) 100%);
-  border: 1px solid rgba(var(--primary-color-rgb), 0.15);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.back-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    rgba(var(--primary-color-rgb), 0.1) 50%, 
-    transparent 100%);
-  transition: left 0.5s ease;
-  z-index: 0;
-}
-
-.back-item:hover {
-  background: linear-gradient(135deg, 
-    rgba(var(--primary-color-rgb), 0.12) 0%, 
-    rgba(var(--primary-color-rgb), 0.06) 100%);
-  transform: translateX(3px) translateY(-1px);
-  box-shadow: 0 6px 20px rgba(var(--primary-color-rgb), 0.25);
-  border-color: rgba(var(--primary-color-rgb), 0.3);
-}
-
-.back-item:hover::before {
-  left: 100%;
-}
-
-.back-content {
-  padding: 0.875rem 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  position: relative;
-  z-index: 1;
-}
-
-.back-content::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 0;
-  background: linear-gradient(180deg, 
-    var(--primary-color) 0%, 
-    rgba(var(--primary-color-rgb), 0.7) 100%);
-  border-radius: 2px;
-  transition: height 0.3s ease;
-}
-
-.back-item:hover .back-content::after {
-  height: 60%;
-}
-
-.back-icon-text {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: white;
-  background: linear-gradient(135deg, 
-    var(--primary-color) 0%, 
-    rgba(var(--primary-color-rgb), 0.8) 100%);
-  padding: 0.375rem;
-  border-radius: 8px;
-  min-width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 3px 8px rgba(var(--primary-color-rgb), 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.back-icon-text::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, 
-    transparent 30%, 
-    rgba(255, 255, 255, 0.2) 50%, 
-    transparent 70%);
-  transform: rotate(-45deg);
-  transition: transform 0.6s ease;
-}
-
-.back-item:hover .back-icon-text {
-  transform: translateX(-3px) scale(1.05);
-  box-shadow: 0 5px 15px rgba(var(--primary-color-rgb), 0.4);
-}
-
-.back-item:hover .back-icon-text::before {
-  transform: rotate(-45deg) translate(100%, 100%);
-}
-
-.back-icon {
-  font-size: 1.25rem;
-  color: white;
-  background: linear-gradient(135deg, 
-    var(--primary-color) 0%, 
-    rgba(var(--primary-color-rgb), 0.8) 100%);
-  padding: 0.375rem;
-  border-radius: 8px;
-  min-width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 3px 8px rgba(var(--primary-color-rgb), 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.back-icon::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, 
-    transparent 30%, 
-    rgba(255, 255, 255, 0.2) 50%, 
-    transparent 70%);
-  transform: rotate(-45deg);
-  transition: transform 0.6s ease;
-}
-
-.back-item:hover .back-icon {
-  transform: translateX(-3px) scale(1.05);
-  box-shadow: 0 5px 15px rgba(var(--primary-color-rgb), 0.4);
-}
-
-.back-item:hover .back-icon::before {
-  transform: rotate(-45deg) translate(100%, 100%);
-}
-
-.back-text {
-  font-weight: 600;
-  background: linear-gradient(135deg, 
-    var(--text-primary) 0%, 
-    var(--primary-color) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.back-item:hover .back-text {
-  transform: translateX(2px);
 }
 
 .sidebar-container.expanded .menu-section-title {
@@ -1063,16 +898,16 @@ onUnmounted(() => {
   align-items: center;
   opacity: 1;
   transform: translateX(0);
-  background: linear-gradient(135deg, 
-    rgba(var(--primary-color-rgb), 0.1) 0%, 
+  background: linear-gradient(135deg,
+    rgba(var(--primary-color-rgb), 0.1) 0%,
     rgba(var(--primary-color-rgb), 0.05) 100%);
   border-radius: 10px;
   transition: all 0.3s ease;
 }
 
 .sidebar-container:not(.expanded) .parent-menu-title:hover {
-  background: linear-gradient(135deg, 
-    rgba(var(--primary-color-rgb), 0.15) 0%, 
+  background: linear-gradient(135deg,
+    rgba(var(--primary-color-rgb), 0.15) 0%,
     rgba(var(--primary-color-rgb), 0.08) 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(var(--primary-color-rgb), 0.3);
@@ -1111,17 +946,17 @@ onUnmounted(() => {
   .mobile-toggle {
     display: block;
   }
-  
+
   .hover-trigger {
     display: none;
   }
-  
+
   .sidebar-menu {
     width: 0;
     transform: translateX(-100%);
     pointer-events: none;
   }
-  
+
   .sidebar-container.mobile-open .sidebar-menu {
     width: 280px;
     transform: translateX(0);
@@ -1129,24 +964,24 @@ onUnmounted(() => {
     z-index: 99999;
     position: fixed;
   }
-  
+
   .sidebar-container.mobile-open .logo-text,
   .sidebar-container.mobile-open .item-text,
   .sidebar-container.mobile-open .submenu-arrow {
     opacity: 1;
     transform: translateX(0);
   }
-  
+
   .sidebar-container.mobile-open .submenu {
     opacity: 1;
     max-height: 500px;
   }
-  
+
   .sidebar-container.mobile-open .submenu-arrow-nested {
     opacity: 1;
     transform: translateX(0);
   }
-  
+
   .sidebar-container.mobile-open .nested-submenu {
     opacity: 1;
     max-height: 400px;
