@@ -10,6 +10,9 @@ import '@mdi/font/css/materialdesignicons.css'
 // Importar el store de autenticación
 import { useAuthStore } from './stores/auth'
 
+// Utilidad para fallback de iconos
+import { initIconFallback } from './utils/iconFallback'
+
 // Crear instancia de Pinia
 const pinia = createPinia()
 
@@ -39,6 +42,9 @@ const initializeAuth = async () => {
 // Inicializar la aplicación
 const startApp = async () => {
   try {
+    // Inicializar sistema de fallback de iconos
+    initIconFallback()
+    
     // Primero montar la aplicación
     app.mount('#app')
     

@@ -10,6 +10,18 @@ import * as directives from 'vuetify/directives'
 export default createVuetify({
   components,
   directives,
+  icons: {
+    defaultSet: 'mdi',
+    sets: {
+      mdi: {
+        component: (props) => {
+          // Fallback para iconos que no cargan
+          const iconName = props.icon?.replace('mdi-', '') || 'help-circle'
+          return `<i class="mdi mdi-${iconName}" style="font-size: ${props.size || '24px'}"></i>`
+        }
+      }
+    }
+  },
   theme: {
     defaultTheme: 'light',
     themes: {
