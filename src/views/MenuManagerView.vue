@@ -75,7 +75,7 @@
           >
             <div class="menu-card-header">
               <div class="menu-icon">
-                <i :class="menu.icon || 'mdi mdi-circle-outline'"></i>
+                <i :class="['mdi', menu.icon] || 'mdi mdi-circle-outline'"></i>
               </div>
               <div class="menu-info">
                 <div class="menu-title-row">
@@ -167,30 +167,51 @@
         />
 
         <!-- Modal de creación/edición -->
-        <div v-if="showDialog" class="dialog-overlay" @click="closeDialog">
-          <div class="dialog-content" @click.stop>
+        <div 
+          v-if="showDialog" 
+          class="dialog-overlay" 
+          @click="closeDialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+          aria-describedby="modal-description"
+        >
+          <div 
+            class="dialog-content" 
+            @click.stop
+            tabindex="-1"
+            ref="modalContent"
+          >
             <div class="dialog-header">
-              <h2>
-                <i class="mdi mdi-menu-open"></i>
+              <h2 id="modal-title">
+                <i class="mdi mdi-menu-open" aria-hidden="true"></i>
                 {{ isEditing ? 'Editar' : 'Crear' }} Menú
               </h2>
-              <button @click="closeDialog" class="close-btn">
-                <i class="mdi mdi-close"></i>
+              <button 
+                @click="closeDialog" 
+                class="close-btn"
+                aria-label="Cerrar modal"
+                type="button"
+              >
+                <i class="mdi mdi-close" aria-hidden="true"></i>
               </button>
             </div>
 
             <div class="dialog-body">
-              <form @submit.prevent="saveMenu">
+              <p id="modal-description" class="sr-only">
+                Formulario para {{ isEditing ? 'editar' : 'crear' }} un elemento del menú. Complete los campos requeridos y presione guardar.
+              </p>
+              <form @submit.prevent="saveMenu" role="form" id="menu-form">
                 <!-- Información básica -->
                 <div class="form-section">
                   <h3 class="section-title">
-                    <i class="mdi mdi-information-outline"></i>
+                    <i class="mdi mdi-information-outline" aria-hidden="true"></i>
                     Información Básica
                   </h3>
                   
                   <div class="form-group">
                     <label for="menuName" class="form-label">
-                      <i class="mdi mdi-format-title"></i>
+                      <i class="mdi mdi-format-title" aria-hidden="true"></i>
                       Nombre del Menú *
                     </label>
                     <input
@@ -202,20 +223,23 @@
                       placeholder="Ej: Gestión de Usuarios"
                       @input="generatePath"
                       maxlength="50"
+                      required
+                      aria-describedby="menuName-help menuName-error"
+                      ref="firstInput"
                     />
-                    <div v-if="validationErrors.name" class="error-message">
-                      <i class="mdi mdi-alert-circle"></i>
+                    <div v-if="validationErrors.name" class="error-message" id="menuName-error" role="alert">
+                      <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
                       {{ validationErrors.name }}
                     </div>
-                    <div class="help-text">
-                      <i class="mdi mdi-information"></i>
+                    <div class="help-text" id="menuName-help">
+                      <i class="mdi mdi-information" aria-hidden="true"></i>
                       Este será el nombre que aparecerá en el menú lateral
                     </div>
                   </div>
 
                   <div class="form-group">
                     <label for="menuPath" class="form-label">
-                      <i class="mdi mdi-link-variant"></i>
+                      <i class="mdi mdi-link-variant" aria-hidden="true"></i>
                       Ruta de Acceso *
                     </label>
                     <input
@@ -226,13 +250,15 @@
                       :class="{ 'error': validationErrors.path }"
                       placeholder="Ej: /gestion-usuarios"
                       @input="validateForm"
+                      required
+                      aria-describedby="menuPath-help menuPath-error"
                     />
-                    <div v-if="validationErrors.path" class="error-message">
-                      <i class="mdi mdi-alert-circle"></i>
+                    <div v-if="validationErrors.path" class="error-message" id="menuPath-error" role="alert">
+                      <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
                       {{ validationErrors.path }}
                     </div>
-                    <div class="help-text">
-                      <i class="mdi mdi-information"></i>
+                    <div class="help-text" id="menuPath-help">
+                      <i class="mdi mdi-information" aria-hidden="true"></i>
                       URL que se usará para acceder a esta vista (se genera automáticamente)
                     </div>
                   </div>
@@ -241,95 +267,53 @@
                 <!-- Selector de iconos -->
                 <div class="form-section">
                   <h3 class="section-title">
-                    <i class="mdi mdi-emoticon-outline"></i>
+                    <i class="mdi mdi-emoticon-outline" aria-hidden="true"></i>
                     Seleccionar Icono *
                   </h3>
-                  <div v-if="validationErrors.icon" class="error-message">
-                    <i class="mdi mdi-alert-circle"></i>
+                  <div v-if="validationErrors.icon" class="error-message" role="alert" aria-live="polite">
+                    <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
                     {{ validationErrors.icon }}
                   </div>
                   
-                  <div class="icon-selector">
-                    <!-- Icono seleccionado -->
-                    <div v-if="menuForm.icon" class="selected-icon">
-                      <i :class="menuForm.icon"></i>
-                      <span>{{ menuForm.icon }}</span>
-                      <button type="button" @click="menuForm.icon = ''" class="clear-icon">
-                        <i class="mdi mdi-close"></i>
-                      </button>
-                    </div>
-
-                    <!-- Búsqueda de iconos -->
-                    <div class="icon-search">
-                      <input
-                        v-model="searchQuery"
-                        type="text"
-                        placeholder="Buscar iconos..."
-                        class="search-input"
-                      />
-                      <i class="mdi mdi-magnify search-icon"></i>
-                    </div>
-
-                    <!-- Categorías -->
-                    <div class="icon-categories">
-                      <button
-                        v-for="category in iconCategories"
-                        :key="category.id"
-                        type="button"
-                        class="category-btn"
-                        :class="{ active: selectedCategory === category.id }"
-                        @click="selectedCategory = category.id"
-                      >
-                        {{ category.name }}
-                      </button>
-                    </div>
-
-                    <!-- Grid de iconos -->
-                    <div class="icon-grid">
-                      <div
-                        v-for="icon in displayedIcons"
-                        :key="icon"
-                        class="icon-item"
-                        :class="{ selected: menuForm.icon === icon }"
-                        @click="menuForm.icon = icon; validateForm()"
-                      >
-                        <i :class="icon"></i>
-                      </div>
-                    </div>
-
-                    <div v-if="displayedIcons.length === 0" class="no-icons-found">
-                      <i class="mdi mdi-emoticon-sad-outline"></i>
-                      <p>No se encontraron iconos</p>
-                    </div>
-                  </div>
+                  <IconSelector 
+                    v-model="menuForm.icon" 
+                    @update:modelValue="validateForm"
+                    aria-label="Seleccionar icono para el menú"
+                  />
                 </div>
 
                 <!-- Selector de plantillas -->
                 <div class="form-section">
                   <h3 class="section-title">
-                    <i class="mdi mdi-view-dashboard-outline"></i>
+                    <i class="mdi mdi-view-dashboard-outline" aria-hidden="true"></i>
                     Tipo de Vista *
                   </h3>
-                  <div v-if="validationErrors.template" class="error-message">
-                    <i class="mdi mdi-alert-circle"></i>
+                  <div v-if="validationErrors.template" class="error-message" role="alert" aria-live="polite">
+                    <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
                     {{ validationErrors.template }}
                   </div>
                   <div class="help-text">
-                    <i class="mdi mdi-information"></i>
+                    <i class="mdi mdi-information" aria-hidden="true"></i>
                     Selecciona el tipo de vista que mejor se adapte a tu contenido
                   </div>
                   
-                  <div class="template-selector">
+                  <div class="template-selector" role="radiogroup" aria-labelledby="template-section-title">
                     <div 
                       v-for="template in viewTemplates" 
                       :key="template.value"
                       class="template-option"
                       :class="{ selected: menuForm.template === template.value }"
                       @click="menuForm.template = template.value; validateForm()"
+                      @keydown.enter="menuForm.template = template.value; validateForm()"
+                      @keydown.space.prevent="menuForm.template = template.value; validateForm()"
+                      role="radio"
+                      :aria-checked="menuForm.template === template.value"
+                      :aria-labelledby="`template-${template.value}-label`"
+                      tabindex="0"
                     >
                       <div class="template-preview">
-                        <i :class="template.icon"></i>
-                        <div class="template-mockup">
+                        <i :class="['mdi', template.icon]" aria-hidden="true"></i>
+                        <div class="template-mockup" aria-hidden="true">
                           <!-- Mockup para Vista Básica -->
                           <div v-if="template.value === 'basic'" class="mockup-basic">
                             <div class="mockup-header"></div>
@@ -369,7 +353,7 @@
                       </div>
                       
                       <div class="template-info">
-                        <h4 class="template-name">{{ template.name }}</h4>
+                        <h4 class="template-name" :id="`template-${template.value}-label`">{{ template.name }}</h4>
                         <p class="template-description">{{ template.description }}</p>
                         <div class="template-features">
                           <span 
@@ -387,26 +371,32 @@
 
                 <!-- Configuración adicional -->
                 <div class="form-section">
-                  <h3 class="section-title">
-                    <i class="mdi mdi-cog-outline"></i>
+                  <h3 class="section-title" id="additional-config-title">
+                    <i class="mdi mdi-cog-outline" aria-hidden="true"></i>
                     Configuración Adicional
                   </h3>
                   
                   <!-- Selector de tipo de menú -->
                   <div class="form-group">
                     <label class="form-label">
-                      <i class="mdi mdi-format-list-bulleted-type"></i>
+                      <i class="mdi mdi-format-list-bulleted-type" aria-hidden="true"></i>
                       Tipo de Menú
                     </label>
-                    <div class="menu-type-selector">
+                    <div class="menu-type-selector" role="radiogroup" aria-labelledby="additional-config-title">
                       <div 
                         class="menu-type-option"
                         :class="{ 'active': menuForm.parentId === null }"
                         @click="setMenuType('root')"
+                        @keydown.enter="setMenuType('root')"
+                        @keydown.space.prevent="setMenuType('root')"
+                        role="radio"
+                        :aria-checked="menuForm.parentId === null"
+                        aria-labelledby="root-menu-label"
+                        tabindex="0"
                       >
-                        <i class="mdi mdi-home-outline"></i>
+                        <i class="mdi mdi-home-outline" aria-hidden="true"></i>
                         <div class="option-content">
-                          <span class="option-title">Menú Principal</span>
+                          <span class="option-title" id="root-menu-label">Menú Principal</span>
                           <span class="option-description">Aparece en el nivel raíz del menú lateral</span>
                         </div>
                       </div>
@@ -414,10 +404,16 @@
                         class="menu-type-option"
                         :class="{ 'active': menuForm.parentId !== null }"
                         @click="setMenuType('submenu')"
+                        @keydown.enter="setMenuType('submenu')"
+                        @keydown.space.prevent="setMenuType('submenu')"
+                        role="radio"
+                        :aria-checked="menuForm.parentId !== null"
+                        aria-labelledby="submenu-label"
+                        tabindex="0"
                       >
-                        <i class="mdi mdi-subdirectory-arrow-right"></i>
+                        <i class="mdi mdi-subdirectory-arrow-right" aria-hidden="true"></i>
                         <div class="option-content">
-                          <span class="option-title">Submenú</span>
+                          <span class="option-title" id="submenu-label">Submenú</span>
                           <span class="option-description">Aparece dentro de otro menú como elemento hijo</span>
                         </div>
                       </div>
@@ -427,7 +423,7 @@
                   <!-- Selector de menú padre (solo si es submenú) -->
                   <div v-if="menuForm.parentId !== null" class="form-group">
                     <label class="form-label">
-                      <i class="mdi mdi-file-tree"></i>
+                      <i class="mdi mdi-file-tree" aria-hidden="true"></i>
                       Menú Padre *
                     </label>
                     
@@ -437,14 +433,15 @@
                       :selected-id="menuForm.parentId"
                       :excluded-id="isEditing ? menuForm.id : null"
                       @select="handleParentSelect"
+                      aria-label="Seleccionar menú padre"
                     />
                     
-                    <div v-if="validationErrors.parentId" class="error-message">
-                      <i class="mdi mdi-alert-circle"></i>
+                    <div v-if="validationErrors.parentId" class="error-message" role="alert">
+                      <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
                       {{ validationErrors.parentId }}
                     </div>
                     <div class="help-text">
-                      <i class="mdi mdi-information"></i>
+                      <i class="mdi mdi-information" aria-hidden="true"></i>
                       Selecciona el menú padre donde aparecerá este submenú. Puedes expandir los nodos para ver la estructura completa.
                     </div>
                   </div>
@@ -452,32 +449,34 @@
                   <!-- Vista previa de jerarquía -->
                   <div v-if="menuForm.parentId" class="form-group">
                     <label class="form-label">
-                      <i class="mdi mdi-file-tree-outline"></i>
+                      <i class="mdi mdi-file-tree-outline" aria-hidden="true"></i>
                       Vista Previa de Jerarquía
                     </label>
-                    <div class="hierarchy-preview">
+                    <div class="hierarchy-preview" aria-label="Vista previa de la jerarquía del menú">
                       <div class="hierarchy-item parent">
-                        <i class="mdi mdi-folder-outline"></i>
+                        <i class="mdi mdi-folder-outline" aria-hidden="true"></i>
                         <span>{{ getParentMenuName(menuForm.parentId) }}</span>
                       </div>
                       <div class="hierarchy-connector">
-                        <i class="mdi mdi-subdirectory-arrow-right"></i>
+                        <i class="mdi mdi-subdirectory-arrow-right" aria-hidden="true"></i>
                       </div>
                       <div class="hierarchy-item child">
-                        <i :class="menuForm.icon || 'mdi mdi-circle-outline'"></i>
+                        <i :class="['mdi', menuForm.icon] || 'mdi mdi-circle-outline'" aria-hidden="true"></i>
                         <span>{{ menuForm.name || 'Nuevo submenú' }}</span>
                       </div>
                     </div>
                   </div>
                   
                   <div class="form-group">
-                    <label class="form-label">
-                      <i class="mdi mdi-sort-numeric-ascending"></i>
+                    <label for="menuOrder" class="form-label">
+                      <i class="mdi mdi-sort-numeric-ascending" aria-hidden="true"></i>
                       Posición en el menú
                     </label>
                     <select
+                      id="menuOrder"
                       v-model.number="menuForm.order"
                       class="form-input"
+                      aria-describedby="menuOrder-help"
                     >
                       <option 
                         v-for="position in availablePositions" 
@@ -487,22 +486,23 @@
                         {{ position.label }}
                       </option>
                     </select>
-                    <div class="help-text">
-                      <i class="mdi mdi-information"></i>
+                    <div class="help-text" id="menuOrder-help">
+                      <i class="mdi mdi-information" aria-hidden="true"></i>
                       {{ menuForm.parentId ? 'Selecciona dónde colocar este elemento dentro del submenú. El orden determina cómo aparecerán los elementos en la navegación.' : 'Selecciona dónde colocar este elemento en el menú principal. Los elementos se mostrarán en el orden que elijas.' }}
                     </div>
                     <div class="help-text" style="margin-top: 8px; color: #6b7280;">
-                      <i class="mdi mdi-lightbulb-outline"></i>
+                      <i class="mdi mdi-lightbulb-outline" aria-hidden="true"></i>
                       💡 <strong>Consejo:</strong> Puedes reorganizar los menús más tarde editándolos y cambiando su posición.
                     </div>
                   </div>
 
                   <div class="form-group">
                     <label class="form-label">
-                      <i class="mdi mdi-account-key"></i>
+                      <i class="mdi mdi-account-key" aria-hidden="true"></i>
                       Roles de Acceso *
                     </label>
-                    <div class="roles-selector">
+                    <fieldset class="roles-selector" aria-describedby="roles-help">
+                      <legend class="sr-only">Seleccionar roles que pueden acceder a este menú</legend>
                       <div 
                         v-for="role in availableRoles" 
                         :key="role.value"
@@ -514,21 +514,23 @@
                             :value="role.value"
                             type="checkbox"
                             class="form-checkbox"
+                            :id="`role-${role.value}`"
+                            :aria-describedby="`role-${role.value}-desc`"
                           />
                           <span class="checkbox-text">
-                            <i :class="role.icon"></i>
+                            <i :class="['mdi', role.icon]" aria-hidden="true"></i>
                             {{ role.label }}
                           </span>
                         </label>
-                        <div class="role-description">{{ role.description }}</div>
+                        <div class="role-description" :id="`role-${role.value}-desc`">{{ role.description }}</div>
                       </div>
-                    </div>
-                    <div v-if="validationErrors.roles" class="error-message">
-                      <i class="mdi mdi-alert-circle"></i>
+                    </fieldset>
+                    <div v-if="validationErrors.roles" class="error-message" role="alert">
+                      <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
                       {{ validationErrors.roles }}
                     </div>
-                    <div class="help-text">
-                      <i class="mdi mdi-information"></i>
+                    <div class="help-text" id="roles-help">
+                      <i class="mdi mdi-information" aria-hidden="true"></i>
                       Selecciona los roles que tendrán acceso a este menú
                     </div>
                   </div>
@@ -536,47 +538,59 @@
                   <div class="form-group">
                     <label class="checkbox-label">
                       <input
+                        id="menuActive"
                         v-model="menuForm.isActive"
                         type="checkbox"
                         class="form-checkbox"
+                        aria-describedby="menuActive-help"
                       />
                       <span class="checkbox-text">
-                        <i class="mdi mdi-check-circle"></i>
+                        <i class="mdi mdi-check-circle" aria-hidden="true"></i>
                         Menú activo
                       </span>
                     </label>
+                    <div class="help-text" id="menuActive-help">
+                      <i class="mdi mdi-information" aria-hidden="true"></i>
+                      Los menús inactivos no aparecerán en la navegación
+                    </div>
                   </div>
-                </div>
-
-                <div class="dialog-footer">
-                  <button 
-                    type="button" 
-                    @click="openPreview"
-                    class="btn btn-secondary"
-                    :disabled="!validateForm()"
-                  >
-                    <i class="mdi mdi-eye"></i>
-                    Vista Previa
-                  </button>
-                  <button 
-                    type="button" 
-                    @click="closeDialog" 
-                    class="btn btn-secondary"
-                  >
-                    <i class="mdi mdi-close"></i>
-                    Cancelar
-                  </button>
-                  <button 
-                    type="submit" 
-                    class="btn btn-primary"
-                    :disabled="!validateForm()"
-                  >
-                    <i class="mdi mdi-content-save"></i>
-                    {{ isEditing ? 'Actualizar' : 'Crear' }} Menú
-                  </button>
                 </div>
               </form>
             </div>
+
+            <div class="dialog-footer">
+              <button 
+                type="button" 
+                @click="openPreview"
+                class="btn btn-secondary"
+                :disabled="!validateForm()"
+                aria-label="Vista previa del menú"
+              >
+                <i class="mdi mdi-eye" aria-hidden="true"></i>
+                Vista Previa
+              </button>
+              <button 
+                type="button" 
+                @click="closeDialog" 
+                class="btn btn-secondary"
+                aria-label="Cancelar y cerrar modal"
+              >
+                <i class="mdi mdi-close" aria-hidden="true"></i>
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                class="btn btn-primary"
+                :disabled="!validateForm()"
+                :aria-label="isEditing ? 'Actualizar menú existente' : 'Crear nuevo menú'"
+                form="menu-form"
+              >
+                <i class="mdi mdi-content-save" aria-hidden="true"></i>
+                {{ isEditing ? 'Actualizar' : 'Crear' }} Menú
+              </button>
+            </div>
+          </div>
+        </div>
           </div>
         </div>
 
@@ -598,7 +612,7 @@
               <div class="sidebar-preview">
                 <h4>Cómo se verá en el menú lateral:</h4>
                 <div class="menu-item-preview">
-                  <i :class="previewMenu?.icon"></i>
+                  <i :class="['mdi', previewMenu?.icon]"></i>
                   <span>{{ previewMenu?.name }}</span>
                 </div>
               </div>
@@ -614,7 +628,7 @@
                 </div>
                 <div class="detail-item">
                   <strong>Icono:</strong> 
-                  <i :class="previewMenu?.icon"></i>
+                  <i :class="['mdi', previewMenu?.icon]"></i>
                   {{ previewMenu?.icon }}
                 </div>
                 <div class="detail-item">
@@ -646,8 +660,6 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
 </template>
 
 <script setup>
@@ -659,6 +671,7 @@ import AppHeader from '@/components/common/AppHeader.vue'
 import MenuTreeNode from '@/components/MenuTreeNode.vue'
 import MenuTreeSelector from '@/components/MenuTreeSelector.vue'
 import DeleteMenuModal from '@/components/DeleteMenuModal.vue'
+import IconSelector from '@/components/IconSelector.vue'
 import menuService from '@/services/menuService'
 import authService from '@/services/auth'
 
@@ -702,9 +715,9 @@ const showDeleteModal = ref(false)
 const menuToDelete = ref(null)
 const menuToDeleteChildren = ref([])
 
-// Estado de iconos
-const searchQuery = ref('')
-const selectedCategory = ref('all')
+// Estado de iconos - Eliminado, ahora se maneja en IconSelector
+// const searchQuery = ref('')
+// const selectedCategory = ref('all')
 
 // Estado de vista
 const viewMode = ref('grid') // 'grid' o 'tree'
@@ -780,38 +793,7 @@ const loadMenus = async () => {
   }
 }
 
-// Categorías de iconos
-const iconCategories = [
-  { id: 'all', name: 'Todos' },
-  { id: 'navigation', name: 'Navegación' },
-  { id: 'actions', name: 'Acciones' },
-  { id: 'data', name: 'Datos' },
-  { id: 'ui', name: 'Interfaz' }
-]
-
-// Iconos disponibles por categoría
-const availableIcons = {
-  navigation: [
-    'mdi mdi-home', 'mdi mdi-view-dashboard', 'mdi mdi-menu',
-    'mdi mdi-arrow-left', 'mdi mdi-arrow-right', 'mdi mdi-chevron-up',
-    'mdi mdi-chevron-down', 'mdi mdi-navigation'
-  ],
-  actions: [
-    'mdi mdi-plus', 'mdi mdi-pencil', 'mdi mdi-delete',
-    'mdi mdi-content-save', 'mdi mdi-refresh', 'mdi mdi-download',
-    'mdi mdi-upload', 'mdi mdi-share'
-  ],
-  data: [
-    'mdi mdi-account-group', 'mdi mdi-table', 'mdi mdi-chart-line',
-    'mdi mdi-database', 'mdi mdi-file-document', 'mdi mdi-folder',
-    'mdi mdi-calendar', 'mdi mdi-clock'
-  ],
-  ui: [
-    'mdi mdi-cog', 'mdi mdi-palette', 'mdi mdi-eye',
-    'mdi mdi-heart', 'mdi mdi-star', 'mdi mdi-bell',
-    'mdi mdi-message', 'mdi mdi-help-circle'
-  ]
-}
+// Iconos ahora se manejan en IconSelector.vue
 
 // Plantillas de vista
 const viewTemplates = [
@@ -954,22 +936,7 @@ const availablePositions = computed(() => {
   return positions
 })
 
-const displayedIcons = computed(() => {
-  let icons = []
-  
-  if (selectedCategory.value === 'all') {
-    icons = Object.values(availableIcons).flat()
-  } else {
-    icons = availableIcons[selectedCategory.value] || []
-  }
-  
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    icons = icons.filter(icon => icon.toLowerCase().includes(query))
-  }
-  
-  return icons
-})
+// displayedIcons ahora se maneja en IconSelector.vue
 
 // Métodos
 const openDialog = () => {
@@ -1416,20 +1383,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Variables CSS */
-:root {
-  --primary-color: #2563eb;
-  --accent-color: #2563eb;
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-hover: #f1f5f9;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --border-color: #e2e8f0;
-  --shadow-color: rgba(0, 0, 0, 0.1);
-  --success-color: #059669;
-  --error-color: #dc2626;
-  --warning-color: #d97706;
+/* Variables CSS - Usando variables globales de tema */
+.menu-manager-layout {
+  /* Las variables CSS se toman del archivo themes.css global */
+  /* No necesitamos redefinir las variables aquí */
 }
 
 /* Layout principal */
@@ -1478,7 +1435,7 @@ onMounted(() => {
 }
 
 .manager-title i {
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 .manager-subtitle {
@@ -1496,12 +1453,71 @@ onMounted(() => {
   margin-bottom: 2rem;
 }
 
+/* Opciones de visualización */
+.menu-display-options {
+  margin-bottom: 2rem;
+}
+
+.view-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--bg-primary);
+  padding: 0.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px var(--shadow-color);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  justify-content: center;
+  min-width: 0;
+}
+
+.toggle-btn i {
+  font-size: 1.1rem;
+  color: inherit;
+}
+
+.toggle-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.toggle-btn.active {
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  color: white;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+.toggle-btn.active:hover {
+  background: linear-gradient(135deg, #1d4ed8, var(--accent-color));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
 .create-menu-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  background: linear-gradient(135deg, var(--accent-primary), var(--button-primary-hover));
   color: white;
   border: none;
   border-radius: 12px;
@@ -1509,12 +1525,12 @@ onMounted(() => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 15px rgba(var(--primary-color-rgb), 0.3);
 }
 
 .create-menu-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 8px 25px rgba(var(--primary-color-rgb), 0.4);
 }
 
 /* Grid de menús */
@@ -1529,15 +1545,15 @@ onMounted(() => {
   background: var(--bg-primary);
   border-radius: 16px;
   padding: 1.5rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-primary);
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px var(--shadow-color);
+  box-shadow: 0 2px 8px var(--shadow-primary);
 }
 
 .menu-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px var(--shadow-color);
-  border-color: var(--accent-color);
+  box-shadow: 0 8px 25px var(--shadow-primary);
+  border-color: var(--accent-primary);
 }
 
 .menu-card-header {
@@ -1550,7 +1566,7 @@ onMounted(() => {
 .menu-icon {
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  background: linear-gradient(135deg, var(--accent-primary), var(--button-primary-hover));
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -1582,6 +1598,53 @@ onMounted(() => {
   font-size: 0.9rem;
 }
 
+/* Estilos para metadatos del menú */
+.menu-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.menu-order,
+.menu-parent {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.menu-path {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-family: 'Courier New', monospace;
+  background: var(--bg-secondary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+}
+
+.menu-roles {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.role-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  background: var(--accent-primary);
+  color: white;
+  font-weight: 500;
+}
+
 .menu-actions {
   display: flex;
   gap: 0.5rem;
@@ -1600,12 +1663,12 @@ onMounted(() => {
 }
 
 .edit-btn {
-  background: rgba(37, 99, 235, 0.1);
-  color: var(--accent-color);
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent-primary);
 }
 
 .edit-btn:hover {
-  background: rgba(37, 99, 235, 0.2);
+  background: rgba(var(--accent-rgb), 0.2);
 }
 
 .delete-btn {
@@ -1617,6 +1680,19 @@ onMounted(() => {
   background: rgba(220, 38, 38, 0.2);
 }
 
+/* Clase para elementos ocultos visualmente pero accesibles para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Modal */
 .dialog-overlay, .modal-overlay {
   position: fixed;
@@ -1624,50 +1700,107 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .dialog-content {
   background: var(--bg-primary);
-  border-radius: 16px;
+  border-radius: 20px;
   width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
+  max-width: 950px;
+  max-height: 95vh;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 25px 80px rgba(0, 0, 0, 0.25),
+    0 0 0 1px var(--border-color);
+  animation: slideIn 0.3s ease-out;
+  border: 1px solid var(--border-primary);
+  display: flex;
+  flex-direction: column;
 }
 
 .dialog-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  padding: 2rem 2.5rem;
+  background: var(--primary-color);
   color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.dialog-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1));
+  pointer-events: none;
 }
 
 .dialog-header h2 {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+}
+
+.dialog-header h2 i {
+  font-size: 1.75rem;
+  opacity: 0.9;
 }
 
 .close-btn {
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 4px;
-  transition: background 0.2s ease;
+  padding: 0.75rem;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(10px);
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
 }
 
 .close-btn:hover {
@@ -1675,80 +1808,156 @@ onMounted(() => {
 }
 
 .dialog-body {
-  padding: 2rem;
-  max-height: 70vh;
+  padding: 2.5rem;
+  max-height: calc(95vh - 200px);
   overflow-y: auto;
+  background: var(--bg-primary);
+  flex: 1;
+}
+
+/* Scrollbar personalizado para el modal */
+.dialog-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dialog-body::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.dialog-body::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.dialog-body::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 /* Secciones del formulario */
 .form-section {
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 2.5rem;
+  padding: 2rem;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  border: 1px solid var(--border-primary);
+  transition: all 0.2s ease;
+}
+
+.form-section:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.1);
 }
 
 .form-section:last-child {
-  border-bottom: none;
   margin-bottom: 0;
 }
 
 .section-title {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 1.1rem;
-  font-weight: 600;
+  gap: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 1.75rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--accent-primary);
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: var(--accent-secondary);
+  border-radius: 1px;
 }
 
 .section-title i {
-  color: var(--accent-color);
+  color: var(--accent-primary);
+  font-size: 1.5rem;
 }
 
 /* Campos del formulario */
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  position: relative;
 }
 
 .form-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
+  gap: 0.75rem;
+  font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  letter-spacing: 0.025em;
 }
 
 .form-label i {
-  color: var(--accent-color);
+  color: var(--accent-primary);
+  font-size: 1.25rem;
 }
 
-.form-input {
+.form-input, .form-select {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--input-border);
+  border-radius: 12px;
   font-size: 1rem;
-  transition: all 0.2s ease;
-  background: var(--bg-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  box-shadow: 
+    inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.05);
+  position: relative;
 }
 
-.form-input:focus {
+.form-input::placeholder, .form-select option {
+  color: var(--text-muted);
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+.form-input:focus, .form-select:focus {
   outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: var(--accent-primary);
+  box-shadow: 
+    0 0 0 4px rgba(var(--accent-rgb), 0.15),
+    inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+  background: var(--bg-primary);
+  transform: translateY(-1px);
 }
 
-.form-input.error {
-  border-color: var(--error-color);
-  background: rgba(220, 38, 38, 0.05);
+.form-input:hover:not(:focus), .form-select:hover:not(:focus) {
+  border-color: var(--accent-primary);
+  box-shadow: 
+    inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.form-input.error:focus {
-  border-color: var(--error-color);
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+.form-input.error, .form-select.error {
+  border-color: var(--accent-danger);
+  background: rgba(239, 68, 68, 0.05);
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.form-input.error:focus, .form-select.error:focus {
+  border-color: var(--accent-danger);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
 }
 
 /* Mensajes de error y ayuda */
@@ -1777,19 +1986,19 @@ onMounted(() => {
   font-size: 0.875rem;
   margin-top: 0.5rem;
   padding: 0.5rem;
-  background: rgba(37, 99, 235, 0.05);
-  border: 1px solid rgba(37, 99, 235, 0.1);
+  background: var(--bg-hover);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
 }
 
 .help-text i {
-  color: var(--accent-color);
+  color: var(--accent-primary);
   font-size: 1rem;
 }
 
 /* Selector de iconos */
 .icon-selector {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   border-radius: 12px;
   padding: 1.5rem;
   background: var(--bg-secondary);
@@ -1801,14 +2010,14 @@ onMounted(() => {
   gap: 0.75rem;
   padding: 1rem;
   background: var(--bg-primary);
-  border: 2px solid var(--accent-color);
+  border: 2px solid var(--accent-primary);
   border-radius: 8px;
   margin-bottom: 1rem;
 }
 
 .selected-icon i {
   font-size: 1.5rem;
-  color: var(--accent-color);
+  color: var(--accent-primary);
 }
 
 .clear-icon {
@@ -1833,9 +2042,24 @@ onMounted(() => {
 .search-input {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--input-border);
   border-radius: 8px;
   font-size: 0.9rem;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px var(--focus-shadow);
+  background: var(--bg-primary);
 }
 
 .search-icon {
@@ -1855,7 +2079,7 @@ onMounted(() => {
 
 .category-btn {
   padding: 0.5rem 1rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   background: var(--bg-primary);
   color: var(--text-secondary);
   border-radius: 20px;
@@ -1942,15 +2166,15 @@ onMounted(() => {
 }
 
 .template-option:hover {
-  border-color: var(--accent-color);
+  border-color: var(--accent-primary);
   transform: translateY(-2px);
   box-shadow: 0 8px 25px var(--shadow-color);
 }
 
 .template-option.selected {
-  border-color: var(--accent-color);
-  background: rgba(37, 99, 235, 0.05);
-  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+  border-color: var(--accent-primary);
+  background: rgba(var(--accent-rgb), 0.05);
+  box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.2);
 }
 
 .template-option.selected::before {
@@ -1960,7 +2184,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
 }
 
 .template-preview {
@@ -1972,7 +2196,7 @@ onMounted(() => {
 
 .template-preview i {
   font-size: 2rem;
-  color: var(--accent-color);
+  color: var(--accent-primary);
   flex-shrink: 0;
 }
 
@@ -2116,17 +2340,17 @@ onMounted(() => {
 .feature-tag {
   display: inline-block;
   padding: 0.25rem 0.5rem;
-  background: rgba(37, 99, 235, 0.1);
-  color: var(--accent-color);
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent-primary);
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 500;
-  border: 1px solid rgba(37, 99, 235, 0.2);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
 }
 
 .template-option.selected .feature-tag {
-  background: rgba(37, 99, 235, 0.15);
-  border-color: rgba(37, 99, 235, 0.3);
+  background: rgba(var(--accent-rgb), 0.15);
+  border-color: rgba(var(--accent-rgb), 0.3);
 }
 
 /* Checkbox */
@@ -2152,52 +2376,135 @@ onMounted(() => {
 
 /* Footer del diálogo */
 .dialog-footer {
-  display: flex;
+  display: flex !important;
   justify-content: flex-end;
-  gap: 1rem;
-  padding: 1.5rem 2rem;
+  gap: 1.25rem;
+  padding: 2rem 2.5rem;
   background: var(--bg-secondary);
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-primary);
+  backdrop-filter: blur(10px);
+  position: relative;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 1000;
+  flex-shrink: 0;
+  min-height: 80px;
+}
+
+.dialog-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+  opacity: 0.3;
 }
 
 /* Botones */
 .btn {
-  display: flex;
+  display: flex !important;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
   border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.025em;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 1001;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+  left: 100%;
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.75 !important;
   cursor: not-allowed;
+  border: 2px solid var(--border-primary);
+  background: var(--bg-secondary) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: none !important;
+  position: relative;
+  display: flex !important;
+  visibility: visible !important;
+}
+
+.btn:disabled::before {
+  display: none;
+}
+
+.btn:disabled::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(var(--text-rgb, 0, 0, 0), 0.1) 2px,
+    rgba(var(--text-rgb, 0, 0, 0), 0.1) 4px
+  );
+  border-radius: inherit;
+  pointer-events: none;
 }
 
 .btn-primary {
-  background: var(--accent-color);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   color: white;
+  box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #1d4ed8;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.4);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(var(--accent-rgb), 0.3);
 }
 
 .btn-secondary {
   background: var(--bg-primary);
   color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--border-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .btn-secondary:hover:not(:disabled) {
   background: var(--bg-hover);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* Modal de Vista Previa */
@@ -2461,18 +2768,18 @@ button:disabled {
 }
 
 .menu-type-option:hover {
-  border-color: var(--primary-color);
+  border-color: var(--accent-primary);
   background: var(--bg-hover);
 }
 
 .menu-type-option.active {
-  border-color: var(--primary-color);
-  background: rgba(37, 99, 235, 0.05);
+  border-color: var(--accent-primary);
+  background: rgba(var(--accent-rgb), 0.05);
 }
 
 .menu-type-option i {
   font-size: 1.5rem;
-  color: var(--primary-color);
+  color: var(--accent-primary);
 }
 
 .option-content {

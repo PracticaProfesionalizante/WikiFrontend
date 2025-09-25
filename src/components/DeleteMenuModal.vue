@@ -15,7 +15,7 @@
         <!-- Información del menú a eliminar -->
         <div class="menu-info">
           <div class="menu-item">
-            <i :class="menu?.icon || 'mdi mdi-menu'" class="menu-icon"></i>
+            <i :class="['mdi', menu?.icon] || 'mdi mdi-menu'" class="menu-icon"></i>
             <div class="menu-details">
               <h3>{{ menu?.name || 'Sin nombre' }}</h3>
               <p class="menu-path">{{ menu?.path || 'Sin ruta' }}</p>
@@ -47,7 +47,7 @@
                 />
               </div>
               <div class="submenu-info">
-                <i :class="child.icon || 'mdi mdi-menu'" class="submenu-icon"></i>
+                <i :class="['mdi', child.icon] || 'mdi mdi-menu'" class="submenu-icon"></i>
                 <div class="submenu-details">
                   <span class="submenu-name">{{ child.name }}</span>
                   <span class="submenu-path">{{ child.path }}</span>

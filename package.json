@@ -12,7 +12,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mdi/font": "5.9.55",
+    "@iconify-json/mdi": "^1.2.3",
+    "@mdi/font": "^7.4.47",
     "@unhead/vue": "^2.0.14",
     "axios": "^1.11.0",
     "pinia": "^3.0.3",

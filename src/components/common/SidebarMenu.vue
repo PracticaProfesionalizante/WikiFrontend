@@ -33,7 +33,7 @@
               :class="{ 'active': activeMenuId === item.id && !item.submenu }"
               @click="selectItem(item)"
             >
-              <i :class="item.icon" class="item-icon"></i>
+              <i :class="['mdi', item.icon]" class="item-icon"></i>
               <span class="item-text">{{ item.text }}</span>
               <i v-if="item.submenu" class="mdi mdi-chevron-right submenu-arrow"></i>
             </div>
@@ -65,7 +65,7 @@
               :class="{ 'active': activeSubmenuId === submenu.id && !submenu.submenu }"
               @click="selectSubmenu(submenu)"
             >
-              <i :class="submenu.icon || 'mdi mdi-circle-small'" class="item-icon"></i>
+              <i :class="['mdi', submenu.icon] || 'mdi mdi-circle-small'" class="item-icon"></i>
               <span class="item-text">{{ submenu.text }}</span>
               <i v-if="submenu.submenu" class="mdi mdi-chevron-right submenu-arrow"></i>
             </div>

@@ -26,7 +26,7 @@
 
       <!-- Icono del menú -->
       <div class="menu-icon">
-        <i :class="menu.icon || 'mdi mdi-circle-outline'"></i>
+        <i :class="['mdi', menu.icon] || 'mdi mdi-circle-outline'"></i>
       </div>
 
       <!-- Información del menú -->
