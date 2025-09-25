@@ -36,7 +36,7 @@
 
       <div v-else class="icon-grid">
         <div
-          v-for="(icon, index) in visibleIcons"
+          v-for="icon in visibleIcons"
           :key="icon"
           class="icon-item"
           :class="{ selected: selectedIcon === icon }"

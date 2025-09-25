@@ -219,9 +219,10 @@ const getConfirmButtonText = () => {
   switch (deletionMode.value) {
     case 'delete-all':
       return `Eliminar Todo (${props.children.length + 1})`
-    case 'selective':
+    case 'selective': {
       const selectedCount = selectedChildren.value.length
       return selectedCount > 0 ? `Eliminar Submenús (${selectedCount})` : 'Selecciona submenús'
+    }
     case 'keep-children':
       return 'Eliminar Solo Menú Principal'
     default:

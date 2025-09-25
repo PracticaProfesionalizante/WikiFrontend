@@ -1388,7 +1388,6 @@ const saveMenu = async () => {
 
       // Si se activó la creación de submenús y hay submenús definidos
       if (menuForm.value.createSubmenus && menuForm.value.submenus.length > 0) {
-        console.log('Iniciando creación de submenús:', menuForm.value.submenus)
         const parentMenuId = parentMenuResult.id
 
         // Recargar menús antes de crear submenús para tener el estado actualizado
@@ -1397,7 +1396,6 @@ const saveMenu = async () => {
         // Crear cada submenú con un pequeño delay para evitar conflictos
         for (let i = 0; i < menuForm.value.submenus.length; i++) {
           const submenu = menuForm.value.submenus[i]
-          console.log(`Procesando submenú ${i + 1}:`, submenu)
           
           if (submenu.name && submenu.path) {
             const submenuData = {
@@ -1411,11 +1409,8 @@ const saveMenu = async () => {
               isActive: submenu.isActive !== undefined ? submenu.isActive : true
             }
 
-            console.log(`Datos del submenú a crear:`, submenuData)
-
             try {
               const submenuResult = await menuService.createMenu(submenuData)
-              console.log(`Submenú creado exitosamente:`, submenuResult)
               
               // Pequeño delay entre creaciones para evitar conflictos de concurrencia
               if (i < menuForm.value.submenus.length - 1) {
@@ -1425,7 +1420,6 @@ const saveMenu = async () => {
               // Mover el submenú a la posición correcta si es necesario
               const targetOrder = submenu.order || (i + 1)
               if (targetOrder !== 9999) {
-                console.log(`Moviendo submenú a posición ${targetOrder}`)
                 await menuService.moveMenu({
                   menuId: submenuResult.id,
                   parentId: parentMenuId,
@@ -1437,17 +1431,8 @@ const saveMenu = async () => {
               // Mostrar el error al usuario también
               error.value = `Error creando submenú "${submenu.name}": ${submenuError.message}`
             }
-          } else {
-            console.warn(`Submenú ${i + 1} omitido - falta nombre o ruta:`, submenu)
           }
         }
-        console.log('Finalizada creación de submenús')
-      } else {
-        console.log('No se crearán submenús:', {
-          createSubmenus: menuForm.value.createSubmenus,
-          submenusLength: menuForm.value.submenus.length,
-          submenus: menuForm.value.submenus
-        })
       }
     }
 

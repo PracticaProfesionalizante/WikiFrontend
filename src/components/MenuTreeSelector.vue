@@ -92,7 +92,7 @@ const expandedNodes = ref(new Set())
 const hierarchicalMenus = computed(() => {
   // Si los menús ya vienen con estructura jerárquica (con children), usarlos directamente
   if (props.menus.length > 0 && props.menus[0].children !== undefined) {
-    return props.menus.sort((a, b) => a.order - b.order)
+    return [...props.menus].sort((a, b) => a.order - b.order)
   }
   
   // Fallback: construir jerarquía desde estructura plana
@@ -115,6 +115,7 @@ const filteredMenus = computed(() => {
   }
   
   const query = searchQuery.value.toLowerCase()
+  const nodesToExpand = new Set()
   
   const filterMenus = (menuList) => {
     return menuList.reduce((filtered, menu) => {
@@ -127,9 +128,9 @@ const filteredMenus = computed(() => {
           children: filteredChildren
         })
         
-        // Auto-expandir nodos que coinciden con la búsqueda
+        // Marcar nodos para expandir
         if (matchesSearch || filteredChildren.length > 0) {
-          expandedNodes.value.add(menu.id)
+          nodesToExpand.add(menu.id)
         }
       }
       
@@ -137,7 +138,12 @@ const filteredMenus = computed(() => {
     }, [])
   }
   
-  return filterMenus(hierarchicalMenus.value)
+  const result = filterMenus(hierarchicalMenus.value)
+  
+  // Expandir nodos después del cálculo
+  nodesToExpand.forEach(id => expandedNodes.value.add(id))
+  
+  return result
 })
 
 // Métodos

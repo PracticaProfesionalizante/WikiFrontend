@@ -198,7 +198,7 @@ const hasChildren = computed(() => {
 const sortedChildren = computed(() => {
   // Si el menú tiene la propiedad children (estructura jerárquica del backend)
   if (props.menu.children && Array.isArray(props.menu.children)) {
-    return props.menu.children.sort((a, b) => a.order - b.order)
+    return [...props.menu.children].sort((a, b) => a.order - b.order)
   }
   
   // Fallback: buscar por parentId en allMenus (estructura plana)
@@ -337,7 +337,7 @@ const handleDrop = (event, zone) => {
     }
     
     emit('move', moveData)
-  } catch (error) {
+  } catch {
     // Error silencioso para evitar logs innecesarios
   }
 }
@@ -770,39 +770,3 @@ const handleCreateSubmenu = () => {
   border-left: 3px solid #27ae60;
 }
 </style>
-export default {
-  name: 'MenuTreeNode',
-  props: {
-    menu: {
-      type: Object,
-      required: true
-    },
-    level: {
-      type: Number,
-      default: 0
-    }
-  },
-  emits: ['update', 'delete', 'move', 'context-menu'],
-  data() {
-    return {
-      expanded: false,
-      dropZone: null,
-      isDragging: false,
-      contextMenuVisible: false,
-      contextMenuPosition: { x: 0, y: 0 }
-    }
-  },
-  computed: {
-    hasChildren() {
-      return this.menu.children && this.menu.children.length > 0
-    },
-    
-    // Memoizar el cálculo de estilos para mejor rendimiento
-    nodeStyles() {
-      return {
-        paddingLeft: `${this.level * 20}px`
-      }
-    }
-  },
-  // ... existing code ...
-}

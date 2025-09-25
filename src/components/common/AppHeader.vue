@@ -87,8 +87,8 @@ const handleLogout = async () => {
   try {
     await authStore.logout()
     router.push('/login')
-  } catch (error) {
-    // Error silencioso para debugging - el logout local siempre funciona
+  } catch {
+    // El logout local siempre funciona
   }
 }
 

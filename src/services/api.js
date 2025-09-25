@@ -10,7 +10,7 @@ const api = axios.create({
   }
 })
 
-// Logging para debugging
+// Interceptor de request
 api.interceptors.request.use(
   (config) => {
     return config

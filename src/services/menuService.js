@@ -76,7 +76,6 @@ const menuService = {
       } else if (error.response?.status === 409) {
         throw new Error(`Ya existe un menú con esa ruta: ${error.response?.data?.message || 'Conflicto'}`)
       } else if (error.response?.status === 422) {
-        console.error('Error 422 completo:', error.response?.data)
         const errorMessage = error.response?.data?.message || 
                            error.response?.data?.detail || 
                            error.response?.data?.title ||
