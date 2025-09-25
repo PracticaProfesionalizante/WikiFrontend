@@ -934,6 +934,19 @@
           </div>
         </div>
       </div>
+
+      <!-- Modal de Progreso -->
+      <ProgressModal
+        :is-visible="showProgressModal"
+        :title="progressModalTitle"
+        :current="submenuProgress.current"
+        :total="submenuProgress.total"
+        :current-action="progressModalAction"
+        :errors="progressErrors"
+        :is-completed="!isCreatingSubmenus && submenuProgress.current >= submenuProgress.total"
+        :allow-cancel="false"
+        @close="closeProgressModal"
+      />
 </template>
 
 <script setup>
@@ -946,6 +959,7 @@ import MenuTreeNode from '@/components/MenuTreeNode.vue'
 import MenuTreeSelector from '@/components/MenuTreeSelector.vue'
 import DeleteMenuModal from '@/components/DeleteMenuModal.vue'
 import IconSelector from '@/components/IconSelector.vue'
+import ProgressModal from '@/components/ProgressModal.vue'
 import menuService from '@/services/menuService'
 import authService from '@/services/auth'
 
@@ -998,6 +1012,12 @@ const isLoading = ref(false)
 const isCreatingSubmenus = ref(false)
 const submenuProgress = ref({ current: 0, total: 0 })
 const error = ref(null)
+
+// Estado del modal de progreso
+const showProgressModal = ref(false)
+const progressModalTitle = ref('Creando menú...')
+const progressModalAction = ref('Iniciando proceso...')
+const progressErrors = ref([])
 
 // Estado del modal de eliminación
 const showDeleteModal = ref(false)
@@ -1233,6 +1253,9 @@ const openDialog = () => {
 
 const closeDialog = () => {
   showDialog.value = false
+  // Cerrar también el modal de progreso
+  showProgressModal.value = false
+  
   if (!isEditing.value) {
     resetForm()
   } else {
@@ -1297,28 +1320,64 @@ const closeDeleteModal = () => {
   menuToDeleteChildren.value = []
 }
 
+const closeProgressModal = () => {
+  showProgressModal.value = false
+  progressErrors.value = []
+  progressModalAction.value = 'Iniciando proceso...'
+}
+
 const handleDeleteConfirm = async (confirmData) => {
   try {
     isLoading.value = true
     error.value = null
 
+    // Mostrar modal de progreso para eliminación
+    showProgressModal.value = true
+    progressErrors.value = []
+    progressModalTitle.value = 'Eliminando Menú'
+    progressModalAction.value = 'Iniciando proceso de eliminación...'
+
     const { menuId, mode, selectedChildren, allChildren } = confirmData
+    let totalSteps = 0
+    let currentStep = 0
+
+    // Calcular total de pasos según el modo
+    switch (mode) {
+      case 'delete-all':
+        totalSteps = allChildren.length + 1 // submenús + menú principal
+        break
+      case 'selective':
+        totalSteps = selectedChildren.length + (allChildren.length - selectedChildren.length) // eliminar + mover
+        break
+      case 'keep-children':
+        totalSteps = allChildren.length + 1 // mover hijos + eliminar principal
+        break
+    }
+
+    submenuProgress.value = { current: 0, total: totalSteps }
 
     switch (mode) {
       case 'delete-all':
+        progressModalAction.value = 'Eliminando submenús...'
         // Eliminar todos los submenús primero, luego el menú principal
         for (const childId of allChildren) {
           await menuService.deleteMenu(childId)
+          submenuProgress.value.current = ++currentStep
         }
+        progressModalAction.value = 'Eliminando menú principal...'
         await menuService.deleteMenu(menuId)
+        submenuProgress.value.current = ++currentStep
         break
 
       case 'selective':
+        progressModalAction.value = 'Eliminando submenús seleccionados...'
         // Eliminar solo los submenús seleccionados, mantener el menú principal
         for (const childId of selectedChildren) {
           await menuService.deleteMenu(childId)
+          submenuProgress.value.current = ++currentStep
         }
 
+        progressModalAction.value = 'Reorganizando submenús restantes...'
         // Mover los submenús no seleccionados al nivel raíz
         const childrenToKeep = allChildren.filter(id => !selectedChildren.includes(id))
         for (const childId of childrenToKeep) {
@@ -1326,20 +1385,25 @@ const handleDeleteConfirm = async (confirmData) => {
           if (childMenu) {
             await menuService.updateMenu(childId, { ...childMenu, parentId: null })
           }
+          submenuProgress.value.current = ++currentStep
         }
 
         // NO eliminar el menú principal en modo selectivo
         break
 
       case 'keep-children':
+        progressModalAction.value = 'Moviendo submenús al nivel raíz...'
         // Solo eliminar el menú principal, mover todos los hijos al nivel raíz
         for (const childId of allChildren) {
           const childMenu = findMenuById(childId)
           if (childMenu) {
             await menuService.updateMenu(childId, { ...childMenu, parentId: null })
           }
+          submenuProgress.value.current = ++currentStep
         }
+        progressModalAction.value = 'Eliminando menú principal...'
         await menuService.deleteMenu(menuId)
+        submenuProgress.value.current = ++currentStep
         break
 
       default:
@@ -1347,13 +1411,24 @@ const handleDeleteConfirm = async (confirmData) => {
     }
 
     // Recargar la lista de menús
+    progressModalAction.value = 'Actualizando lista de menús...'
     await loadMenus()
+
+    // Finalizar con éxito
+    progressModalAction.value = 'Menú eliminado exitosamente'
+    
+    // Cerrar modal después de un breve delay
+    setTimeout(() => {
+      showProgressModal.value = false
+    }, 1500)
 
     // Cerrar el modal
     closeDeleteModal()
 
   } catch (error) {
     error.value = error.message
+    progressErrors.value.push(`Error en eliminación: ${error.message}`)
+    progressModalAction.value = 'Error en el proceso de eliminación'
   } finally {
     isLoading.value = false
   }
@@ -1367,18 +1442,44 @@ const saveMenu = async () => {
   isLoading.value = true
   error.value = null
 
+  // Mostrar modal de progreso para todas las operaciones
+  showProgressModal.value = true
+  progressErrors.value = []
+  
   try {
     let parentMenuResult = null
 
     if (isEditing.value) {
+      // Configurar modal para edición
+      progressModalTitle.value = 'Editando Menú'
+      progressModalAction.value = 'Actualizando información del menú...'
+      submenuProgress.value = { current: 0, total: 1 }
+      
       parentMenuResult = await menuService.updateMenu(menuForm.value.id, menuForm.value)
+      
+      // Actualizar progreso
+      submenuProgress.value.current = 1
+      progressModalAction.value = 'Menú actualizado exitosamente'
+      
     } else {
+      // Configurar modal para creación
+      const hasSubmenus = menuForm.value.createSubmenus && menuForm.value.submenus.length > 0
+      const totalSteps = hasSubmenus ? 2 + menuForm.value.submenus.length : 2
+      
+      progressModalTitle.value = hasSubmenus ? 'Creando Menú con Submenús' : 'Creando Nuevo Menú'
+      progressModalAction.value = 'Creando menú principal...'
+      submenuProgress.value = { current: 0, total: totalSteps }
+      
       // Crear el menú principal con orden temporal alto para evitar conflictos
       const tempMenuData = {
         ...menuForm.value,
         order: 9999 // Orden temporal muy alto
       }
       parentMenuResult = await menuService.createMenu(tempMenuData)
+      
+      // Actualizar progreso
+      submenuProgress.value.current = 1
+      progressModalAction.value = 'Organizando posición del menú...'
 
       // Ahora mover el menú a la posición correcta usando la misma lógica del arrastre
       if (menuForm.value.order !== 9999) {
@@ -1388,57 +1489,98 @@ const saveMenu = async () => {
           order: menuForm.value.order
         })
       }
-
+      
+      // Actualizar progreso
+      submenuProgress.value.current = 2
+      
       // Si se activó la creación de submenús y hay submenús definidos
-      if (menuForm.value.createSubmenus && menuForm.value.submenus.length > 0) {
+      if (hasSubmenus) {
         const parentMenuId = parentMenuResult.id
+        
+        // Mostrar modal de progreso
+        showProgressModal.value = true
+        progressModalTitle.value = 'Creando Menú con Submenús'
+        progressModalAction.value = 'Preparando creación de submenús...'
+        progressErrors.value = []
         
         // Activar indicador de progreso de submenús
         isCreatingSubmenus.value = true
         submenuProgress.value = { current: 0, total: menuForm.value.submenus.length }
 
         // Recargar menús antes de crear submenús para tener el estado actualizado
+        progressModalAction.value = 'Actualizando lista de menús...'
         await loadMenus()
 
-        // Crear submenús en paralelo para reducir el tiempo total
-        const submenuPromises = menuForm.value.submenus.map(async (submenu, index) => {
-          if (submenu.name && submenu.path) {
+        // Crear submenús en lotes para evitar sobrecarga del servidor
+        const BATCH_SIZE = 2 // Procesar máximo 2 submenús simultáneamente
+        const validSubmenus = menuForm.value.submenus.filter(submenu => submenu.name && submenu.path)
+        const allResults = []
+
+        for (let i = 0; i < validSubmenus.length; i += BATCH_SIZE) {
+          const batch = validSubmenus.slice(i, i + BATCH_SIZE)
+          
+          progressModalAction.value = `Procesando lote ${Math.floor(i / BATCH_SIZE) + 1} de ${Math.ceil(validSubmenus.length / BATCH_SIZE)}...`
+          
+          const batchPromises = batch.map(async (submenu, batchIndex) => {
+            const globalIndex = i + batchIndex
             const submenuData = {
               name: submenu.name,
               path: submenu.path,
               icon: submenu.icon || '',
               template: submenu.template || 'basic',
-              order: submenu.order || (index + 1), // Usar el orden correcto directamente
+              order: submenu.order || (globalIndex + 1),
               parentId: parentMenuId,
               roles: submenu.roles && submenu.roles.length > 0 ? submenu.roles : menuForm.value.roles || [],
               isActive: submenu.isActive !== undefined ? submenu.isActive : true
             }
 
             try {
+              progressModalAction.value = `Creando submenú: ${submenu.name}...`
               const submenuResult = await menuService.createMenu(submenuData)
               // Actualizar progreso
               submenuProgress.value.current++
               return { success: true, submenu: submenu.name, result: submenuResult }
             } catch (submenuError) {
               console.error(`Error creando submenú "${submenu.name}":`, submenuError)
+              // Agregar error al modal
+              progressErrors.value.push(`${submenu.name}: ${submenuError.message}`)
               // Actualizar progreso incluso en caso de error
               submenuProgress.value.current++
               return { success: false, submenu: submenu.name, error: submenuError.message }
             }
-          }
-          // Actualizar progreso para datos incompletos
-          submenuProgress.value.current++
-          return { success: false, submenu: submenu.name, error: 'Datos incompletos' }
-        })
+          })
 
-        // Esperar a que todos los submenús se creen
-        const submenuResults = await Promise.allSettled(submenuPromises)
+          // Esperar a que termine el lote actual antes de continuar
+          const batchResults = await Promise.allSettled(batchPromises)
+          allResults.push(...batchResults)
+
+          // Pequeña pausa entre lotes para evitar saturar el servidor
+          if (i + BATCH_SIZE < validSubmenus.length) {
+            await new Promise(resolve => setTimeout(resolve, 200))
+          }
+        }
+
+        // Procesar submenús con datos incompletos
+        const incompleteSubmenus = menuForm.value.submenus.filter(submenu => !submenu.name || !submenu.path)
+        incompleteSubmenus.forEach(submenu => {
+          submenuProgress.value.current++
+          progressErrors.value.push(`${submenu.name || 'Sin nombre'}: Datos incompletos`)
+          allResults.push({
+            status: 'fulfilled',
+            value: { success: false, submenu: submenu.name || 'Sin nombre', error: 'Datos incompletos' }
+          })
+        })
+        
+        // Finalizar proceso
+        progressModalAction.value = progressErrors.value.length > 0 
+          ? `Proceso completado con ${progressErrors.value.length} error(es)`
+          : 'Proceso completado exitosamente'
         
         // Desactivar indicador de progreso
         isCreatingSubmenus.value = false
         
         // Verificar si hubo errores
-        const failedSubmenus = submenuResults
+        const failedSubmenus = allResults
           .map((result, index) => ({ result, index }))
           .filter(({ result }) => result.status === 'rejected' || !result.value?.success)
           .map(({ result, index }) => {
@@ -1456,14 +1598,24 @@ const saveMenu = async () => {
     }
 
     // Recargar la lista de menús
+    progressModalAction.value = 'Actualizando lista de menús...'
     await loadMenus()
 
-    // Cerrar el diálogo
-    closeDialog()
+    // Finalizar con éxito
+    progressModalAction.value = isEditing.value ? 'Menú editado exitosamente' : 'Menú creado exitosamente'
+    
+    // Cerrar el diálogo después de un breve delay para mostrar el mensaje de éxito
+    setTimeout(() => {
+      closeDialog()
+    }, 1500)
+    
   } catch (err) {
     error.value = err.message
+    progressErrors.value.push(`Error general: ${err.message}`)
+    progressModalAction.value = 'Error en el proceso'
   } finally {
     isLoading.value = false
+    // El modal se cerrará automáticamente cuando se cierre el diálogo
   }
 }
 
@@ -1800,6 +1952,7 @@ const createSubmenu = (parentMenu) => {
 const moveMenu = async (moveData) => {
   try {
     isLoading.value = true
+    error.value = null
 
     // Usar el nuevo método específico para mover menús
     await menuService.moveMenu({
@@ -1808,9 +1961,12 @@ const moveMenu = async (moveData) => {
       order: moveData.newOrder
     })
 
-    await loadMenus() // Recargar la lista
+    // Recargar la lista de menús
+    await loadMenus()
+    
   } catch (err) {
     error.value = err.message
+    console.error('Error al mover menú:', err)
   } finally {
     isLoading.value = false
   }
