@@ -425,7 +425,9 @@ export default {
 .icon-grid-container {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
+  width: 100%;
 }
 
 .loading-state,
@@ -451,9 +453,10 @@ export default {
 
 .icon-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   gap: 8px;
   padding: 16px;
+  max-width: 100%;
 }
 
 .icon-item {
@@ -468,6 +471,8 @@ export default {
   transition: all 0.2s;
   background: white;
   min-height: 72px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .icon-item:hover {
@@ -544,11 +549,13 @@ export default {
 /* Responsive */
 @media (max-width: 768px) {
   .icon-grid {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
     padding: 8px;
   }
 
   .icon-item {
     padding: 6px;
+    min-height: 60px;
   }
 
   .icon-preview {
@@ -557,6 +564,22 @@ export default {
 
   .icon-name {
     font-size: 9px;
+  }
+}
+
+@media (max-width: 480px) {
+  .icon-grid {
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 6px;
+  }
+  
+  .icon-item {
+    min-height: 50px;
+    padding: 4px;
+  }
+  
+  .icon-preview {
+    font-size: 18px;
   }
 }
 </style>
