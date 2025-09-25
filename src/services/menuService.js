@@ -62,7 +62,7 @@ const menuService = {
         name: menuData.name,
         path: menuData.path,
         icon: menuData.icon,
-        order: menuData.order || 0,
+        order: menuData.order || 1,
         parentId: menuData.parentId,
         children: null,
         roles: menuData.roles?.map(role => role.replace('ROLE_', '')) || []
@@ -75,6 +75,13 @@ const menuService = {
         throw new Error(`Datos del menú inválidos: ${error.response?.data?.message || 'Error de validación'}`)
       } else if (error.response?.status === 409) {
         throw new Error(`Ya existe un menú con esa ruta: ${error.response?.data?.message || 'Conflicto'}`)
+      } else if (error.response?.status === 422) {
+        console.error('Error 422 completo:', error.response?.data)
+        const errorMessage = error.response?.data?.message || 
+                           error.response?.data?.detail || 
+                           error.response?.data?.title ||
+                           'Datos no válidos'
+        throw new Error(`Error de validación: ${errorMessage}`)
       } else if (error.response?.status === 500) {
         throw new Error(`Error interno del servidor: ${error.response?.data?.message || 'Error del backend'}`)
       }

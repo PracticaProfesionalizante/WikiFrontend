@@ -28,14 +28,15 @@
       @dragleave="handleDragLeave"
       @contextmenu.prevent="showContextMenu"
     >
-      <!-- Botón de expansión -->
+      <!-- Botón de expansión con mejor indicador visual -->
       <button 
         v-if="hasChildren"
-        class="expand-button"
+        class="expand-button accordion-toggle"
         @click="toggleExpanded"
-        :aria-label="expanded ? 'Contraer' : 'Expandir'"
+        :aria-label="expanded ? 'Contraer submenús' : 'Expandir submenús'"
+        :title="expanded ? 'Contraer submenús' : 'Expandir submenús'"
       >
-        <i :class="expanded ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
+        <i :class="expanded ? 'mdi mdi-chevron-down' : 'mdi mdi-chevron-right'" class="expand-icon"></i>
       </button>
       <div v-else class="expand-spacer"></div>
 
@@ -43,12 +44,12 @@
       <div class="menu-info">
         <div class="menu-header">
           <i :class="['mdi', menu.icon] || 'fas fa-link'" class="menu-icon"></i>
-          <span class="menu-name">{{ menu.name }}</span>
+          <span class="menu-name" v-html="highlightSearchTerm(menu.name)"></span>
           <span class="menu-order">#{{ menu.order }}</span>
         </div>
         
         <div class="menu-details">
-          <span class="menu-path">{{ menu.path }}</span>
+          <span class="menu-path" v-html="highlightSearchTerm(menu.path)"></span>
           <div class="menu-roles">
             <span 
               v-for="role in menu.roles" 
@@ -110,21 +111,24 @@
       </div>
     </div>
 
-    <!-- Hijos del menú -->
-    <div v-if="expanded && hasChildren" class="menu-children">
-      <MenuTreeNode
-        v-for="child in sortedChildren"
-        :key="child.id"
-        :menu="child"
-        :level="level + 1"
-        :all-menus="allMenus"
-        :available-roles="availableRoles"
-        @edit="emit('edit', $event)"
-        @delete="emit('delete', $event)"
-        @move="emit('move', $event)"
-        @create-submenu="emit('create-submenu', $event)"
-      />
-    </div>
+    <!-- Hijos del menú con animación de acordeón -->
+    <Transition name="accordion">
+      <div v-if="expanded && hasChildren" class="menu-children">
+        <MenuTreeNode
+          v-for="child in sortedChildren"
+          :key="child.id"
+          :menu="child"
+          :level="level + 1"
+          :all-menus="allMenus"
+          :available-roles="availableRoles"
+          :search-query="searchQuery"
+          @edit="emit('edit', $event)"
+          @delete="emit('delete', $event)"
+          @move="emit('move', $event)"
+          @create-submenu="emit('create-submenu', $event)"
+        />
+      </div>
+    </Transition>
 
     <!-- Zona de drop inferior -->
     <div 
@@ -158,6 +162,10 @@ const props = defineProps({
   availableRoles: {
     type: Array,
     required: true
+  },
+  searchQuery: {
+    type: String,
+    default: ''
   }
 })
 
@@ -165,7 +173,7 @@ const props = defineProps({
 const emit = defineEmits(['edit', 'delete', 'move', 'create-submenu'])
 
 // Estado local
-const expanded = ref(true) // Expandir por defecto para mostrar los submenús
+const expanded = ref(false) // Contraer por defecto para comportamiento de acordeón
 const dropZone = ref(null) // 'top', 'inside', 'bottom', null
 const isDragging = ref(false)
 const showContextMenuFlag = ref(false)
@@ -214,6 +222,16 @@ const getRoleLabel = (roleValue) => {
   }
   const role = props.availableRoles.find(r => r.value === roleValue)
   return role ? role.label : roleValue
+}
+
+// Método para resaltar términos de búsqueda
+const highlightSearchTerm = (text) => {
+  if (!props.searchQuery || !text) {
+    return text
+  }
+  
+  const regex = new RegExp(`(${props.searchQuery})`, 'gi')
+  return text.replace(regex, '<mark class="search-highlight">$1</mark>')
 }
 
 // Drag & Drop
@@ -631,6 +649,16 @@ const handleCreateSubmenu = () => {
   cursor: grabbing;
 }
 
+/* Estilos para resaltado de búsqueda */
+.search-highlight {
+  background: linear-gradient(135deg, #ffd54f, #ffb74d);
+  color: #333;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .menu-node {
@@ -686,6 +714,60 @@ const handleCreateSubmenu = () => {
   height: 1px;
   background: #e0e0e0;
   margin: 4px 0;
+}
+
+/* Estilos para acordeón */
+.accordion-toggle {
+  transition: transform 0.3s ease;
+}
+
+.accordion-toggle:hover {
+  background: rgba(0, 0, 0, 0.1);
+  transform: scale(1.1);
+}
+
+.expand-icon {
+  transition: transform 0.3s ease;
+  font-size: 14px;
+}
+
+/* Animaciones de transición para acordeón */
+.accordion-enter-active,
+.accordion-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.accordion-enter-from,
+.accordion-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
+}
+
+.accordion-enter-to,
+.accordion-leave-from {
+  opacity: 1;
+  max-height: 1000px;
+  transform: translateY(0);
+}
+
+/* Mejoras visuales para menús padre */
+.menu-node:has(.menu-children) .menu-header {
+  font-weight: 600;
+}
+
+.menu-node:has(.menu-children) .menu-name {
+  color: #2c3e50;
+}
+
+/* Indicador visual para menús con hijos */
+.menu-node:has(.menu-children):not(.expanded) {
+  border-left: 3px solid #3498db;
+}
+
+.menu-node:has(.menu-children).expanded {
+  border-left: 3px solid #27ae60;
 }
 </style>
 export default {

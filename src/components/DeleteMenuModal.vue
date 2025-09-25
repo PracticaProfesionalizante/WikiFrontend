@@ -92,7 +92,7 @@
                     <span class="option-title">Eliminación selectiva</span>
                   </div>
                   <p class="option-description">
-                    Elegir qué submenús eliminar. Los no seleccionados se moverán al nivel raíz
+                    Elegir qué submenús eliminar. El menú principal se mantiene, solo se eliminan los submenús seleccionados
                   </p>
                 </div>
               </label>
@@ -122,8 +122,8 @@
             <div v-if="deletionMode === 'selective'" class="selective-info">
               <p>
                 <i class="mdi mdi-information"></i>
-                Selecciona los submenús que deseas eliminar junto con el menú principal.
-                Los submenús no seleccionados se conservarán como menús principales.
+                Selecciona los submenús que deseas eliminar. El menú principal se mantendrá intacto.
+                Los submenús no seleccionados permanecerán como submenús del menú principal.
               </p>
             </div>
             <div v-else-if="deletionMode === 'keep-children'" class="keep-info">
@@ -221,7 +221,7 @@ const getConfirmButtonText = () => {
       return `Eliminar Todo (${props.children.length + 1})`
     case 'selective':
       const selectedCount = selectedChildren.value.length
-      return selectedCount > 0 ? `Eliminar Seleccionados (${selectedCount + 1})` : 'Selecciona submenús'
+      return selectedCount > 0 ? `Eliminar Submenús (${selectedCount})` : 'Selecciona submenús'
     case 'keep-children':
       return 'Eliminar Solo Menú Principal'
     default:
