@@ -11,7 +11,8 @@ import '@mdi/font/css/materialdesignicons.css'
 import { useAuthStore } from './stores/auth'
 
 // Utilidad para fallback de iconos
-import { initIconFallback } from './utils/iconFallback'
+import { initIconFallback } from './utils/iconFallback.js'
+import { initWindows10MDIFix } from './utils/windows-mdi-fix.js'
 
 // Crear instancia de Pinia
 const pinia = createPinia()
@@ -42,8 +43,13 @@ const initializeAuth = async () => {
 // Inicializar la aplicación
 const startApp = async () => {
   try {
-    // Inicializar sistema de fallback de iconos
-    initIconFallback()
+    // Inicializar fix específico para Windows 10
+    initWindows10MDIFix()
+    
+    // Inicializar sistema de fallback de iconos (ahora asíncrono)
+    initIconFallback().catch(error => {
+      console.error('Error inicializando sistema de fallback de iconos:', error)
+    })
     
     // Primero montar la aplicación
     app.mount('#app')
