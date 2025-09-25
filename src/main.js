@@ -10,9 +10,6 @@ import '@mdi/font/css/materialdesignicons.css'
 // Importar el store de autenticación
 import { useAuthStore } from './stores/auth'
 
-// Importar utilidad para iconos MDI
-import { initializeMDIIcons, showIconLoadingError } from './utils/iconLoader'
-
 // Crear instancia de Pinia
 const pinia = createPinia()
 
@@ -45,17 +42,11 @@ const startApp = async () => {
     // Primero montar la aplicación
     app.mount('#app')
     
-    // Inicializar iconos MDI
-    const iconsLoaded = await initializeMDIIcons()
-    if (!iconsLoaded) {
-      showIconLoadingError()
-    }
-    
     // Luego inicializar autenticación
     await initializeAuth()
     
   } catch (error) {
-    console.error('Error al inicializar la aplicación:', error)
+    // Error al inicializar la aplicación
   }
 }
 
