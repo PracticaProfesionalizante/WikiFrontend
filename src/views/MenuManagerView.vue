@@ -31,7 +31,8 @@
         <!-- Indicador de carga -->
         <div v-if="isLoading" class="loading-indicator">
           <i class="mdi mdi-loading mdi-spin"></i>
-          <span>Cargando menús...</span>
+          <span v-if="!isCreatingSubmenus">Cargando menús...</span>
+          <span v-else>Creando submenús... ({{ submenuProgress.current }}/{{ submenuProgress.total }})</span>
         </div>
 
         <!-- Mensaje de error -->
@@ -994,6 +995,8 @@ const previewMenu = ref(null)
 
 // Estado de carga y errores
 const isLoading = ref(false)
+const isCreatingSubmenus = ref(false)
+const submenuProgress = ref({ current: 0, total: 0 })
 const error = ref(null)
 
 // Estado del modal de eliminación
@@ -1389,21 +1392,23 @@ const saveMenu = async () => {
       // Si se activó la creación de submenús y hay submenús definidos
       if (menuForm.value.createSubmenus && menuForm.value.submenus.length > 0) {
         const parentMenuId = parentMenuResult.id
+        
+        // Activar indicador de progreso de submenús
+        isCreatingSubmenus.value = true
+        submenuProgress.value = { current: 0, total: menuForm.value.submenus.length }
 
         // Recargar menús antes de crear submenús para tener el estado actualizado
         await loadMenus()
 
-        // Crear cada submenú con un pequeño delay para evitar conflictos
-        for (let i = 0; i < menuForm.value.submenus.length; i++) {
-          const submenu = menuForm.value.submenus[i]
-          
+        // Crear submenús en paralelo para reducir el tiempo total
+        const submenuPromises = menuForm.value.submenus.map(async (submenu, index) => {
           if (submenu.name && submenu.path) {
             const submenuData = {
               name: submenu.name,
               path: submenu.path,
               icon: submenu.icon || '',
               template: submenu.template || 'basic',
-              order: 9999, // Usar orden temporal alto para evitar conflictos
+              order: submenu.order || (index + 1), // Usar el orden correcto directamente
               parentId: parentMenuId,
               roles: submenu.roles && submenu.roles.length > 0 ? submenu.roles : menuForm.value.roles || [],
               isActive: submenu.isActive !== undefined ? submenu.isActive : true
@@ -1411,27 +1416,41 @@ const saveMenu = async () => {
 
             try {
               const submenuResult = await menuService.createMenu(submenuData)
-              
-              // Pequeño delay entre creaciones para evitar conflictos de concurrencia
-              if (i < menuForm.value.submenus.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 100))
-              }
-              
-              // Mover el submenú a la posición correcta si es necesario
-              const targetOrder = submenu.order || (i + 1)
-              if (targetOrder !== 9999) {
-                await menuService.moveMenu({
-                  menuId: submenuResult.id,
-                  parentId: parentMenuId,
-                  order: targetOrder
-                })
-              }
+              // Actualizar progreso
+              submenuProgress.value.current++
+              return { success: true, submenu: submenu.name, result: submenuResult }
             } catch (submenuError) {
               console.error(`Error creando submenú "${submenu.name}":`, submenuError)
-              // Mostrar el error al usuario también
-              error.value = `Error creando submenú "${submenu.name}": ${submenuError.message}`
+              // Actualizar progreso incluso en caso de error
+              submenuProgress.value.current++
+              return { success: false, submenu: submenu.name, error: submenuError.message }
             }
           }
+          // Actualizar progreso para datos incompletos
+          submenuProgress.value.current++
+          return { success: false, submenu: submenu.name, error: 'Datos incompletos' }
+        })
+
+        // Esperar a que todos los submenús se creen
+        const submenuResults = await Promise.allSettled(submenuPromises)
+        
+        // Desactivar indicador de progreso
+        isCreatingSubmenus.value = false
+        
+        // Verificar si hubo errores
+        const failedSubmenus = submenuResults
+          .map((result, index) => ({ result, index }))
+          .filter(({ result }) => result.status === 'rejected' || !result.value?.success)
+          .map(({ result, index }) => {
+            const submenuName = menuForm.value.submenus[index]?.name || `Submenú ${index + 1}`
+            const errorMsg = result.status === 'rejected' 
+              ? result.reason?.message || 'Error desconocido'
+              : result.value?.error || 'Error desconocido'
+            return `${submenuName}: ${errorMsg}`
+          })
+
+        if (failedSubmenus.length > 0) {
+          error.value = `Algunos submenús no se pudieron crear:\n${failedSubmenus.join('\n')}`
         }
       }
     }

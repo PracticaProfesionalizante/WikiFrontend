@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 // Configuración base de Axios
 const api = axios.create({
   baseURL: 'http://practicas.teclab.edu.ar:8080', // URL del backend
-  timeout: 15000, // Aumentar timeout para conexiones lentas
+  timeout: 30000, // Timeout aumentado para operaciones complejas como crear menús con submenús
   headers: {
     'Content-Type': 'application/json',
   }
