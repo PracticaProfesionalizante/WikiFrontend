@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="background-image"></div>
-    
+
     <div class="student-image-overlay"></div>
 
     <div class="content-layout">
@@ -27,7 +27,7 @@
       <div class="form-section">
         <div class="login-form-wrapper animate-slide-in-right">
           <h2 class="form-title animate-fade-in-delay" v-if="!forgotPasswordSuccess">{{ showForgotPassword ? 'Recuperar Contraseña' : 'Iniciar sesión' }}</h2>
-          
+
           <form @submit.prevent="showForgotPassword ? handleSendResetEmail() : handleLogin()" class="login-form">
             <!-- Transición con animación -->
             <transition name="form-slide" mode="out-in">
@@ -35,15 +35,15 @@
               <div v-if="!showForgotPassword" key="login-form">
                 <div class="input-group">
                   <div class="floating-input">
-                    <input 
+                    <input
                       v-model="credentials.email"
-                      type="email" 
+                      type="email"
                       id="email"
                       class="form-input"
-                      :class="{ 
-                        'error': emailError, 
+                      :class="{
+                        'error': emailError,
                         'success': !emailError && credentials.email && credentials.email.length > 0,
-                        'has-value': credentials.email || emailFocused 
+                        'has-value': credentials.email || emailFocused
                       }"
                       @focus="emailFocused = true"
                       @blur="emailFocused = false; validateEmail()"
@@ -62,15 +62,15 @@
 
                 <div class="input-group">
                   <div class="floating-input password-wrapper">
-                    <input 
+                    <input
                       v-model="credentials.password"
-                      :type="showPassword ? 'text' : 'password'" 
+                      :type="showPassword ? 'text' : 'password'"
                       id="password"
                       class="form-input password-input"
-                      :class="{ 
-                        'error': passwordError, 
+                      :class="{
+                        'error': passwordError,
                         'success': !passwordError && credentials.password && credentials.password.length >= 6,
-                        'has-value': credentials.password || passwordFocused 
+                        'has-value': credentials.password || passwordFocused
                       }"
                       @focus="passwordFocused = true"
                       @blur="passwordFocused = false; validatePassword()"
@@ -78,9 +78,9 @@
                     />
                     <label for="password" class="floating-label">Contraseña</label>
                     <div class="password-controls">
-                      <button 
-                        type="button" 
-                        @click="showPassword = !showPassword" 
+                      <button
+                        type="button"
+                        @click="showPassword = !showPassword"
                         class="password-toggle"
                       >
                         <i v-if="showPassword" class="mdi mdi-eye"></i>
@@ -98,9 +98,9 @@
                 </div>
 
                 <div class="forgot-password-section">
-                  <button 
-                    type="button" 
-                    @click="handleForgotPassword" 
+                  <button
+                    type="button"
+                    @click="handleForgotPassword"
                     class="forgot-password-link"
                   >
                     ¿Olvidaste tu contraseña?
@@ -108,9 +108,9 @@
                 </div>
 
                 <div class="bottom-row">
-                  <button 
-                    type="submit" 
-                    :disabled="!isFormValid || isLoading" 
+                  <button
+                    type="submit"
+                    :disabled="!isFormValid || isLoading"
                     class="next-button"
                     :class="{ 'disabled': !isFormValid || isLoading, 'loading': isLoading }"
                   >
@@ -122,7 +122,7 @@
                   </button>
                 </div>
               </div>
-              
+
               <!-- Formulario de Recuperación -->
               <div v-else key="forgot-form">
                 <div v-if="!forgotPasswordSuccess">
@@ -130,12 +130,12 @@
                    <!-- <h3 class="forgot-title">Recuperar Contraseña</h3> -->
                     <p class="forgot-subtitle">Ingresa tu email para recibir instrucciones</p>
                   </div>
-                  
+
                   <div class="input-group">
                     <div class="floating-input">
-                      <input 
+                      <input
                         v-model="forgotPasswordEmail"
-                        type="email" 
+                        type="email"
                         id="forgot-email"
                         class="form-input"
                         :class="{ 'has-value': forgotPasswordEmail }"
@@ -143,19 +143,19 @@
                       <label for="forgot-email" class="floating-label">Email para recuperación</label>
                     </div>
                   </div>
-                  
+
                   <div class="forgot-actions">
-                    <button 
-                      type="button" 
-                      @click="handleBackToLogin" 
+                    <button
+                      type="button"
+                      @click="handleBackToLogin"
                       class="back-to-login-btn"
                     >
                       ← Volver al login
                     </button>
-                    
-                    <button 
-                      type="submit" 
-                      :disabled="!forgotPasswordEmail || forgotPasswordLoading" 
+
+                    <button
+                      type="submit"
+                      :disabled="!forgotPasswordEmail || forgotPasswordLoading"
                       class="next-button"
                       :class="{ 'disabled': !forgotPasswordEmail || forgotPasswordLoading, 'loading': forgotPasswordLoading }"
                     >
@@ -167,7 +167,7 @@
                     </button>
                   </div>
                 </div>
-                
+
                 <!-- Mensaje de éxito -->
                 <div v-else class="forgot-success">
                   <div class="success-icon-large">
@@ -175,10 +175,10 @@
                   </div>
                   <h3 class="success-title">¡Email enviado!</h3>
                   <p class="success-text">Revisa tu bandeja de entrada y sigue las instrucciones para recuperar tu contraseña.</p>
-                  
-                  <button 
-                    type="button" 
-                    @click="handleBackToLogin" 
+
+                  <button
+                    type="button"
+                    @click="handleBackToLogin"
                     class="back-to-login-btn-success"
                   >
                     Volver al login
@@ -192,7 +192,7 @@
             <i class="mdi mdi-alert-circle"></i>
             {{ error }}
           </div>
-          
+
           <div v-if="successMessage" class="success-message animate-fade-in">
             <i class="mdi mdi-check-circle"></i>
             {{ successMessage }}
@@ -237,9 +237,9 @@ const credentials = reactive({
 
 // Computed properties
 const isFormValid = computed(() => {
-  return credentials.email.length > 0 && 
+  return credentials.email.length > 0 &&
          credentials.password.length >= 6 &&
-         !emailError.value && 
+         !emailError.value &&
          !passwordError.value
 })
 
@@ -276,7 +276,7 @@ const handleLogin = async () => {
   try {
     validateEmail()
     validatePassword()
-    
+
     if (!isFormValid.value) {
       error.value = 'Por favor, completa todos los campos correctamente'
       return
@@ -285,25 +285,25 @@ const handleLogin = async () => {
     isLoading.value = true
     error.value = ''
     authStore.clearError() // Limpiar errores previos del store
-    
+
     const result = await authStore.login({
       email: credentials.email,
       password: credentials.password
     })
-    
+
     successMessage.value = '¡Bienvenido! Redirigiendo...'
     // No resetear isLoading aquí para mantener el botón deshabilitado durante la redirección
-    
+
   } catch (err) {
     // Manejar diferentes tipos de errores con mensajes específicos
-    if (err.message?.includes('Credenciales inválidas') || 
+    if (err.message?.includes('Credenciales inválidas') ||
         err.message?.includes('401') ||
         err.message?.includes('unauthorized')) {
       error.value = 'Error al iniciar sesión. Verifica tus credenciales.'
-    } else if (err.message?.includes('Usuario deshabilitado') || 
+    } else if (err.message?.includes('Usuario deshabilitado') ||
                err.message?.includes('403')) {
       error.value = 'Tu cuenta está deshabilitada. Contacta al administrador.'
-    } else if (err.message?.includes('conexión') || 
+    } else if (err.message?.includes('conexión') ||
                err.message?.includes('network') ||
                err.message?.includes('fetch')) {
       error.value = 'Error de conexión. Verifica tu internet e intenta nuevamente.'
@@ -336,20 +336,20 @@ const handleSendResetEmail = async () => {
     error.value = 'Por favor ingresa tu email'
     return
   }
-  
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(forgotPasswordEmail.value)) {
     error.value = 'Por favor ingresa un email válido'
     return
   }
-  
+
   forgotPasswordLoading.value = true
   error.value = ''
-  
+
   try {
     // Simular llamada al backend (aquí harías la llamada real)
     await new Promise(resolve => setTimeout(resolve, 2000))
-    
+
     forgotPasswordSuccess.value = true
     successMessage.value = 'Se ha enviado un email con instrucciones para recuperar tu contraseña'
   } catch (err) {
@@ -524,40 +524,49 @@ img {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('/src/assets/images/backgrounds/teclab_fondo_login.png');
+  /* Optimización: Lazy loading y fallback */
+  background-image: url('/src/assets/images/backgrounds/teclab_fondo_login.webp');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   z-index: 1;
-  /* Mejora: Overlay sutil para mejor contraste */
-  background-blend-mode: overlay;
-  background-color: rgba(0, 20, 40, 0.05);
-  /* Optimización para máxima calidad de imagen */
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: high-quality;
-  image-rendering: crisp-edges;
-  will-change: transform;
-  backface-visibility: hidden;
+
+  /* Mejora: Loading placeholder mientras carga la imagen */
+  background-color: #1a365d;
+
+  /* Optimización: Compresión y renderizado eficiente */
+  image-rendering: optimizeSpeed;
+  transform: translateZ(0);
+  will-change: auto;
+
+  /* Transición suave cuando carga */
+  opacity: 0;
+  animation: fadeInBackground 1s ease-out 0.3s forwards;
+}
+
+@keyframes fadeInBackground {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .student-image-overlay {
   position: absolute;
   top: 0;
   left: 0;
-  width: 52%; 
+  width: 52%;
   height: 100%;
   background-image: url('@/assets/images/illustrations/user_studying.webp');
   background-size: cover;
   background-position: -350px center;
   background-repeat: no-repeat;
-  
+
   /* Mejora: Filtros optimizados para mejor calidad */
   filter: brightness(0.8) saturate(1.05) contrast(1.05);
   opacity: 0.95;
-  
-  z-index: 1; 
-  pointer-events: none; 
-  
+
+  z-index: 1;
+  pointer-events: none;
+
   /* Mejora: Propiedades para imágenes de máxima calidad */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: high-quality;
@@ -568,7 +577,7 @@ img {
 
 .content-layout {
   position: relative;
-  z-index: 2; 
+  z-index: 2;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -589,9 +598,9 @@ img {
   color: white;
   padding-right: 1rem;
   /* Mejora: Fondo semi-transparente para mejor contraste del texto */
-  background: linear-gradient(135deg, 
-    rgba(0, 0, 0, 0.3) 0%, 
-    rgba(0, 0, 0, 0.1) 50%, 
+  background: linear-gradient(135deg,
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(0, 0, 0, 0.1) 50%,
     rgba(0, 0, 0, 0.2) 100%);
   backdrop-filter: blur(2px);
   border-radius: 16px;
@@ -630,9 +639,9 @@ img {
   margin-bottom: 0.75rem; /* Reducido para acercar al texto */
   padding: 0.5rem 0; /* Reducido padding para menos espacio */
   /* 📌 Mejora: Fondo sutil para destacar el logo */
-  background: radial-gradient(ellipse at center, 
-    rgba(73, 233, 237, 0.08) 0%, 
-    rgba(73, 233, 237, 0.03) 40%, 
+  background: radial-gradient(ellipse at center,
+    rgba(73, 233, 237, 0.08) 0%,
+    rgba(73, 233, 237, 0.03) 40%,
     transparent 70%);
   border-radius: 20px;
   position: relative;
@@ -642,7 +651,7 @@ img {
   height: 6rem;
   width: auto;
   /* 📌 Mejora: Sombras más intensas y múltiples capas para máxima visibilidad */
-  filter: drop-shadow(0 8px 20px rgba(73, 233, 237, 0.6)) 
+  filter: drop-shadow(0 8px 20px rgba(73, 233, 237, 0.6))
           drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4))
           drop-shadow(0 2px 6px rgba(73, 233, 237, 0.8))
           brightness(1.1) contrast(1.15);
@@ -661,9 +670,9 @@ img {
   left: -10px;
   right: -10px;
   bottom: -10px;
-  background: radial-gradient(ellipse at center, 
-    rgba(73, 233, 237, 0.15) 0%, 
-    rgba(73, 233, 237, 0.08) 30%, 
+  background: radial-gradient(ellipse at center,
+    rgba(73, 233, 237, 0.15) 0%,
+    rgba(73, 233, 237, 0.08) 30%,
     transparent 60%);
   border-radius: 50%;
   z-index: -1;
@@ -673,7 +682,7 @@ img {
 
 .social-learning-logo:hover {
   transform: translateY(-4px) scale(1.05);
-  filter: drop-shadow(0 12px 28px rgba(73, 233, 237, 0.8)) 
+  filter: drop-shadow(0 12px 28px rgba(73, 233, 237, 0.8))
           drop-shadow(0 6px 16px rgba(0, 0, 0, 0.5))
           drop-shadow(0 3px 8px rgba(73, 233, 237, 1))
           brightness(1.2) contrast(1.2);
@@ -682,9 +691,9 @@ img {
 .social-learning-logo:hover::before {
   opacity: 1;
   transform: scale(1.1);
-  background: radial-gradient(ellipse at center, 
-    rgba(73, 233, 237, 0.25) 0%, 
-    rgba(73, 233, 237, 0.15) 30%, 
+  background: radial-gradient(ellipse at center,
+    rgba(73, 233, 237, 0.25) 0%,
+    rgba(73, 233, 237, 0.15) 30%,
     transparent 60%);
 }
 
@@ -716,7 +725,7 @@ img {
   line-height: 1.1;
   letter-spacing: -0.02em;
   /* Mejora: Sombras más intensas para mejor visibilidad */
-  text-shadow: 0 6px 12px rgba(0, 0, 0, 0.7), 
+  text-shadow: 0 6px 12px rgba(0, 0, 0, 0.7),
                0 3px 6px rgba(73, 233, 237, 0.5),
                0 1px 3px rgba(0, 0, 0, 0.9);
   transition: all 0.3s ease;
@@ -726,7 +735,7 @@ img {
 
 .greeting-title:hover {
   transform: translateY(-1px);
-  text-shadow: 0 8px 16px rgba(0, 0, 0, 0.8), 
+  text-shadow: 0 8px 16px rgba(0, 0, 0, 0.8),
                0 4px 8px rgba(73, 233, 237, 0.6),
                0 2px 4px rgba(0, 0, 0, 0.9);
 }
@@ -1241,25 +1250,25 @@ img {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .back-to-login-btn {
     text-align: center;
     justify-content: center;
   }
-  
+
   .forgot-password-header {
     margin-bottom: 1.5rem;
   }
-  
+
   .forgot-title {
     font-size: 1.25rem;
   }
-  
+
   .success-icon-large {
     width: 60px;
     height: 60px;
   }
-  
+
   .success-icon-large i {
     font-size: 2rem;
   }
@@ -1311,18 +1320,18 @@ img {
     padding: 2rem;
     gap: 2rem;
   }
-  
+
   .welcome-section {
     max-width: 100%;
     text-align: center;
   }
-  
+
   .form-section {
     flex: none;
     width: 100%;
     max-width: 400px;
   }
-  
+
   .greeting-title {
     font-size: 2rem;
   }
@@ -1336,29 +1345,29 @@ img {
   .content-layout {
     padding: 1rem;
   }
-  
+
   .login-form-wrapper {
     padding: 2rem 1.5rem;
   }
-  
+
   .greeting-title {
     font-size: 1.75rem;
   }
-  
+
   .greeting-subtitle {
     font-size: 1rem;
   }
-  
+
   .bottom-row {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
   }
-  
+
   .advisor-section {
     justify-content: center;
   }
-  
+
   .next-button {
     width: 100%;
   }
@@ -1368,11 +1377,11 @@ img {
   .content-layout {
     padding: 1rem;
   }
-  
+
   .login-form-wrapper {
     padding: 1.5rem;
   }
-  
+
   .greeting-title {
     font-size: 1.5rem;
   }
