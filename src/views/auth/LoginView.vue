@@ -1,8 +1,21 @@
 <template>
-  <div class="login-container">
+  <div class="login-container" :class="{ 'dark-mode': isDarkMode }">
     <div class="background-image"></div>
 
     <div class="student-image-overlay"></div>
+
+    <!-- Theme Toggle Button -->
+    <div class="theme-toggle-container">
+      <button
+        @click="toggleTheme"
+        class="theme-toggle-btn"
+        :class="{ 'dark': isDarkMode }"
+        :title="isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+      >
+        <i :class="isDarkMode ? 'mdi mdi-weather-sunny' : 'mdi mdi-weather-night'"></i>
+        <span class="theme-toggle-text">{{ isDarkMode ? 'Claro' : 'Oscuro' }}</span>
+      </button>
+    </div>
 
     <div class="content-layout">
       <div class="welcome-section animate-slide-in-left">
@@ -238,11 +251,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useTheme } from '@/composables/useTheme'
 
 // Composables
 const authStore = useAuthStore()
+const { isDarkMode, toggleTheme, initTheme } = useTheme()
 
 // Referencias reactivas
 const showPassword = ref(false)
@@ -394,6 +409,11 @@ const handleSendResetEmail = async () => {
     forgotPasswordLoading.value = false
   }
 }
+
+// Inicializar tema
+onMounted(() => {
+  initTheme()
+})
 
 // Limpiar errores cuando el componente se monta
 if (authStore.error) {
@@ -556,6 +576,78 @@ img {
   min-height: 100vh;
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Theme Toggle Styles */
+.theme-toggle-container {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  z-index: 1000;
+}
+
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  min-width: 100px;
+  justify-content: center;
+}
+
+.theme-toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 1);
+}
+
+.theme-toggle-btn.dark {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(71, 85, 105, 0.5);
+  color: var(--text-primary);
+}
+
+.theme-toggle-btn.dark:hover {
+  background: rgba(30, 41, 59, 1);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+}
+
+.theme-toggle-btn i {
+  font-size: 1.125rem;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover i {
+  transform: rotate(15deg);
+}
+
+.theme-toggle-text {
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+/* Dark mode container adjustments */
+.login-container.dark-mode {
+  --overlay-opacity: 0.7;
+}
+
+.login-container.dark-mode .background-image {
+  filter: brightness(0.6) contrast(1.1);
+}
+
+.login-container.dark-mode .student-image-overlay {
+  filter: brightness(0.5) saturate(0.8) contrast(1.2);
 }
 
 .background-image {
@@ -572,7 +664,7 @@ img {
   z-index: 1;
 
   /* Mejora: Loading placeholder mientras carga la imagen */
-  background-color: #1a365d;
+  background-color: var(--bg-sidebar);
 
   /* Optimización: Compresión y renderizado eficiente */
   image-rendering: optimizeSpeed;
@@ -769,7 +861,7 @@ img {
 .greeting-title {
   font-size: 3rem;
   font-weight: 800;
-  color: #49e9ed;
+  color: var(--accent-color);
   margin: 0;
   line-height: 1.1;
   letter-spacing: -0.02em;
@@ -832,6 +924,16 @@ img {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Dark mode form styles */
+.login-container.dark-mode .login-form-wrapper {
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  box-shadow:
+    0 25px 50px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(71, 85, 105, 0.2),
+    0 8px 16px rgba(96, 165, 250, 0.1);
+}
+
 .login-form-wrapper:hover {
   transform: translateY(-2px);
   box-shadow:
@@ -843,7 +945,7 @@ img {
 .form-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--text-primary);
   text-align: center;
   margin-bottom: 1.75rem;
   margin-top: 0;
@@ -873,7 +975,7 @@ img {
 .form-input {
   width: 100%;
   padding: 1rem 1rem 0.5rem 1rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-primary);
   /* Mejora: Bordes más redondeados y modernos */
   border-radius: 12px;
   font-size: 1rem;
@@ -882,7 +984,27 @@ img {
   box-sizing: border-box;
   background: transparent;
   /* Asegurar que el texto sea siempre visible independientemente del tema */
-  color: #111827 !important;
+  color: var(--text-primary) !important;
+}
+
+/* Dark mode input styles */
+.login-container.dark-mode .form-input {
+  background: rgba(51, 65, 85, 0.5);
+  border-color: var(--border-primary);
+  color: var(--text-primary) !important;
+}
+
+.login-container.dark-mode .form-input:focus {
+  background: rgba(51, 65, 85, 0.7);
+  border-color: var(--accent-color);
+  box-shadow:
+    0 0 0 4px rgba(96, 165, 250, 0.15),
+    0 4px 12px rgba(96, 165, 250, 0.1);
+}
+
+.login-container.dark-mode .form-input:hover:not(:focus) {
+  background: rgba(51, 65, 85, 0.6);
+  border-color: var(--text-muted);
 }
 
 /* Estilos específicos para autocompletado del navegador */
@@ -891,14 +1013,25 @@ img {
 .form-input:-webkit-autofill:focus,
 .form-input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 30px transparent inset !important;
-  -webkit-text-fill-color: #111827 !important;
-  color: #111827 !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  color: var(--text-primary) !important;
   background-color: transparent !important;
+}
+
+/* Estilos específicos para autocompletado en modo oscuro */
+.login-container.dark-mode .form-input:-webkit-autofill,
+.login-container.dark-mode .form-input:-webkit-autofill:hover,
+.login-container.dark-mode .form-input:-webkit-autofill:focus,
+.login-container.dark-mode .form-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px rgba(51, 65, 85, 0.5) inset !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  color: #f8fafc !important;
+  background-color: rgba(51, 65, 85, 0.5) !important;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: var(--accent-color);
   /* Mejora: Glow effect más elegante */
   box-shadow:
     0 0 0 4px rgba(37, 99, 235, 0.15),
@@ -907,18 +1040,18 @@ img {
 }
 
 .form-input:hover:not(:focus) {
-  border-color: #9ca3af;
+  border-color: var(--text-muted);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .form-input.error {
-  border-color: #ef4444;
+  border-color: var(--accent-danger);
   box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
 }
 
 .form-input.success {
-  border-color: #10b981;
+  border-color: var(--accent-secondary);
   box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
 }
 
@@ -928,7 +1061,7 @@ img {
   top: 0.75rem;
   font-size: 1rem;
   font-weight: 500;
-  color: #6b7280 !important;
+  color: var(--text-secondary) !important;
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: left top;
@@ -943,13 +1076,21 @@ img {
   left: 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #2563eb !important;
+  color: var(--accent-color) !important;
   transform: scale(1);
   background: rgba(255, 255, 255, 0.95);
   padding: 0 0.5rem;
   border-radius: 6px;
   backdrop-filter: blur(8px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode floating label styles */
+.login-container.dark-mode .form-input:focus + .floating-label,
+.login-container.dark-mode .form-input.has-value + .floating-label {
+  background: rgba(30, 41, 59, 0.95);
+  color: var(--accent-color) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .form-input.error + .floating-label {
@@ -986,13 +1127,13 @@ img {
 }
 
 .success-icon {
-  color: #10b981;
+  color: var(--accent-secondary);
   font-size: 1.2rem;
   animation: bounceIn 0.6s ease-out;
 }
 
 .error-icon {
-  color: #ef4444;
+  color: var(--accent-danger);
   font-size: 1.2rem;
   animation: shake 0.5s ease-in-out;
 }
@@ -1014,7 +1155,7 @@ img {
 
 .field-error-message {
   font-size: 0.75rem;
-  color: #ef4444;
+  color: var(--accent-danger);
   margin-top: 0.5rem;
   margin-left: 0.75rem;
   display: flex;
@@ -1030,7 +1171,7 @@ img {
 .password-toggle {
   background: none;
   border: none;
-  color: #6b7280 !important;
+  color: var(--text-secondary) !important;
   cursor: pointer;
   padding: 0;
   display: flex;
@@ -1043,7 +1184,7 @@ img {
 }
 
 .password-toggle:hover {
-  color: #2563eb !important;
+  color: var(--accent-color) !important;
   background-color: rgba(37, 99, 235, 0.1);
   transform: scale(1.1);
 }
@@ -1058,7 +1199,7 @@ img {
 .forgot-password-link {
   background: none;
   border: none;
-  color: #2563eb;
+  color: var(--accent-color);
   font-size: 0.875rem;
   cursor: pointer;
   text-decoration: none;
@@ -1068,7 +1209,7 @@ img {
 }
 
 .forgot-password-link:hover {
-  color: #2563eb;
+  color: var(--accent-color);
   text-decoration: underline;
   background-color: rgba(73, 233, 237, 0.1);
   transform: translateY(-1px);
@@ -1090,8 +1231,8 @@ img {
 .advisor-checkbox {
   height: 1rem;
   width: 1rem;
-  color: #2563eb;
-  border: 1px solid #d1d5db;
+  color: var(--accent-color);
+  border: 1px solid var(--border-primary);
   border-radius: 0.25rem;
   margin-right: 0.5rem;
 }
@@ -1103,14 +1244,14 @@ img {
 
 .advisor-label {
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--text-primary);
   cursor: pointer;
 }
 
 .next-button {
   padding: 0.75rem 2rem;
-  background-color: #d1d5db;
-  color: #6b7280;
+  background-color: var(--border-primary);
+  color: var(--text-secondary);
   border: none;
   border-radius: 9999px;
   font-weight: 500;
@@ -1126,16 +1267,26 @@ img {
 }
 
 .next-button:not(.disabled):not(.loading) {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
   color: white;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
 }
 
+/* Dark mode button styles */
+.login-container.dark-mode .next-button:not(.disabled):not(.loading) {
+  background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+  box-shadow: 0 4px 15px rgba(96, 165, 250, 0.4);
+}
+
+.login-container.dark-mode .next-button:not(.disabled):not(.loading):hover {
+  box-shadow: 0 8px 25px rgba(96, 165, 250, 0.5);
+}
+
 .next-button:not(.disabled):not(.loading):hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
-  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  background: linear-gradient(135deg, var(--primary-color), var(--button-primary-hover));
 }
 
 .next-button:not(.disabled):not(.loading):active {
@@ -1199,7 +1350,7 @@ img {
 
 .forgot-subtitle {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -1214,7 +1365,7 @@ img {
 .back-to-login-btn {
   background: none;
   border: none;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.875rem;
   cursor: pointer;
   padding: 0.5rem;
@@ -1226,7 +1377,7 @@ img {
 }
 
 .back-to-login-btn:hover {
-  color: #2563eb;
+  color: var(--accent-color);
   background-color: rgba(37, 99, 235, 0.1);
 }
 
@@ -1262,13 +1413,13 @@ img {
 
 .success-text {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin-bottom: 2rem;
   line-height: 1.5;
 }
 
 .back-to-login-btn-success {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
   color: white;
   border: none;
   padding: 0.75rem 2rem;
@@ -1282,7 +1433,7 @@ img {
 .back-to-login-btn-success:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
-  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  background: linear-gradient(135deg, var(--primary-color), var(--button-primary-hover));
 }
 
 @keyframes successPulse {
@@ -1363,6 +1514,21 @@ img {
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
 }
 
+/* Dark mode error and success messages */
+.login-container.dark-mode .error-message {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.15));
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.login-container.dark-mode .success-message {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.15));
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: #34d399;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
 .error-message i,
 .success-message i {
   font-size: 1rem;
@@ -1392,6 +1558,21 @@ img {
   }
 
   .student-image-overlay {
+    display: none;
+  }
+
+  .theme-toggle-container {
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .theme-toggle-btn {
+    padding: 0.5rem 0.75rem;
+    min-width: 80px;
+    font-size: 0.8rem;
+  }
+
+  .theme-toggle-text {
     display: none;
   }
 }

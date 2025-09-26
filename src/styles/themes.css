@@ -6,6 +6,7 @@
   --bg-tertiary: #f1f5f9;
   --bg-card: #ffffff;
   --bg-sidebar: #1e293b;
+  --sidebar-bg: #ffffff;
   --bg-header: #ffffff;
 
   --text-primary: #1e293b;
@@ -40,6 +41,12 @@
   --bg-hover: rgba(37, 99, 235, 0.05);
   --bg-active: rgba(37, 99, 235, 0.1);
   --focus-shadow: rgba(37, 99, 235, 0.15);
+
+  /* Variables adicionales para mejor consistencia */
+  --success-color: #10b981;
+  --error-color: #ef4444;
+  --warning-color: #f59e0b;
+  --info-color: #06b6d4;
 }
 
 /* Tema oscuro */
@@ -49,6 +56,7 @@
   --bg-tertiary: #334155;
   --bg-card: #1e293b;
   --bg-sidebar: #0f172a;
+  --sidebar-bg: #0f172a;
   --bg-header: #1e293b;
 
   --text-primary: #f8fafc;
@@ -83,6 +91,12 @@
   --bg-hover: rgba(96, 165, 250, 0.1);
   --bg-active: rgba(96, 165, 250, 0.15);
   --focus-shadow: rgba(96, 165, 250, 0.2);
+
+  /* Variables adicionales para mejor consistencia */
+  --success-color: #34d399;
+  --error-color: #f87171;
+  --warning-color: #fbbf24;
+  --info-color: #22d3ee;
 }
 
 /* Transiciones suaves para el cambio de tema */
@@ -135,4 +149,31 @@ body {
 
 .shadow-theme {
   box-shadow: 0 1px 3px var(--shadow-color);
+}
+
+/* Clases utilitarias adicionales */
+.text-success {
+  color: var(--success-color);
+}
+.text-error {
+  color: var(--error-color);
+}
+.text-warning {
+  color: var(--warning-color);
+}
+.text-info {
+  color: var(--info-color);
+}
+
+.bg-success {
+  background-color: var(--success-color);
+}
+.bg-error {
+  background-color: var(--error-color);
+}
+.bg-warning {
+  background-color: var(--warning-color);
+}
+.bg-info {
+  background-color: var(--info-color);
 }
