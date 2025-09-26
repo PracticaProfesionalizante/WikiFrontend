@@ -15,17 +15,49 @@
           </p>
         </div>
 
-        <!-- Botón para crear nuevo menú -->
+        <!-- Barra de acciones mejorada -->
         <div class="action-bar">
-          <button
-            class="create-menu-btn"
-            @click="openDialog"
-            :disabled="isLoading"
-            title="Crear un nuevo menú principal o submenú"
-          >
-            <i class="mdi mdi-plus-circle"></i>
-            Crear Nuevo Menú
-          </button>
+          <div class="action-group primary">
+            <button
+              class="create-menu-btn primary"
+              @click="openDialog"
+              :disabled="isLoading"
+              title="Crear un nuevo menú principal o submenú"
+            >
+              <i class="mdi mdi-plus-circle"></i>
+              Crear Nuevo Menú
+            </button>
+            <button
+              class="action-btn secondary"
+              @click="loadMenus"
+              :disabled="isLoading"
+              title="Actualizar lista de menús"
+            >
+              <i class="mdi mdi-refresh" :class="{ 'mdi-spin': isLoading }"></i>
+              Actualizar
+            </button>
+          </div>
+
+          <div class="action-group secondary">
+            <button
+              class="action-btn"
+              @click="exportMenus"
+              :disabled="isLoading || menus.length === 0"
+              title="Exportar estructura de menús"
+            >
+              <i class="mdi mdi-download"></i>
+              Exportar
+            </button>
+            <button
+              class="action-btn"
+              @click="importMenus"
+              :disabled="isLoading"
+              title="Importar estructura de menús"
+            >
+              <i class="mdi mdi-upload"></i>
+              Importar
+            </button>
+          </div>
         </div>
 
         <!-- Indicador de carga -->
@@ -47,8 +79,8 @@
           </button>
         </div>
 
-        <!-- Lista de menús existentes -->
-        <div class="menu-display-options" v-if="!isLoading">
+        <!-- Controles de vista -->
+        <div class="view-controls" v-if="!isLoading">
           <div class="view-toggle">
             <button
               class="toggle-btn"
@@ -69,10 +101,18 @@
               Vista de Árbol
             </button>
           </div>
+
+          <div class="stats-info">
+            <span class="menu-count">
+              <i class="mdi mdi-menu"></i>
+              {{ filteredMenus.length }} de {{ menus.length }} menús
+            </span>
+          </div>
         </div>
 
         <!-- Vista de tarjetas (original) -->
-        <div class="menus-grid" v-if="!isLoading && viewMode === 'grid'">
+        <transition name="fade-slide" mode="out-in">
+          <div class="menus-grid" v-if="!isLoading && viewMode === 'grid'" key="grid">
           <div
             v-for="menu in filteredMenus"
             :key="menu.id"
@@ -134,10 +174,12 @@
               </button>
             </div>
           </div>
-        </div>
+          </div>
+        </transition>
 
         <!-- Vista de árbol jerárquico -->
-        <div class="menu-tree-view" v-if="!isLoading && viewMode === 'tree'">
+        <transition name="fade-slide" mode="out-in">
+          <div class="menu-tree-view" v-if="!isLoading && viewMode === 'tree'" key="tree">
           <!-- Sección de ayuda y buscador -->
           <div class="tree-header">
             <!-- Sección de ayuda -->
@@ -289,7 +331,7 @@
                   <input
                     type="text"
                     v-model="searchQuery"
-                    placeholder="Buscar menús por nombre o ruta..."
+                    placeholder="Buscar menús, submenús, rutas o roles..."
                     class="search-input"
                     @input="handleSearch"
                   />
@@ -332,7 +374,7 @@
               :menu="rootMenu"
               :level="0"
               :all-menus="menus"
-              :available-roles="availableRoles"
+              :available-roles="availableRolesList"
               :search-query="searchQuery"
               @edit="editMenu"
               @delete="deleteMenu"
@@ -340,7 +382,8 @@
               @create-submenu="createSubmenu"
             />
           </div>
-        </div>
+          </div>
+        </transition>
 
         <!-- Modal de eliminación avanzada -->
         <DeleteMenuModal
@@ -351,7 +394,7 @@
           @confirm="handleDeleteConfirm"
         />
 
-        <!-- Modal de creación/edición -->
+        <!-- Modal de creación/edición mejorado -->
         <div
           v-if="showDialog"
           class="dialog-overlay"
@@ -361,34 +404,81 @@
           aria-labelledby="modal-title"
           aria-describedby="modal-description"
         >
-          <div class="dialog-content" @click.stop tabindex="-1" ref="modalContent">
-            <div class="dialog-header">
-              <h2 id="modal-title">
-                <i class="mdi mdi-menu-open" aria-hidden="true"></i>
-                {{ isEditing ? 'Editar' : 'Crear' }} Menú
-              </h2>
-              <button
-                @click="closeDialog"
-                class="close-btn"
-                aria-label="Cerrar modal"
-                type="button"
-              >
-                <i class="mdi mdi-close" aria-hidden="true"></i>
-              </button>
+          <div class="dialog-content enhanced-modal" @click.stop tabindex="-1" ref="modalContent">
+            <!-- Header limpio y organizado -->
+            <div class="dialog-header clean-header">
+              <div class="header-main">
+                <div class="header-left">
+                  <div class="header-icon">
+                    <i class="mdi mdi-menu-open" aria-hidden="true"></i>
+                  </div>
+                  <div class="header-text">
+                    <h2 id="modal-title">
+                      {{ isEditing ? 'Editar' : 'Crear' }} Menú
+                    </h2>
+                    <p class="header-subtitle">
+                      {{ isEditing ? 'Modifica la configuración del menú existente' : 'Configura un nuevo elemento del menú' }}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  @click="closeDialog"
+                  class="close-btn clean-close"
+                  aria-label="Cerrar modal"
+                  type="button"
+                >
+                  <i class="mdi mdi-close" aria-hidden="true"></i>
+                </button>
+              </div>
+
+              <!-- Indicador de progreso compacto -->
+              <div class="progress-indicator compact">
+                <div class="progress-bar">
+                  <div class="progress-fill" :style="{ width: `${(currentStep / 3) * 100}%` }"></div>
+                </div>
+                <div class="progress-steps">
+                  <div class="step" :class="{ active: currentStep >= 1, completed: currentStep > 1 }">
+                    <i class="mdi mdi-information-outline"></i>
+                    <span>Básico</span>
+                  </div>
+                  <div class="step" :class="{ active: currentStep >= 2, completed: currentStep > 2 }">
+                    <i class="mdi mdi-emoticon-outline"></i>
+                    <span>Icono</span>
+                  </div>
+                  <div class="step" :class="{ active: currentStep >= 3, completed: currentStep > 3 }">
+                    <i class="mdi mdi-cog-outline"></i>
+                    <span>Config</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div class="dialog-body">
+            <div class="dialog-body enhanced-body">
               <p id="modal-description" class="sr-only">
                 Formulario para {{ isEditing ? 'editar' : 'crear' }} un elemento del menú. Complete
                 los campos requeridos y presione guardar.
               </p>
-              <form @submit.prevent="saveMenu" role="form" id="menu-form">
-                <!-- Información básica -->
-                <div class="form-section">
-                  <h3 class="section-title">
-                    <i class="mdi mdi-information-outline" aria-hidden="true"></i>
-                    Información Básica
-                  </h3>
+              <form @submit.prevent="saveMenu" role="form" id="menu-form" class="enhanced-form">
+                <!-- Información básica mejorada -->
+                <div class="form-section enhanced-section" :class="{ 'step-active': currentStep >= 1 }">
+                  <div class="section-header">
+                    <div class="section-icon">
+                      <i class="mdi mdi-information-outline" aria-hidden="true"></i>
+                    </div>
+                    <div class="section-title-content">
+                      <h3 class="section-title">
+                        Información Básica
+                      </h3>
+                      <p class="section-description">
+                        Define el nombre y la ruta de acceso del menú
+                      </p>
+                    </div>
+                    <div class="section-status">
+                      <i v-if="menuForm.name && menuForm.path" class="mdi mdi-check-circle success"></i>
+                      <i v-else class="mdi mdi-circle-outline"></i>
+                    </div>
+                  </div>
 
                   <div class="form-group">
                     <label for="menuName" class="form-label">
@@ -400,7 +490,11 @@
                       v-model="menuForm.name"
                       type="text"
                       class="form-input"
-                      :class="{ error: validationErrors.name }"
+                      :class="{
+                        error: validationErrors.name,
+                        success: !validationErrors.name && menuForm.name.trim().length >= 3,
+                        validating: isValidating
+                      }"
                       placeholder="Ej: Gestión de Usuarios"
                       @input="generatePath"
                       maxlength="50"
@@ -461,15 +555,29 @@
                   </div>
                 </div>
 
-                <!-- Selector de iconos -->
-                <div class="form-section">
-                  <h3 class="section-title">
-                    <i class="mdi mdi-emoticon-outline" aria-hidden="true"></i>
-                    Seleccionar Icono *
-                  </h3>
+                <!-- Selector de iconos mejorado -->
+                <div class="form-section enhanced-section" :class="{ 'step-active': currentStep >= 2 }">
+                  <div class="section-header">
+                    <div class="section-icon">
+                      <i class="mdi mdi-emoticon-outline" aria-hidden="true"></i>
+                    </div>
+                    <div class="section-title-content">
+                      <h3 class="section-title">
+                        Seleccionar Icono
+                      </h3>
+                      <p class="section-description">
+                        Elige un icono que represente la función del menú
+                      </p>
+                    </div>
+                    <div class="section-status">
+                      <i v-if="menuForm.icon && menuForm.icon.startsWith('mdi-')" class="mdi mdi-check-circle success"></i>
+                      <i v-else class="mdi mdi-circle-outline"></i>
+                    </div>
+                  </div>
+
                   <div
                     v-if="validationErrors.icon"
-                    class="error-message"
+                    class="error-message enhanced-error"
                     role="alert"
                     aria-live="polite"
                   >
@@ -477,11 +585,13 @@
                     {{ validationErrors.icon }}
                   </div>
 
-                  <IconSelector
-                    v-model="menuForm.icon"
-                    @update:modelValue="validateForm"
-                    aria-label="Seleccionar icono para el menú"
-                  />
+                  <div class="icon-selector-wrapper">
+                    <IconSelector
+                      v-model="menuForm.icon"
+                      @update:modelValue="validateForm"
+                      aria-label="Seleccionar icono para el menú"
+                    />
+                  </div>
                 </div>
 
                 <!-- Selector de plantillas -->
@@ -582,12 +692,25 @@
                   </div>
                 </div>
 
-                <!-- Configuración adicional -->
-                <div class="form-section">
-                  <h3 class="section-title" id="additional-config-title">
-                    <i class="mdi mdi-cog-outline" aria-hidden="true"></i>
-                    Configuración Adicional
-                  </h3>
+                <!-- Configuración adicional mejorada -->
+                <div class="form-section enhanced-section" :class="{ 'step-active': currentStep >= 3 }">
+                  <div class="section-header">
+                    <div class="section-icon">
+                      <i class="mdi mdi-cog-outline" aria-hidden="true"></i>
+                    </div>
+                    <div class="section-title-content">
+                      <h3 class="section-title" id="additional-config-title">
+                        Configuración Adicional
+                      </h3>
+                      <p class="section-description">
+                        Define el tipo de menú, jerarquía y permisos de acceso
+                      </p>
+                    </div>
+                    <div class="section-status">
+                      <i v-if="menuForm.template && menuForm.roles && menuForm.roles.length > 0" class="mdi mdi-check-circle success"></i>
+                      <i v-else class="mdi mdi-circle-outline"></i>
+                    </div>
+                  </div>
 
                   <!-- Selector de tipo de menú -->
                   <div class="form-group">
@@ -857,7 +980,7 @@
                       <legend class="sr-only">
                         Seleccionar roles que pueden acceder a este menú
                       </legend>
-                      <div v-for="role in availableRoles" :key="role.value" class="role-option">
+                      <div v-for="role in availableRolesList" :key="role.value" class="role-option">
                         <label class="checkbox-label">
                           <input
                             v-model="menuForm.roles"
@@ -914,36 +1037,57 @@
               </form>
             </div>
 
-            <div class="dialog-footer">
-              <button
-                type="button"
-                @click="openPreview"
-                class="btn btn-secondary"
-                :disabled="!validateForm()"
-                aria-label="Vista previa del menú"
-              >
-                <i class="mdi mdi-eye" aria-hidden="true"></i>
-                Vista Previa
-              </button>
-              <button
-                type="button"
-                @click="closeDialog"
-                class="btn btn-secondary"
-                aria-label="Cancelar y cerrar modal"
-              >
-                <i class="mdi mdi-close" aria-hidden="true"></i>
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                class="btn btn-primary"
-                :disabled="!validateForm()"
-                :aria-label="isEditing ? 'Actualizar menú existente' : 'Crear nuevo menú'"
-                form="menu-form"
-              >
-                <i class="mdi mdi-content-save" aria-hidden="true"></i>
-                {{ isEditing ? 'Actualizar' : 'Crear' }} Menú
-              </button>
+            <!-- Footer mejorado con indicadores de estado -->
+            <div class="dialog-footer enhanced-footer">
+              <!-- Indicador de validación -->
+              <div class="validation-status">
+                <div v-if="isValidating" class="status-item validating">
+                  <i class="mdi mdi-loading mdi-spin"></i>
+                  <span>Validando...</span>
+                </div>
+                <div v-else-if="Object.keys(validationErrors).length === 0 && menuForm.name && menuForm.path" class="status-item success">
+                  <i class="mdi mdi-check-circle"></i>
+                  <span>Formulario válido</span>
+                </div>
+                <div v-else-if="Object.keys(validationErrors).length > 0" class="status-item error">
+                  <i class="mdi mdi-alert-circle"></i>
+                  <span>{{ Object.keys(validationErrors).length }} error(es)</span>
+                </div>
+              </div>
+
+              <!-- Botones de acción -->
+              <div class="action-buttons">
+                <button
+                  type="button"
+                  @click="openPreview"
+                  class="btn btn-secondary"
+                  :disabled="!validateForm()"
+                  aria-label="Vista previa del menú"
+                >
+                  <i class="mdi mdi-eye" aria-hidden="true"></i>
+                  Vista Previa
+                </button>
+                <button
+                  type="button"
+                  @click="closeDialog"
+                  class="btn btn-secondary"
+                  aria-label="Cancelar y cerrar modal"
+                >
+                  <i class="mdi mdi-close" aria-hidden="true"></i>
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary enhanced-save"
+                  :disabled="!validateForm() || isValidating"
+                  :aria-label="isEditing ? 'Actualizar menú existente' : 'Crear nuevo menú'"
+                  form="menu-form"
+                >
+                  <i v-if="isValidating" class="mdi mdi-loading mdi-spin" aria-hidden="true"></i>
+                  <i v-else class="mdi mdi-content-save" aria-hidden="true"></i>
+                  {{ isEditing ? 'Actualizar' : 'Crear' }} Menú
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1060,6 +1204,7 @@ const handleSidebarToggle = (expanded) => {
 const showDialog = ref(false)
 const isEditing = ref(false)
 const editingMenuId = ref(null)
+const currentStep = ref(1)
 const menuForm = ref({
   name: '',
   path: '',
@@ -1087,8 +1232,10 @@ watch(
   },
 )
 
-// Estado de validaciones
+// Estado de validaciones mejorado
 const validationErrors = ref({})
+const isValidating = ref(false)
+let validationTimeout = null
 
 // Estado de vista previa
 const showPreview = ref(false)
@@ -1122,6 +1269,11 @@ const viewMode = ref('grid') // 'grid' o 'tree'
 const searchQuery = ref('')
 const showHelp = ref(false)
 
+// Estado para filtros avanzados
+const filterRole = ref('')
+const filterType = ref('')
+let searchTimeout = null
+
 // Menús existentes (cargados desde el backend)
 const menus = ref([])
 
@@ -1136,18 +1288,31 @@ const loadMenus = async () => {
     // que apunta a /menu en lugar de /menus
     const menuData = await authService.fetchMenus()
 
-    // Inspeccionar estructura de cada menú
-    if (Array.isArray(menuData) && menuData.length > 0) {
-      menus.value = menuData
+    // Verificar si los datos están anidados en alguna propiedad
+    let actualMenus = menuData
+    if (menuData && typeof menuData === 'object' && !Array.isArray(menuData)) {
+      // Buscar arrays en las propiedades
+      for (const key of Object.keys(menuData)) {
+        if (Array.isArray(menuData[key])) {
+          actualMenus = menuData[key]
+          break
+        }
+      }
+    }
+
+    if (Array.isArray(actualMenus) && actualMenus.length > 0) {
+      menus.value = actualMenus
 
       // También actualizar el store para mantener consistencia
-      authStore.setMenus(menuData)
+      authStore.setMenus(actualMenus)
     } else {
       menus.value = []
     }
   } catch (err) {
+    console.log('❌ Error al cargar menús:', err)
     // Si hay error, intentar usar los menús ya cargados en el store
     if (authStore.menus && authStore.menus.length > 0) {
+      console.log('🔄 Usando menús del store como fallback')
       menus.value = authStore.menus
     } else {
       error.value = `Error al cargar menús: ${err.message}`
@@ -1157,6 +1322,7 @@ const loadMenus = async () => {
     isLoading.value = false
   }
 }
+
 
 // Iconos ahora se manejan en IconSelector.vue
 
@@ -1192,8 +1358,8 @@ const viewTemplates = [
   },
 ]
 
-// Roles disponibles
-const availableRoles = [
+// Roles disponibles (definidos como array de objetos para mejor UX)
+const availableRolesList = [
   {
     value: 'ROLE_SUPER_USER',
     label: 'Super Usuario',
@@ -1214,10 +1380,68 @@ const availableRoles = [
   },
 ]
 
-// Computed
+// Computed para vista de tarjetas (sin búsqueda)
 const filteredMenus = computed(() => {
-  return menus.value
+  // La vista de tarjetas muestra todos los menús sin filtros de búsqueda
+  // Los filtros de búsqueda solo se aplican en la vista de árbol
+  return [...menus.value]
 })
+
+// Funciones para manejar filtros
+const onSearchInput = () => {
+  // Debounce para mejorar rendimiento
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    // La búsqueda se actualiza automáticamente por el computed
+  }, 300)
+}
+
+const onFilterChange = () => {
+  // Los filtros se aplican automáticamente por el computed
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  clearTimeout(searchTimeout)
+}
+
+const exportMenus = () => {
+  try {
+    const dataStr = JSON.stringify(menus.value, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `menus-${new Date().toISOString().split('T')[0]}.json`
+    link.click()
+    URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Error al exportar menús:', error)
+  }
+}
+
+const importMenus = () => {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.json'
+  input.onchange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        try {
+          const importedMenus = JSON.parse(e.target.result)
+          console.log('Menús importados:', importedMenus)
+          // Aquí podrías implementar la lógica para importar los menús
+        } catch (error) {
+          console.error('Error al importar menús:', error)
+        }
+      }
+      reader.readAsText(file)
+    }
+  }
+  input.click()
+}
 
 const availablePositions = computed(() => {
   let siblingMenus = []
@@ -1259,9 +1483,23 @@ const availablePositions = computed(() => {
 
 // displayedIcons ahora se maneja en IconSelector.vue
 
+// Función para actualizar el paso actual
+const updateCurrentStep = () => {
+  if (menuForm.value.name && menuForm.value.path) {
+    if (menuForm.value.icon && menuForm.value.icon.startsWith('mdi-')) {
+      currentStep.value = 3
+    } else {
+      currentStep.value = 2
+    }
+  } else {
+    currentStep.value = 1
+  }
+}
+
 // Métodos
 const openDialog = () => {
   resetForm()
+  currentStep.value = 1
   showDialog.value = true
 }
 
@@ -1698,30 +1936,102 @@ const generatePath = () => {
   validateForm()
 }
 
+// Validación con debounce para mejor rendimiento
+const validateFormDebounced = () => {
+  if (validationTimeout) {
+    clearTimeout(validationTimeout)
+  }
+
+  validationTimeout = setTimeout(() => {
+    isValidating.value = true
+    const isValid = validateForm()
+    isValidating.value = false
+    return isValid
+  }, 300) // Debounce de 300ms
+}
+
+// Validaciones mejoradas en tiempo real
 const validateForm = () => {
   const errors = {}
 
-  // Validar nombre
+  // Validar nombre con reglas más estrictas
   if (!menuForm.value.name.trim()) {
     errors.name = 'El nombre del menú es obligatorio'
   } else if (menuForm.value.name.length < 3) {
     errors.name = 'El nombre debe tener al menos 3 caracteres'
   } else if (menuForm.value.name.length > 50) {
     errors.name = 'El nombre no puede exceder 50 caracteres'
+  } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s0-9\-_]+$/.test(menuForm.value.name)) {
+    errors.name = 'El nombre solo puede contener letras, números, espacios, guiones y guiones bajos'
+  } else if (menuForm.value.name.trim() !== menuForm.value.name) {
+    errors.name = 'El nombre no puede comenzar o terminar con espacios'
   }
 
-  // Validar ruta
+  // Validar ruta con reglas más estrictas
   if (!menuForm.value.path.trim()) {
     errors.path = 'La ruta es obligatoria'
   } else if (!menuForm.value.path.startsWith('/')) {
     errors.path = 'La ruta debe comenzar con /'
   } else if (!/^\/[a-z0-9\-\/]*$/.test(menuForm.value.path)) {
     errors.path = 'La ruta solo puede contener letras minúsculas, números, guiones y barras'
+  } else if (menuForm.value.path.endsWith('/') && menuForm.value.path !== '/') {
+    errors.path = 'La ruta no puede terminar con / (excepto la raíz)'
+  } else if (menuForm.value.path.includes('//')) {
+    errors.path = 'La ruta no puede contener barras consecutivas'
+  } else if (menuForm.value.path.length > 100) {
+    errors.path = 'La ruta no puede exceder 100 caracteres'
+  } else {
+    // Validar unicidad de ruta
+    const existingMenu = menus.value.find(menu =>
+      menu.path === menuForm.value.path &&
+      menu.id !== editingMenuId.value
+    )
+    if (existingMenu) {
+      errors.path = `Ya existe un menú con la ruta "${menuForm.value.path}"`
+    }
   }
 
-  // Validar icono
+  // Validar icono con más detalles
   if (!menuForm.value.icon) {
     errors.icon = 'Debe seleccionar un icono'
+  } else if (!menuForm.value.icon.startsWith('mdi-')) {
+    errors.icon = 'El icono debe ser válido (formato MDI)'
+  }
+
+  // Validar plantilla
+  if (!menuForm.value.template) {
+    errors.template = 'Debe seleccionar un tipo de vista'
+  } else if (!['basic', 'form', 'table'].includes(menuForm.value.template)) {
+    errors.template = 'Tipo de vista no válido'
+  }
+
+  // Validar roles
+  if (!menuForm.value.roles || menuForm.value.roles.length === 0) {
+    errors.roles = 'Debe seleccionar al menos un rol'
+  } else if (menuForm.value.roles.length > 5) {
+    errors.roles = 'No puede seleccionar más de 5 roles'
+  }
+
+  // Validar orden
+  if (menuForm.value.order < 1) {
+    errors.order = 'El orden debe ser mayor a 0'
+  } else if (menuForm.value.order > 999) {
+    errors.order = 'El orden no puede ser mayor a 999'
+  }
+
+  // Validar jerarquía (evitar referencias circulares)
+  if (menuForm.value.parentId) {
+    if (menuForm.value.parentId === editingMenuId.value) {
+      errors.parentId = 'Un menú no puede ser padre de sí mismo'
+    } else {
+      // Verificar si el padre existe
+      const parentExists = menus.value.find(menu => menu.id === menuForm.value.parentId)
+      if (!parentExists) {
+        errors.parentId = 'El menú padre seleccionado no existe'
+      } else if (parentExists.parentId === editingMenuId.value) {
+        errors.parentId = 'No puede crear una referencia circular'
+      }
+    }
   }
 
   // Validar plantilla
@@ -1831,7 +2141,7 @@ const getParentMenuName = (parentId) => {
 }
 
 const getRoleLabel = (roleValue) => {
-  const role = availableRoles.find((r) => r.value === roleValue)
+  const role = availableRolesList.find((r) => r.value === roleValue)
   return role ? role.label : roleValue
 }
 
@@ -1935,40 +2245,86 @@ const hierarchicalMenus = computed(() => {
 
 // Computed para filtrar menús jerárquicos basado en la búsqueda
 const filteredHierarchicalMenus = computed(() => {
-  if (!searchQuery.value.trim()) {
-    return hierarchicalMenus.value
+  // Si no hay búsqueda, devolver todos los menús
+  if (!searchQuery.value || !searchQuery.value.trim()) {
+    return hierarchicalMenus.value || []
   }
 
   const query = searchQuery.value.toLowerCase().trim()
 
   // Función recursiva para filtrar menús y sus hijos
   const filterMenusRecursive = (menuList) => {
-    return menuList
-      .filter((menu) => {
-        // Verificar si el menú actual coincide con la búsqueda
-        const matchesSearch =
-          menu.name.toLowerCase().includes(query) ||
-          (menu.path && menu.path.toLowerCase().includes(query))
+    if (!Array.isArray(menuList) || menuList.length === 0) {
+      return []
+    }
 
-        // Filtrar los hijos recursivamente
-        const filteredChildren = menu.children ? filterMenusRecursive(menu.children) : []
+    const results = []
 
-        // Incluir el menú si:
-        // 1. El menú actual coincide con la búsqueda, O
-        // 2. Alguno de sus hijos coincide con la búsqueda
-        if (matchesSearch || filteredChildren.length > 0) {
-          return {
-            ...menu,
-            children: filteredChildren,
-          }
-        }
+    for (const menu of menuList) {
+      if (!menu || typeof menu !== 'object' || !menu.id) {
+        continue
+      }
 
-        return false
-      })
-      .filter(Boolean)
+      // Verificar si el menú actual coincide con la búsqueda
+      const nameMatch = menu.name &&
+        typeof menu.name === 'string' &&
+        menu.name.toLowerCase().includes(query)
+
+      const pathMatch = menu.path &&
+        typeof menu.path === 'string' &&
+        menu.path.toLowerCase().includes(query)
+
+      // Adaptar búsqueda de roles según la estructura del backend
+      let roleMatch = false
+      if (menu.roles && Array.isArray(menu.roles)) {
+        roleMatch = menu.roles.some(role =>
+          typeof role === 'string' &&
+          role.toLowerCase().includes(query)
+        )
+      } else if (menu.role && typeof menu.role === 'string') {
+        // Si roles viene como string único
+        roleMatch = menu.role.toLowerCase().includes(query)
+      } else if (menu.permissions && Array.isArray(menu.permissions)) {
+        // Si usa permissions en lugar de roles
+        roleMatch = menu.permissions.some(permission =>
+          typeof permission === 'string' &&
+          permission.toLowerCase().includes(query)
+        )
+      }
+
+      const currentMenuMatches = nameMatch || pathMatch || roleMatch
+
+      // Coincidencia encontrada
+
+      // Filtrar los hijos recursivamente
+      const filteredChildren = menu.children && Array.isArray(menu.children)
+        ? filterMenusRecursive(menu.children)
+        : []
+
+      // Incluir el menú si:
+      // 1. El menú actual coincide con la búsqueda, O
+      // 2. Tiene hijos que coinciden con la búsqueda
+      if (currentMenuMatches || filteredChildren.length > 0) {
+        results.push({
+          ...menu,
+          children: filteredChildren,
+          // Marcar si es una coincidencia directa para resaltado
+          isSearchMatch: currentMenuMatches,
+          // Marcar el tipo de coincidencia
+          matchType: nameMatch ? 'name' : pathMatch ? 'path' : roleMatch ? 'role' : 'child'
+        })
+      }
+    }
+
+    return results
   }
 
-  return filterMenusRecursive(hierarchicalMenus.value)
+  try {
+    return filterMenusRecursive(hierarchicalMenus.value || [])
+  } catch (error) {
+    console.error('Error en filtrado de menús:', error)
+    return hierarchicalMenus.value || []
+  }
 })
 
 const createSubmenu = (parentMenu) => {
@@ -2023,10 +2379,6 @@ const handleSearch = () => {
   // Este método se puede usar para lógica adicional si es necesario
 }
 
-const clearSearch = () => {
-  searchQuery.value = ''
-}
-
 // Funciones para manejo de submenús
 const addSubmenu = () => {
   menuForm.value.submenus.push({
@@ -2075,11 +2427,22 @@ const checkSuperAdminAccess = () => {
   return true
 }
 
-// Watchers
-watch(() => menuForm.value.name, validateForm)
-watch(() => menuForm.value.path, validateForm)
-watch(() => menuForm.value.icon, validateForm)
-watch(() => menuForm.value.template, validateForm)
+// Watchers con validación debounced
+watch(() => menuForm.value.name, () => {
+  validateFormDebounced()
+  updateCurrentStep()
+})
+watch(() => menuForm.value.path, () => {
+  validateFormDebounced()
+  updateCurrentStep()
+})
+watch(() => menuForm.value.icon, () => {
+  validateFormDebounced()
+  updateCurrentStep()
+})
+watch(() => menuForm.value.template, validateFormDebounced)
+watch(() => menuForm.value.roles, validateFormDebounced)
+watch(() => menuForm.value.parentId, validateFormDebounced)
 
 onMounted(() => {
   // Verificar permisos de SuperAdmin
@@ -2150,11 +2513,212 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-/* Barra de acciones */
+/* Barra de acciones mejorada */
 .action-bar {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.action-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.action-group.primary {
+  flex: 1;
+}
+
+.action-group.secondary {
+  gap: 0.5rem;
+}
+
+.create-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+.create-menu-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+  background: linear-gradient(135deg, var(--primary-color), var(--button-primary-hover));
+}
+
+.create-menu-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  transform: translateY(-1px);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn.secondary {
+  background: var(--bg-tertiary);
+}
+
+/* Barra de búsqueda y filtros */
+.search-and-filters {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.search-container {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.search-box {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 1.125rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.clear-search-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.filter-controls {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.filter-select {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 150px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.view-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--bg-primary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.stats-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.menu-count {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 /* Opciones de visualización */
@@ -2250,14 +2814,80 @@ onMounted(() => {
   border-radius: 16px;
   padding: 1.5rem;
   border: 1px solid var(--border-primary);
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px var(--shadow-primary);
+  position: relative;
+  overflow: hidden;
+  animation: slideInUp 0.5s ease-out;
+}
+
+.menu-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.menu-card:hover::before {
+  left: 100%;
 }
 
 .menu-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px var(--shadow-primary);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
   border-color: var(--accent-primary);
+}
+
+.menu-card:active {
+  transform: translateY(-2px) scale(0.98);
+  transition: all 0.1s ease;
+}
+
+/* Animación de entrada para las tarjetas */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación escalonada para múltiples tarjetas */
+.menu-card:nth-child(1) { animation-delay: 0.1s; }
+.menu-card:nth-child(2) { animation-delay: 0.2s; }
+.menu-card:nth-child(3) { animation-delay: 0.3s; }
+.menu-card:nth-child(4) { animation-delay: 0.4s; }
+.menu-card:nth-child(5) { animation-delay: 0.5s; }
+.menu-card:nth-child(6) { animation-delay: 0.6s; }
+.menu-card:nth-child(n+7) { animation-delay: 0.7s; }
+
+/* Animaciones de transición entre vistas */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.fade-slide-enter-to,
+.fade-slide-leave-from {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .menu-card-header {
@@ -2353,6 +2983,14 @@ onMounted(() => {
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-card:hover .menu-actions {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .edit-btn,
@@ -2360,11 +2998,38 @@ onMounted(() => {
   padding: 0.5rem;
   border: none;
   border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.edit-btn::before,
+.delete-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.3s ease;
+}
+
+.edit-btn:hover::before,
+.delete-btn:hover::before {
+  left: 100%;
+}
+
+.edit-btn:hover,
+.delete-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.edit-btn:active,
+.delete-btn:active {
+  transform: translateY(0) scale(0.95);
+  transition: all 0.1s ease;
 }
 
 .edit-btn {
@@ -2658,6 +3323,43 @@ onMounted(() => {
   border-color: var(--accent-danger);
   background: rgba(239, 68, 68, 0.05);
   animation: shake 0.5s ease-in-out;
+}
+
+.form-input.success {
+  border-color: var(--accent-secondary);
+  background: rgba(16, 185, 129, 0.05);
+  position: relative;
+}
+
+.form-input.success::after {
+  content: '✓';
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent-secondary);
+  font-weight: bold;
+  font-size: 0.875rem;
+}
+
+.form-input.validating {
+  border-color: var(--accent-warning);
+  background: rgba(245, 158, 11, 0.05);
+  position: relative;
+}
+
+.form-input.validating::after {
+  content: '';
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--accent-warning);
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes shake {
@@ -3098,10 +3800,11 @@ onMounted(() => {
   color: var(--text-primary);
 }
 
-/* Footer del diálogo */
+/* Footer del diálogo mejorado */
 .dialog-footer {
   display: flex !important;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 1.25rem;
   padding: 2rem 2.5rem;
   background: var(--bg-secondary);
@@ -3115,6 +3818,50 @@ onMounted(() => {
   min-height: 80px;
 }
 
+.enhanced-footer {
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem 2.5rem;
+}
+
+.validation-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.status-item.validating {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.status-item.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.status-item.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  width: 100%;
+}
+
 .dialog-footer::before {
   content: '';
   position: absolute;
@@ -3124,6 +3871,268 @@ onMounted(() => {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
   opacity: 0.3;
+}
+
+/* Header limpio y organizado */
+.clean-header {
+  padding: 1.5rem 2rem;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.25rem;
+}
+
+.header-text h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.header-subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Indicador de progreso compacto */
+.progress-indicator.compact {
+  width: 100%;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--border-color);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  transition: all 0.3s ease;
+}
+
+.step i {
+  width: 24px;
+  height: 24px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+
+.step span {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+
+.step.active i {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: white;
+}
+
+.step.active span {
+  color: var(--accent-primary);
+}
+
+.step.completed i {
+  background: var(--success-color);
+  border-color: var(--success-color);
+  color: white;
+}
+
+.step.completed span {
+  color: var(--success-color);
+}
+
+/* Botón de cerrar limpio */
+.clean-close {
+  width: 32px;
+  height: 32px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.clean-close:hover {
+  background: var(--error-color);
+  border-color: var(--error-color);
+  color: white;
+  transform: scale(1.05);
+}
+
+/* Cuerpo del modal mejorado */
+.enhanced-body {
+  padding: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.enhanced-form {
+  padding: 0;
+}
+
+/* Secciones mejoradas */
+.enhanced-section {
+  margin: 0;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.enhanced-section:last-child {
+  border-bottom: none;
+}
+
+.enhanced-section.step-active {
+  background: rgba(var(--accent-primary-rgb), 0.02);
+  border-left: 3px solid var(--accent-primary);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.section-title-content {
+  flex: 1;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.section-description {
+  margin: 0.25rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.section-status {
+  display: flex;
+  align-items: center;
+}
+
+.section-status i {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+}
+
+.section-status i.success {
+  color: var(--success-color);
+}
+
+/* Wrapper para selector de iconos */
+.icon-selector-wrapper {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+/* Errores mejorados */
+.enhanced-error {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Botón de guardar mejorado */
+.enhanced-save {
+  position: relative;
+  overflow: hidden;
+}
+
+.enhanced-save::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.enhanced-save:hover::before {
+  left: 100%;
 }
 
 /* Botones */

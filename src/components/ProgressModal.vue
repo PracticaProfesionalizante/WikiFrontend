@@ -15,7 +15,7 @@
             <svg class="progress-ring" width="120" height="120">
               <circle
                 class="progress-ring-background"
-                stroke="#e0e0e0"
+                :stroke="getProgressRingBackgroundColor()"
                 stroke-width="8"
                 fill="transparent"
                 r="52"
@@ -24,7 +24,7 @@
               />
               <circle
                 class="progress-ring-progress"
-                stroke="#4CAF50"
+                :stroke="getProgressRingColor()"
                 stroke-width="8"
                 fill="transparent"
                 r="52"
@@ -155,6 +155,15 @@ const closeModal = () => {
 const cancelOperation = () => {
   emit('cancel')
 }
+
+// Funciones para colores dinámicos
+const getProgressRingBackgroundColor = () => {
+  return getComputedStyle(document.documentElement).getPropertyValue('--border-color') || '#e0e0e0'
+}
+
+const getProgressRingColor = () => {
+  return getComputedStyle(document.documentElement).getPropertyValue('--success-color') || '#4CAF50'
+}
 </script>
 
 <style scoped>
@@ -173,7 +182,7 @@ const cancelOperation = () => {
 }
 
 .progress-modal {
-  background: white;
+  background: var(--bg-primary, white);
   border-radius: 16px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   width: 90%;
@@ -181,6 +190,7 @@ const cancelOperation = () => {
   max-height: 80vh;
   overflow-y: auto;
   animation: modalSlideIn 0.3s ease-out;
+  border: 1px solid var(--border-color, #e0e0e0);
 }
 
 @keyframes modalSlideIn {
@@ -196,14 +206,14 @@ const cancelOperation = () => {
 
 .modal-header {
   padding: 24px 24px 16px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
 }
 
 .modal-title {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary, #333);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -211,7 +221,7 @@ const cancelOperation = () => {
 
 .spinning-icon {
   animation: spin 2s linear infinite;
-  color: #4caf50;
+  color: var(--success-color, #4caf50);
 }
 
 @keyframes spin {
@@ -260,13 +270,13 @@ const cancelOperation = () => {
 .percentage {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #4caf50;
+  color: var(--success-color, #4caf50);
   line-height: 1;
 }
 
 .current-total {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--text-secondary, #666);
   margin-top: 4px;
 }
 
@@ -277,21 +287,21 @@ const cancelOperation = () => {
 
 .current-action {
   font-size: 1rem;
-  color: #333;
+  color: var(--text-primary, #333);
   margin: 0 0 12px 0;
   font-weight: 500;
 }
 
 .error-summary {
-  background: #fff3e0;
-  border: 1px solid #ffb74d;
+  background: var(--warning-bg, #fff3e0);
+  border: 1px solid var(--warning-color, #ffb74d);
   border-radius: 8px;
   padding: 12px;
 }
 
 .error-count {
   margin: 0;
-  color: #f57c00;
+  color: var(--warning-text, #f57c00);
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -301,15 +311,15 @@ const cancelOperation = () => {
 
 .error-section {
   margin-top: 20px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-color, #e0e0e0);
   padding-top: 20px;
 }
 
 .toggle-errors-btn {
   width: 100%;
   padding: 12px;
-  background: #f5f5f5;
-  border: 1px solid #ddd;
+  background: var(--bg-secondary, #f5f5f5);
+  border: 1px solid var(--border-color, #ddd);
   border-radius: 8px;
   cursor: pointer;
   display: flex;
@@ -317,13 +327,13 @@ const cancelOperation = () => {
   justify-content: center;
   gap: 8px;
   font-weight: 500;
-  color: #666;
+  color: var(--text-secondary, #666);
   transition: all 0.2s ease;
 }
 
 .toggle-errors-btn:hover {
-  background: #eeeeee;
-  border-color: #ccc;
+  background: var(--bg-hover, #eeeeee);
+  border-color: var(--border-hover, #ccc);
 }
 
 .error-list {
@@ -337,20 +347,20 @@ const cancelOperation = () => {
   align-items: flex-start;
   gap: 8px;
   padding: 8px 12px;
-  background: #ffebee;
-  border: 1px solid #ffcdd2;
+  background: var(--error-bg, #ffebee);
+  border: 1px solid var(--error-light, #ffcdd2);
   border-radius: 6px;
   margin-bottom: 8px;
 }
 
 .error-icon {
-  color: #f44336;
+  color: var(--error-color, #f44336);
   margin-top: 2px;
   flex-shrink: 0;
 }
 
 .error-text {
-  color: #d32f2f;
+  color: var(--error-text, #d32f2f);
   font-size: 0.875rem;
   line-height: 1.4;
 }
@@ -375,22 +385,22 @@ const cancelOperation = () => {
 }
 
 .btn-primary {
-  background: #4caf50;
+  background: var(--success-color, #4caf50);
   color: white;
 }
 
 .btn-primary:hover {
-  background: #45a049;
+  background: var(--success-hover, #45a049);
 }
 
 .btn-secondary {
-  background: #f5f5f5;
-  color: #666;
-  border: 1px solid #ddd;
+  background: var(--bg-secondary, #f5f5f5);
+  color: var(--text-secondary, #666);
+  border: 1px solid var(--border-color, #ddd);
 }
 
 .btn-secondary:hover {
-  background: #eeeeee;
+  background: var(--bg-hover, #eeeeee);
 }
 
 /* Responsive */

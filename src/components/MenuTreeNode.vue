@@ -229,48 +229,65 @@ const highlightSearchTerm = (text) => {
   return text.replace(regex, '<mark class="search-highlight">$1</mark>')
 }
 
-// Drag & Drop
+// Drag & Drop optimizado
+const dragData = computed(() => ({
+  id: props.menu.id,
+  name: props.menu.name,
+  parentId: props.menu.parentId,
+  order: props.menu.order,
+}))
+
 const handleDragStart = (event) => {
   isDragging.value = true
-  event.dataTransfer.setData(
-    'text/plain',
-    JSON.stringify({
-      id: props.menu.id,
-      name: props.menu.name,
-      parentId: props.menu.parentId,
-      order: props.menu.order,
-    }),
-  )
+
+  // Usar datos precomputados para mejor rendimiento
+  event.dataTransfer.setData('text/plain', JSON.stringify(dragData.value))
   event.dataTransfer.effectAllowed = 'move'
 
-  // Limpiar el estado cuando termine el drag
-  setTimeout(() => {
-    isDragging.value = false
-  }, 100)
+  // Agregar clase CSS para indicar que se está arrastrando
+  event.target.classList.add('dragging')
+
+  // Optimización: usar requestAnimationFrame para limpiar el estado
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      isDragging.value = false
+      event.target.classList.remove('dragging')
+    }, 100)
+  })
 }
+
+// Throttle para mejorar rendimiento del drag over
+let dragOverTimeout = null
 
 const handleDragOver = (event, zone) => {
   event.preventDefault()
   event.dataTransfer.dropEffect = 'move'
 
-  // Si se especifica una zona explícitamente, usarla
-  if (zone) {
-    dropZone.value = zone
-    return
+  // Throttle para evitar demasiadas actualizaciones
+  if (dragOverTimeout) {
+    clearTimeout(dragOverTimeout)
   }
 
-  // Si no hay zona especificada, determinar basándose en la posición del mouse
-  const rect = event.currentTarget.getBoundingClientRect()
-  const y = event.clientY - rect.top
-  const height = rect.height
+  dragOverTimeout = setTimeout(() => {
+    // Si se especifica una zona explícitamente, usarla
+    if (zone) {
+      dropZone.value = zone
+      return
+    }
 
-  if (y < height * 0.25) {
-    dropZone.value = 'top'
-  } else if (y > height * 0.75) {
-    dropZone.value = 'bottom'
-  } else {
-    dropZone.value = 'inside'
-  }
+    // Si no hay zona especificada, determinar basándose en la posición del mouse
+    const rect = event.currentTarget.getBoundingClientRect()
+    const y = event.clientY - rect.top
+    const height = rect.height
+
+    if (y < height * 0.25) {
+      dropZone.value = 'top'
+    } else if (y > height * 0.75) {
+      dropZone.value = 'bottom'
+    } else {
+      dropZone.value = 'inside'
+    }
+  }, 16) // ~60fps
 }
 
 const handleDragLeave = (event) => {
@@ -393,20 +410,20 @@ const handleCreateSubmenu = () => {
   display: flex;
   align-items: center;
   padding: 12px;
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--bg-primary, white);
+  border: 1px solid var(--border-color, #e0e0e0);
   border-radius: 8px;
   transition: all 0.2s ease;
   cursor: move;
 }
 
 .menu-node:hover {
-  border-color: #2196f3;
+  border-color: var(--accent-primary, #2196f3);
   box-shadow: 0 2px 8px rgba(33, 150, 243, 0.1);
 }
 
 .menu-node.has-children {
-  border-left: 4px solid #2196f3;
+  border-left: 4px solid var(--accent-primary, #2196f3);
 }
 
 .expand-button {
@@ -415,14 +432,14 @@ const handleCreateSubmenu = () => {
   padding: 4px;
   margin-right: 8px;
   cursor: pointer;
-  color: #666;
+  color: var(--text-secondary, #666);
   border-radius: 4px;
   transition: all 0.2s ease;
 }
 
 .expand-button:hover {
-  background: #f5f5f5;
-  color: #2196f3;
+  background: var(--bg-secondary, #f5f5f5);
+  color: var(--accent-primary, #2196f3);
 }
 
 .expand-spacer {
@@ -443,19 +460,19 @@ const handleCreateSubmenu = () => {
 }
 
 .menu-icon {
-  color: #2196f3;
+  color: var(--accent-primary, #2196f3);
   width: 16px;
   text-align: center;
 }
 
 .menu-name {
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary, #333);
 }
 
 .menu-order {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--accent-bg, #e3f2fd);
+  color: var(--accent-primary, #1976d2);
   padding: 2px 6px;
   border-radius: 12px;
   font-size: 12px;
@@ -470,10 +487,10 @@ const handleCreateSubmenu = () => {
 }
 
 .menu-path {
-  color: #666;
+  color: var(--text-secondary, #666);
   font-size: 14px;
   font-family: 'Courier New', monospace;
-  background: #f8f9fa;
+  background: var(--bg-secondary, #f8f9fa);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -526,32 +543,32 @@ const handleCreateSubmenu = () => {
   justify-content: center;
   min-width: 32px;
   min-height: 32px;
-  background: #f5f5f5;
-  border: 1px solid #ddd;
+  background: var(--bg-secondary, #f5f5f5);
+  border: 1px solid var(--border-color, #ddd);
   border-radius: 4px;
   cursor: pointer;
   padding: 6px;
-  color: #666;
+  color: var(--text-secondary, #666);
   font-size: 14px;
   transition: all 0.2s ease;
 }
 
 .action-button.add {
-  background: #e8f5e8;
-  border-color: #4caf50;
-  color: #4caf50;
+  background: var(--success-bg, #e8f5e8);
+  border-color: var(--success-color, #4caf50);
+  color: var(--success-color, #4caf50);
 }
 
 .action-button.edit {
-  background: #e3f2fd;
-  border-color: #2196f3;
-  color: #2196f3;
+  background: var(--accent-bg, #e3f2fd);
+  border-color: var(--accent-primary, #2196f3);
+  color: var(--accent-primary, #2196f3);
 }
 
 .action-button.delete {
-  background: #ffebee;
-  border-color: #f44336;
-  color: #f44336;
+  background: var(--error-bg, #ffebee);
+  border-color: var(--error-color, #f44336);
+  color: var(--error-color, #f44336);
 }
 
 .menu-node:hover .action-button {
@@ -564,17 +581,17 @@ const handleCreateSubmenu = () => {
 }
 
 .action-button.add:hover {
-  background: #4caf50;
+  background: var(--success-color, #4caf50);
   color: white;
 }
 
 .action-button.edit:hover {
-  background: #2196f3;
+  background: var(--accent-primary, #2196f3);
   color: white;
 }
 
 .action-button.delete:hover {
-  background: #f44336;
+  background: var(--error-color, #f44336);
   color: white;
 }
 
@@ -582,7 +599,7 @@ const handleCreateSubmenu = () => {
   margin-left: 32px;
   margin-top: 8px;
   padding-left: 16px;
-  border-left: 2px dashed #e0e0e0;
+  border-left: 2px dashed var(--border-color, #e0e0e0);
 }
 
 /* Drag & Drop states */
@@ -591,8 +608,8 @@ const handleCreateSubmenu = () => {
 }
 
 .menu-node.drag-over {
-  border-color: #4caf50;
-  background: #f1f8e9;
+  border-color: var(--success-color, #4caf50);
+  background: var(--success-bg, #f1f8e9);
 }
 
 /* Drop zones */
@@ -609,7 +626,7 @@ const handleCreateSubmenu = () => {
 .drop-zone.active {
   opacity: 1;
   background: rgba(76, 175, 80, 0.2);
-  border-color: #4caf50;
+  border-color: var(--success-color, #4caf50);
   box-shadow: 0 0 12px rgba(76, 175, 80, 0.6);
 }
 
@@ -623,27 +640,55 @@ const handleCreateSubmenu = () => {
   margin-bottom: 2px;
 }
 
-/* Estados de drag & drop mejorados */
+/* Estados de drag & drop mejorados y optimizados */
 .menu-node.drop-inside {
-  border-color: #4caf50;
-  background: linear-gradient(135deg, #f1f8e9 0%, #e8f5e8 100%);
+  border-color: var(--success-color, #4caf50);
+  background: linear-gradient(135deg, var(--success-bg, #f1f8e9) 0%, var(--success-light, #e8f5e8) 100%);
   box-shadow: inset 0 0 0 2px rgba(76, 175, 80, 0.3);
+  transform: scale(1.02);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .menu-node.drop-top {
-  border-top: 3px solid #4caf50;
+  border-top: 3px solid var(--success-color, #4caf50);
   box-shadow: 0 -2px 8px rgba(76, 175, 80, 0.3);
+  transform: translateY(-2px);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .menu-node.drop-bottom {
-  border-bottom: 3px solid #4caf50;
+  border-bottom: 3px solid var(--success-color, #4caf50);
   box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+  transform: translateY(2px);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .menu-node.is-dragging {
-  opacity: 0.5;
+  opacity: 0.6;
+  transform: scale(0.95) rotate(2deg);
+  cursor: grabbing;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-node.dragging {
+  opacity: 0.6;
   transform: scale(0.95);
   cursor: grabbing;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Optimización: usar will-change para elementos que se van a animar */
+.menu-node {
+  will-change: transform, opacity, box-shadow;
+}
+
+/* Mejora de rendimiento para drag & drop */
+.menu-node[draggable='true'] {
+  -webkit-user-drag: element;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* Estilos para resaltado de búsqueda */
@@ -676,8 +721,8 @@ const handleCreateSubmenu = () => {
 /* Context Menu */
 .context-menu {
   position: fixed;
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--bg-primary, white);
+  border: 1px solid var(--border-color, #e0e0e0);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 1000;
@@ -693,23 +738,24 @@ const handleCreateSubmenu = () => {
   cursor: pointer;
   transition: background-color 0.2s ease;
   font-size: 14px;
+  color: var(--text-primary, #333);
 }
 
 .context-menu-item:hover {
-  background: #f5f5f5;
+  background: var(--bg-secondary, #f5f5f5);
 }
 
 .context-menu-item.danger {
-  color: #f44336;
+  color: var(--error-color, #f44336);
 }
 
 .context-menu-item.danger:hover {
-  background: #ffebee;
+  background: var(--error-bg, #ffebee);
 }
 
 .context-menu-separator {
   height: 1px;
-  background: #e0e0e0;
+  background: var(--border-color, #e0e0e0);
   margin: 4px 0;
 }
 
@@ -755,15 +801,15 @@ const handleCreateSubmenu = () => {
 }
 
 .menu-node:has(.menu-children) .menu-name {
-  color: #2c3e50;
+  color: var(--text-primary, #2c3e50);
 }
 
 /* Indicador visual para menús con hijos */
 .menu-node:has(.menu-children):not(.expanded) {
-  border-left: 3px solid #3498db;
+  border-left: 3px solid var(--accent-primary, #3498db);
 }
 
 .menu-node:has(.menu-children).expanded {
-  border-left: 3px solid #27ae60;
+  border-left: 3px solid var(--success-color, #27ae60);
 }
 </style>
