@@ -685,6 +685,15 @@ img {
   }
 }
 
+@keyframes fadeInStudentImage {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.95;
+  }
+}
+
 .student-image-overlay {
   position: absolute;
   top: 0;
@@ -695,20 +704,23 @@ img {
   background-size: cover;
   background-position: -350px center;
   background-repeat: no-repeat;
-
-  /* Mejora: Filtros optimizados para mejor calidad */
-  filter: brightness(0.8) saturate(1.05) contrast(1.05);
-  opacity: 0.95;
-
   z-index: 1;
   pointer-events: none;
 
-  /* Mejora: Propiedades para imágenes de máxima calidad */
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: high-quality;
-  image-rendering: crisp-edges;
-  will-change: transform;
-  backface-visibility: hidden;
+  /* Mejora: Loading placeholder mientras carga la imagen */
+  background-color: var(--bg-sidebar);
+
+  /* Optimización: Compresión y renderizado eficiente */
+  image-rendering: optimizeSpeed;
+  transform: translateZ(0);
+  will-change: auto;
+
+  /* Transición suave cuando carga */
+  opacity: 0;
+  animation: fadeInStudentImage 1s ease-out 0.5s forwards;
+
+  /* Mejora: Filtros optimizados para mejor calidad */
+  filter: brightness(0.8) saturate(1.05) contrast(1.05);
 }
 
 .content-layout {
