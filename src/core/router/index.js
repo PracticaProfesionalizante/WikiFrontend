@@ -18,7 +18,7 @@ const routes = [
       } else {
         next({ name: 'Login' })
       }
-    }
+    },
   },
   {
     path: '/login',
@@ -27,8 +27,8 @@ const routes = [
     beforeEnter: requireGuest, // Solo usuarios NO logueados
     meta: {
       title: 'Iniciar Sesión',
-      requiresAuth: false
-    }
+      requiresAuth: false,
+    },
   },
   {
     path: '/dashboard',
@@ -37,8 +37,8 @@ const routes = [
     beforeEnter: requireAuth, // Solo usuarios autenticados
     meta: {
       title: 'Dashboard',
-      requiresAuth: true
-    }
+      requiresAuth: true,
+    },
   },
   {
     path: '/configuracion',
@@ -47,8 +47,8 @@ const routes = [
     beforeEnter: requireAuth,
     meta: {
       title: 'Configuración',
-      requiresAuth: true
-    }
+      requiresAuth: true,
+    },
   },
   {
     path: '/admin',
@@ -58,8 +58,8 @@ const routes = [
     meta: {
       title: 'Administración',
       requiresAuth: true,
-      roles: ['SuperUser'] // Por el momento solo SuperUser, en el caso que quiera mas roles como por ejemplo Admin, lo añado aquí -> roles: ['SuperUser', 'Admin']
-    }
+      roles: ['SuperUser'], // Por el momento solo SuperUser, en el caso que quiera mas roles como por ejemplo Admin, lo añado aquí -> roles: ['SuperUser', 'Admin']
+    },
   },
   {
     path: '/gestion-menus',
@@ -69,25 +69,25 @@ const routes = [
     meta: {
       title: 'Gestión de Menús',
       requiresAuth: true,
-      roles: ['ROLE_SUPER_USER'] // Solo usuarios con rol ROLE_SUPER_USER
-    }
+      roles: ['ROLE_SUPER_USER'], // Solo usuarios con rol ROLE_SUPER_USER
+    },
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    redirect: '/login'
-  }
+    redirect: '/login',
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
+  routes,
 })
 
 // Guard global para inicializar autenticación
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  
+
   // Inicializar autenticación si hay tokens pero no hay usuario
   if (authStore.accessToken && !authStore.user) {
     try {
@@ -97,25 +97,25 @@ router.beforeEach(async (to, from, next) => {
       authStore.clearAuth()
     }
   }
-  
+
   // Verificar roles específicos si la ruta los requiere
   if (to.meta.roles && authStore.isAuthenticated) {
-    const hasRequiredRole = to.meta.roles.some(role => {
+    const hasRequiredRole = to.meta.roles.some((role) => {
       const hasRole = authStore.hasRole(role)
       return hasRole
     })
-    
+
     if (!hasRequiredRole) {
       next({ name: 'Dashboard' })
       return
     }
   }
-  
+
   // Actualizar título de la página
   if (to.meta.title) {
     document.title = `${to.meta.title} - WikiFrontend`
   }
-  
+
   next()
 })
 

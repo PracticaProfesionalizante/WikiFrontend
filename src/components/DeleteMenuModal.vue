@@ -27,19 +27,23 @@
         <div v-if="hasChildren" class="submenu-section">
           <div class="warning-message">
             <i class="mdi mdi-alert-circle"></i>
-            <p>Este menú tiene <strong>{{ children.length }}</strong> submenú{{ children.length > 1 ? 's' : '' }}:</p>
+            <p>
+              Este menú tiene <strong>{{ children.length }}</strong> submenú{{
+                children.length > 1 ? 's' : ''
+              }}:
+            </p>
           </div>
 
           <div class="submenu-list">
-            <div 
-              v-for="child in children" 
+            <div
+              v-for="child in children"
               :key="child.id"
               class="submenu-item"
               :class="{ 'selected-for-deletion': selectedChildren.includes(child.id) }"
             >
               <div class="submenu-checkbox">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   :id="`child-${child.id}`"
                   :value="child.id"
                   v-model="selectedChildren"
@@ -59,12 +63,12 @@
           <!-- Opciones de eliminación -->
           <div class="deletion-options">
             <h4>¿Qué deseas hacer?</h4>
-            
+
             <div class="option-group">
               <label class="option-item">
-                <input 
-                  type="radio" 
-                  value="delete-all" 
+                <input
+                  type="radio"
+                  value="delete-all"
                   v-model="deletionMode"
                   @change="handleModeChange"
                 />
@@ -80,9 +84,9 @@
               </label>
 
               <label class="option-item">
-                <input 
-                  type="radio" 
-                  value="selective" 
+                <input
+                  type="radio"
+                  value="selective"
                   v-model="deletionMode"
                   @change="handleModeChange"
                 />
@@ -92,15 +96,16 @@
                     <span class="option-title">Eliminación selectiva</span>
                   </div>
                   <p class="option-description">
-                    Elegir qué submenús eliminar. El menú principal se mantiene, solo se eliminan los submenús seleccionados
+                    Elegir qué submenús eliminar. El menú principal se mantiene, solo se eliminan
+                    los submenús seleccionados
                   </p>
                 </div>
               </label>
 
               <label class="option-item">
-                <input 
-                  type="radio" 
-                  value="keep-children" 
+                <input
+                  type="radio"
+                  value="keep-children"
                   v-model="deletionMode"
                   @change="handleModeChange"
                 />
@@ -129,7 +134,8 @@
             <div v-else-if="deletionMode === 'keep-children'" class="keep-info">
               <p>
                 <i class="mdi mdi-information"></i>
-                Todos los submenús se convertirán en menús principales y conservarán su estructura interna.
+                Todos los submenús se convertirán en menús principales y conservarán su estructura
+                interna.
               </p>
             </div>
           </div>
@@ -137,17 +143,20 @@
 
         <!-- Mensaje simple si no hay submenús -->
         <div v-else class="no-children-message">
-          <p>¿Estás seguro de que deseas eliminar el menú "<strong>{{ menu?.name || 'Sin nombre' }}</strong>"?</p>
+          <p>
+            ¿Estás seguro de que deseas eliminar el menú "<strong>{{
+              menu?.name || 'Sin nombre'
+            }}</strong
+            >"?
+          </p>
           <p class="warning-text">Esta acción no se puede deshacer.</p>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button class="cancel-btn" @click="$emit('close')">
-          Cancelar
-        </button>
-        <button 
-          class="delete-btn" 
+        <button class="cancel-btn" @click="$emit('close')">Cancelar</button>
+        <button
+          class="delete-btn"
           @click="handleConfirm"
           :disabled="deletionMode === 'selective' && selectedChildren.length === 0"
         >
@@ -166,16 +175,16 @@ import { ref, computed, watch } from 'vue'
 const props = defineProps({
   show: {
     type: Boolean,
-    default: false
+    default: false,
   },
   menu: {
     type: Object,
-    default: null
+    default: null,
   },
   children: {
     type: Array,
-    default: () => []
-  }
+    default: () => [],
+  },
 })
 
 // Emits
@@ -189,13 +198,16 @@ const selectedChildren = ref([])
 const hasChildren = computed(() => props.children && props.children.length > 0)
 
 // Watchers
-watch(() => props.show, (newValue) => {
-  if (newValue) {
-    // Resetear estado cuando se abre el modal
-    deletionMode.value = hasChildren.value ? 'delete-all' : 'delete-all'
-    selectedChildren.value = []
-  }
-})
+watch(
+  () => props.show,
+  (newValue) => {
+    if (newValue) {
+      // Resetear estado cuando se abre el modal
+      deletionMode.value = hasChildren.value ? 'delete-all' : 'delete-all'
+      selectedChildren.value = []
+    }
+  },
+)
 
 // Métodos
 const handleOverlayClick = () => {
@@ -204,7 +216,7 @@ const handleOverlayClick = () => {
 
 const handleModeChange = () => {
   if (deletionMode.value === 'delete-all') {
-    selectedChildren.value = props.children.map(child => child.id)
+    selectedChildren.value = props.children.map((child) => child.id)
   } else if (deletionMode.value === 'keep-children') {
     selectedChildren.value = []
   }
@@ -215,7 +227,7 @@ const getConfirmButtonText = () => {
   if (!hasChildren.value) {
     return 'Eliminar Menú'
   }
-  
+
   switch (deletionMode.value) {
     case 'delete-all':
       return `Eliminar Todo (${props.children.length + 1})`
@@ -232,7 +244,7 @@ const getConfirmButtonText = () => {
 
 const handleConfirm = () => {
   if (!props.menu) return // Salir si no hay menú
-  
+
   if (deletionMode.value === 'selective' && selectedChildren.value.length === 0) {
     return // No hacer nada si no hay selección en modo selectivo
   }
@@ -241,7 +253,7 @@ const handleConfirm = () => {
     menuId: props.menu.id,
     mode: deletionMode.value,
     selectedChildren: selectedChildren.value,
-    allChildren: props.children.map(child => child.id)
+    allChildren: props.children.map((child) => child.id),
   }
 
   emit('confirm', confirmData)
@@ -431,14 +443,14 @@ const handleConfirm = () => {
   position: relative;
 }
 
-.submenu-checkbox input[type="checkbox"] {
+.submenu-checkbox input[type='checkbox'] {
   width: 18px;
   height: 18px;
   margin: 0;
   cursor: pointer;
 }
 
-.submenu-checkbox input[type="checkbox"]:disabled {
+.submenu-checkbox input[type='checkbox']:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -509,7 +521,7 @@ const handleConfirm = () => {
   background: #eff6ff;
 }
 
-.option-item input[type="radio"] {
+.option-item input[type='radio'] {
   margin: 4px 12px 0 0;
   cursor: pointer;
 }

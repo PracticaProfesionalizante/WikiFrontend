@@ -2,7 +2,10 @@
   <div class="settings-layout">
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
-    <main class="main-content" :class="{ 'with-sidebar': true, 'with-header': true, 'sidebar-expanded': sidebarExpanded }">
+    <main
+      class="main-content"
+      :class="{ 'with-sidebar': true, 'with-header': true, 'sidebar-expanded': sidebarExpanded }"
+    >
       <div class="settings-container">
         <div class="settings-content">
           <div class="settings-header">
@@ -23,62 +26,64 @@
                   <i class="mdi mdi-account-circle"></i>
                   Información Personal
                 </h2>
-                <button class="accordion-toggle" :class="{ 'expanded': expandedSections.personal }">
+                <button class="accordion-toggle" :class="{ expanded: expandedSections.personal }">
                   <i class="mdi" :class="expandedSections.personal ? 'mdi-minus' : 'mdi-plus'"></i>
                 </button>
               </div>
-              <div class="section-content" v-show="expandedSections.personal" :class="{ 'expanded': expandedSections.personal }">
+              <div
+                class="section-content"
+                v-show="expandedSections.personal"
+                :class="{ expanded: expandedSections.personal }"
+              >
                 <form @submit.prevent="updateProfile" class="profile-form">
                   <div class="form-row">
                     <div class="input-group">
                       <label class="input-label">Nombre de Usuario</label>
-                      <input 
+                      <input
                         v-model="profileData.username"
-                        type="text" 
+                        type="text"
                         class="form-input"
-                        :class="{ 'error': errors.username }"
+                        :class="{ error: errors.username }"
                         placeholder="Ingresa tu nombre de usuario"
-                      >
-                      <span v-if="errors.username" class="error-message">{{ errors.username }}</span>
+                      />
+                      <span v-if="errors.username" class="error-message">{{
+                        errors.username
+                      }}</span>
                     </div>
                     <div class="input-group">
                       <label class="input-label">Correo Electrónico</label>
-                      <input 
+                      <input
                         v-model="profileData.email"
-                        type="email" 
+                        type="email"
                         class="form-input"
-                        :class="{ 'error': errors.email }"
+                        :class="{ error: errors.email }"
                         placeholder="tu@email.com"
-                      >
+                      />
                       <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
                     </div>
                   </div>
                   <div class="form-row">
                     <div class="input-group">
                       <label class="input-label">Nombre Completo</label>
-                      <input 
+                      <input
                         v-model="profileData.fullName"
-                        type="text" 
+                        type="text"
                         class="form-input"
                         placeholder="Tu nombre completo"
-                      >
+                      />
                     </div>
                     <div class="input-group">
                       <label class="input-label">Teléfono</label>
-                      <input 
+                      <input
                         v-model="profileData.phone"
-                        type="tel" 
+                        type="tel"
                         class="form-input"
                         placeholder="+54 9 11 1234-5678"
-                      >
+                      />
                     </div>
                   </div>
                   <div class="form-actions">
-                    <button 
-                      type="submit" 
-                      class="btn btn-primary"
-                      :disabled="isUpdatingProfile"
-                    >
+                    <button type="submit" class="btn btn-primary" :disabled="isUpdatingProfile">
                       <i v-if="isUpdatingProfile" class="mdi mdi-loading mdi-spin"></i>
                       <i v-else class="mdi mdi-content-save"></i>
                       {{ isUpdatingProfile ? 'Guardando...' : 'Guardar Cambios' }}
@@ -95,80 +100,86 @@
                   <i class="mdi mdi-lock"></i>
                   Cambiar contraseña
                 </h2>
-                <button class="accordion-toggle" :class="{ 'expanded': expandedSections.password }">
+                <button class="accordion-toggle" :class="{ expanded: expandedSections.password }">
                   <i class="mdi" :class="expandedSections.password ? 'mdi-minus' : 'mdi-plus'"></i>
                 </button>
               </div>
-              <div class="section-content" v-show="expandedSections.password" :class="{ 'expanded': expandedSections.password }">
+              <div
+                class="section-content"
+                v-show="expandedSections.password"
+                :class="{ expanded: expandedSections.password }"
+              >
                 <form @submit.prevent="changePassword" class="password-form">
                   <div class="input-group">
                     <label class="input-label">Contraseña Actual</label>
                     <div class="password-input-wrapper">
-                      <input 
+                      <input
                         v-model="passwordData.currentPassword"
                         :type="showCurrentPassword ? 'text' : 'password'"
                         class="form-input"
-                        :class="{ 'error': errors.currentPassword }"
+                        :class="{ error: errors.currentPassword }"
                         placeholder="Ingresa tu contraseña actual"
-                      >
-                      <button 
-                        type="button" 
+                      />
+                      <button
+                        type="button"
                         class="password-toggle"
                         @click="showCurrentPassword = !showCurrentPassword"
                       >
                         <i :class="showCurrentPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"></i>
                       </button>
                     </div>
-                    <span v-if="errors.currentPassword" class="error-message">{{ errors.currentPassword }}</span>
+                    <span v-if="errors.currentPassword" class="error-message">{{
+                      errors.currentPassword
+                    }}</span>
                   </div>
                   <div class="form-row">
                     <div class="input-group">
                       <label class="input-label">Nueva Contraseña</label>
                       <div class="password-input-wrapper">
-                        <input 
+                        <input
                           v-model="passwordData.newPassword"
                           :type="showNewPassword ? 'text' : 'password'"
                           class="form-input"
-                          :class="{ 'error': errors.newPassword }"
+                          :class="{ error: errors.newPassword }"
                           placeholder="Mínimo 6 caracteres"
-                        >
-                        <button 
-                          type="button" 
+                        />
+                        <button
+                          type="button"
                           class="password-toggle"
                           @click="showNewPassword = !showNewPassword"
                         >
                           <i :class="showNewPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"></i>
                         </button>
                       </div>
-                      <span v-if="errors.newPassword" class="error-message">{{ errors.newPassword }}</span>
+                      <span v-if="errors.newPassword" class="error-message">{{
+                        errors.newPassword
+                      }}</span>
                     </div>
                     <div class="input-group">
                       <label class="input-label">Confirmar Contraseña</label>
                       <div class="password-input-wrapper">
-                        <input 
+                        <input
                           v-model="passwordData.confirmPassword"
                           :type="showConfirmPassword ? 'text' : 'password'"
                           class="form-input"
-                          :class="{ 'error': errors.confirmPassword }"
+                          :class="{ error: errors.confirmPassword }"
                           placeholder="Repite la nueva contraseña"
-                        >
-                        <button 
-                          type="button" 
+                        />
+                        <button
+                          type="button"
                           class="password-toggle"
                           @click="showConfirmPassword = !showConfirmPassword"
                         >
                           <i :class="showConfirmPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"></i>
                         </button>
                       </div>
-                      <span v-if="errors.confirmPassword" class="error-message">{{ errors.confirmPassword }}</span>
+                      <span v-if="errors.confirmPassword" class="error-message">{{
+                        errors.confirmPassword
+                      }}</span>
                     </div>
                   </div>
                   <div class="form-actions">
-                    <button 
-                      type="submit" 
-                      class="btn btn-primary"
-                      :disabled="isChangingPassword"
-                    >
+                    <button type="submit" class="btn btn-primary" :disabled="isChangingPassword">
                       <i v-if="isChangingPassword" class="mdi mdi-loading mdi-spin"></i>
                       <i v-else class="mdi mdi-shield-check"></i>
                       {{ isChangingPassword ? 'Cambiando...' : 'Cambiar Contraseña' }}
@@ -185,23 +196,35 @@
                   <i class="mdi mdi-tune"></i>
                   Preferencias
                 </h2>
-                <button class="accordion-toggle" :class="{ 'expanded': expandedSections.preferences }">
-                  <i class="mdi" :class="expandedSections.preferences ? 'mdi-minus' : 'mdi-plus'"></i>
+                <button
+                  class="accordion-toggle"
+                  :class="{ expanded: expandedSections.preferences }"
+                >
+                  <i
+                    class="mdi"
+                    :class="expandedSections.preferences ? 'mdi-minus' : 'mdi-plus'"
+                  ></i>
                 </button>
               </div>
-              <div class="section-content" v-show="expandedSections.preferences" :class="{ 'expanded': expandedSections.preferences }">
+              <div
+                class="section-content"
+                v-show="expandedSections.preferences"
+                :class="{ expanded: expandedSections.preferences }"
+              >
                 <div class="preferences-grid">
                   <div class="preference-item">
                     <div class="preference-info">
                       <h3 class="preference-title">Notificaciones por Email</h3>
-                      <p class="preference-description">Recibe notificaciones importantes en tu correo</p>
+                      <p class="preference-description">
+                        Recibe notificaciones importantes en tu correo
+                      </p>
                     </div>
                     <label class="toggle-switch">
-                      <input 
-                        v-model="preferences.emailNotifications" 
+                      <input
+                        v-model="preferences.emailNotifications"
                         type="checkbox"
                         @change="updatePreferences"
-                      >
+                      />
                       <span class="toggle-slider"></span>
                     </label>
                   </div>
@@ -211,25 +234,27 @@
                       <p class="preference-description">Cambia la apariencia de la interfaz</p>
                     </div>
                     <label class="toggle-switch">
-                      <input 
-                        v-model="preferences.darkMode" 
+                      <input
+                        v-model="preferences.darkMode"
                         type="checkbox"
                         @change="updatePreferences"
-                      >
+                      />
                       <span class="toggle-slider"></span>
                     </label>
                   </div>
                   <div class="preference-item">
                     <div class="preference-info">
                       <h3 class="preference-title">Sonidos del Sistema</h3>
-                      <p class="preference-description">Reproducir sonidos para acciones importantes</p>
+                      <p class="preference-description">
+                        Reproducir sonidos para acciones importantes
+                      </p>
                     </div>
                     <label class="toggle-switch">
-                      <input 
-                        v-model="preferences.systemSounds" 
+                      <input
+                        v-model="preferences.systemSounds"
                         type="checkbox"
                         @change="updatePreferences"
-                      >
+                      />
                       <span class="toggle-slider"></span>
                     </label>
                   </div>
@@ -281,7 +306,7 @@ const showConfirmPassword = ref(false)
 const expandedSections = reactive({
   personal: false,
   password: false,
-  preferences: false
+  preferences: false,
 })
 
 // Mensajes
@@ -293,21 +318,21 @@ const profileData = reactive({
   username: '',
   email: '',
   fullName: '',
-  phone: ''
+  phone: '',
 })
 
 // Datos de contraseña
 const passwordData = reactive({
   currentPassword: '',
   newPassword: '',
-  confirmPassword: ''
+  confirmPassword: '',
 })
 
 // Preferencias
 const preferences = reactive({
   emailNotifications: true,
   darkMode: false,
-  systemSounds: true
+  systemSounds: true,
 })
 
 // Errores de validación
@@ -316,7 +341,7 @@ const errors = reactive({
   email: '',
   currentPassword: '',
   newPassword: '',
-  confirmPassword: ''
+  confirmPassword: '',
 })
 
 // Métodos
@@ -329,7 +354,7 @@ const toggleSection = (section) => {
 }
 
 const clearErrors = () => {
-  Object.keys(errors).forEach(key => {
+  Object.keys(errors).forEach((key) => {
     errors[key] = ''
   })
 }
@@ -346,7 +371,7 @@ const showMessage = (message, type = 'success') => {
   } else {
     errorMessage.value = message
   }
-  
+
   // Auto-hide after 5 seconds
   setTimeout(() => {
     clearMessages()
@@ -406,13 +431,13 @@ const updateProfile = async () => {
 
   try {
     // Simular API call - aquí integrarías con tu backend
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
     // Actualizar datos en el store si es necesario
     // await authStore.updateProfile(profileData)
-    
+
     showMessage('Perfil actualizado correctamente', 'success')
-  } catch (error) {
+  } catch {
     // Error silencioso para debugging - el usuario ya ve el mensaje de error en la UI
     showMessage('Error al actualizar el perfil. Inténtalo de nuevo.', 'error')
   } finally {
@@ -428,15 +453,15 @@ const changePassword = async () => {
 
   try {
     // Simular API call - aquí integrarías con tu backend
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
     // Limpiar campos de contraseña
     passwordData.currentPassword = ''
     passwordData.newPassword = ''
     passwordData.confirmPassword = ''
-    
+
     showMessage('Contraseña cambiada correctamente', 'success')
-  } catch (error) {
+  } catch {
     // Error silencioso para debugging - el usuario ya ve el mensaje de error en la UI
     showMessage('Error al cambiar la contraseña. Verifica tu contraseña actual.', 'error')
   } finally {
@@ -448,12 +473,12 @@ const updatePreferences = async () => {
   try {
     // Actualizar el tema cuando cambie la preferencia
     setTheme(preferences.darkMode)
-    
+
     // Simular API call - aquí integrarías con tu backend
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
     showMessage('Preferencias actualizadas', 'success')
-  } catch (error) {
+  } catch {
     // Error silencioso para debugging - el usuario ya ve el mensaje de error en la UI
     showMessage('Error al actualizar las preferencias', 'error')
   }
@@ -467,7 +492,7 @@ onMounted(() => {
     profileData.fullName = user.name || ''
     profileData.phone = user.phone || ''
   }
-  
+
   // Sincronizar el estado inicial del tema
   preferences.darkMode = isDarkMode.value
 })
@@ -875,7 +900,7 @@ watch(isDarkMode, (newValue) => {
 
 .toggle-slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 18px;
   width: 18px;
   left: 3px;
@@ -935,19 +960,19 @@ input:checked + .toggle-slider:before {
     margin-left: 0;
     background-position: center center;
   }
-  
+
   .settings-container {
     padding: 1rem;
   }
-  
+
   .form-row {
     grid-template-columns: 1fr;
   }
-  
+
   .settings-title {
     font-size: 2rem;
   }
-  
+
   .notification {
     right: 1rem;
     left: 1rem;
@@ -958,11 +983,11 @@ input:checked + .toggle-slider:before {
   .settings-header {
     padding: 1.5rem;
   }
-  
+
   .section-content {
     padding: 1.5rem;
   }
-  
+
   .settings-title {
     font-size: 1.75rem;
     flex-direction: column;

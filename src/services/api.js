@@ -7,7 +7,7 @@ const api = axios.create({
   timeout: 30000, // Timeout aumentado para operaciones complejas como crear menús con submenús
   headers: {
     'Content-Type': 'application/json',
-  }
+  },
 })
 
 // Interceptor de request
@@ -17,7 +17,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error)
-  }
+  },
 )
 
 api.interceptors.response.use(
@@ -26,7 +26,7 @@ api.interceptors.response.use(
   },
   (error) => {
     return Promise.reject(error)
-  }
+  },
 )
 
 // Variable para evitar múltiples refresh simultáneos
@@ -34,14 +34,14 @@ let isRefreshing = false
 let failedQueue = []
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
+  failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error)
     } else {
       prom.resolve(token)
     }
   })
-  
+
   failedQueue = []
 }
 
@@ -49,16 +49,16 @@ const processQueue = (error, token = null) => {
 api.interceptors.request.use(
   (config) => {
     const authStore = useAuthStore()
-    
+
     if (authStore.accessToken) {
       config.headers.Authorization = `Bearer ${authStore.accessToken}`
     }
-    
+
     return config
   },
   (error) => {
     return Promise.reject(error)
-  }
+  },
 )
 
 // Interceptor de RESPONSE - Manejar refresh automático
@@ -72,17 +72,18 @@ api.interceptors.response.use(
 
     // Si el error es 401 y no es un retry
     if (error.response?.status === 401 && !originalRequest._retry) {
-      
       // Si ya estamos refrescando, agregar a la cola
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
-        }).then(token => {
-          originalRequest.headers.Authorization = `Bearer ${token}`
-          return api(originalRequest)
-        }).catch(err => {
-          return Promise.reject(err)
         })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`
+            return api(originalRequest)
+          })
+          .catch((err) => {
+            return Promise.reject(err)
+          })
       }
 
       originalRequest._retry = true
@@ -92,18 +93,17 @@ api.interceptors.response.use(
         // Intentar refresh del token
         await authStore.refreshAccessToken()
         processQueue(null, authStore.accessToken)
-        
+
         // Reintentar la petición original
         originalRequest.headers.Authorization = `Bearer ${authStore.accessToken}`
         return api(originalRequest)
-        
       } catch (refreshError) {
         processQueue(refreshError, null)
         authStore.logout()
-        
+
         // Redirigir al login
         window.location.href = '/login'
-        
+
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false
@@ -111,7 +111,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error)
-  }
+  },
 )
 
 export default api

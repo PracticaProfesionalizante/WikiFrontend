@@ -13,25 +13,14 @@
             <!-- Muestra datos del usuario actual -->
             <p>Usuario: {{ authStore.user?.name }}</p>
             <p>Rol: {{ authStore.user?.role }}</p>
-            
+
             <v-divider class="my-4"></v-divider>
-            
+
             <!-- Botón para volver al dashboard -->
-            <v-btn 
-              color="primary" 
-              @click="goToDashboard"
-              class="mr-2"
-            >
-              Volver al inicio
-            </v-btn>
-            
+            <v-btn color="primary" @click="goToDashboard" class="mr-2"> Volver al inicio </v-btn>
+
             <!-- Botón para cerrar sesión -->
-            <v-btn 
-              color="error" 
-              @click="logout"
-            >
-              Cerrar Sesión
-            </v-btn>
+            <v-btn color="error" @click="logout"> Cerrar Sesión </v-btn>
           </v-card-text>
         </v-card>
       </v-col>

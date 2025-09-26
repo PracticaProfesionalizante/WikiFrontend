@@ -32,7 +32,9 @@
         <div v-if="isLoading" class="loading-indicator">
           <i class="mdi mdi-loading mdi-spin"></i>
           <span v-if="!isCreatingSubmenus">Cargando menús...</span>
-          <span v-else>Creando submenús... ({{ submenuProgress.current }}/{{ submenuProgress.total }})</span>
+          <span v-else
+            >Creando submenús... ({{ submenuProgress.current }}/{{ submenuProgress.total }})</span
+          >
         </div>
 
         <!-- Mensaje de error -->
@@ -75,7 +77,10 @@
             v-for="menu in filteredMenus"
             :key="menu.id"
             class="menu-card"
-            :class="{ 'is-submenu': menu.parentId, 'has-children': getMenuChildren(menu.id).length > 0 }"
+            :class="{
+              'is-submenu': menu.parentId,
+              'has-children': getMenuChildren(menu.id).length > 0,
+            }"
           >
             <div class="menu-card-header">
               <div class="menu-icon">
@@ -103,11 +108,7 @@
                     Padre: {{ getParentMenuName(menu.parentId) }}
                   </span>
                   <div class="menu-roles">
-                    <span
-                      v-for="role in menu.roles"
-                      :key="role"
-                      class="role-badge"
-                    >
+                    <span v-for="role in menu.roles" :key="role" class="role-badge">
                       {{ getRoleLabel(role) }}
                     </span>
                   </div>
@@ -125,18 +126,10 @@
                 <i class="mdi mdi-plus"></i>
                 Submenú
               </button>
-              <button
-                class="edit-btn"
-                @click="editMenu(menu)"
-                title="Editar menú"
-              >
+              <button class="edit-btn" @click="editMenu(menu)" title="Editar menú">
                 <i class="mdi mdi-pencil"></i>
               </button>
-              <button
-                class="delete-btn"
-                @click="deleteMenu(menu.id)"
-                title="Eliminar menú"
-              >
+              <button class="delete-btn" @click="deleteMenu(menu.id)" title="Eliminar menú">
                 <i class="mdi mdi-delete"></i>
               </button>
             </div>
@@ -148,8 +141,12 @@
           <!-- Sección de ayuda y buscador -->
           <div class="tree-header">
             <!-- Sección de ayuda -->
-            <div class="help-section" :class="{ 'expanded': showHelp }">
-              <button class="help-toggle" @click="showHelp = !showHelp" title="Mostrar/ocultar guía de ayuda para nuevos usuarios">
+            <div class="help-section" :class="{ expanded: showHelp }">
+              <button
+                class="help-toggle"
+                @click="showHelp = !showHelp"
+                title="Mostrar/ocultar guía de ayuda para nuevos usuarios"
+              >
                 <i class="mdi mdi-help-circle"></i>
                 <span>{{ showHelp ? 'Ocultar' : 'Mostrar' }} Guía de Uso</span>
                 <i class="mdi" :class="showHelp ? 'mdi-chevron-up' : 'mdi-chevron-down'"></i>
@@ -163,13 +160,13 @@
                     Guía de Gestión de Menús
                   </h3>
                   <p class="help-description">
-                    Aprende a usar todas las funcionalidades disponibles para gestionar la estructura de menús de tu aplicación de manera eficiente.
+                    Aprende a usar todas las funcionalidades disponibles para gestionar la
+                    estructura de menús de tu aplicación de manera eficiente.
                   </p>
                 </div>
 
                 <!-- Funcionalidades organizadas por categorías -->
                 <div class="help-categories">
-
                   <!-- Navegación y Visualización -->
                   <div class="help-category">
                     <h4 class="category-title">
@@ -184,7 +181,10 @@
                         </div>
                         <div class="help-text">
                           <h5>Vista de Árbol</h5>
-                          <p>Visualiza la estructura jerárquica completa de tus menús con organización clara de niveles.</p>
+                          <p>
+                            Visualiza la estructura jerárquica completa de tus menús con
+                            organización clara de niveles.
+                          </p>
                         </div>
                       </div>
 
@@ -194,7 +194,10 @@
                         </div>
                         <div class="help-text">
                           <h5>Acordeón Inteligente</h5>
-                          <p>Los menús padre se contraen automáticamente para una vista más limpia. Haz clic en las flechas para expandir y ver los submenús.</p>
+                          <p>
+                            Los menús padre se contraen automáticamente para una vista más limpia.
+                            Haz clic en las flechas para expandir y ver los submenús.
+                          </p>
                         </div>
                       </div>
 
@@ -204,7 +207,10 @@
                         </div>
                         <div class="help-text">
                           <h5>Búsqueda Avanzada</h5>
-                          <p>Encuentra menús específicos por nombre o ruta. La búsqueda resalta los términos encontrados y filtra resultados en tiempo real.</p>
+                          <p>
+                            Encuentra menús específicos por nombre o ruta. La búsqueda resalta los
+                            términos encontrados y filtra resultados en tiempo real.
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -224,7 +230,10 @@
                         </div>
                         <div class="help-text">
                           <h5>Crear Menús y Submenús</h5>
-                          <p>Usa el botón "Crear Nuevo Menú" o el "+" junto a cualquier menú para agregar nuevos elementos a la estructura.</p>
+                          <p>
+                            Usa el botón "Crear Nuevo Menú" o el "+" junto a cualquier menú para
+                            agregar nuevos elementos a la estructura.
+                          </p>
                         </div>
                       </div>
 
@@ -234,7 +243,10 @@
                         </div>
                         <div class="help-text">
                           <h5>Editar Propiedades</h5>
-                          <p>Modifica nombre, ruta, icono, orden y permisos de cualquier menú usando el botón de edición.</p>
+                          <p>
+                            Modifica nombre, ruta, icono, orden y permisos de cualquier menú usando
+                            el botón de edición.
+                          </p>
                         </div>
                       </div>
 
@@ -244,7 +256,10 @@
                         </div>
                         <div class="help-text">
                           <h5>Reorganizar con Arrastrar y Soltar</h5>
-                          <p>Arrastra menús para cambiar su posición o convertirlos en submenús. Las zonas de destino se resaltan automáticamente.</p>
+                          <p>
+                            Arrastra menús para cambiar su posición o convertirlos en submenús. Las
+                            zonas de destino se resaltan automáticamente.
+                          </p>
                         </div>
                       </div>
 
@@ -254,12 +269,14 @@
                         </div>
                         <div class="help-text">
                           <h5>Eliminación Inteligente</h5>
-                          <p>Al eliminar menús con submenús, elige qué hacer: eliminar todo, mantener submenús como principales, o seleccionar cuáles conservar.</p>
+                          <p>
+                            Al eliminar menús con submenús, elige qué hacer: eliminar todo, mantener
+                            submenús como principales, o seleccionar cuáles conservar.
+                          </p>
                         </div>
                       </div>
                     </div>
                   </div>
-
                 </div>
               </div>
             </div>
@@ -287,7 +304,10 @@
                 </div>
                 <div class="search-stats" v-if="searchQuery">
                   <span class="results-count">
-                    {{ filteredHierarchicalMenus.length }} resultado{{ filteredHierarchicalMenus.length !== 1 ? 's' : '' }} encontrado{{ filteredHierarchicalMenus.length !== 1 ? 's' : '' }}
+                    {{ filteredHierarchicalMenus.length }} resultado{{
+                      filteredHierarchicalMenus.length !== 1 ? 's' : ''
+                    }}
+                    encontrado{{ filteredHierarchicalMenus.length !== 1 ? 's' : '' }}
                   </span>
                 </div>
               </div>
@@ -341,12 +361,7 @@
           aria-labelledby="modal-title"
           aria-describedby="modal-description"
         >
-          <div
-            class="dialog-content"
-            @click.stop
-            tabindex="-1"
-            ref="modalContent"
-          >
+          <div class="dialog-content" @click.stop tabindex="-1" ref="modalContent">
             <div class="dialog-header">
               <h2 id="modal-title">
                 <i class="mdi mdi-menu-open" aria-hidden="true"></i>
@@ -364,7 +379,8 @@
 
             <div class="dialog-body">
               <p id="modal-description" class="sr-only">
-                Formulario para {{ isEditing ? 'editar' : 'crear' }} un elemento del menú. Complete los campos requeridos y presione guardar.
+                Formulario para {{ isEditing ? 'editar' : 'crear' }} un elemento del menú. Complete
+                los campos requeridos y presione guardar.
               </p>
               <form @submit.prevent="saveMenu" role="form" id="menu-form">
                 <!-- Información básica -->
@@ -384,7 +400,7 @@
                       v-model="menuForm.name"
                       type="text"
                       class="form-input"
-                      :class="{ 'error': validationErrors.name }"
+                      :class="{ error: validationErrors.name }"
                       placeholder="Ej: Gestión de Usuarios"
                       @input="generatePath"
                       maxlength="50"
@@ -392,13 +408,20 @@
                       aria-describedby="menuName-help menuName-error"
                       ref="firstInput"
                     />
-                    <div v-if="validationErrors.name" class="error-message" id="menuName-error" role="alert">
+                    <div
+                      v-if="validationErrors.name"
+                      class="error-message"
+                      id="menuName-error"
+                      role="alert"
+                    >
                       <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
                       {{ validationErrors.name }}
                     </div>
                     <div class="help-text" id="menuName-help">
-                      <i class="mdi mdi-information" aria-hidden="true"></i>
-                      Este será el nombre que aparecerá en el menú lateral
+                      <strong>
+                        <i class="mdi mdi-information" aria-hidden="true"></i>
+                        Este será el nombre que aparecerá en el menú lateral
+                      </strong>
                     </div>
                   </div>
 
@@ -412,19 +435,28 @@
                       v-model="menuForm.path"
                       type="text"
                       class="form-input"
-                      :class="{ 'error': validationErrors.path }"
+                      :class="{ error: validationErrors.path }"
                       placeholder="Ej: /gestion-usuarios"
                       @input="validateForm"
                       required
                       aria-describedby="menuPath-help menuPath-error"
                     />
-                    <div v-if="validationErrors.path" class="error-message" id="menuPath-error" role="alert">
+                    <div
+                      v-if="validationErrors.path"
+                      class="error-message"
+                      id="menuPath-error"
+                      role="alert"
+                    >
                       <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
                       {{ validationErrors.path }}
                     </div>
-                    <div class="help-text" id="menuPath-help">
-                      <i class="mdi mdi-information" aria-hidden="true"></i>
-                      URL que se usará para acceder a esta vista (se genera automáticamente)
+                    <div class="help-text d-flex align-center" id="menuPath-help">
+                      <strong>
+                        <i class="mdi mdi-information" aria-hidden="true"></i>
+                        <span class="ml-1">
+                          URL que se usará para acceder a esta vista (se genera automáticamente)
+                        </span>
+                      </strong>
                     </div>
                   </div>
                 </div>
@@ -435,7 +467,12 @@
                     <i class="mdi mdi-emoticon-outline" aria-hidden="true"></i>
                     Seleccionar Icono *
                   </h3>
-                  <div v-if="validationErrors.icon" class="error-message" role="alert" aria-live="polite">
+                  <div
+                    v-if="validationErrors.icon"
+                    class="error-message"
+                    role="alert"
+                    aria-live="polite"
+                  >
                     <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
                     {{ validationErrors.icon }}
                   </div>
@@ -453,7 +490,12 @@
                     <i class="mdi mdi-view-dashboard-outline" aria-hidden="true"></i>
                     Tipo de Vista *
                   </h3>
-                  <div v-if="validationErrors.template" class="error-message" role="alert" aria-live="polite">
+                  <div
+                    v-if="validationErrors.template"
+                    class="error-message"
+                    role="alert"
+                    aria-live="polite"
+                  >
                     <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
                     {{ validationErrors.template }}
                   </div>
@@ -462,15 +504,19 @@
                     Selecciona el tipo de vista que mejor se adapte a tu contenido
                   </div>
 
-                  <div class="template-selector" role="radiogroup" aria-labelledby="template-section-title">
+                  <div
+                    class="template-selector"
+                    role="radiogroup"
+                    aria-labelledby="template-section-title"
+                  >
                     <div
                       v-for="template in viewTemplates"
                       :key="template.value"
                       class="template-option"
                       :class="{ selected: menuForm.template === template.value }"
-                      @click="menuForm.template = template.value; validateForm()"
-                      @keydown.enter="menuForm.template = template.value; validateForm()"
-                      @keydown.space.prevent="menuForm.template = template.value; validateForm()"
+                      @click="selectTemplate(template.value)"
+                      @keydown.enter="selectTemplate(template.value)"
+                      @keydown.space.prevent="selectTemplate(template.value)"
                       role="radio"
                       :aria-checked="menuForm.template === template.value"
                       :aria-labelledby="`template-${template.value}-label`"
@@ -518,7 +564,9 @@
                       </div>
 
                       <div class="template-info">
-                        <h4 class="template-name" :id="`template-${template.value}-label`">{{ template.name }}</h4>
+                        <h4 class="template-name" :id="`template-${template.value}-label`">
+                          {{ template.name }}
+                        </h4>
                         <p class="template-description">{{ template.description }}</p>
                         <div class="template-features">
                           <span
@@ -547,10 +595,14 @@
                       <i class="mdi mdi-format-list-bulleted-type" aria-hidden="true"></i>
                       Tipo de Menú
                     </label>
-                    <div class="menu-type-selector" role="radiogroup" aria-labelledby="additional-config-title">
+                    <div
+                      class="menu-type-selector"
+                      role="radiogroup"
+                      aria-labelledby="additional-config-title"
+                    >
                       <div
                         class="menu-type-option"
-                        :class="{ 'active': menuForm.parentId === null }"
+                        :class="{ active: menuForm.parentId === null }"
                         @click="setMenuType('root')"
                         @keydown.enter="setMenuType('root')"
                         @keydown.space.prevent="setMenuType('root')"
@@ -562,12 +614,14 @@
                         <i class="mdi mdi-home-outline" aria-hidden="true"></i>
                         <div class="option-content">
                           <span class="option-title" id="root-menu-label">Menú Principal</span>
-                          <span class="option-description">Aparece en el nivel raíz del menú lateral</span>
+                          <span class="option-description"
+                            >Aparece en el nivel raíz del menú lateral</span
+                          >
                         </div>
                       </div>
                       <div
                         class="menu-type-option"
-                        :class="{ 'active': menuForm.parentId !== null }"
+                        :class="{ active: menuForm.parentId !== null }"
                         @click="setMenuType('submenu')"
                         @keydown.enter="setMenuType('submenu')"
                         @keydown.space.prevent="setMenuType('submenu')"
@@ -579,7 +633,9 @@
                         <i class="mdi mdi-subdirectory-arrow-right" aria-hidden="true"></i>
                         <div class="option-content">
                           <span class="option-title" id="submenu-label">Submenú</span>
-                          <span class="option-description">Aparece dentro de otro menú como elemento hijo</span>
+                          <span class="option-description"
+                            >Aparece dentro de otro menú como elemento hijo</span
+                          >
                         </div>
                       </div>
                     </div>
@@ -607,7 +663,8 @@
                     </div>
                     <div class="help-text">
                       <i class="mdi mdi-information" aria-hidden="true"></i>
-                      Selecciona el menú padre donde aparecerá este submenú. Puedes expandir los nodos para ver la estructura completa.
+                      Selecciona el menú padre donde aparecerá este submenú. Puedes expandir los
+                      nodos para ver la estructura completa.
                     </div>
                   </div>
 
@@ -617,7 +674,10 @@
                       <i class="mdi mdi-file-tree-outline" aria-hidden="true"></i>
                       Vista Previa de Jerarquía
                     </label>
-                    <div class="hierarchy-preview" aria-label="Vista previa de la jerarquía del menú">
+                    <div
+                      class="hierarchy-preview"
+                      aria-label="Vista previa de la jerarquía del menú"
+                    >
                       <div class="hierarchy-item parent">
                         <i class="mdi mdi-folder-outline" aria-hidden="true"></i>
                         <span>{{ getParentMenuName(menuForm.parentId) }}</span>
@@ -626,7 +686,10 @@
                         <i class="mdi mdi-subdirectory-arrow-right" aria-hidden="true"></i>
                       </div>
                       <div class="hierarchy-item child">
-                        <i :class="['mdi', menuForm.icon] || 'mdi mdi-circle-outline'" aria-hidden="true"></i>
+                        <i
+                          :class="['mdi', menuForm.icon] || 'mdi mdi-circle-outline'"
+                          aria-hidden="true"
+                        ></i>
                         <span>{{ menuForm.name || 'Nuevo submenú' }}</span>
                       </div>
                     </div>
@@ -652,12 +715,22 @@
                       </option>
                     </select>
                     <div class="help-text" id="menuOrder-help">
-                      <i class="mdi mdi-information" aria-hidden="true"></i>
-                      {{ menuForm.parentId ? 'Selecciona dónde colocar este elemento dentro del submenú. El orden determina cómo aparecerán los elementos en la navegación.' : 'Selecciona dónde colocar este elemento en el menú principal. Los elementos se mostrarán en el orden que elijas.' }}
+                      <strong>
+                        <i class="mdi mdi-information" aria-hidden="true"></i>
+                        <span>
+                          {{
+                            menuForm.parentId
+                              ? 'Selecciona dónde colocar este elemento dentro del submenú. El orden determina cómo aparecerán los elementos en la navegación.'
+                              : 'Selecciona dónde colocar este elemento en el menú principal. Los elementos se mostrarán en el orden que elijas.'
+                          }}
+                        </span>
+                      </strong>
                     </div>
-                    <div class="help-text" style="margin-top: 8px; color: #6b7280;">
-                      <i class="mdi mdi-lightbulb-outline" aria-hidden="true"></i>
-                      💡 <strong>Consejo:</strong> Puedes reorganizar los menús más tarde editándolos y cambiando su posición.
+                    <div class="help-text" style="margin-top: 8px; color: #6b7280">
+                      <strong>
+                        <i class="mdi mdi-lightbulb-outline mr-1" aria-hidden="true"></i> Consejo:
+                        Puedes reorganizar los menús más tarde editándolos y cambiando su posición.
+                      </strong>
                     </div>
                   </div>
 
@@ -677,13 +750,18 @@
                       </span>
                     </label>
                     <div class="help-text" id="createSubmenus-help">
-                      <i class="mdi mdi-information" aria-hidden="true"></i>
-                      Activa esta opción para crear submenús al mismo tiempo que el menú principal
+                      <strong>
+                        <i class="mdi mdi-information" aria-hidden="true"></i>
+                        Activa esta opción para crear submenús al mismo tiempo que el menú principal
+                      </strong>
                     </div>
                   </div>
 
                   <!-- Sección de submenús (solo si está activada) -->
-                  <div v-if="menuForm.createSubmenus && menuForm.parentId === null && !isEditing" class="form-section submenu-section">
+                  <div
+                    v-if="menuForm.createSubmenus && menuForm.parentId === null && !isEditing"
+                    class="form-section submenu-section"
+                  >
                     <h4 class="section-title">
                       <i class="mdi mdi-file-tree" aria-hidden="true"></i>
                       Submenús a Crear
@@ -776,12 +854,10 @@
                       Roles de Acceso *
                     </label>
                     <fieldset class="roles-selector" aria-describedby="roles-help">
-                      <legend class="sr-only">Seleccionar roles que pueden acceder a este menú</legend>
-                      <div
-                        v-for="role in availableRoles"
-                        :key="role.value"
-                        class="role-option"
-                      >
+                      <legend class="sr-only">
+                        Seleccionar roles que pueden acceder a este menú
+                      </legend>
+                      <div v-for="role in availableRoles" :key="role.value" class="role-option">
                         <label class="checkbox-label">
                           <input
                             v-model="menuForm.roles"
@@ -796,7 +872,9 @@
                             {{ role.label }}
                           </span>
                         </label>
-                        <div class="role-description" :id="`role-${role.value}-desc`">{{ role.description }}</div>
+                        <div class="role-description" :id="`role-${role.value}-desc`">
+                          {{ role.description }}
+                        </div>
                       </div>
                     </fieldset>
                     <div v-if="validationErrors.roles" class="error-message" role="alert">
@@ -804,8 +882,10 @@
                       {{ validationErrors.roles }}
                     </div>
                     <div class="help-text" id="roles-help">
-                      <i class="mdi mdi-information" aria-hidden="true"></i>
-                      Selecciona los roles que tendrán acceso a este menú
+                      <strong>
+                        <i class="mdi mdi-information" aria-hidden="true"></i>
+                        Selecciona los roles que tendrán acceso a este menú
+                      </strong>
                     </div>
                   </div>
 
@@ -824,8 +904,10 @@
                       </span>
                     </label>
                     <div class="help-text" id="menuActive-help">
-                      <i class="mdi mdi-information" aria-hidden="true"></i>
-                      Los menús inactivos no aparecerán en la navegación
+                      <strong>
+                        <i class="mdi mdi-information" aria-hidden="true"></i>
+                        Los menús inactivos no aparecerán en la navegación
+                      </strong>
                     </div>
                   </div>
                 </div>
@@ -865,88 +947,90 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal de Vista Previa -->
+    <div v-if="showPreview" class="modal-overlay" @click="closePreview">
+      <div class="preview-modal" @click.stop>
+        <div class="preview-header">
+          <h3>
+            <i class="mdi mdi-eye"></i>
+            Vista Previa del Menú
+          </h3>
+          <button @click="closePreview" class="close-btn">
+            <i class="mdi mdi-close"></i>
+          </button>
+        </div>
+
+        <div class="preview-content">
+          <!-- Simulación del menú en el sidebar -->
+          <div class="sidebar-preview">
+            <h4>Cómo se verá en el menú lateral:</h4>
+            <div class="menu-item-preview">
+              <i :class="['mdi', previewMenu?.icon]"></i>
+              <span>{{ previewMenu?.name }}</span>
+            </div>
+          </div>
+
+          <!-- Información del menú -->
+          <div class="menu-details">
+            <h4>Detalles del menú:</h4>
+            <div class="detail-item"><strong>Nombre:</strong> {{ previewMenu?.name }}</div>
+            <div class="detail-item"><strong>Ruta:</strong> {{ previewMenu?.path }}</div>
+            <div class="detail-item">
+              <strong>Icono:</strong>
+              <i :class="['mdi', previewMenu?.icon]"></i>
+              {{ previewMenu?.icon }}
+            </div>
+            <div class="detail-item">
+              <strong>Plantilla:</strong>
+              {{ viewTemplates.find((t) => t.value === previewMenu?.template)?.name }}
+            </div>
+            <div class="detail-item"><strong>Orden:</strong> {{ previewMenu?.order }}</div>
+            <div class="detail-item">
+              <strong>Estado:</strong>
+              <span :class="previewMenu?.isActive ? 'status-active' : 'status-inactive'">
+                {{ previewMenu?.isActive ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
           </div>
         </div>
 
-        <!-- Modal de Vista Previa -->
-        <div v-if="showPreview" class="modal-overlay" @click="closePreview">
-          <div class="preview-modal" @click.stop>
-            <div class="preview-header">
-              <h3>
-                <i class="mdi mdi-eye"></i>
-                Vista Previa del Menú
-              </h3>
-              <button @click="closePreview" class="close-btn">
-                <i class="mdi mdi-close"></i>
-              </button>
-            </div>
-
-            <div class="preview-content">
-              <!-- Simulación del menú en el sidebar -->
-              <div class="sidebar-preview">
-                <h4>Cómo se verá en el menú lateral:</h4>
-                <div class="menu-item-preview">
-                  <i :class="['mdi', previewMenu?.icon]"></i>
-                  <span>{{ previewMenu?.name }}</span>
-                </div>
-              </div>
-
-              <!-- Información del menú -->
-              <div class="menu-details">
-                <h4>Detalles del menú:</h4>
-                <div class="detail-item">
-                  <strong>Nombre:</strong> {{ previewMenu?.name }}
-                </div>
-                <div class="detail-item">
-                  <strong>Ruta:</strong> {{ previewMenu?.path }}
-                </div>
-                <div class="detail-item">
-                  <strong>Icono:</strong>
-                  <i :class="['mdi', previewMenu?.icon]"></i>
-                  {{ previewMenu?.icon }}
-                </div>
-                <div class="detail-item">
-                  <strong>Plantilla:</strong>
-                  {{ viewTemplates.find(t => t.value === previewMenu?.template)?.name }}
-                </div>
-                <div class="detail-item">
-                  <strong>Orden:</strong> {{ previewMenu?.order }}
-                </div>
-                <div class="detail-item">
-                  <strong>Estado:</strong>
-                  <span :class="previewMenu?.isActive ? 'status-active' : 'status-inactive'">
-                    {{ previewMenu?.isActive ? 'Activo' : 'Inactivo' }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div class="preview-actions">
-              <button @click="closePreview" class="btn btn-secondary" title="Cerrar vista previa sin guardar cambios">
-                <i class="mdi mdi-close"></i>
-                Cerrar
-              </button>
-              <button @click="saveMenu(); closePreview()" class="btn btn-primary" title="Guardar el menú con la configuración actual">
-                <i class="mdi mdi-check"></i>
-                Confirmar y Guardar
-              </button>
-            </div>
-          </div>
+        <div class="preview-actions">
+          <button
+            @click="closePreview"
+            class="btn btn-secondary"
+            title="Cerrar vista previa sin guardar cambios"
+          >
+            <i class="mdi mdi-close"></i>
+            Cerrar
+          </button>
+          <button
+            @click="saveAndClosePreview"
+            class="btn btn-primary"
+            title="Guardar el menú con la configuración actual"
+          >
+            <i class="mdi mdi-check"></i>
+            Confirmar y Guardar
+          </button>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- Modal de Progreso -->
-      <ProgressModal
-        :is-visible="showProgressModal"
-        :title="progressModalTitle"
-        :current="submenuProgress.current"
-        :total="submenuProgress.total"
-        :current-action="progressModalAction"
-        :errors="progressErrors"
-        :is-completed="!isCreatingSubmenus && submenuProgress.current >= submenuProgress.total"
-        :allow-cancel="false"
-        @close="closeProgressModal"
-      />
+  <!-- Modal de Progreso -->
+  <ProgressModal
+    :is-visible="showProgressModal"
+    :title="progressModalTitle"
+    :current="submenuProgress.current"
+    :total="submenuProgress.total"
+    :current-action="progressModalAction"
+    :errors="progressErrors"
+    :is-completed="!isCreatingSubmenus && submenuProgress.current >= submenuProgress.total"
+    :allow-cancel="false"
+    @close="closeProgressModal"
+  />
 </template>
 
 <script setup>
@@ -986,19 +1070,22 @@ const menuForm = ref({
   roles: [],
   isActive: true,
   createSubmenus: false,
-  submenus: []
+  submenus: [],
 })
 
 // Watcher para actualizar el orden cuando cambie el parentId
-watch(() => menuForm.value.parentId, () => {
-  if (!isEditing.value) {
-    nextTick(() => {
-      if (availablePositions.value.length > 0) {
-        menuForm.value.order = availablePositions.value[0].value
-      }
-    })
-  }
-})
+watch(
+  () => menuForm.value.parentId,
+  () => {
+    if (!isEditing.value) {
+      nextTick(() => {
+        if (availablePositions.value.length > 0) {
+          menuForm.value.order = availablePositions.value[0].value
+        }
+      })
+    }
+  },
+)
 
 // Estado de validaciones
 const validationErrors = ref({})
@@ -1031,9 +1118,6 @@ const menuToDeleteChildren = ref([])
 // Estado de vista
 const viewMode = ref('grid') // 'grid' o 'tree'
 
-// Estado para vista de árbol
-const expandedNodes = ref([])
-
 // Estado para búsqueda y ayuda
 const searchQuery = ref('')
 const showHelp = ref(false)
@@ -1041,39 +1125,7 @@ const showHelp = ref(false)
 // Menús existentes (cargados desde el backend)
 const menus = ref([])
 
-// Función para expandir/contraer nodos en vista de árbol
-const toggleExpand = (nodeId) => {
-  const index = expandedNodes.value.indexOf(nodeId)
-  if (index > -1) {
-    expandedNodes.value.splice(index, 1)
-  } else {
-    expandedNodes.value.push(nodeId)
-  }
-}
-
 // Función para cargar menús desde el backend
-// Función para verificar y renovar token si es necesario
-const verifyAndRefreshToken = async () => {
-  if (!authStore.accessToken) {
-    router.push('/login')
-    return false
-  }
-
-  try {
-    // Verificar si el token es válido
-    await authService.verifyToken()
-    return true
-  } catch (error) {
-    try {
-      await authStore.refreshAccessToken()
-      return true
-    } catch (refreshError) {
-      authStore.logout()
-      router.push('/login')
-      return false
-    }
-  }
-}
 
 const loadMenus = async () => {
   isLoading.value = true
@@ -1115,29 +1167,29 @@ const viewTemplates = [
     name: 'Vista Básica',
     description: 'Página simple con contenido estático',
     icon: 'mdi mdi-file-document-outline',
-    features: ['Contenido Simple', 'Texto e Imágenes', 'Fácil de Usar']
+    features: ['Contenido Simple', 'Texto e Imágenes', 'Fácil de Usar'],
   },
   {
     value: 'form',
     name: 'Vista de Formulario',
     description: 'Formulario para captura de datos',
     icon: 'mdi mdi-form-select',
-    features: ['Campos de Entrada', 'Validaciones', 'Envío de Datos']
+    features: ['Campos de Entrada', 'Validaciones', 'Envío de Datos'],
   },
   {
     value: 'table',
     name: 'Vista de Tabla',
     description: 'Listado de datos con funciones CRUD',
     icon: 'mdi mdi-table',
-    features: ['Listado de Datos', 'Búsqueda', 'Paginación', 'CRUD']
+    features: ['Listado de Datos', 'Búsqueda', 'Paginación', 'CRUD'],
   },
   {
     value: 'dashboard',
     name: 'Vista de Dashboard',
     description: 'Panel con métricas y gráficos',
     icon: 'mdi mdi-view-dashboard',
-    features: ['Métricas', 'Gráficos', 'Widgets', 'Tiempo Real']
-  }
+    features: ['Métricas', 'Gráficos', 'Widgets', 'Tiempo Real'],
+  },
 ]
 
 // Roles disponibles
@@ -1146,20 +1198,20 @@ const availableRoles = [
     value: 'ROLE_SUPER_USER',
     label: 'Super Usuario',
     icon: 'mdi mdi-account-star',
-    description: 'Acceso completo al sistema'
+    description: 'Acceso completo al sistema',
   },
   {
     value: 'ROLE_ADMIN',
     label: 'Administrador',
     icon: 'mdi mdi-account-key',
-    description: 'Gestión de usuarios y configuración'
+    description: 'Gestión de usuarios y configuración',
   },
   {
     value: 'ROLE_COLLABORATOR',
     label: 'Colaborador',
     icon: 'mdi mdi-account-group',
-    description: 'Acceso a funciones básicas'
-  }
+    description: 'Acceso a funciones básicas',
+  },
 ]
 
 // Computed
@@ -1167,58 +1219,20 @@ const filteredMenus = computed(() => {
   return menus.value
 })
 
-const availableParentMenus = computed(() => {
-  // Función recursiva para obtener todos los menús y submenús disponibles
-  const getAllMenusRecursive = (menuList, level = 0) => {
-    let result = []
-
-    for (const menu of menuList) {
-      // Evitar referencias circulares - no incluir el menú actual si estamos editando
-      if (isEditing.value && menu.id === menuForm.value.id) {
-        continue
-      }
-
-      // Agregar el menú actual con indicador de nivel
-      const menuWithLevel = {
-        ...menu,
-        displayName: '  '.repeat(level) + (level > 0 ? '└─ ' : '') + menu.name,
-        level: level
-      }
-      result.push(menuWithLevel)
-
-      // Si tiene hijos, agregarlos recursivamente
-      const children = getMenuChildren(menu.id)
-      if (children.length > 0) {
-        result = [...result, ...getAllMenusRecursive(children, level + 1)]
-      }
-    }
-
-    return result
-  }
-
-  // Obtener todos los menús raíz y sus descendientes
-  const rootMenus = menus.value.filter(menu => !menu.parentId)
-  return getAllMenusRecursive(rootMenus)
-})
-
-const rootMenus = computed(() => {
-  return menus.value
-    .filter(menu => !menu.parentId)
-    .sort((a, b) => a.order - b.order)
-})
-
 const availablePositions = computed(() => {
   let siblingMenus = []
 
-  if (menuForm.parentId) {
+  if (menuForm.value.parentId) {
     // Si es un submenú, obtener los hermanos del mismo padre
     siblingMenus = menus.value
-      .filter(menu => menu.parentId === menuForm.parentId && menu.id !== editingMenuId.value)
+      .filter(
+        (menu) => menu.parentId === menuForm.value.parentId && menu.id !== editingMenuId.value,
+      )
       .sort((a, b) => a.order - b.order)
   } else {
     // Si es un menú raíz, obtener todos los menús raíz
     siblingMenus = menus.value
-      .filter(menu => !menu.parentId && menu.id !== editingMenuId.value)
+      .filter((menu) => !menu.parentId && menu.id !== editingMenuId.value)
       .sort((a, b) => a.order - b.order)
   }
 
@@ -1227,19 +1241,19 @@ const availablePositions = computed(() => {
   // Opción para colocar al principio
   positions.push({
     value: 1,
-    label: '🔝 Al principio'
+    label: '🔝 Al principio',
   })
 
   // Opciones para colocar después de cada menú existente
   siblingMenus.forEach((menu, index) => {
     positions.push({
       value: index + 2,
-      label: `📍 Después de "${menu.name}"`
+      label: `📍 Después de "${menu.name}"`,
     })
   })
 
   // Si no hay menús hermanos, la primera posición ya está agregada arriba
-  
+
   return positions
 })
 
@@ -1255,7 +1269,7 @@ const closeDialog = () => {
   showDialog.value = false
   // Cerrar también el modal de progreso
   showProgressModal.value = false
-  
+
   if (!isEditing.value) {
     resetForm()
   } else {
@@ -1273,7 +1287,7 @@ const editMenu = (menu) => {
   if (typeof menu.roles === 'string') {
     // Si roles es un string, convertir a array
     if (menu.roles.includes(',')) {
-      menuCopy.roles = menu.roles.split(',').map(role => role.trim())
+      menuCopy.roles = menu.roles.split(',').map((role) => role.trim())
     } else {
       menuCopy.roles = [menu.roles]
     }
@@ -1308,7 +1322,6 @@ const deleteMenu = async (menuData) => {
     menuToDelete.value = menu
     menuToDeleteChildren.value = children
     showDeleteModal.value = true
-
   } catch (error) {
     error.value = error.message
   }
@@ -1369,7 +1382,7 @@ const handleDeleteConfirm = async (confirmData) => {
         submenuProgress.value.current = ++currentStep
         break
 
-      case 'selective':
+      case 'selective': {
         progressModalAction.value = 'Eliminando submenús seleccionados...'
         // Eliminar solo los submenús seleccionados, mantener el menú principal
         for (const childId of selectedChildren) {
@@ -1379,7 +1392,7 @@ const handleDeleteConfirm = async (confirmData) => {
 
         progressModalAction.value = 'Reorganizando submenús restantes...'
         // Mover los submenús no seleccionados al nivel raíz
-        const childrenToKeep = allChildren.filter(id => !selectedChildren.includes(id))
+        const childrenToKeep = allChildren.filter((id) => !selectedChildren.includes(id))
         for (const childId of childrenToKeep) {
           const childMenu = findMenuById(childId)
           if (childMenu) {
@@ -1390,6 +1403,7 @@ const handleDeleteConfirm = async (confirmData) => {
 
         // NO eliminar el menú principal en modo selectivo
         break
+      }
 
       case 'keep-children':
         progressModalAction.value = 'Moviendo submenús al nivel raíz...'
@@ -1416,7 +1430,7 @@ const handleDeleteConfirm = async (confirmData) => {
 
     // Finalizar con éxito
     progressModalAction.value = 'Menú eliminado exitosamente'
-    
+
     // Cerrar modal después de un breve delay
     setTimeout(() => {
       showProgressModal.value = false
@@ -1424,7 +1438,6 @@ const handleDeleteConfirm = async (confirmData) => {
 
     // Cerrar el modal
     closeDeleteModal()
-
   } catch (error) {
     error.value = error.message
     progressErrors.value.push(`Error en eliminación: ${error.message}`)
@@ -1445,7 +1458,7 @@ const saveMenu = async () => {
   // Mostrar modal de progreso para todas las operaciones
   showProgressModal.value = true
   progressErrors.value = []
-  
+
   try {
     let parentMenuResult = null
 
@@ -1454,29 +1467,28 @@ const saveMenu = async () => {
       progressModalTitle.value = 'Editando Menú'
       progressModalAction.value = 'Actualizando información del menú...'
       submenuProgress.value = { current: 0, total: 1 }
-      
+
       parentMenuResult = await menuService.updateMenu(menuForm.value.id, menuForm.value)
-      
+
       // Actualizar progreso
       submenuProgress.value.current = 1
       progressModalAction.value = 'Menú actualizado exitosamente'
-      
     } else {
       // Configurar modal para creación
       const hasSubmenus = menuForm.value.createSubmenus && menuForm.value.submenus.length > 0
       const totalSteps = hasSubmenus ? 2 + menuForm.value.submenus.length : 2
-      
+
       progressModalTitle.value = hasSubmenus ? 'Creando Menú con Submenús' : 'Creando Nuevo Menú'
       progressModalAction.value = 'Creando menú principal...'
       submenuProgress.value = { current: 0, total: totalSteps }
-      
+
       // Crear el menú principal con orden temporal alto para evitar conflictos
       const tempMenuData = {
         ...menuForm.value,
-        order: 9999 // Orden temporal muy alto
+        order: 9999, // Orden temporal muy alto
       }
       parentMenuResult = await menuService.createMenu(tempMenuData)
-      
+
       // Actualizar progreso
       submenuProgress.value.current = 1
       progressModalAction.value = 'Organizando posición del menú...'
@@ -1486,23 +1498,23 @@ const saveMenu = async () => {
         await menuService.moveMenu({
           menuId: parentMenuResult.id,
           parentId: menuForm.value.parentId,
-          order: menuForm.value.order
+          order: menuForm.value.order,
         })
       }
-      
+
       // Actualizar progreso
       submenuProgress.value.current = 2
-      
+
       // Si se activó la creación de submenús y hay submenús definidos
       if (hasSubmenus) {
         const parentMenuId = parentMenuResult.id
-        
+
         // Mostrar modal de progreso
         showProgressModal.value = true
         progressModalTitle.value = 'Creando Menú con Submenús'
         progressModalAction.value = 'Preparando creación de submenús...'
         progressErrors.value = []
-        
+
         // Activar indicador de progreso de submenús
         isCreatingSubmenus.value = true
         submenuProgress.value = { current: 0, total: menuForm.value.submenus.length }
@@ -1513,14 +1525,16 @@ const saveMenu = async () => {
 
         // Crear submenús en lotes para evitar sobrecarga del servidor
         const BATCH_SIZE = 2 // Procesar máximo 2 submenús simultáneamente
-        const validSubmenus = menuForm.value.submenus.filter(submenu => submenu.name && submenu.path)
+        const validSubmenus = menuForm.value.submenus.filter(
+          (submenu) => submenu.name && submenu.path,
+        )
         const allResults = []
 
         for (let i = 0; i < validSubmenus.length; i += BATCH_SIZE) {
           const batch = validSubmenus.slice(i, i + BATCH_SIZE)
-          
+
           progressModalAction.value = `Procesando lote ${Math.floor(i / BATCH_SIZE) + 1} de ${Math.ceil(validSubmenus.length / BATCH_SIZE)}...`
-          
+
           const batchPromises = batch.map(async (submenu, batchIndex) => {
             const globalIndex = i + batchIndex
             const submenuData = {
@@ -1528,10 +1542,13 @@ const saveMenu = async () => {
               path: submenu.path,
               icon: submenu.icon || '',
               template: submenu.template || 'basic',
-              order: submenu.order || (globalIndex + 1),
+              order: submenu.order || globalIndex + 1,
               parentId: parentMenuId,
-              roles: submenu.roles && submenu.roles.length > 0 ? submenu.roles : menuForm.value.roles || [],
-              isActive: submenu.isActive !== undefined ? submenu.isActive : true
+              roles:
+                submenu.roles && submenu.roles.length > 0
+                  ? submenu.roles
+                  : menuForm.value.roles || [],
+              isActive: submenu.isActive !== undefined ? submenu.isActive : true,
             }
 
             try {
@@ -1556,38 +1573,46 @@ const saveMenu = async () => {
 
           // Pequeña pausa entre lotes para evitar saturar el servidor
           if (i + BATCH_SIZE < validSubmenus.length) {
-            await new Promise(resolve => setTimeout(resolve, 200))
+            await new Promise((resolve) => setTimeout(resolve, 200))
           }
         }
 
         // Procesar submenús con datos incompletos
-        const incompleteSubmenus = menuForm.value.submenus.filter(submenu => !submenu.name || !submenu.path)
-        incompleteSubmenus.forEach(submenu => {
+        const incompleteSubmenus = menuForm.value.submenus.filter(
+          (submenu) => !submenu.name || !submenu.path,
+        )
+        incompleteSubmenus.forEach((submenu) => {
           submenuProgress.value.current++
           progressErrors.value.push(`${submenu.name || 'Sin nombre'}: Datos incompletos`)
           allResults.push({
             status: 'fulfilled',
-            value: { success: false, submenu: submenu.name || 'Sin nombre', error: 'Datos incompletos' }
+            value: {
+              success: false,
+              submenu: submenu.name || 'Sin nombre',
+              error: 'Datos incompletos',
+            },
           })
         })
-        
+
         // Finalizar proceso
-        progressModalAction.value = progressErrors.value.length > 0 
-          ? `Proceso completado con ${progressErrors.value.length} error(es)`
-          : 'Proceso completado exitosamente'
-        
+        progressModalAction.value =
+          progressErrors.value.length > 0
+            ? `Proceso completado con ${progressErrors.value.length} error(es)`
+            : 'Proceso completado exitosamente'
+
         // Desactivar indicador de progreso
         isCreatingSubmenus.value = false
-        
+
         // Verificar si hubo errores
         const failedSubmenus = allResults
           .map((result, index) => ({ result, index }))
           .filter(({ result }) => result.status === 'rejected' || !result.value?.success)
           .map(({ result, index }) => {
             const submenuName = menuForm.value.submenus[index]?.name || `Submenú ${index + 1}`
-            const errorMsg = result.status === 'rejected' 
-              ? result.reason?.message || 'Error desconocido'
-              : result.value?.error || 'Error desconocido'
+            const errorMsg =
+              result.status === 'rejected'
+                ? result.reason?.message || 'Error desconocido'
+                : result.value?.error || 'Error desconocido'
             return `${submenuName}: ${errorMsg}`
           })
 
@@ -1602,13 +1627,14 @@ const saveMenu = async () => {
     await loadMenus()
 
     // Finalizar con éxito
-    progressModalAction.value = isEditing.value ? 'Menú editado exitosamente' : 'Menú creado exitosamente'
-    
+    progressModalAction.value = isEditing.value
+      ? 'Menú editado exitosamente'
+      : 'Menú creado exitosamente'
+
     // Cerrar el diálogo después de un breve delay para mostrar el mensaje de éxito
     setTimeout(() => {
       closeDialog()
     }, 1500)
-    
   } catch (err) {
     error.value = err.message
     progressErrors.value.push(`Error general: ${err.message}`)
@@ -1617,6 +1643,18 @@ const saveMenu = async () => {
     isLoading.value = false
     // El modal se cerrará automáticamente cuando se cierre el diálogo
   }
+}
+
+// Método para seleccionar template
+const selectTemplate = (templateValue) => {
+  menuForm.value.template = templateValue
+  validateForm()
+}
+
+// Método para guardar y cerrar preview
+const saveAndClosePreview = () => {
+  saveMenu()
+  closePreview()
 }
 
 const resetForm = () => {
@@ -1630,12 +1668,12 @@ const resetForm = () => {
     roles: [],
     isActive: true,
     createSubmenus: false,
-    submenus: []
+    submenus: [],
   }
   isEditing.value = false
   editingMenuId.value = null
   validationErrors.value = {}
-  
+
   // Establecer el orden por defecto a la primera posición disponible
   nextTick(() => {
     if (availablePositions.value.length > 0) {
@@ -1646,12 +1684,14 @@ const resetForm = () => {
 
 const generatePath = () => {
   if (menuForm.value.name && !isEditing.value) {
-    const path = '/' + menuForm.value.name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
+    const path =
+      '/' +
+      menuForm.value.name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
 
     menuForm.value.path = path
   }
@@ -1730,16 +1770,20 @@ const validateForm = () => {
         }
 
         // Verificar rutas duplicadas entre submenús
-        const duplicatePath = menuForm.value.submenus.find((otherSubmenu, otherIndex) =>
-          otherIndex !== index && otherSubmenu.path === submenu.path && submenu.path.trim()
+        const duplicatePath = menuForm.value.submenus.find(
+          (otherSubmenu, otherIndex) =>
+            otherIndex !== index && otherSubmenu.path === submenu.path && submenu.path.trim(),
         )
         if (duplicatePath) {
           submenuErrors.path = `La ruta del submenú ${index + 1} está duplicada`
         }
 
         // Verificar nombres duplicados entre submenús
-        const duplicateName = menuForm.value.submenus.find((otherSubmenu, otherIndex) =>
-          otherIndex !== index && otherSubmenu.name.toLowerCase() === submenu.name.toLowerCase() && submenu.name.trim()
+        const duplicateName = menuForm.value.submenus.find(
+          (otherSubmenu, otherIndex) =>
+            otherIndex !== index &&
+            otherSubmenu.name.toLowerCase() === submenu.name.toLowerCase() &&
+            submenu.name.trim(),
         )
         if (duplicateName) {
           submenuErrors.name = `El nombre del submenú ${index + 1} está duplicado`
@@ -1770,7 +1814,7 @@ const openPreview = () => {
   previewMenu.value = {
     ...menuForm.value,
     id: Date.now(),
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   }
   showPreview.value = true
 }
@@ -1782,12 +1826,12 @@ const closePreview = () => {
 
 // Funciones auxiliares
 const getParentMenuName = (parentId) => {
-  const parent = menus.value.find(menu => menu.id === parentId)
+  const parent = menus.value.find((menu) => menu.id === parentId)
   return parent ? parent.name : 'Desconocido'
 }
 
 const getRoleLabel = (roleValue) => {
-  const role = availableRoles.find(r => r.value === roleValue)
+  const role = availableRoles.find((r) => r.value === roleValue)
   return role ? role.label : roleValue
 }
 
@@ -1808,7 +1852,7 @@ const handleParentSelect = (parentId) => {
 
 const getMenuChildren = (menuId) => {
   // Buscar en la estructura plana de menus.value
-  const flatChildren = menus.value.filter(menu => menu.parentId === menuId)
+  const flatChildren = menus.value.filter((menu) => menu.parentId === menuId)
 
   // También buscar en la estructura jerárquica si existe
   const findChildrenInHierarchy = (menuList) => {
@@ -1828,8 +1872,8 @@ const getMenuChildren = (menuId) => {
 
   // Combinar y deduplicar por ID
   const allChildren = [...flatChildren, ...hierarchyChildren]
-  const uniqueChildren = allChildren.filter((child, index, self) =>
-    index === self.findIndex(c => c.id === child.id)
+  const uniqueChildren = allChildren.filter(
+    (child, index, self) => index === self.findIndex((c) => c.id === child.id),
   )
 
   return uniqueChildren
@@ -1838,7 +1882,7 @@ const getMenuChildren = (menuId) => {
 // Función auxiliar para buscar un menú por ID en cualquier estructura
 const findMenuById = (menuId) => {
   // Buscar en la estructura plana
-  let menu = menus.value.find(m => m.id === menuId)
+  let menu = menus.value.find((m) => m.id === menuId)
   if (menu) {
     return menu
   }
@@ -1872,13 +1916,13 @@ const buildMenuHierarchy = () => {
   const processMenu = (menu) => {
     const processedMenu = {
       ...menu,
-      children: menu.children ? menu.children.map(child => processMenu(child)) : []
+      children: menu.children ? menu.children.map((child) => processMenu(child)) : [],
     }
     return processedMenu
   }
 
   // Procesar todos los menús (que ya son menús raíz del backend)
-  const hierarchy = menus.value.map(menu => processMenu(menu))
+  const hierarchy = menus.value.map((menu) => processMenu(menu))
 
   return hierarchy
 }
@@ -1899,27 +1943,29 @@ const filteredHierarchicalMenus = computed(() => {
 
   // Función recursiva para filtrar menús y sus hijos
   const filterMenusRecursive = (menuList) => {
-    return menuList.filter(menu => {
-      // Verificar si el menú actual coincide con la búsqueda
-      const matchesSearch =
-        menu.name.toLowerCase().includes(query) ||
-        (menu.path && menu.path.toLowerCase().includes(query))
+    return menuList
+      .filter((menu) => {
+        // Verificar si el menú actual coincide con la búsqueda
+        const matchesSearch =
+          menu.name.toLowerCase().includes(query) ||
+          (menu.path && menu.path.toLowerCase().includes(query))
 
-      // Filtrar los hijos recursivamente
-      const filteredChildren = menu.children ? filterMenusRecursive(menu.children) : []
+        // Filtrar los hijos recursivamente
+        const filteredChildren = menu.children ? filterMenusRecursive(menu.children) : []
 
-      // Incluir el menú si:
-      // 1. El menú actual coincide con la búsqueda, O
-      // 2. Alguno de sus hijos coincide con la búsqueda
-      if (matchesSearch || filteredChildren.length > 0) {
-        return {
-          ...menu,
-          children: filteredChildren
+        // Incluir el menú si:
+        // 1. El menú actual coincide con la búsqueda, O
+        // 2. Alguno de sus hijos coincide con la búsqueda
+        if (matchesSearch || filteredChildren.length > 0) {
+          return {
+            ...menu,
+            children: filteredChildren,
+          }
         }
-      }
 
-      return false
-    }).filter(Boolean)
+        return false
+      })
+      .filter(Boolean)
   }
 
   return filterMenusRecursive(hierarchicalMenus.value)
@@ -1958,12 +2004,11 @@ const moveMenu = async (moveData) => {
     await menuService.moveMenu({
       menuId: moveData.menuId,
       parentId: moveData.newParentId,
-      order: moveData.newOrder
+      order: moveData.newOrder,
     })
 
     // Recargar la lista de menús
     await loadMenus()
-    
   } catch (err) {
     error.value = err.message
     console.error('Error al mover menú:', err)
@@ -1991,7 +2036,7 @@ const addSubmenu = () => {
     template: 'basic',
     order: menuForm.value.submenus.length + 1,
     roles: [...(menuForm.value.roles || [])], // Heredar roles del menú padre
-    isActive: menuForm.value.isActive !== undefined ? menuForm.value.isActive : true
+    isActive: menuForm.value.isActive !== undefined ? menuForm.value.isActive : true,
   })
 }
 
@@ -2006,12 +2051,14 @@ const removeSubmenu = (index) => {
 const generateSubmenuPath = (index) => {
   const submenu = menuForm.value.submenus[index]
   if (submenu.name && !isEditing.value) {
-    const path = '/' + submenu.name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
+    const path =
+      '/' +
+      submenu.name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
 
     submenu.path = path
   }
@@ -2046,12 +2093,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Variables CSS - Usando variables globales de tema */
-.menu-manager-layout {
-  /* Las variables CSS se toman del archivo themes.css global */
-  /* No necesitamos redefinir las variables aquí */
-}
-
 /* Layout principal */
 .menu-manager-layout {
   display: flex;
@@ -2314,7 +2355,8 @@ onMounted(() => {
   justify-content: flex-end;
 }
 
-.edit-btn, .delete-btn {
+.edit-btn,
+.delete-btn {
   padding: 0.5rem;
   border: none;
   border-radius: 8px;
@@ -2357,7 +2399,8 @@ onMounted(() => {
 }
 
 /* Modal */
-.dialog-overlay, .modal-overlay {
+.dialog-overlay,
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -2567,7 +2610,8 @@ onMounted(() => {
   font-size: 1.25rem;
 }
 
-.form-input, .form-select {
+.form-input,
+.form-select {
   width: 100%;
   padding: 1rem 1.25rem;
   border: 2px solid var(--input-border);
@@ -2582,13 +2626,15 @@ onMounted(() => {
   position: relative;
 }
 
-.form-input::placeholder, .form-select option {
+.form-input::placeholder,
+.form-select option {
   color: var(--text-muted);
   opacity: 0.7;
   font-weight: 400;
 }
 
-.form-input:focus, .form-select:focus {
+.form-input:focus,
+.form-select:focus {
   outline: none;
   border-color: var(--accent-primary);
   box-shadow:
@@ -2599,26 +2645,36 @@ onMounted(() => {
   transform: translateY(-1px);
 }
 
-.form-input:hover:not(:focus), .form-select:hover:not(:focus) {
+.form-input:hover:not(:focus),
+.form-select:hover:not(:focus) {
   border-color: var(--accent-primary);
   box-shadow:
     inset 0 1px 3px rgba(0, 0, 0, 0.1),
     0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.form-input.error, .form-select.error {
+.form-input.error,
+.form-select.error {
   border-color: var(--accent-danger);
   background: rgba(239, 68, 68, 0.05);
   animation: shake 0.5s ease-in-out;
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
 }
 
-.form-input.error:focus, .form-select.error:focus {
+.form-input.error:focus,
+.form-select.error:focus {
   border-color: var(--accent-danger);
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
 }
@@ -2971,7 +3027,12 @@ onMounted(() => {
 
 .mockup-chart {
   flex: 1;
-  background: linear-gradient(45deg, var(--accent-color) 0%, transparent 50%, var(--accent-color) 100%);
+  background: linear-gradient(
+    45deg,
+    var(--accent-color) 0%,
+    transparent 50%,
+    var(--accent-color) 100%
+  );
   border-radius: 4px;
   opacity: 0.3;
 }
@@ -3801,7 +3862,7 @@ button:disabled {
 }
 
 .tree-container:empty::before {
-  content: "No hay menús para mostrar";
+  content: 'No hay menús para mostrar';
   display: block;
   text-align: center;
   color: var(--text-secondary);
@@ -4174,154 +4235,154 @@ button:disabled {
 }
 
 .children-container {
-    padding-left: 1rem;
-    border-left: 2px solid rgba(37, 99, 235, 0.1);
-    margin-left: 1rem;
-  }
+  padding-left: 1rem;
+  border-left: 2px solid rgba(37, 99, 235, 0.1);
+  margin-left: 1rem;
+}
 
-  /* Estilos para la sección de submenús */
-  .submenu-section {
-    background: var(--bg-hover);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-top: 1rem;
-  }
+/* Estilos para la sección de submenús */
+.submenu-section {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
 
-  .submenu-section .section-title {
-    color: var(--accent-primary);
-    margin-bottom: 1rem;
-  }
+.submenu-section .section-title {
+  color: var(--accent-primary);
+  margin-bottom: 1rem;
+}
 
-  .submenus-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
+.submenus-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 
-  .submenu-item {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1rem;
-    position: relative;
-  }
+.submenu-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  position: relative;
+}
 
-  .submenu-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-light);
-  }
+.submenu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-light);
+}
 
-  .submenu-title {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
-  }
+.submenu-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
 
-  .remove-submenu-btn {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--accent-danger);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: 6px;
-    padding: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-  }
+.remove-submenu-btn {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--accent-danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
 
-  .remove-submenu-btn:hover {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: var(--accent-danger);
-  }
+.remove-submenu-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: var(--accent-danger);
+}
 
-  .submenu-fields {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
+.submenu-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
 
-  .submenu-fields .form-group:last-child {
-    grid-column: 1 / -1;
-  }
+.submenu-fields .form-group:last-child {
+  grid-column: 1 / -1;
+}
 
-  .add-submenu-btn {
-    background: var(--accent-secondary);
-    color: var(--text-inverse);
-    border: none;
-    border-radius: 8px;
-    padding: 1rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    font-weight: 500;
-    border: 2px dashed transparent;
-  }
+.add-submenu-btn {
+  background: var(--accent-secondary);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  border: 2px dashed transparent;
+}
 
-  .add-submenu-btn:hover {
-    background: #059669;
-    transform: translateY(-1px);
-  }
+.add-submenu-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
 
-  .add-submenu-btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--focus-shadow);
-  }
+.add-submenu-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-shadow);
+}
 
-  /* Responsive */
+/* Responsive */
 @media (max-width: 768px) {
-    .main-content {
-      margin-left: 0;
-      padding-top: 60px;
-    }
-
-    .menu-manager-container {
-      padding: 1rem;
-    }
-
-    .manager-title {
-      font-size: 2rem;
-    }
-
-    .menus-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .template-selector {
-      grid-template-columns: 1fr;
-    }
-
-    .preview-content {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    .dialog-content {
-      margin: 1rem;
-      max-width: calc(100vw - 2rem);
-    }
-
-    /* Responsive para submenús */
-    .submenu-fields {
-      grid-template-columns: 1fr;
-    }
-
-    .submenu-section {
-      padding: 1rem;
-    }
+  .main-content {
+    margin-left: 0;
+    padding-top: 60px;
   }
+
+  .menu-manager-container {
+    padding: 1rem;
+  }
+
+  .manager-title {
+    font-size: 2rem;
+  }
+
+  .menus-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .template-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .dialog-content {
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+
+  /* Responsive para submenús */
+  .submenu-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .submenu-section {
+    padding: 1rem;
+  }
+}
 </style>

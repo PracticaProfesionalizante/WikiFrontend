@@ -15,9 +15,7 @@
         </div>
 
         <div class="greeting-content">
-          <h1 class="greeting-title animate-slide-up">
-            Bienvenido a nuestra Wiki.
-          </h1>
+          <h1 class="greeting-title animate-slide-up">Bienvenido a nuestra Wiki.</h1>
           <p class="greeting-subtitle animate-slide-up-delay">
             Ingresá tu email y contraseña para acceder.
           </p>
@@ -26,9 +24,14 @@
 
       <div class="form-section">
         <div class="login-form-wrapper animate-slide-in-right">
-          <h2 class="form-title animate-fade-in-delay" v-if="!forgotPasswordSuccess">{{ showForgotPassword ? 'Recuperar Contraseña' : 'Iniciar sesión' }}</h2>
+          <h2 class="form-title animate-fade-in-delay" v-if="!forgotPasswordSuccess">
+            {{ showForgotPassword ? 'Recuperar Contraseña' : 'Iniciar sesión' }}
+          </h2>
 
-          <form @submit.prevent="showForgotPassword ? handleSendResetEmail() : handleLogin()" class="login-form">
+          <form
+            @submit.prevent="showForgotPassword ? handleSendResetEmail() : handleLogin()"
+            class="login-form"
+          >
             <!-- Transición con animación -->
             <transition name="form-slide" mode="out-in">
               <!-- Formulario de Login -->
@@ -41,18 +44,29 @@
                       id="email"
                       class="form-input"
                       :class="{
-                        'error': emailError,
-                        'success': !emailError && credentials.email && credentials.email.length > 0,
-                        'has-value': credentials.email || emailFocused
+                        error: emailError,
+                        success: !emailError && credentials.email && credentials.email.length > 0,
+                        'has-value': credentials.email || emailFocused,
                       }"
                       @focus="emailFocused = true"
-                      @blur="emailFocused = false; validateEmail()"
+                      @blur="
+                        () => {
+                          emailFocused = false
+                          validateEmail()
+                        }
+                      "
                       @input="validateEmailRealTime"
                     />
                     <label for="email" class="floating-label">Email</label>
                     <div class="input-feedback">
-                      <i v-if="!emailError && credentials.email && credentials.email.length > 0" class="mdi mdi-check-circle success-icon"></i>
-                      <i v-if="emailError && credentials.email" class="mdi mdi-alert-circle error-icon"></i>
+                      <i
+                        v-if="!emailError && credentials.email && credentials.email.length > 0"
+                        class="mdi mdi-check-circle success-icon"
+                      ></i>
+                      <i
+                        v-if="emailError && credentials.email"
+                        class="mdi mdi-alert-circle error-icon"
+                      ></i>
                     </div>
                   </div>
                   <div v-if="emailError && credentials.email" class="field-error-message">
@@ -68,12 +82,20 @@
                       id="password"
                       class="form-input password-input"
                       :class="{
-                        'error': passwordError,
-                        'success': !passwordError && credentials.password && credentials.password.length >= 6,
-                        'has-value': credentials.password || passwordFocused
+                        error: passwordError,
+                        success:
+                          !passwordError &&
+                          credentials.password &&
+                          credentials.password.length >= 6,
+                        'has-value': credentials.password || passwordFocused,
                       }"
                       @focus="passwordFocused = true"
-                      @blur="passwordFocused = false; validatePassword()"
+                      @blur="
+                        () => {
+                          passwordFocused = false
+                          validatePassword()
+                        }
+                      "
                       @input="validatePasswordRealTime"
                     />
                     <label for="password" class="floating-label">Contraseña</label>
@@ -87,8 +109,18 @@
                         <i v-else class="mdi mdi-eye-off"></i>
                       </button>
                       <div class="input-feedback">
-                        <i v-if="!passwordError && credentials.password && credentials.password.length >= 6" class="mdi mdi-check-circle success-icon"></i>
-                        <i v-if="passwordError && credentials.password" class="mdi mdi-alert-circle error-icon"></i>
+                        <i
+                          v-if="
+                            !passwordError &&
+                            credentials.password &&
+                            credentials.password.length >= 6
+                          "
+                          class="mdi mdi-check-circle success-icon"
+                        ></i>
+                        <i
+                          v-if="passwordError && credentials.password"
+                          class="mdi mdi-alert-circle error-icon"
+                        ></i>
                       </div>
                     </div>
                   </div>
@@ -98,11 +130,7 @@
                 </div>
 
                 <div class="forgot-password-section">
-                  <button
-                    type="button"
-                    @click="handleForgotPassword"
-                    class="forgot-password-link"
-                  >
+                  <button type="button" @click="handleForgotPassword" class="forgot-password-link">
                     ¿Olvidaste tu contraseña?
                   </button>
                 </div>
@@ -112,12 +140,14 @@
                     type="submit"
                     :disabled="!isFormValid || isLoading"
                     class="next-button"
-                    :class="{ 'disabled': !isFormValid || isLoading, 'loading': isLoading }"
+                    :class="{ disabled: !isFormValid || isLoading, loading: isLoading }"
                   >
                     <span v-if="!isLoading" class="button-text">Siguiente</span>
                     <div v-else class="loading-spinner">
                       <div class="spinner"></div>
-                      <span class="loading-text">{{ successMessage ? 'Redirigiendo...' : 'Ingresando...' }}</span>
+                      <span class="loading-text">{{
+                        successMessage ? 'Redirigiendo...' : 'Ingresando...'
+                      }}</span>
                     </div>
                   </button>
                 </div>
@@ -127,7 +157,7 @@
               <div v-else key="forgot-form">
                 <div v-if="!forgotPasswordSuccess">
                   <div class="forgot-password-header">
-                   <!-- <h3 class="forgot-title">Recuperar Contraseña</h3> -->
+                    <!-- <h3 class="forgot-title">Recuperar Contraseña</h3> -->
                     <p class="forgot-subtitle">Ingresa tu email para recibir instrucciones</p>
                   </div>
 
@@ -140,16 +170,14 @@
                         class="form-input"
                         :class="{ 'has-value': forgotPasswordEmail }"
                       />
-                      <label for="forgot-email" class="floating-label">Email para recuperación</label>
+                      <label for="forgot-email" class="floating-label"
+                        >Email para recuperación</label
+                      >
                     </div>
                   </div>
 
                   <div class="forgot-actions">
-                    <button
-                      type="button"
-                      @click="handleBackToLogin"
-                      class="back-to-login-btn"
-                    >
+                    <button type="button" @click="handleBackToLogin" class="back-to-login-btn">
                       ← Volver al login
                     </button>
 
@@ -157,7 +185,10 @@
                       type="submit"
                       :disabled="!forgotPasswordEmail || forgotPasswordLoading"
                       class="next-button"
-                      :class="{ 'disabled': !forgotPasswordEmail || forgotPasswordLoading, 'loading': forgotPasswordLoading }"
+                      :class="{
+                        disabled: !forgotPasswordEmail || forgotPasswordLoading,
+                        loading: forgotPasswordLoading,
+                      }"
                     >
                       <span v-if="!forgotPasswordLoading" class="button-text">Enviar</span>
                       <div v-else class="loading-spinner">
@@ -174,7 +205,10 @@
                     <i class="mdi mdi-email-check-outline"></i>
                   </div>
                   <h3 class="success-title">¡Email enviado!</h3>
-                  <p class="success-text">Revisa tu bandeja de entrada y sigue las instrucciones para recuperar tu contraseña.</p>
+                  <p class="success-text">
+                    Revisa tu bandeja de entrada y sigue las instrucciones para recuperar tu
+                    contraseña.
+                  </p>
 
                   <button
                     type="button"
@@ -205,16 +239,13 @@
 
 <script setup>
 import { ref, reactive, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 // Composables
-const router = useRouter()
 const authStore = useAuthStore()
 
 // Referencias reactivas
 const showPassword = ref(false)
-const isAdvisor = ref(false)
 const emailError = ref(false)
 const passwordError = ref(false)
 const emailFocused = ref(false)
@@ -232,15 +263,17 @@ const forgotPasswordSuccess = ref(false)
 // Credenciales del usuario
 const credentials = reactive({
   email: '',
-  password: ''
+  password: '',
 })
 
 // Computed properties
 const isFormValid = computed(() => {
-  return credentials.email.length > 0 &&
-         credentials.password.length >= 6 &&
-         !emailError.value &&
-         !passwordError.value
+  return (
+    credentials.email.length > 0 &&
+    credentials.password.length >= 6 &&
+    !emailError.value &&
+    !passwordError.value
+  )
 })
 
 // Validation methods
@@ -286,26 +319,28 @@ const handleLogin = async () => {
     error.value = ''
     authStore.clearError() // Limpiar errores previos del store
 
-    const result = await authStore.login({
+    await authStore.login({
       email: credentials.email,
-      password: credentials.password
+      password: credentials.password,
     })
 
     successMessage.value = '¡Bienvenido! Redirigiendo...'
     // No resetear isLoading aquí para mantener el botón deshabilitado durante la redirección
-
-  } catch (err) {
+  } catch (error) {
     // Manejar diferentes tipos de errores con mensajes específicos
-    if (err.message?.includes('Credenciales inválidas') ||
-        err.message?.includes('401') ||
-        err.message?.includes('unauthorized')) {
+    if (
+      error.message?.includes('Credenciales inválidas') ||
+      error.message?.includes('401') ||
+      error.message?.includes('unauthorized')
+    ) {
       error.value = 'Error al iniciar sesión. Verifica tus credenciales.'
-    } else if (err.message?.includes('Usuario deshabilitado') ||
-               err.message?.includes('403')) {
+    } else if (error.message?.includes('Usuario deshabilitado') || error.message?.includes('403')) {
       error.value = 'Tu cuenta está deshabilitada. Contacta al administrador.'
-    } else if (err.message?.includes('conexión') ||
-               err.message?.includes('network') ||
-               err.message?.includes('fetch')) {
+    } else if (
+      error.message?.includes('conexión') ||
+      error.message?.includes('network') ||
+      error.message?.includes('fetch')
+    ) {
       error.value = 'Error de conexión. Verifica tu internet e intenta nuevamente.'
     } else {
       error.value = 'Error al iniciar sesión. Verifica tus credenciales.'
@@ -348,20 +383,15 @@ const handleSendResetEmail = async () => {
 
   try {
     // Simular llamada al backend (aquí harías la llamada real)
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    await new Promise((resolve) => setTimeout(resolve, 2000))
 
     forgotPasswordSuccess.value = true
     successMessage.value = 'Se ha enviado un email con instrucciones para recuperar tu contraseña'
-  } catch (err) {
+  } catch (error) {
     error.value = 'Error al enviar email de recuperación. Intenta nuevamente.'
   } finally {
     forgotPasswordLoading.value = false
   }
-}
-
-// Función para manejar login de asesor
-const handleAdvisorLogin = () => {
-  // Implementar lógica para login de asesor
 }
 
 // Limpiar errores cuando el componente se monta
@@ -424,7 +454,8 @@ if (authStore.error) {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -433,13 +464,21 @@ if (authStore.error) {
 }
 
 @keyframes shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
-  10%, 30%, 50%, 70%, 90% {
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
     transform: translateX(-5px);
   }
-  20%, 40%, 60%, 80% {
+  20%,
+  40%,
+  60%,
+  80% {
     transform: translateX(5px);
   }
 }
@@ -545,8 +584,12 @@ img {
 }
 
 @keyframes fadeInBackground {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .student-image-overlay {
@@ -598,10 +641,12 @@ img {
   color: white;
   padding-right: 1rem;
   /* Mejora: Fondo semi-transparente para mejor contraste del texto */
-  background: linear-gradient(135deg,
+  background: linear-gradient(
+    135deg,
     rgba(0, 0, 0, 0.3) 0%,
     rgba(0, 0, 0, 0.1) 50%,
-    rgba(0, 0, 0, 0.2) 100%);
+    rgba(0, 0, 0, 0.2) 100%
+  );
   backdrop-filter: blur(2px);
   border-radius: 16px;
   padding: 2rem;
@@ -619,7 +664,7 @@ img {
 .teclab-logo {
   height: 4.5rem;
   width: auto;
-  filter: brightness(0) invert(1) drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  filter: brightness(0) invert(1) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
@@ -628,7 +673,7 @@ img {
 
 .teclab-logo:hover {
   transform: translateY(-2px) scale(1.02);
-  filter: brightness(0) invert(1) drop-shadow(0 6px 12px rgba(0,0,0,0.3));
+  filter: brightness(0) invert(1) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
 }
 
 /* 📌 Inicio: Nuevos estilos para el logo de Social Learning */
@@ -639,10 +684,12 @@ img {
   margin-bottom: 0.75rem; /* Reducido para acercar al texto */
   padding: 0.5rem 0; /* Reducido padding para menos espacio */
   /* 📌 Mejora: Fondo sutil para destacar el logo */
-  background: radial-gradient(ellipse at center,
+  background: radial-gradient(
+    ellipse at center,
     rgba(73, 233, 237, 0.08) 0%,
     rgba(73, 233, 237, 0.03) 40%,
-    transparent 70%);
+    transparent 70%
+  );
   border-radius: 20px;
   position: relative;
 }
@@ -651,10 +698,8 @@ img {
   height: 6rem;
   width: auto;
   /* 📌 Mejora: Sombras más intensas y múltiples capas para máxima visibilidad */
-  filter: drop-shadow(0 8px 20px rgba(73, 233, 237, 0.6))
-          drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4))
-          drop-shadow(0 2px 6px rgba(73, 233, 237, 0.8))
-          brightness(1.1) contrast(1.15);
+  filter: drop-shadow(0 8px 20px rgba(73, 233, 237, 0.6)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4))
+    drop-shadow(0 2px 6px rgba(73, 233, 237, 0.8)) brightness(1.1) contrast(1.15);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
@@ -670,10 +715,12 @@ img {
   left: -10px;
   right: -10px;
   bottom: -10px;
-  background: radial-gradient(ellipse at center,
+  background: radial-gradient(
+    ellipse at center,
     rgba(73, 233, 237, 0.15) 0%,
     rgba(73, 233, 237, 0.08) 30%,
-    transparent 60%);
+    transparent 60%
+  );
   border-radius: 50%;
   z-index: -1;
   opacity: 0.8;
@@ -683,18 +730,19 @@ img {
 .social-learning-logo:hover {
   transform: translateY(-4px) scale(1.05);
   filter: drop-shadow(0 12px 28px rgba(73, 233, 237, 0.8))
-          drop-shadow(0 6px 16px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 3px 8px rgba(73, 233, 237, 1))
-          brightness(1.2) contrast(1.2);
+    drop-shadow(0 6px 16px rgba(0, 0, 0, 0.5)) drop-shadow(0 3px 8px rgba(73, 233, 237, 1))
+    brightness(1.2) contrast(1.2);
 }
 
 .social-learning-logo:hover::before {
   opacity: 1;
   transform: scale(1.1);
-  background: radial-gradient(ellipse at center,
+  background: radial-gradient(
+    ellipse at center,
     rgba(73, 233, 237, 0.25) 0%,
     rgba(73, 233, 237, 0.15) 30%,
-    transparent 60%);
+    transparent 60%
+  );
 }
 
 /* 📌 Animación para el resplandor del logo */
@@ -720,14 +768,15 @@ img {
 .greeting-title {
   font-size: 3rem;
   font-weight: 800;
-  color: #49E9ED;
+  color: #49e9ed;
   margin: 0;
   line-height: 1.1;
   letter-spacing: -0.02em;
   /* Mejora: Sombras más intensas para mejor visibilidad */
-  text-shadow: 0 6px 12px rgba(0, 0, 0, 0.7),
-               0 3px 6px rgba(73, 233, 237, 0.5),
-               0 1px 3px rgba(0, 0, 0, 0.9);
+  text-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.7),
+    0 3px 6px rgba(73, 233, 237, 0.5),
+    0 1px 3px rgba(0, 0, 0, 0.9);
   transition: all 0.3s ease;
   /* Mejora: Contorno sutil para mayor definición */
   -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.3);
@@ -735,9 +784,10 @@ img {
 
 .greeting-title:hover {
   transform: translateY(-1px);
-  text-shadow: 0 8px 16px rgba(0, 0, 0, 0.8),
-               0 4px 8px rgba(73, 233, 237, 0.6),
-               0 2px 4px rgba(0, 0, 0, 0.9);
+  text-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.8),
+    0 4px 8px rgba(73, 233, 237, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.9);
 }
 
 .greeting-subtitle {
@@ -747,9 +797,10 @@ img {
   font-weight: 500;
   line-height: 1.4;
   /* Mejora: Sombras más intensas para mejor legibilidad */
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.8),
-               0 2px 4px rgba(0, 0, 0, 0.6),
-               0 1px 2px rgba(0, 0, 0, 0.9);
+  text-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.8),
+    0 2px 4px rgba(0, 0, 0, 0.6),
+    0 1px 2px rgba(0, 0, 0, 0.9);
   /* Mejora: Contorno sutil para mayor definición */
   -webkit-text-stroke: 0.3px rgba(0, 0, 0, 0.4);
 }
@@ -772,18 +823,20 @@ img {
   border-radius: 24px;
   padding: 2rem 2.5rem 2.5rem 2.5rem;
   /* Mejora: Sombras más suaves y profundas */
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08),
-              0 0 0 1px rgba(255, 255, 255, 0.05),
-              0 8px 16px rgba(73, 233, 237, 0.1);
+  box-shadow:
+    0 25px 50px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 8px 16px rgba(73, 233, 237, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.3);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-form-wrapper:hover {
   transform: translateY(-2px);
-  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.12),
-              0 0 0 1px rgba(255, 255, 255, 0.08),
-              0 12px 24px rgba(73, 233, 237, 0.15);
+  box-shadow:
+    0 32px 64px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 12px 24px rgba(73, 233, 237, 0.15);
 }
 
 .form-title {
@@ -846,8 +899,9 @@ img {
   outline: none;
   border-color: #2563eb;
   /* Mejora: Glow effect más elegante */
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15),
-              0 4px 12px rgba(37, 99, 235, 0.1);
+  box-shadow:
+    0 0 0 4px rgba(37, 99, 235, 0.15),
+    0 4px 12px rgba(37, 99, 235, 0.1);
   transform: translateY(-2px);
 }
 
@@ -1089,7 +1143,7 @@ img {
 }
 
 .next-button.loading {
-  background: linear-gradient(135deg, #49E9ED, #2563eb);
+  background: linear-gradient(135deg, #49e9ed, #2563eb);
   color: white;
   cursor: not-allowed;
 }

@@ -9,27 +9,15 @@
           placeholder="Buscar menú..."
           class="search-input"
         />
-        <button
-          v-if="searchQuery"
-          @click="clearSearch"
-          class="clear-button"
-        >
+        <button v-if="searchQuery" @click="clearSearch" class="clear-button">
           <i class="mdi mdi-close"></i>
         </button>
       </div>
       <div class="tree-actions">
-        <button
-          @click="expandAll"
-          class="tree-action-btn"
-          title="Expandir todo"
-        >
+        <button @click="expandAll" class="tree-action-btn" title="Expandir todo">
           <i class="mdi mdi-unfold-more-horizontal"></i>
         </button>
-        <button
-          @click="collapseAll"
-          class="tree-action-btn"
-          title="Contraer todo"
-        >
+        <button @click="collapseAll" class="tree-action-btn" title="Contraer todo">
           <i class="mdi mdi-unfold-less-horizontal"></i>
         </button>
       </div>
@@ -40,7 +28,7 @@
         <i class="mdi mdi-file-tree-outline"></i>
         <p>{{ searchQuery ? 'No se encontraron menús' : 'No hay menús disponibles' }}</p>
       </div>
-      
+
       <MenuTreeSelectorNode
         v-for="menu in filteredMenus"
         :key="menu.id"
@@ -65,20 +53,20 @@ import MenuTreeSelectorNode from './MenuTreeSelectorNode.vue'
 const props = defineProps({
   menus: {
     type: Array,
-    required: true
+    required: true,
   },
   selectedId: {
     type: [String, Number],
-    default: null
+    default: null,
   },
   excludedId: {
     type: [String, Number],
-    default: null
+    default: null,
   },
   placeholder: {
     type: String,
-    default: 'Selecciona un menú padre'
-  }
+    default: 'Selecciona un menú padre',
+  },
 })
 
 // Emits
@@ -94,18 +82,18 @@ const hierarchicalMenus = computed(() => {
   if (props.menus.length > 0 && props.menus[0].children !== undefined) {
     return [...props.menus].sort((a, b) => a.order - b.order)
   }
-  
+
   // Fallback: construir jerarquía desde estructura plana
   const buildHierarchy = (menuList, parentId = null) => {
     return menuList
-      .filter(menu => menu.parentId === parentId)
-      .map(menu => ({
+      .filter((menu) => menu.parentId === parentId)
+      .map((menu) => ({
         ...menu,
-        children: buildHierarchy(menuList, menu.id)
+        children: buildHierarchy(menuList, menu.id),
       }))
       .sort((a, b) => a.order - b.order)
   }
-  
+
   return buildHierarchy(props.menus)
 })
 
@@ -113,36 +101,36 @@ const filteredMenus = computed(() => {
   if (!searchQuery.value) {
     return hierarchicalMenus.value
   }
-  
+
   const query = searchQuery.value.toLowerCase()
   const nodesToExpand = new Set()
-  
+
   const filterMenus = (menuList) => {
     return menuList.reduce((filtered, menu) => {
       const matchesSearch = menu.name.toLowerCase().includes(query)
       const filteredChildren = filterMenus(menu.children || [])
-      
+
       if (matchesSearch || filteredChildren.length > 0) {
         filtered.push({
           ...menu,
-          children: filteredChildren
+          children: filteredChildren,
         })
-        
+
         // Marcar nodos para expandir
         if (matchesSearch || filteredChildren.length > 0) {
           nodesToExpand.add(menu.id)
         }
       }
-      
+
       return filtered
     }, [])
   }
-  
+
   const result = filterMenus(hierarchicalMenus.value)
-  
+
   // Expandir nodos después del cálculo
-  nodesToExpand.forEach(id => expandedNodes.value.add(id))
-  
+  nodesToExpand.forEach((id) => expandedNodes.value.add(id))
+
   return result
 })
 
@@ -170,7 +158,7 @@ const expandAll = () => {
     }
     return ids
   }
-  
+
   const allIds = getAllMenuIds(hierarchicalMenus.value)
   expandedNodes.value = new Set(allIds)
 }
@@ -184,10 +172,14 @@ const clearSearch = () => {
 }
 
 // Watchers
-watch(() => props.menus, () => {
-  // Limpiar nodos expandidos cuando cambian los menús
-  expandedNodes.value.clear()
-}, { deep: true })
+watch(
+  () => props.menus,
+  () => {
+    // Limpiar nodos expandidos cuando cambian los menús
+    expandedNodes.value.clear()
+  },
+  { deep: true },
+)
 
 watch(searchQuery, (newQuery) => {
   if (!newQuery) {

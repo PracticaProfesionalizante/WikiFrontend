@@ -2,19 +2,18 @@ import api from './api'
 
 // Funciones de autenticación que interactúan con el backend
 export const authService = {
-  
   // Login del usuario
   async login(credentials) {
     try {
       const response = await api.post('/auth/login', {
         email: credentials.email,
-        password: credentials.password
+        password: credentials.password,
       })
-      
+
       return {
         access_token: response.data.accessToken,
         refresh_token: response.data.refreshToken,
-        user: response.data.user
+        user: response.data.user,
       }
     } catch (error) {
       // Manejar errores específicos del backend
@@ -34,12 +33,12 @@ export const authService = {
   async refreshToken(refreshToken) {
     try {
       const response = await api.post('/auth/refresh', {
-        refresh_token: refreshToken
+        refresh_token: refreshToken,
       })
-      
+
       return {
         access_token: response.data.accesToken || response.data.access_token,
-        refresh_token: response.data.refreshToken || response.data.refresh_token || refreshToken
+        refresh_token: response.data.refreshToken || response.data.refresh_token || refreshToken,
       }
     } catch (error) {
       if (error.response?.status === 401) {
@@ -68,7 +67,7 @@ export const authService = {
   async logout(refreshToken) {
     try {
       await api.post('/auth/logout', {
-        refresh_token: refreshToken
+        refresh_token: refreshToken,
       })
     } catch (error) {
       // No es crítico si falla el logout en el backend - error silencioso
@@ -97,7 +96,7 @@ export const authService = {
         throw new Error('Error al obtener menús del servidor')
       }
     }
-  }
+  },
 }
 
 export default authService

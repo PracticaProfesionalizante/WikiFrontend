@@ -7,7 +7,7 @@
           {{ title }}
         </h3>
       </div>
-      
+
       <div class="modal-body">
         <div class="progress-container">
           <!-- Barra de progreso circular -->
@@ -40,7 +40,7 @@
               <span class="current-total">{{ current }}/{{ total }}</span>
             </div>
           </div>
-          
+
           <!-- Información del progreso -->
           <div class="progress-info">
             <p class="current-action">{{ currentAction }}</p>
@@ -52,17 +52,14 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Lista de errores (expandible) -->
         <div v-if="errors.length > 0" class="error-section">
-          <button 
-            @click="showErrors = !showErrors" 
-            class="toggle-errors-btn"
-          >
+          <button @click="showErrors = !showErrors" class="toggle-errors-btn">
             <i :class="showErrors ? 'mdi mdi-chevron-up' : 'mdi mdi-chevron-down'"></i>
             {{ showErrors ? 'Ocultar errores' : 'Ver errores' }}
           </button>
-          
+
           <div v-if="showErrors" class="error-list">
             <div v-for="(error, index) in errors" :key="index" class="error-item">
               <i class="mdi mdi-alert-circle error-icon"></i>
@@ -71,21 +68,13 @@
           </div>
         </div>
       </div>
-      
+
       <div class="modal-footer">
-        <button 
-          v-if="isCompleted" 
-          @click="closeModal" 
-          class="btn btn-primary"
-        >
+        <button v-if="isCompleted" @click="closeModal" class="btn btn-primary">
           <i class="mdi mdi-check"></i>
           Cerrar
         </button>
-        <button 
-          v-else-if="allowCancel" 
-          @click="cancelOperation" 
-          class="btn btn-secondary"
-        >
+        <button v-else-if="allowCancel" @click="cancelOperation" class="btn btn-secondary">
           <i class="mdi mdi-close"></i>
           Cancelar
         </button>
@@ -100,36 +89,36 @@ import { ref, computed, watch } from 'vue'
 const props = defineProps({
   isVisible: {
     type: Boolean,
-    default: false
+    default: false,
   },
   title: {
     type: String,
-    default: 'Procesando...'
+    default: 'Procesando...',
   },
   current: {
     type: Number,
-    default: 0
+    default: 0,
   },
   total: {
     type: Number,
-    default: 1
+    default: 1,
   },
   currentAction: {
     type: String,
-    default: 'Iniciando proceso...'
+    default: 'Iniciando proceso...',
   },
   errors: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   allowCancel: {
     type: Boolean,
-    default: false
+    default: false,
   },
   isCompleted: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 const emit = defineEmits(['close', 'cancel'])
@@ -145,15 +134,18 @@ const percentage = computed(() => {
 
 const strokeDashoffset = computed(() => {
   const progress = percentage.value / 100
-  return circumference - (progress * circumference)
+  return circumference - progress * circumference
 })
 
 // Watchers
-watch(() => props.errors.length, (newLength, oldLength) => {
-  if (newLength > oldLength) {
-    showErrors.value = true
-  }
-})
+watch(
+  () => props.errors.length,
+  (newLength, oldLength) => {
+    if (newLength > oldLength) {
+      showErrors.value = true
+    }
+  },
+)
 
 // Métodos
 const closeModal = () => {
@@ -219,12 +211,16 @@ const cancelOperation = () => {
 
 .spinning-icon {
   animation: spin 2s linear infinite;
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .modal-body {
@@ -264,7 +260,7 @@ const cancelOperation = () => {
 .percentage {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #4CAF50;
+  color: #4caf50;
   line-height: 1;
 }
 
@@ -379,7 +375,7 @@ const cancelOperation = () => {
 }
 
 .btn-primary {
-  background: #4CAF50;
+  background: #4caf50;
   color: white;
 }
 
@@ -403,19 +399,19 @@ const cancelOperation = () => {
     width: 95%;
     margin: 20px;
   }
-  
+
   .modal-header,
   .modal-body,
   .modal-footer {
     padding-left: 16px;
     padding-right: 16px;
   }
-  
+
   .circular-progress svg {
     width: 100px;
     height: 100px;
   }
-  
+
   .percentage {
     font-size: 1.25rem;
   }

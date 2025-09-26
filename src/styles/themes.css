@@ -7,36 +7,36 @@
   --bg-card: #ffffff;
   --bg-sidebar: #1e293b;
   --bg-header: #ffffff;
-  
+
   --text-primary: #1e293b;
   --text-secondary: #64748b;
   --text-muted: #94a3b8;
   --text-inverse: #ffffff;
-  
+
   --border-color: #e2e8f0;
   --border-primary: #d1d5db;
   --border-light: #f1f5f9;
   --shadow-color: rgba(0, 0, 0, 0.1);
-  
+
   --accent-primary: #3b82f6;
   --accent-secondary: #10b981;
   --accent-warning: #f59e0b;
   --accent-danger: #ef4444;
   --accent-color: #2563eb;
   --accent-rgb: 59, 130, 246;
-  
+
   --primary-color: #2563eb;
   --primary-color-rgb: 37, 99, 235;
-  
+
   --input-bg: #ffffff;
   --input-border: #d1d5db;
   --input-focus: #3b82f6;
-  
+
   --button-primary: #3b82f6;
   --button-primary-hover: #2563eb;
   --button-secondary: #6b7280;
   --button-secondary-hover: #4b5563;
-  
+
   --bg-hover: rgba(37, 99, 235, 0.05);
   --bg-active: rgba(37, 99, 235, 0.1);
   --focus-shadow: rgba(37, 99, 235, 0.15);
@@ -50,36 +50,36 @@
   --bg-card: #1e293b;
   --bg-sidebar: #0f172a;
   --bg-header: #1e293b;
-  
+
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
   --text-inverse: #1e293b;
-  
+
   --border-color: #334155;
   --border-primary: #475569;
   --border-light: #475569;
   --shadow-color: rgba(0, 0, 0, 0.3);
-  
+
   --accent-primary: #60a5fa;
   --accent-secondary: #34d399;
   --accent-warning: #fbbf24;
   --accent-danger: #f87171;
   --accent-color: #60a5fa;
   --accent-rgb: 96, 165, 250;
-  
+
   --primary-color: #60a5fa;
   --primary-color-rgb: 96, 165, 250;
-  
+
   --input-bg: #334155;
   --input-border: #475569;
   --input-focus: #60a5fa;
-  
+
   --button-primary: #60a5fa;
   --button-primary-hover: #3b82f6;
   --button-secondary: #64748b;
   --button-secondary-hover: #475569;
-  
+
   --bg-hover: rgba(96, 165, 250, 0.1);
   --bg-active: rgba(96, 165, 250, 0.15);
   --focus-shadow: rgba(96, 165, 250, 0.2);
@@ -87,7 +87,10 @@
 
 /* Transiciones suaves para el cambio de tema */
 * {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 /* Aplicar variables a elementos base */
@@ -97,17 +100,39 @@ body {
 }
 
 /* Clases utilitarias para temas */
-.bg-primary { background-color: var(--bg-primary); }
-.bg-secondary { background-color: var(--bg-secondary); }
-.bg-tertiary { background-color: var(--bg-tertiary); }
-.bg-card { background-color: var(--bg-card); }
+.bg-primary {
+  background-color: var(--bg-primary);
+}
+.bg-secondary {
+  background-color: var(--bg-secondary);
+}
+.bg-tertiary {
+  background-color: var(--bg-tertiary);
+}
+.bg-card {
+  background-color: var(--bg-card);
+}
 
-.text-primary { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
-.text-muted { color: var(--text-muted); }
-.text-inverse { color: var(--text-inverse); }
+.text-primary {
+  color: var(--text-primary);
+}
+.text-secondary {
+  color: var(--text-secondary);
+}
+.text-muted {
+  color: var(--text-muted);
+}
+.text-inverse {
+  color: var(--text-inverse);
+}
 
-.border-theme { border-color: var(--border-color); }
-.border-light { border-color: var(--border-light); }
+.border-theme {
+  border-color: var(--border-color);
+}
+.border-light {
+  border-color: var(--border-light);
+}
 
-.shadow-theme { box-shadow: 0 1px 3px var(--shadow-color); }
+.shadow-theme {
+  box-shadow: 0 1px 3px var(--shadow-color);
+}

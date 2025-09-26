@@ -5,7 +5,6 @@ import api from './api'
  * Proporciona todas las operaciones CRUD para menús
  */
 const menuService = {
-  
   /**
    * Obtener todos los menús
    * @returns {Promise} Lista de menús
@@ -31,8 +30,9 @@ const menuService = {
     } catch (error) {
       if (error.response) {
         const status = error.response.status
-        const message = error.response.data?.message || error.response.data?.detail || 'Error desconocido'
-        
+        const message =
+          error.response.data?.message || error.response.data?.detail || 'Error desconocido'
+
         if (status === 404) {
           throw new Error(`Menú con ID ${id} no encontrado`)
         } else if (status === 403) {
@@ -65,26 +65,33 @@ const menuService = {
         order: menuData.order || 1,
         parentId: menuData.parentId,
         children: null,
-        roles: menuData.roles?.map(role => role.replace('ROLE_', '')) || []
+        roles: menuData.roles?.map((role) => role.replace('ROLE_', '')) || [],
       }
-      
+
       const response = await api.post('/menu', backendData)
       return response.data
     } catch (error) {
       if (error.response?.status === 400) {
-        throw new Error(`Datos del menú inválidos: ${error.response?.data?.message || 'Error de validación'}`)
+        throw new Error(
+          `Datos del menú inválidos: ${error.response?.data?.message || 'Error de validación'}`,
+        )
       } else if (error.response?.status === 409) {
-        throw new Error(`Ya existe un menú con esa ruta: ${error.response?.data?.message || 'Conflicto'}`)
+        throw new Error(
+          `Ya existe un menú con esa ruta: ${error.response?.data?.message || 'Conflicto'}`,
+        )
       } else if (error.response?.status === 422) {
-        const errorMessage = error.response?.data?.message || 
-                           error.response?.data?.detail || 
-                           error.response?.data?.title ||
-                           'Datos no válidos'
+        const errorMessage =
+          error.response?.data?.message ||
+          error.response?.data?.detail ||
+          error.response?.data?.title ||
+          'Datos no válidos'
         throw new Error(`Error de validación: ${errorMessage}`)
       } else if (error.response?.status === 500) {
-        throw new Error(`Error interno del servidor: ${error.response?.data?.message || 'Error del backend'}`)
+        throw new Error(
+          `Error interno del servidor: ${error.response?.data?.message || 'Error del backend'}`,
+        )
       }
-      
+
       // Preservar el error original para debugging
       const originalError = new Error(`Error al crear el menú: ${error.message}`)
       originalError.originalError = error
@@ -101,19 +108,19 @@ const menuService = {
   async updateMenu(id, menuData) {
     try {
       // Detectar si es una operación de movimiento (solo parentId y order)
-      const isMoveOperation = Object.keys(menuData).length <= 2 && 
-                             ('parentId' in menuData || 'order' in menuData)
-      
+      const isMoveOperation =
+        Object.keys(menuData).length <= 2 && ('parentId' in menuData || 'order' in menuData)
+
       let backendData
-      
+
       if (isMoveOperation) {
         // Para operaciones de movimiento, enviar solo los campos necesarios
         backendData = {}
-        
+
         if ('parentId' in menuData) {
           backendData.parentId = menuData.parentId
         }
-        
+
         if ('order' in menuData) {
           backendData.order = menuData.order
         }
@@ -125,12 +132,15 @@ const menuService = {
           rolesArray = menuData.roles
         } else if (typeof menuData.roles === 'string') {
           // Si es un string, convertir a array (puede ser un string separado por comas)
-          rolesArray = menuData.roles.split(',').map(role => role.trim()).filter(role => role)
+          rolesArray = menuData.roles
+            .split(',')
+            .map((role) => role.trim())
+            .filter((role) => role)
         } else if (menuData.roles) {
           // Si existe pero no es array ni string, intentar convertir
           rolesArray = [String(menuData.roles)]
         }
-        
+
         // Mapear datos del frontend al formato esperado por el backend
         backendData = {
           name: menuData.name,
@@ -139,26 +149,33 @@ const menuService = {
           order: menuData.order || 0,
           parentId: menuData.parentId,
           children: null,
-          roles: rolesArray.map(role => role.replace('ROLE_', '')) || []
+          roles: rolesArray.map((role) => role.replace('ROLE_', '')) || [],
         }
       }
-      
+
       const response = await api.put(`/menu/${id}`, backendData)
       return response.data
     } catch (error) {
       if (error.response?.status === 422) {
-        const validationErrors = error.response?.data?.errors || error.response?.data?.message || 'Datos inválidos'
+        const validationErrors =
+          error.response?.data?.errors || error.response?.data?.message || 'Datos inválidos'
         throw new Error(`Error de validación: ${JSON.stringify(validationErrors)}`)
       } else if (error.response?.status === 404) {
         throw new Error(`Menú no encontrado: ${error.response?.data?.message || 'No existe'}`)
       } else if (error.response?.status === 400) {
-        throw new Error(`Datos del menú inválidos: ${error.response?.data?.message || 'Error de validación'}`)
+        throw new Error(
+          `Datos del menú inválidos: ${error.response?.data?.message || 'Error de validación'}`,
+        )
       } else if (error.response?.status === 409) {
-        throw new Error(`Ya existe un menú con esa ruta: ${error.response?.data?.message || 'Conflicto'}`)
+        throw new Error(
+          `Ya existe un menú con esa ruta: ${error.response?.data?.message || 'Conflicto'}`,
+        )
       } else if (error.response?.status === 500) {
-        throw new Error(`Error interno del servidor: ${error.response?.data?.message || 'Error del backend'}`)
+        throw new Error(
+          `Error interno del servidor: ${error.response?.data?.message || 'Error del backend'}`,
+        )
       }
-      
+
       // Preservar el error original para debugging
       const originalError = new Error(`Error al actualizar el menú: ${error.message}`)
       originalError.originalError = error
@@ -180,13 +197,19 @@ const menuService = {
       if (error.response?.status === 404) {
         throw new Error(`Menú no encontrado: ${error.response?.data?.message || 'No existe'}`)
       } else if (error.response?.status === 409) {
-        throw new Error(`No se puede eliminar el menú porque tiene menús hijos: ${error.response?.data?.message || 'Conflicto'}`)
+        throw new Error(
+          `No se puede eliminar el menú porque tiene menús hijos: ${error.response?.data?.message || 'Conflicto'}`,
+        )
       } else if (error.response?.status === 403) {
-        throw new Error(`No tienes permisos para eliminar este menú: ${error.response?.data?.message || 'Sin permisos'}`)
+        throw new Error(
+          `No tienes permisos para eliminar este menú: ${error.response?.data?.message || 'Sin permisos'}`,
+        )
       } else if (error.response?.status === 500) {
-        throw new Error(`Error interno del servidor: ${error.response?.data?.message || 'Error del backend'}`)
+        throw new Error(
+          `Error interno del servidor: ${error.response?.data?.message || 'Error del backend'}`,
+        )
       }
-      
+
       // Preservar el error original para debugging
       const originalError = new Error(`Error al eliminar el menú: ${error.message}`)
       originalError.originalError = error
@@ -219,20 +242,20 @@ const menuService = {
       if (!moveData.menuId) {
         throw new Error('ID del menú es requerido')
       }
-      
+
       if (moveData.order < 0) {
         throw new Error('El orden debe ser un número positivo')
       }
-      
+
       // Preparar solo los datos necesarios para mover (parentId y order)
       const updatedMenuData = {
         parentId: moveData.parentId === null ? null : moveData.parentId,
-        order: moveData.order
+        order: moveData.order,
       }
-      
+
       // Usar el método updateMenu existente
       const response = await this.updateMenu(moveData.menuId, updatedMenuData)
-      
+
       return response
     } catch (error) {
       if (error.message.includes('no existe') || error.message.includes('eliminado')) {
@@ -241,11 +264,15 @@ const menuService = {
         throw new Error('Menú no encontrado o no válido')
       } else if (error.message.includes('validación') || error.message.includes('requerido')) {
         throw new Error(`Error de validación al mover el menú: ${error.message}`)
-      } else if (error.message.includes('servidor') || (error.response && error.response.status >= 500)) {
-        const serverMessage = error.response?.data?.message || error.response?.data?.detail || error.message
+      } else if (
+        error.message.includes('servidor') ||
+        (error.response && error.response.status >= 500)
+      ) {
+        const serverMessage =
+          error.response?.data?.message || error.response?.data?.detail || error.message
         throw new Error(`Error interno del servidor: ${serverMessage}`)
       }
-      
+
       throw new Error(`Error al mover el menú: ${error.message}`)
     }
   },
@@ -312,7 +339,7 @@ const menuService = {
     } catch (error) {
       throw new Error('Error al validar la ruta del menú')
     }
-  }
+  },
 }
 
 export default menuService

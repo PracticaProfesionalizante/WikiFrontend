@@ -1,9 +1,9 @@
 <template>
   <div class="menu-tree-node">
     <!-- Zona de drop superior -->
-    <div 
+    <div
       class="drop-zone top"
-      :class="{ 'active': dropZone === 'top' }"
+      :class="{ active: dropZone === 'top' }"
       @dragover.prevent="handleDragOver($event, 'top')"
       @drop="handleDrop($event, 'top')"
       @dragenter.prevent
@@ -11,14 +11,14 @@
     ></div>
 
     <!-- Nodo del menú -->
-    <div 
+    <div
       class="menu-node"
-      :class="{ 
-        'has-children': hasChildren, 
+      :class="{
+        'has-children': hasChildren,
         'drop-inside': dropZone === 'inside',
         'drop-top': dropZone === 'top',
         'drop-bottom': dropZone === 'bottom',
-        'is-dragging': isDragging
+        'is-dragging': isDragging,
       }"
       draggable="true"
       @dragstart="handleDragStart"
@@ -29,14 +29,17 @@
       @contextmenu.prevent="showContextMenu"
     >
       <!-- Botón de expansión con mejor indicador visual -->
-      <button 
+      <button
         v-if="hasChildren"
         class="expand-button accordion-toggle"
         @click="toggleExpanded"
         :aria-label="expanded ? 'Contraer submenús' : 'Expandir submenús'"
         :title="expanded ? 'Contraer submenús' : 'Expandir submenús'"
       >
-        <i :class="expanded ? 'mdi mdi-chevron-down' : 'mdi mdi-chevron-right'" class="expand-icon"></i>
+        <i
+          :class="expanded ? 'mdi mdi-chevron-down' : 'mdi mdi-chevron-right'"
+          class="expand-icon"
+        ></i>
       </button>
       <div v-else class="expand-spacer"></div>
 
@@ -47,12 +50,12 @@
           <span class="menu-name" v-html="highlightSearchTerm(menu.name)"></span>
           <span class="menu-order">#{{ menu.order }}</span>
         </div>
-        
+
         <div class="menu-details">
           <span class="menu-path" v-html="highlightSearchTerm(menu.path)"></span>
           <div class="menu-roles">
-            <span 
-              v-for="role in menu.roles" 
+            <span
+              v-for="role in menu.roles"
               :key="role"
               class="role-badge"
               :class="`role-${role.toLowerCase().replace('role_', '')}`"
@@ -65,33 +68,25 @@
 
       <!-- Acciones -->
       <div class="menu-actions">
-        <button 
+        <button
           class="action-button add"
           @click="emit('create-submenu', menu)"
           title="Agregar submenú"
         >
           <i class="mdi mdi-plus"></i>
         </button>
-        <button 
-          class="action-button edit"
-          @click="emit('edit', menu)"
-          title="Editar menú"
-        >
+        <button class="action-button edit" @click="emit('edit', menu)" title="Editar menú">
           <i class="mdi mdi-pencil"></i>
         </button>
-        <button 
-          class="action-button delete"
-          @click="emit('delete', menu)"
-          title="Eliminar menú"
-        >
+        <button class="action-button delete" @click="emit('delete', menu)" title="Eliminar menú">
           <i class="mdi mdi-delete"></i>
         </button>
       </div>
     </div>
 
     <!-- Menú contextual -->
-    <div 
-      v-if="showContextMenuFlag" 
+    <div
+      v-if="showContextMenuFlag"
       class="context-menu"
       :style="{ top: contextMenuY + 'px', left: contextMenuX + 'px' }"
       @click.stop
@@ -131,9 +126,9 @@
     </Transition>
 
     <!-- Zona de drop inferior -->
-    <div 
+    <div
       class="drop-zone bottom"
-      :class="{ 'active': dropZone === 'bottom' }"
+      :class="{ active: dropZone === 'bottom' }"
       @dragover.prevent="handleDragOver($event, 'bottom')"
       @drop="handleDrop($event, 'bottom')"
       @dragenter.prevent
@@ -149,24 +144,24 @@ import { ref, computed } from 'vue'
 const props = defineProps({
   menu: {
     type: Object,
-    required: true
+    required: true,
   },
   level: {
     type: Number,
-    default: 0
+    default: 0,
   },
   allMenus: {
     type: Array,
-    required: true
+    required: true,
   },
   availableRoles: {
     type: Array,
-    required: true
+    required: true,
   },
   searchQuery: {
     type: String,
-    default: ''
-  }
+    default: '',
+  },
 })
 
 // Emits
@@ -186,12 +181,12 @@ const hasChildren = computed(() => {
   if (props.menu.children && Array.isArray(props.menu.children)) {
     return props.menu.children.length > 0
   }
-  
+
   // Fallback: buscar por parentId en allMenus (estructura plana)
   if (props.allMenus && Array.isArray(props.allMenus)) {
-    return props.allMenus.some(menu => menu.parentId === props.menu.id)
+    return props.allMenus.some((menu) => menu.parentId === props.menu.id)
   }
-  
+
   return false
 })
 
@@ -200,14 +195,14 @@ const sortedChildren = computed(() => {
   if (props.menu.children && Array.isArray(props.menu.children)) {
     return [...props.menu.children].sort((a, b) => a.order - b.order)
   }
-  
+
   // Fallback: buscar por parentId en allMenus (estructura plana)
   if (props.allMenus && Array.isArray(props.allMenus)) {
     return props.allMenus
-      .filter(menu => menu.parentId === props.menu.id)
+      .filter((menu) => menu.parentId === props.menu.id)
       .sort((a, b) => a.order - b.order)
   }
-  
+
   return []
 })
 
@@ -220,7 +215,7 @@ const getRoleLabel = (roleValue) => {
   if (!props.availableRoles || !Array.isArray(props.availableRoles)) {
     return roleValue
   }
-  const role = props.availableRoles.find(r => r.value === roleValue)
+  const role = props.availableRoles.find((r) => r.value === roleValue)
   return role ? role.label : roleValue
 }
 
@@ -229,7 +224,7 @@ const highlightSearchTerm = (text) => {
   if (!props.searchQuery || !text) {
     return text
   }
-  
+
   const regex = new RegExp(`(${props.searchQuery})`, 'gi')
   return text.replace(regex, '<mark class="search-highlight">$1</mark>')
 }
@@ -237,14 +232,17 @@ const highlightSearchTerm = (text) => {
 // Drag & Drop
 const handleDragStart = (event) => {
   isDragging.value = true
-  event.dataTransfer.setData('text/plain', JSON.stringify({
-    id: props.menu.id,
-    name: props.menu.name,
-    parentId: props.menu.parentId,
-    order: props.menu.order
-  }))
+  event.dataTransfer.setData(
+    'text/plain',
+    JSON.stringify({
+      id: props.menu.id,
+      name: props.menu.name,
+      parentId: props.menu.parentId,
+      order: props.menu.order,
+    }),
+  )
   event.dataTransfer.effectAllowed = 'move'
-  
+
   // Limpiar el estado cuando termine el drag
   setTimeout(() => {
     isDragging.value = false
@@ -254,18 +252,18 @@ const handleDragStart = (event) => {
 const handleDragOver = (event, zone) => {
   event.preventDefault()
   event.dataTransfer.dropEffect = 'move'
-  
+
   // Si se especifica una zona explícitamente, usarla
   if (zone) {
     dropZone.value = zone
     return
   }
-  
+
   // Si no hay zona especificada, determinar basándose en la posición del mouse
   const rect = event.currentTarget.getBoundingClientRect()
   const y = event.clientY - rect.top
   const height = rect.height
-  
+
   if (y < height * 0.25) {
     dropZone.value = 'top'
   } else if (y > height * 0.75) {
@@ -285,57 +283,58 @@ const handleDragLeave = (event) => {
 const handleDrop = (event, zone) => {
   event.preventDefault()
   dropZone.value = null
-  
+
   try {
     const draggedData = JSON.parse(event.dataTransfer.getData('text/plain'))
-    
+
     // No permitir soltar sobre sí mismo
     if (draggedData.id === props.menu.id) {
       return
     }
-    
+
     // No permitir crear referencias circulares para la zona 'inside'
     if (zone === 'inside' && isDescendant(draggedData.id, props.menu.id)) {
       return
     }
-    
+
     // Calcular la nueva posición basada en la zona
     let moveData
-    
+
     if (zone === 'top') {
       // Insertar antes del menú actual (mismo padre, orden del menú actual)
       // Los demás menús se reordenarán automáticamente en el backend
       moveData = {
         menuId: draggedData.id,
         newParentId: props.menu.parentId,
-        newOrder: Math.max(1, props.menu.order)
+        newOrder: Math.max(1, props.menu.order),
       }
     } else if (zone === 'bottom') {
       // Insertar después del menú actual (mismo padre, orden siguiente)
       // Calcular el siguiente orden disponible
-      const siblings = props.allMenus.filter(menu => 
-        menu.parentId === props.menu.parentId && menu.id !== draggedData.id
+      const siblings = props.allMenus.filter(
+        (menu) => menu.parentId === props.menu.parentId && menu.id !== draggedData.id,
       )
-      const maxOrder = Math.max(...siblings.map(menu => menu.order), 0)
-      
+      const maxOrder = Math.max(...siblings.map((menu) => menu.order), 0)
+
       moveData = {
         menuId: draggedData.id,
         newParentId: props.menu.parentId,
-        newOrder: Math.max(props.menu.order + 1, maxOrder + 1)
+        newOrder: Math.max(props.menu.order + 1, maxOrder + 1),
       }
-    } else { // zone === 'inside'
+    } else {
+      // zone === 'inside'
       // Insertar como hijo del menú actual
-      const children = props.allMenus.filter(menu => 
-        menu.parentId === props.menu.id && menu.id !== draggedData.id
+      const children = props.allMenus.filter(
+        (menu) => menu.parentId === props.menu.id && menu.id !== draggedData.id,
       )
-      
+
       moveData = {
         menuId: draggedData.id,
         newParentId: props.menu.id,
-        newOrder: children.length + 1
+        newOrder: children.length + 1,
       }
     }
-    
+
     emit('move', moveData)
   } catch {
     // Error silencioso para evitar logs innecesarios
@@ -346,14 +345,12 @@ const isDescendant = (ancestorId, descendantId) => {
   if (!props.allMenus || !Array.isArray(props.allMenus)) {
     return false
   }
-  
+
   const checkDescendant = (menuId) => {
-    const children = props.allMenus.filter(menu => menu.parentId === menuId)
-    return children.some(child => 
-      child.id === ancestorId || checkDescendant(child.id)
-    )
+    const children = props.allMenus.filter((menu) => menu.parentId === menuId)
+    return children.some((child) => child.id === ancestorId || checkDescendant(child.id))
   }
-  
+
   return checkDescendant(descendantId)
 }
 
@@ -362,7 +359,7 @@ const showContextMenu = (event) => {
   contextMenuX.value = event.clientX
   contextMenuY.value = event.clientY
   showContextMenuFlag.value = true
-  
+
   // Cerrar el menú contextual al hacer clic fuera
   document.addEventListener('click', hideContextMenu, { once: true })
 }
@@ -404,12 +401,12 @@ const handleCreateSubmenu = () => {
 }
 
 .menu-node:hover {
-  border-color: #2196F3;
+  border-color: #2196f3;
   box-shadow: 0 2px 8px rgba(33, 150, 243, 0.1);
 }
 
 .menu-node.has-children {
-  border-left: 4px solid #2196F3;
+  border-left: 4px solid #2196f3;
 }
 
 .expand-button {
@@ -425,7 +422,7 @@ const handleCreateSubmenu = () => {
 
 .expand-button:hover {
   background: #f5f5f5;
-  color: #2196F3;
+  color: #2196f3;
 }
 
 .expand-spacer {
@@ -446,7 +443,7 @@ const handleCreateSubmenu = () => {
 }
 
 .menu-icon {
-  color: #2196F3;
+  color: #2196f3;
   width: 16px;
   text-align: center;
 }
@@ -589,7 +586,7 @@ const handleCreateSubmenu = () => {
 }
 
 /* Drag & Drop states */
-.menu-node[draggable="true"]:hover {
+.menu-node[draggable='true']:hover {
   cursor: move;
 }
 
@@ -664,13 +661,13 @@ const handleCreateSubmenu = () => {
   .menu-node {
     padding: 8px;
   }
-  
+
   .menu-details {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
   }
-  
+
   .menu-children {
     margin-left: 16px;
   }

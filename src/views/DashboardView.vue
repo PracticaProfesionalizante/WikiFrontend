@@ -5,11 +5,10 @@
     <main class="main-content" :class="{ 'with-sidebar': true, 'with-header': true }">
       <div class="welcome-container">
         <div class="welcome-content">
-          <h1 class="welcome-title">
-            ¡Hola, {{ user?.username || 'Usuario' }}!
-          </h1>
+          <h1 class="welcome-title">¡Hola, {{ user?.username || 'Usuario' }}!</h1>
           <p class="welcome-message">
-            Para realizar alguna gestión dirígete al menú lateral. Ahí encontrarás todas las opciones disponibles.
+            Para realizar alguna gestión dirígete al menú lateral. Ahí encontrarás todas las
+            opciones disponibles.
           </p>
         </div>
       </div>
@@ -40,7 +39,7 @@ onMounted(async () => {
     try {
       // Pasar false para no mostrar error al usuario, solo log interno
       await authStore.fetchCurrentUser(false)
-    } catch (error) {
+    } catch {
       // Error silencioso - no mostrar al usuario
     }
   }
@@ -142,24 +141,24 @@ onMounted(async () => {
     margin-left: 0;
     height: 100vh;
   }
-  
+
   .main-content.with-header {
     padding-top: 60px;
   }
-  
+
   .welcome-container {
     padding: 1rem;
     height: calc(100vh - 60px);
   }
-  
+
   .welcome-content {
     padding: 2rem 1.5rem;
   }
-  
+
   .welcome-title {
     font-size: 2rem;
   }
-  
+
   .welcome-message {
     font-size: 1.1rem;
   }
@@ -170,15 +169,15 @@ onMounted(async () => {
     padding: 0.5rem;
     height: calc(100vh - 70px);
   }
-  
+
   .welcome-content {
     padding: 1.5rem 1rem;
   }
-  
+
   .welcome-title {
     font-size: 1.8rem;
   }
-  
+
   .welcome-message {
     font-size: 1rem;
   }
