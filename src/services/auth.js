@@ -21,8 +21,13 @@ export const authService = {
         throw new Error('Credenciales inválidas')
       } else if (error.response?.status === 403) {
         throw new Error('Usuario deshabilitado')
+      } else if (error.response?.status === 500 && error.response?.data?.detail?.includes('Ocurrió un error inesperado')) {
+        // El backend devuelve 500 para credenciales incorrectas, pero el mensaje indica que es un error de autenticación
+        throw new Error('Credenciales inválidas')
       } else if (error.response?.data?.detail) {
         throw new Error(error.response.data.detail)
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message)
       } else {
         throw new Error('Error de conexión con el servidor')
       }

@@ -112,7 +112,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       return response
     } catch (err) {
-      // No establecer error aquí, dejar que el componente lo maneje
+      // Establecer el error en el store para que el componente pueda accederlo
+      setError(err.message || 'Error al iniciar sesión')
       throw err
     } finally {
       setLoading(false)

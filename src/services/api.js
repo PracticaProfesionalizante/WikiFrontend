@@ -70,8 +70,8 @@ api.interceptors.response.use(
     const originalRequest = error.config
     const authStore = useAuthStore()
 
-    // Si el error es 401 y no es un retry
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Si el error es 401 y no es un retry, y no es una petición de login
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/auth/login')) {
       // Si ya estamos refrescando, agregar a la cola
       if (isRefreshing) {
         return new Promise((resolve, reject) => {

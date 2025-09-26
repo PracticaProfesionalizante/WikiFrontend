@@ -222,9 +222,9 @@
             </transition>
           </form>
 
-          <div v-if="error" class="error-message animate-shake">
+          <div v-if="error || authStore.error" class="error-message animate-shake">
             <i class="mdi mdi-alert-circle"></i>
-            {{ error }}
+            {{ error || authStore.error }}
           </div>
 
           <div v-if="successMessage" class="success-message animate-fade-in">
@@ -343,7 +343,8 @@ const handleLogin = async () => {
     ) {
       error.value = 'Error de conexión. Verifica tu internet e intenta nuevamente.'
     } else {
-      error.value = 'Error al iniciar sesión. Verifica tus credenciales.'
+      // Mostrar el mensaje de error original del backend
+      error.value = error.message || 'Error al iniciar sesión. Verifica tus credenciales.'
     }
     // Solo resetear isLoading en caso de error
     isLoading.value = false
