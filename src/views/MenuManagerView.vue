@@ -15,9 +15,9 @@
           </p>
         </div>
 
-        <!-- Barra de acciones mejorada -->
-        <div class="action-bar">
-          <div class="action-group primary">
+        <!-- Barra de acciones centrada y mejorada -->
+        <div class="action-bar centered">
+          <div class="action-group main-actions">
             <button
               class="create-menu-btn primary"
               @click="openDialog"
@@ -35,27 +35,6 @@
             >
               <i class="mdi mdi-refresh" :class="{ 'mdi-spin': isLoading }"></i>
               Actualizar
-            </button>
-          </div>
-
-          <div class="action-group secondary">
-            <button
-              class="action-btn"
-              @click="exportMenus"
-              :disabled="isLoading || menus.length === 0"
-              title="Exportar estructura de menús"
-            >
-              <i class="mdi mdi-download"></i>
-              Exportar
-            </button>
-            <button
-              class="action-btn"
-              @click="importMenus"
-              :disabled="isLoading"
-              title="Importar estructura de menús"
-            >
-              <i class="mdi mdi-upload"></i>
-              Importar
             </button>
           </div>
         </div>
@@ -2532,34 +2511,54 @@ onMounted(() => {
   align-items: center;
 }
 
-.action-group.primary {
-  flex: 1;
+.action-group.main-actions {
+  justify-content: center;
+  gap: 1rem;
 }
 
-.action-group.secondary {
-  gap: 0.5rem;
+/* Barra de acciones centrada */
+.action-bar.centered {
+  justify-content: center;
+  padding: 1.5rem 0;
 }
 
 .create-menu-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
   background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
   color: white;
   border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.95rem;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.create-menu-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
 }
 
 .create-menu-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
   background: linear-gradient(135deg, var(--primary-color), var(--button-primary-hover));
+}
+
+.create-menu-btn:hover:not(:disabled)::before {
+  left: 100%;
 }
 
 .create-menu-btn:disabled {
@@ -2596,7 +2595,20 @@ onMounted(() => {
 }
 
 .action-btn.secondary {
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  padding: 0.875rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-btn.secondary:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Barra de búsqueda y filtros */

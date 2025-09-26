@@ -1,5 +1,5 @@
 <template>
-  <header 
+  <header
     class="app-header"
     :class="{ 'sidebar-expanded': sidebarExpanded }"
   >
@@ -14,8 +14,17 @@
 
     <!-- Menú de perfil derecho -->
     <div class="header-right">
+      <!-- Botón de cambio de tema -->
+      <button
+        @click="toggleTheme"
+        class="theme-toggle-btn"
+        :title="isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+      >
+        <i :class="isDarkMode ? 'mdi mdi-weather-sunny' : 'mdi mdi-weather-night'" class="theme-icon"></i>
+      </button>
+
       <div class="profile-menu" ref="profileMenu">
-        <button 
+        <button
           class="profile-button"
           @click="toggleProfileDropdown"
           :class="{ 'active': showDropdown }"
@@ -50,6 +59,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import { useTheme } from '@/composables/useTheme'
 
 // Props
 defineProps({
@@ -63,6 +73,7 @@ defineProps({
 const authStore = useAuthStore()
 const router = useRouter()
 const { user } = authStore
+const { isDarkMode, toggleTheme } = useTheme()
 
 // Estado reactivo
 const showDropdown = ref(false)
@@ -152,6 +163,60 @@ onUnmounted(() => {
 .header-right {
   display: flex;
   align-items: center;
+  gap: 0.75rem;
+}
+
+/* Botón de cambio de tema */
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px var(--shadow-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-toggle-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 50%;
+}
+
+.theme-toggle-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+  border-color: var(--accent-color);
+}
+
+.theme-toggle-btn:hover::before {
+  opacity: 0.1;
+}
+
+.theme-icon {
+  font-size: 1.2rem;
+  z-index: 1;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover .theme-icon {
+  transform: scale(1.1);
+  color: var(--accent-color);
 }
 
 .profile-menu {
@@ -288,23 +353,32 @@ onUnmounted(() => {
     left: 0;
     padding: 0 1rem;
   }
-  
+
   .app-header.sidebar-expanded {
     left: 0;
   }
-  
+
   .header-logo {
     height: 35px;
   }
-  
+
   .profile-name {
     display: none;
   }
-  
+
   .profile-button {
     padding: 0.5rem;
   }
-  
+
+  .theme-toggle-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .theme-icon {
+    font-size: 1rem;
+  }
+
   .dropdown-menu {
     right: -1rem;
     min-width: 160px;
@@ -315,7 +389,7 @@ onUnmounted(() => {
   .app-header {
     padding: 0 0.75rem;
   }
-  
+
   .header-logo {
     height: 30px;
   }
