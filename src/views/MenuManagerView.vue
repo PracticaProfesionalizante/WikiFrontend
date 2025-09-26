@@ -81,12 +81,6 @@
             </button>
           </div>
 
-          <div class="stats-info">
-            <span class="menu-count">
-              <i class="mdi mdi-menu"></i>
-              {{ filteredMenus.length }} de {{ menus.length }} menús
-            </span>
-          </div>
         </div>
 
         <!-- Vista de tarjetas (original) -->
@@ -2715,23 +2709,6 @@ onMounted(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.stats-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.menu-count {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: var(--bg-secondary);
-  border-radius: 8px;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
 
 /* Opciones de visualización */
 .menu-display-options {
