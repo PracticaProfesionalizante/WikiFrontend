@@ -1,26 +1,29 @@
 <template>
-  <div
-    class="sidebar-container"
-    :class="{ 'expanded': isExpanded, 'mobile-open': isMobileOpen }"
-  >
-
-    <button
-      class="mobile-toggle"
-      @click="toggleMobile"
-      v-show="isMobile"
-    >
+  <div class="sidebar-container" :class="{ expanded: isExpanded, 'mobile-open': isMobileOpen }">
+    <button class="mobile-toggle" @click="toggleMobile" v-show="isMobile">
       <i class="mdi mdi-menu"></i>
     </button>
 
-    <nav
-      class="sidebar-menu"
-      @mouseenter="expandMenu"
-      @mouseleave="collapseMenu"
-    >
+    <nav class="sidebar-menu" @mouseenter="expandMenu" @mouseleave="collapseMenu">
       <div class="menu-header">
         <div class="logo-container">
           <i class="menu-logo mdi mdi-school"></i>
           <span class="logo-text" v-show="isExpanded">Portal Wiki</span>
+        </div>
+      </div>
+
+      <!-- Breadcrumb de navegación -->
+      <div v-if="currentView !== 'main' && isExpanded" class="breadcrumb-container">
+        <div class="breadcrumb">
+          <span class="breadcrumb-item" @click="goBackToMain">
+            <i class="mdi mdi-arrow-left"></i>
+            <span>Volver</span>
+          </span>
+          <i class="mdi mdi-chevron-right breadcrumb-separator"></i>
+          <span class="breadcrumb-item active">
+            <i :class="['mdi', currentParentMenu?.icon]"></i>
+            <span>{{ currentParentMenu?.text }}</span>
+          </span>
         </div>
       </div>
 
@@ -30,54 +33,65 @@
           <div v-for="item in menuItems" :key="item.id" class="menu-item">
             <div
               class="item-content"
-              :class="{ 'active': activeMenuId === item.id && !item.submenu }"
+              :class="{
+                active: activeMenuId === item.id && !item.submenu,
+                'has-submenu': item.submenu && item.submenu.length > 0,
+                'has-children': item.children && item.children.length > 0,
+              }"
               @click="selectItem(item)"
             >
-              <i :class="['mdi', item.icon]" class="item-icon"></i>
+              <div class="item-icon-container">
+                <i :class="['mdi', item.icon]" class="item-icon"></i>
+              </div>
               <span class="item-text">{{ item.text }}</span>
-              <i v-if="item.submenu" class="mdi mdi-chevron-right submenu-arrow"></i>
+              <div class="item-actions">
+                <i
+                  v-if="item.submenu && item.submenu.length > 0"
+                  class="mdi mdi-chevron-right submenu-arrow"
+                ></i>
+                <i
+                  v-else-if="item.children && item.children.length > 0"
+                  class="mdi mdi-chevron-right submenu-arrow"
+                ></i>
+              </div>
             </div>
           </div>
         </template>
 
         <!-- Vista de submenús -->
         <template v-else-if="currentView === 'submenu'">
-          <!-- Título del menú padre mejorado con icono clickeable -->
-          <div class="menu-section-title parent-menu-title">
-            <div class="parent-title-content">
-              <i 
-                class="mdi mdi-arrow-left title-icon parent-icon clickable-back-icon"
-                @click="goBackToMain"
-                title="Volver al menú principal"
-              ></i>
-              <div class="title-info">
-                <span class="title-text parent-name">{{ currentParentMenu.text }}</span>
-                <span class="title-subtitle">Menú principal</span>
-              </div>
-            </div>
-            <div class="title-divider"></div>
-          </div>
-
-          <!-- Lista de submenús -->
+          <!-- Lista de submenús - estructura idéntica a menús principales -->
           <div v-for="submenu in currentSubmenus" :key="submenu.id" class="menu-item">
             <div
               class="item-content"
-              :class="{ 'active': activeSubmenuId === submenu.id && !submenu.submenu }"
+              :class="{
+                active: activeSubmenuId === submenu.id && !submenu.submenu,
+                'has-submenu': submenu.submenu && submenu.submenu.length > 0,
+                'has-children': submenu.children && submenu.children.length > 0,
+              }"
               @click="selectSubmenu(submenu)"
             >
-              <i :class="['mdi', submenu.icon] || 'mdi mdi-circle-small'" class="item-icon"></i>
+              <div class="item-icon-container">
+                <i :class="['mdi', submenu.icon || 'mdi-circle-small']" class="item-icon"></i>
+              </div>
               <span class="item-text">{{ submenu.text }}</span>
-              <i v-if="submenu.submenu" class="mdi mdi-chevron-right submenu-arrow"></i>
+              <div class="item-actions">
+                <i
+                  v-if="submenu.submenu && submenu.submenu.length > 0"
+                  class="mdi mdi-chevron-right submenu-arrow"
+                ></i>
+                <i
+                  v-else-if="submenu.children && submenu.children.length > 0"
+                  class="mdi mdi-chevron-right submenu-arrow"
+                ></i>
+              </div>
             </div>
           </div>
         </template>
 
         <!-- Vista de documentación (mantener existente) -->
         <template v-else-if="currentView === 'documentation'">
-          <div
-            class="menu-item back-item"
-            @click="goBackToMain"
-          >
+          <div class="menu-item back-item" @click="goBackToMain">
             <div class="item-content">
               <i class="mdi mdi-arrow-left item-icon"></i>
               <span class="item-text">Volver</span>
@@ -91,7 +105,7 @@
           <div v-for="item in documentationItems" :key="item.id" class="menu-item">
             <div
               class="item-content"
-              :class="{ 'active': activeDocumentationId === item.id }"
+              :class="{ active: activeDocumentationId === item.id }"
               @click="selectDocumentationItem(item)"
             >
               <i class="mdi mdi-circle-small item-icon"></i>
@@ -102,12 +116,12 @@
       </div>
 
       <!-- Sección de administración (solo para SuperAdmin) -->
-       <div v-if="authStore.hasRole('ROLE_SUPER_USER')" class="menu-footer">
+      <div v-if="authStore.hasRole('ROLE_SUPER_USER')" class="menu-footer">
         <div class="menu-divider"></div>
         <div class="menu-item admin-item">
           <div
             class="item-content"
-            :class="{ 'active': route.path === '/gestion-menus' }"
+            :class="{ active: route.path === '/gestion-menus' }"
             @click="navigateToMenuManager"
           >
             <i class="mdi mdi-pencil-outline item-icon"></i>
@@ -117,11 +131,7 @@
       </div>
     </nav>
 
-    <div
-      v-if="isMobile && isMobileOpen"
-      class="mobile-overlay"
-      @click="closeMobile"
-    ></div>
+    <div v-if="isMobile && isMobileOpen" class="mobile-overlay" @click="closeMobile"></div>
   </div>
 </template>
 
@@ -141,7 +151,6 @@ const isMobile = ref(false)
 const isMobileOpen = ref(false)
 const currentView = ref('main')
 
-
 // Usar menús dinámicos del store en lugar de hardcodeados
 const menuItems = computed(() => {
   // Solo mostrar menús si están disponibles del backend
@@ -156,12 +165,15 @@ const menuItems = computed(() => {
     text: menu.name,
     active: false,
     route: menu.path,
-    submenu: menu.children && menu.children.length > 0 ? menu.children.map(child => transformMenu(child)) : null,
+    submenu:
+      menu.children && menu.children.length > 0
+        ? menu.children.map((child) => transformMenu(child))
+        : null,
     showSubmenu: false,
-    children: menu.children || []
+    children: menu.children || [],
   })
 
-  return authStore.menus.map(menu => transformMenu(menu))
+  return authStore.menus.map((menu) => transformMenu(menu))
 })
 
 const documentationItems = ref([
@@ -183,13 +195,15 @@ const collapseMenu = () => {
   if (!isMobile.value) {
     isExpanded.value = false
     emit('sidebar-toggle', false)
-    // Cerrar todos los submenús cuando se colapsa el menú
-    authStore.menus.forEach(menu => {
-      const menuItem = menuItems.value.find(item => item.id === menu.id)
-      if (menuItem && menuItem.submenu) {
-        menuItem.showSubmenu = false
-      }
-    })
+    // Solo cerrar submenús si estamos en la vista principal
+    if (currentView.value === 'main') {
+      authStore.menus.forEach((menu) => {
+        const menuItem = menuItems.value.find((item) => item.id === menu.id)
+        if (menuItem && menuItem.submenu) {
+          menuItem.showSubmenu = false
+        }
+      })
+    }
   }
 }
 
@@ -285,7 +299,7 @@ const selectSubmenu = (submenu) => {
     // Guardar el estado actual en el historial
     navigationHistory.value.push({
       parent: currentParentMenu.value,
-      submenus: currentSubmenus.value
+      submenus: currentSubmenus.value,
     })
 
     currentParentMenu.value = submenu
@@ -307,9 +321,9 @@ const selectSubmenu = (submenu) => {
 }
 
 const checkMobile = () => {
-  isMobile.value = window.innerWidth <= 768;
+  isMobile.value = window.innerWidth <= 768
   if (!isMobile.value) {
-    isMobileOpen.value = false;
+    isMobileOpen.value = false
   }
 }
 
@@ -321,7 +335,7 @@ const updateActiveState = (currentRoute) => {
 
   // Buscar en menús principales
   let found = false
-  menuItems.value.forEach(item => {
+  menuItems.value.forEach((item) => {
     if (item.route === currentRoute) {
       activeMenuId.value = item.id
       found = true
@@ -331,7 +345,7 @@ const updateActiveState = (currentRoute) => {
 
     // Buscar en submenús
     if (item.submenu) {
-      item.submenu.forEach(submenu => {
+      item.submenu.forEach((submenu) => {
         if (submenu.route === currentRoute) {
           activeSubmenuId.value = submenu.id
           currentParentMenu.value = item
@@ -345,7 +359,7 @@ const updateActiveState = (currentRoute) => {
 
   // Si no se encuentra, buscar en documentación
   if (!found) {
-    documentationItems.value.forEach(item => {
+    documentationItems.value.forEach((item) => {
       if (item.route === currentRoute) {
         activeDocumentationId.value = item.id
         activeMenuId.value = 2 // Activar también el menú principal de documentación
@@ -362,19 +376,23 @@ const updateActiveState = (currentRoute) => {
   }
 }
 
-watch(() => route.path, (newPath) => {
-  updateActiveState(newPath);
-}, { immediate: true });
+watch(
+  () => route.path,
+  (newPath) => {
+    updateActiveState(newPath)
+  },
+  { immediate: true },
+)
 
 onMounted(() => {
-  checkMobile();
-  window.addEventListener('resize', checkMobile);
-  updateActiveState(route.path);
-});
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+  updateActiveState(route.path)
+})
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkMobile);
-});
+  window.removeEventListener('resize', checkMobile)
+})
 </script>
 
 <style scoped>
@@ -711,234 +729,52 @@ onUnmounted(() => {
   z-index: 99998;
 }
 
-/* NUEVO ESTILO PARA EL TÍTULO DE LA SECCIÓN */
-.menu-section-title {
-  padding: 1rem 1rem 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  opacity: 0;
-  transform: translateX(-10px);
-  transition: all 0.3s ease;
-  white-space: nowrap;
+/* Animaciones de transición mejoradas */
+.menu-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Estilos mejorados para el título del menú padre */
-.parent-menu-title {
-  padding: 1.25rem 1rem 1rem;
-  margin-bottom: 0.5rem;
-  opacity: 0;
-  transform: translateX(-10px);
-  transition: all 0.3s ease;
-  background: linear-gradient(135deg,
-    rgba(var(--primary-color-rgb), 0.08) 0%,
-    rgba(var(--primary-color-rgb), 0.03) 50%,
-    transparent 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(var(--primary-color-rgb), 0.1);
-  position: relative;
-  overflow: hidden;
-}
-
-.parent-menu-title::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg,
-    var(--primary-color) 0%,
-    rgba(var(--primary-color-rgb), 0.7) 50%,
-    var(--primary-color) 100%);
-  opacity: 0.8;
-}
-
-.parent-title-content {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  transition: all 0.3s ease;
-  position: relative;
-  z-index: 1;
-}
-
-/* Estilos para el icono clickeable de volver */
-.clickable-back-icon {
-  cursor: pointer;
+.item-content {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-}
-
-.clickable-back-icon:hover {
-  transform: translateX(-3px) scale(1.1);
-  box-shadow: 0 5px 15px rgba(var(--primary-color-rgb), 0.4);
-}
-
-.clickable-back-icon:active {
-  transform: translateX(-2px) scale(1.05);
-}
-
-.parent-icon {
-  font-size: 1.5rem;
-  color: white;
-  background: linear-gradient(135deg,
-    var(--primary-color) 0%,
-    rgba(var(--primary-color-rgb), 0.8) 100%);
-  padding: 0.5rem;
-  border-radius: 10px;
-  min-width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.title-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  transition: all 0.3s ease;
   overflow: hidden;
 }
 
-.parent-name {
-  font-size: 1.1rem;
-  font-weight: 700;
-  background: linear-gradient(135deg,
-    var(--text-primary) 0%,
-    var(--primary-color) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.title-subtitle {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--primary-color);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  white-space: nowrap;
-  opacity: 0.9;
-}
-
-.title-divider {
-  height: 3px;
-  background: linear-gradient(90deg,
-    var(--primary-color) 0%,
-    rgba(var(--primary-color-rgb), 0.6) 30%,
-    rgba(var(--primary-color-rgb), 0.3) 70%,
-    transparent 100%);
-  border-radius: 2px;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.title-divider::after {
+.item-content::before {
   content: '';
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,
+  background: linear-gradient(
+    90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.4) 50%,
-    transparent 100%);
-  animation: shimmer 2s infinite;
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  transition: left 0.6s ease;
 }
 
-@keyframes shimmer {
-  0% { left: -100%; }
-  100% { left: 100%; }
+.item-content:hover::before {
+  left: 100%;
 }
 
-.sidebar-container.expanded .menu-section-title {
-  opacity: 1;
-  transform: translateX(0);
+/* Efectos de profundidad */
+.item-content {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid transparent;
 }
 
-/* Estilos específicos para el título del menú padre en estado expandido */
-.sidebar-container.expanded .parent-menu-title {
-  opacity: 1;
-  transform: translateX(0);
+.item-content:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: rgba(var(--accent-color-rgb), 0.2);
+  transform: translateY(-1px);
 }
 
-.sidebar-container.expanded .parent-menu-title:hover {
-  transform: translateX(2px) translateY(-1px);
-  box-shadow: 0 8px 25px rgba(var(--primary-color-rgb), 0.2);
-}
-
-.sidebar-container.expanded .parent-menu-title:hover .parent-icon {
-  transform: scale(1.05) rotate(5deg);
-  box-shadow: 0 6px 20px rgba(var(--primary-color-rgb), 0.4);
-}
-
-.sidebar-container.expanded .parent-menu-title:hover .title-divider::after {
-  animation-duration: 1s;
-}
-
-/* Estilos para el título del menú padre en estado colapsado */
-.sidebar-container:not(.expanded) .parent-menu-title {
-  padding: 0.75rem 0;
-  margin-bottom: 0.5rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 1;
-  transform: translateX(0);
-  background: linear-gradient(135deg,
-    rgba(var(--primary-color-rgb), 0.1) 0%,
-    rgba(var(--primary-color-rgb), 0.05) 100%);
-  border-radius: 10px;
-  transition: all 0.3s ease;
-}
-
-.sidebar-container:not(.expanded) .parent-menu-title:hover {
-  background: linear-gradient(135deg,
-    rgba(var(--primary-color-rgb), 0.15) 0%,
-    rgba(var(--primary-color-rgb), 0.08) 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(var(--primary-color-rgb), 0.3);
-}
-
-.sidebar-container:not(.expanded) .parent-title-content {
-  justify-content: center;
-  margin-bottom: 0;
-  gap: 0;
-}
-
-/* Mostrar solo el icono del menú padre cuando está colapsado */
-.sidebar-container:not(.expanded) .parent-menu-title .parent-icon {
-  opacity: 1;
-  transform: translateX(0);
-  margin: 0;
-  font-size: 1.25rem;
-  min-width: 36px;
-  height: 36px;
-  padding: 0.375rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sidebar-container:not(.expanded) .parent-menu-title:hover .parent-icon {
-  transform: scale(1.1) rotate(-5deg);
-  box-shadow: 0 6px 18px rgba(var(--primary-color-rgb), 0.4);
-}
-
-.sidebar-container:not(.expanded) .parent-menu-title .title-info,
-.sidebar-container:not(.expanded) .parent-menu-title .title-divider {
-  display: none;
+.item-content.active {
+  box-shadow: 0 6px 20px rgba(var(--accent-color-rgb), 0.3);
+  border-color: var(--accent-color);
 }
 
 /* Responsive */
@@ -987,11 +823,139 @@ onUnmounted(() => {
     max-height: 400px;
   }
 
-  .sidebar-container.mobile-open .menu-section-title {
+  .sidebar-container.mobile-open .breadcrumb-container {
     opacity: 1;
     transform: translateX(0);
   }
+
+  .sidebar-container.mobile-open .item-actions {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Ajustes para móviles */
+  .breadcrumb-container {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .breadcrumb {
+    font-size: 0.8rem;
+  }
+
+  .children-indicator {
+    width: 16px;
+    height: 16px;
+    font-size: 0.65rem;
+  }
+
+  .submenu-item {
+    margin-left: 0.5rem;
+  }
+
+  .submenu-content {
+    margin-left: 0.25rem;
+    padding-left: 0.75rem;
+  }
 }
+
+@media (max-width: 480px) {
+  .sidebar-container.mobile-open .sidebar-menu {
+    width: 100vw;
+  }
+
+  .menu-header {
+    padding: 0.75rem;
+    height: 50px;
+  }
+
+  .logo-text {
+    font-size: 1rem;
+  }
+
+  .item-content {
+    padding: 10px 12px;
+    height: 44px;
+  }
+
+  .item-icon {
+    font-size: 1.25rem;
+  }
+
+  .item-text {
+    font-size: 0.9rem;
+  }
+
+  .submenu-text {
+    font-size: 0.85rem;
+  }
+}
+
+/* Breadcrumb de navegación */
+.breadcrumb-container {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(var(--primary-color-rgb), 0.02);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.breadcrumb-item:hover {
+  color: var(--accent-color);
+  background: rgba(var(--accent-color-rgb), 0.1);
+}
+
+.breadcrumb-item.active {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.breadcrumb-separator {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Contenedor de iconos mejorado */
+.item-icon-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+}
+
+/* Acciones del item */
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s ease;
+}
+
+.sidebar-container.expanded .item-actions {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Los submenús usan exactamente los mismos estilos que los menús principales */
+/* No necesitamos estilos específicos - heredan automáticamente de .menu-item, .item-content, .item-icon, .item-text */
 
 /* Scrollbar personalizado */
 .menu-items::-webkit-scrollbar {
