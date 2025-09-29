@@ -1,26 +1,19 @@
 <template>
-  <div class="tree-node" :class="{ 'excluded': isExcluded }">
-    <div 
+  <div class="tree-node" :class="{ excluded: isExcluded }">
+    <div
       class="node-content"
-      :class="{ 
-        'selected': isSelected,
-        'disabled': isExcluded,
+      :class="{
+        selected: isSelected,
+        disabled: isExcluded,
         'has-children': hasChildren,
-        'highlighted': isHighlighted
+        highlighted: isHighlighted,
       }"
-      :style="{ paddingLeft: (level * 20 + 12) + 'px' }"
+      :style="{ paddingLeft: level * 20 + 12 + 'px' }"
       @click="handleSelect"
     >
       <!-- Botón de expansión -->
-      <button
-        v-if="hasChildren"
-        class="expand-button"
-        @click.stop="handleToggle"
-      >
-        <i 
-          class="mdi"
-          :class="isExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
-        ></i>
+      <button v-if="hasChildren" class="expand-button" @click.stop="handleToggle">
+        <i class="mdi" :class="isExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"></i>
       </button>
       <div v-else class="expand-spacer"></div>
 
@@ -77,28 +70,28 @@ import { computed } from 'vue'
 const props = defineProps({
   menu: {
     type: Object,
-    required: true
+    required: true,
   },
   level: {
     type: Number,
-    default: 0
+    default: 0,
   },
   selectedId: {
     type: [String, Number],
-    default: null
+    default: null,
   },
   excludedId: {
     type: [String, Number],
-    default: null
+    default: null,
   },
   expandedNodes: {
     type: Set,
-    required: true
+    required: true,
   },
   searchQuery: {
     type: String,
-    default: ''
-  }
+    default: '',
+  },
 })
 
 // Emits
@@ -144,13 +137,13 @@ const handleToggle = () => {
 const isDescendantOfExcluded = () => {
   // Verificar si este menú es descendiente del menú excluido
   if (!props.excludedId) return false
-  
+
   const checkParentChain = (menuId, parentId) => {
     if (parentId === props.excludedId) return true
     // Aquí podrías implementar lógica adicional para verificar la cadena de padres
     return false
   }
-  
+
   return checkParentChain(props.menu.id, props.menu.parentId)
 }
 </script>
@@ -320,17 +313,17 @@ const isDescendantOfExcluded = () => {
     padding: 6px 8px;
     min-height: 36px;
   }
-  
+
   .menu-details {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
   }
-  
+
   .menu-path {
     font-size: 10px;
   }
-  
+
   .menu-order,
   .children-count {
     font-size: 10px;

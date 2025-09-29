@@ -2,44 +2,29 @@
   <!-- Aplicación principal de Vuetify -->
   <v-app>
     <!-- Barra de navegación superior removida para evitar duplicación con el sidebar -->
-    
+
     <!-- Contenido principal -->
     <v-main>
       <!-- Loading global -->
-      <v-overlay 
-        v-if="authStore.loading && !authStore.isAuthenticated" 
+      <v-overlay
+        v-if="authStore.loading && !authStore.isAuthenticated"
         class="align-center justify-center"
       >
-        <v-progress-circular 
-          indeterminate 
-          size="64" 
-          color="primary"
-        ></v-progress-circular>
+        <v-progress-circular indeterminate size="64" color="primary"></v-progress-circular>
         <div class="mt-4 text-center">
           <p>Verificando autenticación...</p>
         </div>
       </v-overlay>
-      
+
       <!-- Router view para las páginas -->
       <router-view />
     </v-main>
-    
+
     <!-- Snackbar para notificaciones globales -->
-    <v-snackbar
-      v-model="showError"
-      color="error"
-      timeout="5000"
-      top
-    >
+    <v-snackbar v-model="showError" color="error" timeout="5000" top>
       {{ authStore.error }}
       <template v-slot:actions>
-        <v-btn
-          color="white"
-          variant="text"
-          @click="clearError"
-        >
-          Cerrar
-        </v-btn>
+        <v-btn color="white" variant="text" @click="clearError"> Cerrar </v-btn>
       </template>
     </v-snackbar>
   </v-app>
@@ -59,13 +44,8 @@ const { initTheme, initVuetifyTheme } = useTheme()
 // Computed para mostrar errores
 const showError = computed({
   get: () => !!authStore.error,
-  set: () => authStore.clearError()
+  set: () => authStore.clearError(),
 })
-
-// Función para logout
-const logout = async () => {
-  await authStore.logout()
-}
 
 // Función para limpiar errores
 const clearError = () => {
@@ -76,15 +56,15 @@ const clearError = () => {
 onMounted(async () => {
   // Inicializar el tema de Vuetify primero (dentro de setup function)
   initVuetifyTheme()
-  
+
   // Luego inicializar el tema general
   initTheme()
-  
+
   // Solo inicializar si hay tokens pero no hay usuario
   if (authStore.accessToken && !authStore.user) {
     try {
       await authStore.initializeAuth()
-    } catch (error) {
+    } catch {
       // Error silencioso - no mostrar al usuario
     }
   }

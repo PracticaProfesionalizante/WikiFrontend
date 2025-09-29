@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './core/router'
-import vuetify from './core/plugins/vuetify'  
+import vuetify from './core/plugins/vuetify'
 import './core/plugins/webfontloader'
 import './styles/themes.css'
 import '@mdi/font/css/materialdesignicons.css'
@@ -17,14 +17,14 @@ const pinia = createPinia()
 const app = createApp(App)
 
 // Registrar plugins en orden correcto
-app.use(pinia)    // Pinia PRIMERO (para que los stores estén disponibles)
-app.use(router)   // Router SEGUNDO
-app.use(vuetify)  // Vuetify TERCERO
+app.use(pinia) // Pinia PRIMERO (para que los stores estén disponibles)
+app.use(router) // Router SEGUNDO
+app.use(vuetify) // Vuetify TERCERO
 
 // Función para inicializar la autenticación
 const initializeAuth = async () => {
   const authStore = useAuthStore()
-  
+
   // Solo intentar inicializar si hay un token guardado
   if (authStore.accessToken) {
     try {
@@ -41,10 +41,9 @@ const startApp = async () => {
   try {
     // Primero montar la aplicación
     app.mount('#app')
-    
+
     // Luego inicializar autenticación
     await initializeAuth()
-    
   } catch (error) {
     // Error al inicializar la aplicación
   }

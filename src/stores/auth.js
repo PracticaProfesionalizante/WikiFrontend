@@ -29,14 +29,14 @@ export const useAuthStore = defineStore('auth', () => {
   const setTokens = (access, refresh) => {
     accessToken.value = access
     refreshToken.value = refresh
-    
+
     // Guardar en localStorage
     if (access) {
       localStorage.setItem('access_token', access)
     } else {
       localStorage.removeItem('access_token')
     }
-    
+
     if (refresh) {
       localStorage.setItem('refresh_token', refresh)
     } else {
@@ -85,14 +85,14 @@ export const useAuthStore = defineStore('auth', () => {
   const login = async (credentials) => {
     setLoading(true)
     setError(null)
-    
+
     try {
       const response = await authService.login(credentials)
-      
+
       // Guardar tokens y usuario
       setTokens(response.access_token, response.refresh_token)
       setUser(response.user)
-      
+
       // Cargar menús dinámicos después del login exitoso
       try {
         const menuData = await authService.fetchMenus()
@@ -101,18 +101,19 @@ export const useAuthStore = defineStore('auth', () => {
         // Error silencioso - si fallan los menús, continuar con menús vacíos
         setMenus([])
       }
-      
+
       // Pequeño delay para asegurar que el estado se actualice
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
       // Esperar 1 segundo antes de redirigir al dashboard
       setTimeout(() => {
         router.push('/dashboard')
       }, 1000)
-      
+
       return response
     } catch (err) {
-      // No establecer error aquí, dejar que el componente lo maneje
+      // Establecer el error en el store para que el componente pueda accederlo
+      setError(err.message || 'Error al iniciar sesión')
       throw err
     } finally {
       setLoading(false)
@@ -140,7 +141,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!refreshToken.value) {
       throw new Error('No refresh token available')
     }
-    
+
     try {
       const response = await authService.refreshToken(refreshToken.value)
       setTokens(response.access_token, response.refresh_token)
@@ -174,7 +175,7 @@ export const useAuthStore = defineStore('auth', () => {
       try {
         // No mostrar error al usuario durante la inicialización silenciosa
         await fetchCurrentUser(false)
-        
+
         // Cargar menús si no están disponibles
         if (menus.value.length === 0) {
           try {
@@ -202,8 +203,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-
-
   return {
     // State
     accessToken,
@@ -212,12 +211,12 @@ export const useAuthStore = defineStore('auth', () => {
     menus,
     isLoading,
     error,
-    
+
     // Getters
     isAuthenticated,
     userRoles,
     hasRole,
-    
+
     // Actions
     setTokens,
     setUser,
@@ -231,6 +230,6 @@ export const useAuthStore = defineStore('auth', () => {
     refreshAccessToken,
     fetchCurrentUser,
     initializeAuth,
-    refreshMenus
+    refreshMenus,
   }
 })

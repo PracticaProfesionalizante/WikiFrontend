@@ -36,7 +36,7 @@
 
       <div v-else class="icon-grid">
         <div
-          v-for="(icon, index) in visibleIcons"
+          v-for="icon in visibleIcons"
           :key="icon"
           class="icon-item"
           :class="{ selected: selectedIcon === icon }"
@@ -71,8 +71,8 @@ export default {
   props: {
     modelValue: {
       type: String,
-      default: ''
-    }
+      default: '',
+    },
   },
   emits: ['update:modelValue'],
   data() {
@@ -88,17 +88,17 @@ export default {
       itemsPerRow: 6,
       containerHeight: 400,
       scrollTop: 0,
-      
+
       // Progressive loading con scroll infinito
       initialLoadSize: 90, // Cargar 90 iconos inicialmente
-      loadMoreSize: 60,    // Cargar 60 iconos más cada vez
+      loadMoreSize: 60, // Cargar 60 iconos más cada vez
       currentlyLoaded: 90, // Cantidad actualmente cargada
       isLoadingMore: false,
-      
+
       // Debounce para búsqueda y scroll
       searchTimeout: null,
       renderTimeout: null,
-      scrollTimeout: null
+      scrollTimeout: null,
     }
   },
   computed: {
@@ -119,7 +119,7 @@ export default {
       // Filtrar por búsqueda con debounce mejorado
       if (this.searchQuery.trim()) {
         const query = this.searchQuery.toLowerCase().trim()
-        icons = icons.filter(icon => {
+        icons = icons.filter((icon) => {
           const iconName = icon.replace('mdi-', '').replace(/-/g, ' ')
           const keywords = this.getIconKeywords(icon)
 
@@ -129,9 +129,9 @@ export default {
           }
 
           // Búsqueda por palabras clave y sinónimos
-          return keywords.some(keyword =>
-            keyword.toLowerCase().includes(query) ||
-            query.includes(keyword.toLowerCase())
+          return keywords.some(
+            (keyword) =>
+              keyword.toLowerCase().includes(query) || query.includes(keyword.toLowerCase()),
           )
         })
 
@@ -166,7 +166,7 @@ export default {
     visibleIcons() {
       // Scroll infinito: mostrar solo los iconos cargados hasta ahora
       return this.filteredIcons.slice(0, this.currentlyLoaded)
-    }
+    },
   },
   watch: {
     modelValue(newValue) {
@@ -178,7 +178,7 @@ export default {
     // Resetear carga cuando cambian los filtros
     filteredIcons() {
       this.currentlyLoaded = Math.min(this.initialLoadSize, this.filteredIcons.length)
-    }
+    },
   },
   mounted() {
     this.setupVirtualScrolling()
@@ -228,7 +228,7 @@ export default {
         tools: 'Herramientas',
         transport: 'Transporte',
         ui: 'Interfaz',
-        weather: 'Clima'
+        weather: 'Clima',
       }
       return names[category] || category
     },
@@ -244,51 +244,51 @@ export default {
 
       // Agregar sinónimos y palabras relacionadas
       const synonyms = {
-        'home': ['casa', 'inicio', 'principal'],
-        'user': ['usuario', 'persona', 'account'],
-        'account': ['usuario', 'perfil', 'user'],
-        'settings': ['configuración', 'ajustes', 'config'],
-        'cog': ['configuración', 'ajustes', 'settings'],
-        'menu': ['menú', 'hamburger', 'navigation'],
-        'search': ['buscar', 'magnify', 'find'],
-        'magnify': ['buscar', 'search', 'lupa'],
-        'plus': ['agregar', 'añadir', 'add'],
-        'minus': ['quitar', 'eliminar', 'remove'],
-        'delete': ['eliminar', 'borrar', 'remove'],
-        'edit': ['editar', 'modificar', 'pencil'],
-        'pencil': ['editar', 'escribir', 'edit'],
-        'save': ['guardar', 'content-save'],
-        'download': ['descargar', 'bajar'],
-        'upload': ['subir', 'cargar'],
-        'email': ['correo', 'mail', 'mensaje'],
-        'phone': ['teléfono', 'llamar'],
-        'heart': ['corazón', 'favorito', 'like'],
-        'star': ['estrella', 'favorito'],
-        'bell': ['campana', 'notificación'],
-        'lock': ['bloquear', 'seguridad'],
-        'key': ['llave', 'password', 'seguridad'],
-        'eye': ['ver', 'mostrar', 'visibility'],
-        'calendar': ['fecha', 'día', 'mes'],
-        'clock': ['tiempo', 'hora', 'reloj'],
-        'folder': ['carpeta', 'directorio'],
-        'file': ['archivo', 'documento'],
-        'image': ['imagen', 'foto', 'picture'],
-        'video': ['vídeo', 'película'],
-        'music': ['música', 'audio', 'sonido'],
-        'play': ['reproducir', 'iniciar'],
-        'pause': ['pausar', 'detener'],
-        'stop': ['parar', 'detener'],
-        'volume': ['volumen', 'sonido', 'audio'],
-        'wifi': ['internet', 'conexión', 'red'],
-        'bluetooth': ['conexión', 'inalámbrico'],
-        'battery': ['batería', 'energía'],
-        'power': ['energía', 'encender', 'apagar']
+        home: ['casa', 'inicio', 'principal'],
+        user: ['usuario', 'persona', 'account'],
+        account: ['usuario', 'perfil', 'user'],
+        settings: ['configuración', 'ajustes', 'config'],
+        cog: ['configuración', 'ajustes', 'settings'],
+        menu: ['menú', 'hamburger', 'navigation'],
+        search: ['buscar', 'magnify', 'find'],
+        magnify: ['buscar', 'search', 'lupa'],
+        plus: ['agregar', 'añadir', 'add'],
+        minus: ['quitar', 'eliminar', 'remove'],
+        delete: ['eliminar', 'borrar', 'remove'],
+        edit: ['editar', 'modificar', 'pencil'],
+        pencil: ['editar', 'escribir', 'edit'],
+        save: ['guardar', 'content-save'],
+        download: ['descargar', 'bajar'],
+        upload: ['subir', 'cargar'],
+        email: ['correo', 'mail', 'mensaje'],
+        phone: ['teléfono', 'llamar'],
+        heart: ['corazón', 'favorito', 'like'],
+        star: ['estrella', 'favorito'],
+        bell: ['campana', 'notificación'],
+        lock: ['bloquear', 'seguridad'],
+        key: ['llave', 'password', 'seguridad'],
+        eye: ['ver', 'mostrar', 'visibility'],
+        calendar: ['fecha', 'día', 'mes'],
+        clock: ['tiempo', 'hora', 'reloj'],
+        folder: ['carpeta', 'directorio'],
+        file: ['archivo', 'documento'],
+        image: ['imagen', 'foto', 'picture'],
+        video: ['vídeo', 'película'],
+        music: ['música', 'audio', 'sonido'],
+        play: ['reproducir', 'iniciar'],
+        pause: ['pausar', 'detener'],
+        stop: ['parar', 'detener'],
+        volume: ['volumen', 'sonido', 'audio'],
+        wifi: ['internet', 'conexión', 'red'],
+        bluetooth: ['conexión', 'inalámbrico'],
+        battery: ['batería', 'energía'],
+        power: ['energía', 'encender', 'apagar'],
       }
 
       let keywords = [...parts, name]
 
       // Agregar sinónimos
-      parts.forEach(part => {
+      parts.forEach((part) => {
         if (synonyms[part]) {
           keywords = keywords.concat(synonyms[part])
         }
@@ -298,16 +298,19 @@ export default {
     },
 
     getIconPosition(index) {
-      const startIndex = Math.max(0, Math.floor(this.scrollTop / this.itemHeight) * this.itemsPerRow - this.itemsPerRow)
+      const startIndex = Math.max(
+        0,
+        Math.floor(this.scrollTop / this.itemHeight) * this.itemsPerRow - this.itemsPerRow,
+      )
       const actualIndex = startIndex + index
       const row = Math.floor(actualIndex / this.itemsPerRow)
       const col = actualIndex % this.itemsPerRow
       return {
         position: 'absolute',
-        top: (row * this.itemHeight) + 'px',
-        left: (col * (100 / this.itemsPerRow)) + '%',
-        width: (100 / this.itemsPerRow) + '%',
-        height: this.itemHeight + 'px'
+        top: row * this.itemHeight + 'px',
+        left: col * (100 / this.itemsPerRow) + '%',
+        width: 100 / this.itemsPerRow + '%',
+        height: this.itemHeight + 'px',
       }
     },
 
@@ -324,7 +327,7 @@ export default {
       const scrollHeight = container.scrollHeight
       const scrollTop = container.scrollTop
       const clientHeight = container.clientHeight
-      
+
       // Detectar si está cerca del final para cargar más iconos
       if (scrollHeight - scrollTop - clientHeight < 300 && !this.isLoadingMore) {
         this.loadMoreIcons()
@@ -338,14 +341,14 @@ export default {
       }
 
       this.isLoadingMore = true
-      
+
       // Cargar inmediatamente sin delay
       setTimeout(() => {
         const newLoadSize = Math.min(
           this.loadMoreSize,
-          this.filteredIcons.length - this.currentlyLoaded
+          this.filteredIcons.length - this.currentlyLoaded,
         )
-        
+
         this.currentlyLoaded += newLoadSize
         this.isLoadingMore = false
       }, 50) // Delay mínimo
@@ -353,7 +356,7 @@ export default {
 
     onSearchInput() {
       this.handleSearch()
-    }
+    },
   },
 
   beforeUnmount() {
@@ -362,7 +365,7 @@ export default {
       container.removeEventListener('scroll', this.handleScroll)
     }
     clearTimeout(this.searchTimeout)
-  }
+  },
 }
 </script>
 
@@ -572,12 +575,12 @@ export default {
     grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
     gap: 6px;
   }
-  
+
   .icon-item {
     min-height: 50px;
     padding: 4px;
   }
-  
+
   .icon-preview {
     font-size: 18px;
   }

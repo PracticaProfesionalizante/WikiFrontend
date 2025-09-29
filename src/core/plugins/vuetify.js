@@ -33,8 +33,8 @@ export default createVuetify({
           'on-error': '#ffffff',
           'on-warning': '#ffffff',
           'on-info': '#ffffff',
-          'on-success': '#ffffff'
-        }
+          'on-success': '#ffffff',
+        },
       },
       dark: {
         dark: true,
@@ -56,9 +56,9 @@ export default createVuetify({
           'on-error': '#1e293b',
           'on-warning': '#1e293b',
           'on-info': '#1e293b',
-          'on-success': '#1e293b'
-        }
-      }
-    }
-  }
+          'on-success': '#1e293b',
+        },
+      },
+    },
+  },
 })

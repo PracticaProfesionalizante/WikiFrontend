@@ -27,19 +27,23 @@
         <div v-if="hasChildren" class="submenu-section">
           <div class="warning-message">
             <i class="mdi mdi-alert-circle"></i>
-            <p>Este menú tiene <strong>{{ children.length }}</strong> submenú{{ children.length > 1 ? 's' : '' }}:</p>
+            <p>
+              Este menú tiene <strong>{{ children.length }}</strong> submenú{{
+                children.length > 1 ? 's' : ''
+              }}:
+            </p>
           </div>
 
           <div class="submenu-list">
-            <div 
-              v-for="child in children" 
+            <div
+              v-for="child in children"
               :key="child.id"
               class="submenu-item"
               :class="{ 'selected-for-deletion': selectedChildren.includes(child.id) }"
             >
               <div class="submenu-checkbox">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   :id="`child-${child.id}`"
                   :value="child.id"
                   v-model="selectedChildren"
@@ -59,12 +63,12 @@
           <!-- Opciones de eliminación -->
           <div class="deletion-options">
             <h4>¿Qué deseas hacer?</h4>
-            
+
             <div class="option-group">
               <label class="option-item">
-                <input 
-                  type="radio" 
-                  value="delete-all" 
+                <input
+                  type="radio"
+                  value="delete-all"
                   v-model="deletionMode"
                   @change="handleModeChange"
                 />
@@ -80,9 +84,9 @@
               </label>
 
               <label class="option-item">
-                <input 
-                  type="radio" 
-                  value="selective" 
+                <input
+                  type="radio"
+                  value="selective"
                   v-model="deletionMode"
                   @change="handleModeChange"
                 />
@@ -92,15 +96,16 @@
                     <span class="option-title">Eliminación selectiva</span>
                   </div>
                   <p class="option-description">
-                    Elegir qué submenús eliminar. Los no seleccionados se moverán al nivel raíz
+                    Elegir qué submenús eliminar. El menú principal se mantiene, solo se eliminan
+                    los submenús seleccionados
                   </p>
                 </div>
               </label>
 
               <label class="option-item">
-                <input 
-                  type="radio" 
-                  value="keep-children" 
+                <input
+                  type="radio"
+                  value="keep-children"
                   v-model="deletionMode"
                   @change="handleModeChange"
                 />
@@ -122,14 +127,15 @@
             <div v-if="deletionMode === 'selective'" class="selective-info">
               <p>
                 <i class="mdi mdi-information"></i>
-                Selecciona los submenús que deseas eliminar junto con el menú principal.
-                Los submenús no seleccionados se conservarán como menús principales.
+                Selecciona los submenús que deseas eliminar. El menú principal se mantendrá intacto.
+                Los submenús no seleccionados permanecerán como submenús del menú principal.
               </p>
             </div>
             <div v-else-if="deletionMode === 'keep-children'" class="keep-info">
               <p>
                 <i class="mdi mdi-information"></i>
-                Todos los submenús se convertirán en menús principales y conservarán su estructura interna.
+                Todos los submenús se convertirán en menús principales y conservarán su estructura
+                interna.
               </p>
             </div>
           </div>
@@ -137,17 +143,20 @@
 
         <!-- Mensaje simple si no hay submenús -->
         <div v-else class="no-children-message">
-          <p>¿Estás seguro de que deseas eliminar el menú "<strong>{{ menu?.name || 'Sin nombre' }}</strong>"?</p>
+          <p>
+            ¿Estás seguro de que deseas eliminar el menú "<strong>{{
+              menu?.name || 'Sin nombre'
+            }}</strong
+            >"?
+          </p>
           <p class="warning-text">Esta acción no se puede deshacer.</p>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button class="cancel-btn" @click="$emit('close')">
-          Cancelar
-        </button>
-        <button 
-          class="delete-btn" 
+        <button class="cancel-btn" @click="$emit('close')">Cancelar</button>
+        <button
+          class="delete-btn"
           @click="handleConfirm"
           :disabled="deletionMode === 'selective' && selectedChildren.length === 0"
         >
@@ -166,16 +175,16 @@ import { ref, computed, watch } from 'vue'
 const props = defineProps({
   show: {
     type: Boolean,
-    default: false
+    default: false,
   },
   menu: {
     type: Object,
-    default: null
+    default: null,
   },
   children: {
     type: Array,
-    default: () => []
-  }
+    default: () => [],
+  },
 })
 
 // Emits
@@ -189,13 +198,16 @@ const selectedChildren = ref([])
 const hasChildren = computed(() => props.children && props.children.length > 0)
 
 // Watchers
-watch(() => props.show, (newValue) => {
-  if (newValue) {
-    // Resetear estado cuando se abre el modal
-    deletionMode.value = hasChildren.value ? 'delete-all' : 'delete-all'
-    selectedChildren.value = []
-  }
-})
+watch(
+  () => props.show,
+  (newValue) => {
+    if (newValue) {
+      // Resetear estado cuando se abre el modal
+      deletionMode.value = hasChildren.value ? 'delete-all' : 'delete-all'
+      selectedChildren.value = []
+    }
+  },
+)
 
 // Métodos
 const handleOverlayClick = () => {
@@ -204,7 +216,7 @@ const handleOverlayClick = () => {
 
 const handleModeChange = () => {
   if (deletionMode.value === 'delete-all') {
-    selectedChildren.value = props.children.map(child => child.id)
+    selectedChildren.value = props.children.map((child) => child.id)
   } else if (deletionMode.value === 'keep-children') {
     selectedChildren.value = []
   }
@@ -215,13 +227,14 @@ const getConfirmButtonText = () => {
   if (!hasChildren.value) {
     return 'Eliminar Menú'
   }
-  
+
   switch (deletionMode.value) {
     case 'delete-all':
       return `Eliminar Todo (${props.children.length + 1})`
-    case 'selective':
+    case 'selective': {
       const selectedCount = selectedChildren.value.length
-      return selectedCount > 0 ? `Eliminar Seleccionados (${selectedCount + 1})` : 'Selecciona submenús'
+      return selectedCount > 0 ? `Eliminar Submenús (${selectedCount})` : 'Selecciona submenús'
+    }
     case 'keep-children':
       return 'Eliminar Solo Menú Principal'
     default:
@@ -231,7 +244,7 @@ const getConfirmButtonText = () => {
 
 const handleConfirm = () => {
   if (!props.menu) return // Salir si no hay menú
-  
+
   if (deletionMode.value === 'selective' && selectedChildren.value.length === 0) {
     return // No hacer nada si no hay selección en modo selectivo
   }
@@ -240,7 +253,7 @@ const handleConfirm = () => {
     menuId: props.menu.id,
     mode: deletionMode.value,
     selectedChildren: selectedChildren.value,
-    allChildren: props.children.map(child => child.id)
+    allChildren: props.children.map((child) => child.id),
   }
 
   emit('confirm', confirmData)
@@ -263,7 +276,7 @@ const handleConfirm = () => {
 }
 
 .modal-container {
-  background: white;
+  background: var(--bg-primary, white);
   border-radius: 12px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   max-width: 600px;
@@ -271,6 +284,7 @@ const handleConfirm = () => {
   max-height: 90vh;
   overflow-y: auto;
   animation: modalSlideIn 0.3s ease-out;
+  border: 1px solid var(--border-color, #e5e7eb);
 }
 
 @keyframes modalSlideIn {
@@ -288,14 +302,14 @@ const handleConfirm = () => {
   display: flex;
   align-items: center;
   padding: 24px 24px 16px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
   position: relative;
 }
 
 .modal-icon {
   width: 48px;
   height: 48px;
-  background: #fee2e2;
+  background: var(--error-bg, #fee2e2);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -305,14 +319,14 @@ const handleConfirm = () => {
 
 .modal-icon i {
   font-size: 24px;
-  color: #dc2626;
+  color: var(--error-color, #dc2626);
 }
 
 .modal-header h2 {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary, #111827);
   flex: 1;
 }
 
@@ -325,13 +339,13 @@ const handleConfirm = () => {
   padding: 8px;
   border-radius: 6px;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--text-secondary, #6b7280);
   transition: all 0.2s;
 }
 
 .close-btn:hover {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--bg-secondary, #f3f4f6);
+  color: var(--text-primary, #374151);
 }
 
 .modal-body {
@@ -346,14 +360,14 @@ const handleConfirm = () => {
   display: flex;
   align-items: center;
   padding: 16px;
-  background: #f8fafc;
+  background: var(--bg-secondary, #f8fafc);
   border-radius: 8px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--border-color, #e2e8f0);
 }
 
 .menu-icon {
   font-size: 24px;
-  color: #3b82f6;
+  color: var(--accent-primary, #3b82f6);
   margin-right: 12px;
 }
 
@@ -361,12 +375,12 @@ const handleConfirm = () => {
   margin: 0 0 4px 0;
   font-size: 18px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary, #1e293b);
 }
 
 .menu-path {
   font-size: 14px;
-  color: #64748b;
+  color: var(--text-secondary, #64748b);
   font-family: 'Courier New', monospace;
 }
 
@@ -378,37 +392,38 @@ const handleConfirm = () => {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  background: #fef3c7;
-  border: 1px solid #f59e0b;
+  background: var(--warning-bg, #fef3c7);
+  border: 1px solid var(--warning-color, #f59e0b);
   border-radius: 8px;
   margin-bottom: 16px;
 }
 
 .warning-message i {
   font-size: 20px;
-  color: #d97706;
+  color: var(--warning-color, #d97706);
   margin-right: 8px;
 }
 
 .warning-message p {
   margin: 0;
-  color: #92400e;
+  color: var(--warning-text, #92400e);
   font-weight: 500;
 }
 
 .submenu-list {
   max-height: 200px;
   overflow-y: auto;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 8px;
   margin-bottom: 20px;
+  background: var(--bg-primary, white);
 }
 
 .submenu-item {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--border-light, #f3f4f6);
   transition: all 0.2s;
 }
 
@@ -417,12 +432,12 @@ const handleConfirm = () => {
 }
 
 .submenu-item:hover {
-  background: #f8fafc;
+  background: var(--bg-secondary, #f8fafc);
 }
 
 .submenu-item.selected-for-deletion {
-  background: #fef2f2;
-  border-color: #fecaca;
+  background: var(--error-bg, #fef2f2);
+  border-color: var(--error-light, #fecaca);
 }
 
 .submenu-checkbox {
@@ -430,14 +445,14 @@ const handleConfirm = () => {
   position: relative;
 }
 
-.submenu-checkbox input[type="checkbox"] {
+.submenu-checkbox input[type='checkbox'] {
   width: 18px;
   height: 18px;
   margin: 0;
   cursor: pointer;
 }
 
-.submenu-checkbox input[type="checkbox"]:disabled {
+.submenu-checkbox input[type='checkbox']:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -450,7 +465,7 @@ const handleConfirm = () => {
 
 .submenu-icon {
   font-size: 18px;
-  color: #6b7280;
+  color: var(--text-secondary, #6b7280);
   margin-right: 8px;
 }
 
@@ -461,13 +476,13 @@ const handleConfirm = () => {
 
 .submenu-name {
   font-weight: 500;
-  color: #374151;
+  color: var(--text-primary, #374151);
   font-size: 14px;
 }
 
 .submenu-path {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-muted, #9ca3af);
   font-family: 'Courier New', monospace;
 }
 
@@ -479,7 +494,7 @@ const handleConfirm = () => {
   margin: 0 0 16px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary, #374151);
 }
 
 .option-group {
@@ -492,23 +507,24 @@ const handleConfirm = () => {
   display: flex;
   align-items: flex-start;
   padding: 16px;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--border-color, #e5e7eb);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
+  background: var(--bg-primary, white);
 }
 
 .option-item:hover {
-  border-color: #d1d5db;
-  background: #f9fafb;
+  border-color: var(--border-hover, #d1d5db);
+  background: var(--bg-secondary, #f9fafb);
 }
 
 .option-item:has(input:checked) {
-  border-color: #3b82f6;
-  background: #eff6ff;
+  border-color: var(--accent-primary, #3b82f6);
+  background: var(--accent-bg, #eff6ff);
 }
 
-.option-item input[type="radio"] {
+.option-item input[type='radio'] {
   margin: 4px 12px 0 0;
   cursor: pointer;
 }
@@ -526,19 +542,19 @@ const handleConfirm = () => {
 .option-header i {
   font-size: 18px;
   margin-right: 8px;
-  color: #6b7280;
+  color: var(--text-secondary, #6b7280);
 }
 
 .option-title {
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary, #374151);
   font-size: 15px;
 }
 
 .option-description {
   margin: 0;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-secondary, #6b7280);
   line-height: 1.4;
 }
 
@@ -549,8 +565,8 @@ const handleConfirm = () => {
 .selective-info,
 .keep-info {
   padding: 12px 16px;
-  background: #f0f9ff;
-  border: 1px solid #0ea5e9;
+  background: var(--info-bg, #f0f9ff);
+  border: 1px solid var(--info-color, #0ea5e9);
   border-radius: 6px;
 }
 
@@ -558,7 +574,7 @@ const handleConfirm = () => {
 .keep-info p {
   margin: 0;
   font-size: 13px;
-  color: #0c4a6e;
+  color: var(--info-text, #0c4a6e);
   display: flex;
   align-items: flex-start;
 }
@@ -577,12 +593,12 @@ const handleConfirm = () => {
 
 .no-children-message p {
   margin: 0 0 8px 0;
-  color: #374151;
+  color: var(--text-primary, #374151);
 }
 
 .warning-text {
   font-size: 14px;
-  color: #dc2626;
+  color: var(--error-color, #dc2626);
   font-weight: 500;
 }
 
@@ -591,7 +607,7 @@ const handleConfirm = () => {
   justify-content: flex-end;
   gap: 12px;
   padding: 16px 24px 24px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-color, #e5e7eb);
 }
 
 .cancel-btn,
@@ -607,30 +623,30 @@ const handleConfirm = () => {
 }
 
 .cancel-btn {
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
-  color: #374151;
+  background: var(--bg-secondary, #f3f4f6);
+  border: 1px solid var(--border-color, #d1d5db);
+  color: var(--text-primary, #374151);
 }
 
 .cancel-btn:hover {
-  background: #e5e7eb;
+  background: var(--bg-hover, #e5e7eb);
 }
 
 .delete-btn {
-  background: #dc2626;
-  border: 1px solid #dc2626;
+  background: var(--error-color, #dc2626);
+  border: 1px solid var(--error-color, #dc2626);
   color: white;
 }
 
 .delete-btn:hover:not(:disabled) {
-  background: #b91c1c;
-  border-color: #b91c1c;
+  background: var(--error-hover, #b91c1c);
+  border-color: var(--error-hover, #b91c1c);
 }
 
 .delete-btn:disabled {
-  background: #d1d5db;
-  border-color: #d1d5db;
-  color: #9ca3af;
+  background: var(--bg-disabled, #d1d5db);
+  border-color: var(--bg-disabled, #d1d5db);
+  color: var(--text-disabled, #9ca3af);
   cursor: not-allowed;
 }
 </style>
