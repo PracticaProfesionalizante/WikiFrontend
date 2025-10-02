@@ -58,7 +58,18 @@ const routes = [
     meta: {
       title: 'Administración',
       requiresAuth: true,
-      roles: ['SuperUser'], // Por el momento solo SuperUser, en el caso que quiera mas roles como por ejemplo Admin, lo añado aquí -> roles: ['SuperUser', 'Admin']
+      roles: ['ROLE_SUPER_USER'], // Por el momento solo SuperUser, en el caso que quiera mas roles como por ejemplo Admin, lo añado aquí -> roles: ['ROLE_SUPER_USER', 'ROLE_ADMIN']
+    },
+  },
+  {
+    path: '/admin/content',
+    name: 'AdminContent',
+    component: () => import('@/views/AdminContentView.vue'), // Lazy loading
+    beforeEnter: requireAuth,
+    meta: {
+      title: 'Administración de Contenidos',
+      requiresAuth: true,
+      roles: ['ROLE_SUPER_USER'],
     },
   },
   {

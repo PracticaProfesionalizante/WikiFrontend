@@ -10,6 +10,9 @@ import '@mdi/font/css/materialdesignicons.css'
 // Importar el store de autenticación
 import { useAuthStore } from './stores/auth'
 
+// Importar directiva v-can
+import vCan from './core/directives/can'
+
 // Crear instancia de Pinia
 const pinia = createPinia()
 
@@ -20,6 +23,9 @@ const app = createApp(App)
 app.use(pinia) // Pinia PRIMERO (para que los stores estén disponibles)
 app.use(router) // Router SEGUNDO
 app.use(vuetify) // Vuetify TERCERO
+
+// Registrar directivas globales
+app.directive('can', vCan)
 
 // Función para inicializar la autenticación
 const initializeAuth = async () => {
