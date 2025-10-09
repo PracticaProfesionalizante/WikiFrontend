@@ -77,9 +77,15 @@ api.interceptors.response.use(
       isRefreshing: isRefreshing
     })
 
-    // Si el error es 401 y no es un retry, y no es una petición de login
-    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/auth/login')) {
+    // Si el error es 401 y no es un retry, y no es una petición de login o refresh
+    if (error.response?.status === 401 &&
+        !originalRequest._retry &&
+        !originalRequest.url?.includes('/auth/login') &&
+        !originalRequest.url?.includes('/auth/access') &&
+        !originalRequest.url?.includes('/auth/refresh')) {
+
       console.log('🔄 [API INTERCEPTOR] Error 401 detectado, iniciando refresh automático...')
+      console.log('🔄 [API INTERCEPTOR] URL de la petición:', originalRequest.url)
 
       // Si ya estamos refrescando, agregar a la cola
       if (isRefreshing) {
@@ -103,6 +109,13 @@ api.interceptors.response.use(
 
       try {
         console.log('🔄 [API INTERCEPTOR] Llamando a refreshAccessToken...')
+
+        // Verificar si hay refresh token antes de intentar refresh
+        if (!authStore.refreshToken) {
+          console.error('❌ [API INTERCEPTOR] No hay refresh token disponible')
+          throw new Error('No refresh token available')
+        }
+
         // Intentar refresh del token
         await authStore.refreshAccessToken()
         processQueue(null, authStore.accessToken)
@@ -113,7 +126,11 @@ api.interceptors.response.use(
         return api(originalRequest)
       } catch (refreshError) {
         console.error('❌ [API INTERCEPTOR] Error en refresh automático:', refreshError)
+        console.error('❌ [API INTERCEPTOR] Limpiando autenticación y redirigiendo...')
+
         processQueue(refreshError, null)
+
+        // Limpiar autenticación y redirigir
         authStore.logout()
 
         console.log('🔄 [API INTERCEPTOR] Redirigiendo al login...')

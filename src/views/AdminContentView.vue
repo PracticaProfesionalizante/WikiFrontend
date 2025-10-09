@@ -27,7 +27,18 @@
                 class="create-btn"
                 @click="openCreateDialog"
               >
-                Crear Contenido
+                Crear Documento
+              </v-btn>
+              <v-btn
+                color="secondary"
+                variant="outlined"
+                prepend-icon="mdi-database-refresh"
+                size="large"
+                class="load-sample-btn"
+                @click="loadSampleData"
+                :disabled="loading"
+              >
+                Cargar Datos de Prueba
               </v-btn>
             </div>
           </div>
@@ -41,7 +52,7 @@
                 <i class="mdi mdi-file-document"></i>
               </div>
               <div class="stat-content">
-                <div class="stat-value">{{ contentItems.length }}</div>
+                <div class="stat-value">{{ documents.length }}</div>
                 <div class="stat-label">Total Contenidos</div>
               </div>
             </div>
@@ -283,9 +294,9 @@
                       </td>
                       <td class="title-column">
                         <div class="title-content">
-                          <div class="title-text">{{ item.title }}</div>
-                          <div class="title-description" v-if="item.description">
-                            {{ item.description }}
+                          <div class="title-text">{{ item.name }}</div>
+                          <div class="title-description" v-if="item.slug">
+                            📁 {{ item.slug }}
                           </div>
                         </div>
                       </td>
@@ -304,7 +315,7 @@
                       <td class="author-column">
                         <div class="author-info">
                           <i class="mdi mdi-account author-icon"></i>
-                  {{ item.author || 'Sin autor' }}
+                  {{ item.createdBy || 'Sin autor' }}
                 </div>
                       </td>
                       <td class="date-column">
@@ -396,15 +407,15 @@
                   </div>
 
                   <div class="card-content">
-                    <h3 class="card-title">{{ item.title }}</h3>
-                    <p class="card-description" v-if="item.description">
-                      {{ item.description }}
+                    <h3 class="card-title">{{ item.name }}</h3>
+                    <p class="card-description" v-if="item.slug">
+                      📁 {{ item.slug }}
                     </p>
 
                     <div class="card-meta">
                       <div class="card-author">
                         <i class="mdi mdi-account"></i>
-                        {{ item.author || 'Sin autor' }}
+                        {{ item.createdBy || 'Sin autor' }}
                       </div>
                       <div class="card-date">
                         <i class="mdi mdi-calendar"></i>
@@ -635,12 +646,11 @@
       </div>
     </div>
 
-    <!-- Content Editor Modal -->
-    <ContentEditorModal
+    <!-- Content Form Modal -->
+    <ContentForm
       v-model="editDialog"
-      :content-item="selectedItem"
-      :is-editing="isEditing"
-      @save="handleSaveContent"
+      :document="selectedItem"
+      @saved="handleSaveDocument"
       @close="closeEditDialog"
     />
   </div>
@@ -649,15 +659,15 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import contentService from '@/services/contentService'
+import documentService from '@/services/documentService'
 import SidebarMenu from '@/components/common/SidebarMenu.vue'
 import AppHeader from '@/components/common/AppHeader.vue'
-import ContentEditorModal from '@/components/ContentEditorModal.vue'
+import ContentForm from '@/components/ContentForm.vue'
 
 const authStore = useAuthStore()
 
 // Estado básico
-const contentItems = ref([])
+const documents = ref([])
 const loading = ref(false)
 const error = ref(null)
 const success = ref(null)
@@ -688,101 +698,131 @@ const selectedItems = ref([])
 const currentPage = ref(1)
 const itemsPerPage = ref(25)
 
-// Datos de prueba mejorados (en caso de error del backend)
+// Datos de prueba para documentos (en caso de error del backend)
 const sampleData = [
-      {
-        id: 1,
-        title: 'Página de Inicio',
-    description: 'Página principal del sitio web con información institucional',
-        type: 'Página',
-    status: 'Publicado',
-    author: 'Admin Principal',
-        createdAt: '2025-10-01T10:00:00Z',
-    updatedAt: '2025-10-01T15:30:00Z',
-      },
-      {
-        id: 2,
-        title: 'Artículo sobre Vue 3',
-    description: 'Guía completa sobre las nuevas características de Vue 3',
-        type: 'Artículo',
-    status: 'Publicado',
-    author: 'Editor Técnico',
-        createdAt: '2025-10-02T14:30:00Z',
-    updatedAt: '2025-10-02T16:45:00Z',
+  {
+    id: 1,
+    name: 'Reglamento de Estudiantes',
+    type: 'TEXT',
+    slug: 'reglamentos',
+    content: '# Reglamento de Estudiantes\n\n## Capítulo 1: Disposiciones Generales\n\nEste documento establece las normas y procedimientos...',
+    icon: 'mdi-file-document',
+    createdBy: 'Admin Principal',
+    updatedBy: 'Admin Principal',
+    createdAt: '2025-01-10T10:00:00.000Z',
+    updatedAt: '2025-01-10T15:30:00.000Z',
+    roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
+  },
+  {
+    id: 2,
+    name: 'Manual de Usuario',
+    type: 'TEXT',
+    slug: 'manuales',
+    content: '# Manual de Usuario\n\n## Introducción\n\nBienvenido al sistema de gestión académica...',
+    icon: 'mdi-book-open',
+    createdBy: 'Editor Técnico',
+    updatedBy: 'Editor Técnico',
+    createdAt: '2025-01-11T14:30:00.000Z',
+    updatedAt: '2025-01-11T16:45:00.000Z',
+    roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
   },
   {
     id: 3,
-    title: 'Categoría de Programación',
-    description: 'Contenidos relacionados con desarrollo de software',
-    type: 'Categoría',
-    status: 'Publicado',
-    author: 'Administrador',
-    createdAt: '2025-09-28T09:15:00Z',
-    updatedAt: '2025-09-30T11:20:00Z',
+    name: 'Guía de Programación',
+    type: 'URL',
+    slug: 'guias',
+    content: 'https://developer.mozilla.org/es/docs/Web/JavaScript',
+    icon: 'mdi-link',
+    createdBy: 'Administrador',
+    updatedBy: 'Administrador',
+    createdAt: '2025-01-09T09:15:00.000Z',
+    updatedAt: '2025-01-09T11:20:00.000Z',
+    roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
   },
   {
     id: 4,
-    title: 'Noticia: Nueva Funcionalidad',
-    description: 'Anuncio sobre las nuevas características implementadas',
-    type: 'Noticia',
-    status: 'Borrador',
-    author: 'Editor de Contenido',
-    createdAt: '2025-10-03T08:45:00Z',
-    updatedAt: '2025-10-03T10:15:00Z',
+    name: 'Documento de Configuración',
+    type: 'TEXT',
+    slug: 'configuracion',
+    content: '# Configuración del Sistema\n\n## Parámetros Generales\n\n- Puerto: 8080\n- Base de datos: MySQL\n- Cache: Redis',
+    icon: 'mdi-cog',
+    createdBy: 'Editor de Contenido',
+    updatedBy: 'Editor de Contenido',
+    createdAt: '2025-01-12T08:45:00.000Z',
+    updatedAt: '2025-01-12T10:15:00.000Z',
+    roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
   },
   {
     id: 5,
-    title: 'Página de Contacto',
-    description: 'Información de contacto y formulario de consultas',
-    type: 'Página',
-    status: 'Archivado',
-    author: 'Admin Principal',
-    createdAt: '2025-09-25T13:20:00Z',
-    updatedAt: '2025-09-26T09:30:00Z',
+    name: 'Presentación Institucional',
+    type: 'URL',
+    slug: 'presentaciones',
+    content: 'https://ejemplo.com/presentacion-institucional.pdf',
+    icon: 'mdi-presentation',
+    createdBy: 'Admin Principal',
+    updatedBy: 'Admin Principal',
+    createdAt: '2025-01-08T16:00:00.000Z',
+    updatedAt: '2025-01-08T17:30:00.000Z',
+    roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
   },
   {
     id: 6,
-    title: 'Tutorial de JavaScript',
-    description: 'Curso básico de JavaScript para principiantes',
-    type: 'Artículo',
-    status: 'Borrador',
-    author: 'Editor Técnico',
-    createdAt: '2025-10-04T16:00:00Z',
-    updatedAt: '2025-10-04T17:30:00Z',
-  },
+    name: 'Política de Seguridad',
+    type: 'TEXT',
+    slug: 'politicas',
+    content: '# Política de Seguridad\n\n## Objetivos\n\nEsta política establece las medidas de seguridad...',
+    icon: 'mdi-shield-check',
+    createdBy: 'Admin Principal',
+    updatedBy: 'Admin Principal',
+    createdAt: '2025-01-13T09:00:00.000Z',
+    updatedAt: '2025-01-13T12:00:00.000Z',
+    roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
+  }
 ]
 
 // Computed properties para estadísticas
 const publishedCount = computed(() =>
-  contentItems.value.filter(item => (item.status || 'Borrador') === 'Publicado').length
+  documents.value.filter(item => item.roles?.includes('ROLE_ADMIN')).length
 )
 
 const draftCount = computed(() =>
-  contentItems.value.filter(item => (item.status || 'Borrador') === 'Borrador').length
+  documents.value.filter(item => !item.roles?.includes('ROLE_ADMIN')).length
 )
 
 const archivedCount = computed(() =>
-  contentItems.value.filter(item => (item.status || 'Borrador') === 'Archivado').length
+  documents.value.filter(item => item.type === 'URL').length
+)
+
+const textDocumentsCount = computed(() =>
+  documents.value.filter(item => item.type === 'TEXT').length
+)
+
+const urlDocumentsCount = computed(() =>
+  documents.value.filter(item => item.type === 'URL').length
+)
+
+const pdfDocumentsCount = computed(() =>
+  documents.value.filter(item => item.type === 'PDF').length
 )
 
 // Computed para autores únicos
 const uniqueAuthors = computed(() => {
-  const authors = [...new Set(contentItems.value.map(item => item.author).filter(Boolean))]
+  const authors = [...new Set(documents.value.map(item => item.createdBy).filter(Boolean))]
   return authors.sort()
 })
 
 // Computed para filtrado y búsqueda
 const filteredItems = computed(() => {
-  let items = [...contentItems.value]
+  let items = [...documents.value]
 
   // Aplicar búsqueda
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase().trim()
     items = items.filter(item =>
-      item.title?.toLowerCase().includes(query) ||
-      item.description?.toLowerCase().includes(query) ||
+      item.name?.toLowerCase().includes(query) ||
+      item.slug?.toLowerCase().includes(query) ||
       item.type?.toLowerCase().includes(query) ||
-      item.author?.toLowerCase().includes(query)
+      item.createdBy?.toLowerCase().includes(query)
     )
   }
 
@@ -796,7 +836,7 @@ const filteredItems = computed(() => {
   }
 
   if (filterAuthor.value) {
-    items = items.filter(item => item.author === filterAuthor.value)
+    items = items.filter(item => item.createdBy === filterAuthor.value)
   }
 
   // Aplicar ordenamiento
@@ -877,15 +917,46 @@ const handleSidebarToggle = (expanded) => {
   sidebarExpanded.value = expanded
 }
 
-const loadContentItems = async () => {
+const loadDocuments = async () => {
   loading.value = true
   error.value = null
   try {
-    contentItems.value = await contentService.getAll()
+    console.log('📄 [ADMIN CONTENT] Cargando documentos...')
+    const response = await documentService.getDocuments()
+
+    // Verificar si la respuesta es válida
+    if (Array.isArray(response)) {
+      documents.value = response
+      console.log('✅ [ADMIN CONTENT] Documentos cargados exitosamente:', response.length)
+
+      // Si se cargaron datos de prueba, no mostrar error
+      if (response.length > 0 && response[0].name === 'Reglamento de Estudiantes') {
+        console.log('ℹ️ [ADMIN CONTENT] Se cargaron datos de prueba (backend no disponible)')
+        success.value = `Se cargaron ${response.length} documentos de prueba`
+      }
+    } else {
+      console.warn('⚠️ [ADMIN CONTENT] Respuesta no es un array, usando datos de prueba')
+      documents.value = sampleData
+      success.value = `Se cargaron ${sampleData.length} documentos de prueba`
+    }
+
   } catch (err) {
-    error.value = err.message || 'Error al cargar los contenidos'
+    console.error('❌ [ADMIN CONTENT] Error cargando documentos:', err)
+    console.error('❌ [ADMIN CONTENT] Error details:', {
+      message: err.message,
+      status: err.response?.status,
+      data: err.response?.data
+    })
+
+    // Solo mostrar error si no es un error 500 (backend no disponible)
+    if (err.response?.status !== 500) {
+      error.value = err.message || 'Error al cargar los documentos'
+    }
+
     // Usar datos de prueba en caso de error
-    contentItems.value = sampleData
+    console.log('🔄 [ADMIN CONTENT] Usando datos de prueba debido al error')
+    documents.value = sampleData
+    success.value = `Se cargaron ${sampleData.length} documentos de prueba`
   } finally {
     loading.value = false
   }
@@ -963,18 +1034,26 @@ const duplicateContent = async (item) => {
     const duplicatedItem = {
       ...item,
       id: Date.now(), // ID temporal
-      title: `${item.title} (Copia)`,
+      name: `${item.name} (Copia)`,
       status: 'Borrador',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
 
     // En una aplicación real, esto se enviaría al backend
-    contentItems.value.unshift(duplicatedItem)
-    success.value = `Contenido "${item.title}" duplicado correctamente`
+    documents.value.unshift(duplicatedItem)
+    success.value = `Contenido "${item.name}" duplicado correctamente`
   } catch (err) {
     error.value = 'Error al duplicar el contenido'
   }
+}
+
+// Función para cargar datos de prueba
+const loadSampleData = () => {
+  console.log('📄 [ADMIN CONTENT] Cargando datos de prueba...')
+  documents.value = [...sampleData]
+  success.value = `Se cargaron ${sampleData.length} documentos de prueba`
+  console.log('✅ [ADMIN CONTENT] Datos de prueba cargados exitosamente')
 }
 
 // Funciones de diálogos
@@ -996,37 +1075,44 @@ const closeEditDialog = () => {
   isEditing.value = false
 }
 
-const handleSaveContent = async (contentData) => {
+const handleSaveDocument = async (documentData) => {
   try {
+    console.log('📄 [ADMIN CONTENT] Guardando documento...')
+    console.log('📄 [ADMIN CONTENT] Datos:', documentData)
+
     if (isEditing.value) {
-      // Update existing content
-      const updatedContent = await contentService.update(contentData.id, contentData)
-      const index = contentItems.value.findIndex(item => item.id === contentData.id)
+      // Update existing document
+      console.log('📄 [ADMIN CONTENT] Actualizando documento existente...')
+      const updatedDocument = await documentService.updateDocument(documentData.id, documentData)
+      const index = documents.value.findIndex(item => item.id === documentData.id)
       if (index > -1) {
-        contentItems.value[index] = updatedContent || contentData
+        documents.value[index] = updatedDocument || documentData
       }
-      success.value = `Contenido "${contentData.title}" actualizado correctamente`
+      success.value = `Documento "${documentData.name}" actualizado correctamente`
     } else {
-      // Create new content
-      const newContent = await contentService.create(contentData)
-      contentItems.value.unshift(newContent || { ...contentData, id: Date.now() })
-      success.value = `Contenido "${contentData.title}" creado correctamente`
+      // Create new document
+      console.log('📄 [ADMIN CONTENT] Creando nuevo documento...')
+      const newDocument = await documentService.createDocument(documentData)
+      documents.value.unshift(newDocument || { ...documentData, id: Date.now() })
+      success.value = `Documento "${documentData.name}" creado correctamente`
     }
 
     closeEditDialog()
+    console.log('✅ [ADMIN CONTENT] Documento guardado exitosamente')
   } catch (err) {
-    error.value = err.message || `Error al ${isEditing.value ? 'actualizar' : 'crear'} el contenido`
+    console.error('❌ [ADMIN CONTENT] Error guardando documento:', err)
+    error.value = err.message || `Error al ${isEditing.value ? 'actualizar' : 'crear'} el documento`
 
     // Para desarrollo, simular guardado exitoso
     if (isEditing.value) {
-      const index = contentItems.value.findIndex(item => item.id === contentData.id)
+      const index = documents.value.findIndex(item => item.id === documentData.id)
       if (index > -1) {
-        contentItems.value[index] = contentData
+        documents.value[index] = documentData
       }
-      success.value = `Contenido "${contentData.title}" actualizado correctamente`
+      success.value = `Documento "${documentData.name}" actualizado correctamente`
     } else {
-      contentItems.value.unshift({ ...contentData, id: Date.now() })
-      success.value = `Contenido "${contentData.title}" creado correctamente`
+      documents.value.unshift({ ...documentData, id: Date.now() })
+      success.value = `Documento "${documentData.name}" creado correctamente`
     }
     closeEditDialog()
   }
@@ -1052,7 +1138,7 @@ const confirmDelete = async () => {
     await contentService.delete(selectedItem.value.id)
     success.value = `Contenido "${selectedItem.value.title}" eliminado correctamente`
     closeDeleteDialog()
-    await loadContentItems()
+    await loadDocuments()
 
     // Remover de seleccionados si estaba seleccionado
     const index = selectedItems.value.indexOf(selectedItem.value.id)
@@ -1062,10 +1148,10 @@ const confirmDelete = async () => {
   } catch (err) {
     error.value = err.message || 'Error al eliminar el contenido'
     // Para desarrollo, simular eliminación exitosa
-    const index = contentItems.value.findIndex(item => item.id === selectedItem.value.id)
+    const index = documents.value.findIndex(item => item.id === selectedItem.value.id)
     if (index > -1) {
-      contentItems.value.splice(index, 1)
-      success.value = `Contenido "${selectedItem.value.title}" eliminado correctamente`
+      documents.value.splice(index, 1)
+      success.value = `Contenido "${selectedItem.value.name}" eliminado correctamente`
       closeDeleteDialog()
     }
   } finally {
@@ -1085,7 +1171,7 @@ const bulkArchive = async () => {
   try {
     // En una aplicación real, esto se enviaría al backend
     selectedItems.value.forEach(itemId => {
-      const item = contentItems.value.find(i => i.id === itemId)
+      const item = documents.value.find(i => i.id === itemId)
       if (item) {
         item.status = 'Archivado'
         item.updatedAt = new Date().toISOString()
@@ -1118,14 +1204,14 @@ const confirmBulkDelete = async () => {
     success.value = `${selectedItems.value.length} contenido(s) eliminado(s) correctamente`
     closeBulkDeleteModal()
     selectedItems.value = []
-    await loadContentItems()
+    await loadDocuments()
   } catch (err) {
     error.value = err.message || 'Error al eliminar los contenidos'
     // Para desarrollo, simular eliminación exitosa
     selectedItems.value.forEach(itemId => {
-      const index = contentItems.value.findIndex(item => item.id === itemId)
+      const index = documents.value.findIndex(item => item.id === itemId)
       if (index > -1) {
-        contentItems.value.splice(index, 1)
+        documents.value.splice(index, 1)
       }
     })
 
@@ -1142,7 +1228,7 @@ const getTypeIcon = (type) => {
   const icons = {
     'Página': 'mdi mdi-file-document',
     'Artículo': 'mdi mdi-newspaper',
-    'Categoría': 'mdi mdi-folder',
+    'Slug': 'mdi mdi-folder',
     'Noticia': 'mdi mdi-bullhorn',
   }
   return icons[type] || 'mdi mdi-file'
@@ -1171,7 +1257,7 @@ const formatDate = (dateString) => {
 
 // Cargar contenidos al montar el componente
 onMounted(() => {
-  loadContentItems()
+  loadDocuments()
 })
 </script>
 
@@ -1270,6 +1356,18 @@ onMounted(() => {
 .create-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(var(--primary-color-rgb), 0.4);
+}
+
+.load-sample-btn {
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 12px 24px;
+  transition: all 0.3s ease;
+}
+
+.load-sample-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Stats Section */

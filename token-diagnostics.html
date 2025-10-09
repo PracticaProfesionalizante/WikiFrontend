@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico de Tokens - WikiFrontend</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .token-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .token-section h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        .token-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.valid {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.expired {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.invalid {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .actions {
+            text-align: center;
+            margin-top: 30px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.danger {
+            background: #dc3545;
+        }
+        button.danger:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnóstico de Tokens de Autenticación</h1>
+
+        <div class="token-section">
+            <h3>Access Token</h3>
+            <div id="accessTokenInfo" class="token-info">Cargando...</div>
+        </div>
+
+        <div class="token-section">
+            <h3>Refresh Token</h3>
+            <div id="refreshTokenInfo" class="token-info">Cargando...</div>
+        </div>
+
+        <div class="token-section">
+            <h3>Información del Usuario</h3>
+            <div id="userInfo" class="token-info">Cargando...</div>
+        </div>
+
+        <div class="actions">
+            <button onclick="refreshDiagnostics()">🔄 Actualizar Diagnóstico</button>
+            <button onclick="clearTokens()" class="danger">🗑️ Limpiar Tokens</button>
+            <button onclick="goToLogin()">🔐 Ir al Login</button>
+        </div>
+    </div>
+
+    <script>
+        // Función para decodificar JWT
+        function decodeJWT(token) {
+            if (!token) return null;
+
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+
+                return JSON.parse(jsonPayload);
+            } catch (error) {
+                console.error('Error decodificando JWT:', error);
+                return null;
+            }
+        }
+
+        // Función para formatear fecha
+        function formatDate(timestamp) {
+            return new Date(timestamp * 1000).toLocaleString('es-ES');
+        }
+
+        // Función para obtener estado del token
+        function getTokenStatus(payload) {
+            if (!payload) return { status: 'invalid', text: 'Token inválido' };
+
+            const now = Math.floor(Date.now() / 1000);
+            const exp = payload.exp;
+
+            if (exp < now) {
+                return { status: 'expired', text: 'Token expirado' };
+            } else {
+                const timeLeft = exp - now;
+                const hoursLeft = Math.floor(timeLeft / 3600);
+                const minutesLeft = Math.floor((timeLeft % 3600) / 60);
+                return {
+                    status: 'valid',
+                    text: `Válido (${hoursLeft}h ${minutesLeft}m restantes)`
+                };
+            }
+        }
+
+        // Función para mostrar información del token
+        function displayTokenInfo(elementId, token, tokenName) {
+            const element = document.getElementById(elementId);
+
+            if (!token) {
+                element.innerHTML = `<strong>${tokenName}:</strong> No encontrado`;
+                return;
+            }
+
+            const payload = decodeJWT(token);
+            const tokenStatus = getTokenStatus(payload);
+
+            let html = `<strong>${tokenName}:</strong> `;
+            html += `<span class="status ${tokenStatus.status}">${tokenStatus.text}</span><br><br>`;
+
+            if (payload) {
+                html += `<strong>Información del Token:</strong><br>`;
+                html += `• Emitido por: ${payload.iss || 'N/A'}<br>`;
+                html += `• Emitido para: ${payload.sub || 'N/A'}<br>`;
+                html += `• Emitido en: ${formatDate(payload.iat)}<br>`;
+                html += `• Expira en: ${formatDate(payload.exp)}<br>`;
+
+                if (payload.roles) {
+                    html += `• Roles: ${payload.roles.join(', ')}<br>`;
+                }
+
+                if (payload.authorities) {
+                    html += `• Autoridades: ${payload.authorities.join(', ')}<br>`;
+                }
+            } else {
+                html += `<strong>Error:</strong> No se pudo decodificar el token`;
+            }
+
+            element.innerHTML = html;
+        }
+
+        // Función para mostrar información del usuario
+        function displayUserInfo() {
+            const element = document.getElementById('userInfo');
+            const userData = localStorage.getItem('user');
+
+            if (!userData) {
+                element.innerHTML = '<strong>Usuario:</strong> No encontrado';
+                return;
+            }
+
+            try {
+                const user = JSON.parse(userData);
+                let html = '<strong>Información del Usuario:</strong><br>';
+                html += `• ID: ${user.id || 'N/A'}<br>`;
+                html += `• Email: ${user.email || 'N/A'}<br>`;
+                html += `• Nombre: ${user.name || 'N/A'}<br>`;
+                html += `• Roles: ${user.roles ? user.roles.join(', ') : 'N/A'}<br>`;
+                html += `• Activo: ${user.active ? 'Sí' : 'No'}<br>`;
+
+                element.innerHTML = html;
+            } catch (error) {
+                element.innerHTML = '<strong>Error:</strong> No se pudo parsear la información del usuario';
+            }
+        }
+
+        // Función para actualizar el diagnóstico
+        function refreshDiagnostics() {
+            const accessToken = localStorage.getItem('accessToken');
+            const refreshToken = localStorage.getItem('refreshToken');
+
+            displayTokenInfo('accessTokenInfo', accessToken, 'Access Token');
+            displayTokenInfo('refreshTokenInfo', refreshToken, 'Refresh Token');
+            displayUserInfo();
+        }
+
+        // Función para limpiar tokens
+        function clearTokens() {
+            if (confirm('¿Estás seguro de que quieres limpiar todos los tokens? Esto te cerrará la sesión.')) {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('user');
+                localStorage.removeItem('menus');
+
+                alert('Tokens limpiados. Serás redirigido al login.');
+                window.location.href = '/login';
+            }
+        }
+
+        // Función para ir al login
+        function goToLogin() {
+            window.location.href = '/login';
+        }
+
+        // Inicializar diagnóstico al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshDiagnostics();
+        });
+    </script>
+</body>
+</html>

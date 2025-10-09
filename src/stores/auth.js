@@ -179,6 +179,35 @@ export const useAuthStore = defineStore('auth', () => {
       throw new Error('No refresh token available')
     }
 
+    // Verificar si el refresh token está próximo a expirar
+    try {
+      const tokenPayload = JSON.parse(atob(refreshToken.value.split('.')[1]))
+      const expDate = new Date(tokenPayload.exp * 1000)
+      const now = new Date()
+      const timeLeft = expDate - now
+      const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60))
+
+      console.log('🔄 [AUTH STORE] Refresh token expira en:', expDate.toLocaleString())
+      console.log('🔄 [AUTH STORE] Tiempo restante:', hoursLeft, 'horas')
+
+      if (timeLeft < 0) {
+        console.error('❌ [AUTH STORE] Refresh token ya expiró')
+        clearAuth()
+        router.push('/login')
+        throw new Error('Refresh token expirado')
+      }
+
+      if (hoursLeft < 1) {
+        console.warn('⚠️ [AUTH STORE] Refresh token expira en menos de 1 hora')
+      }
+    } catch (tokenError) {
+      console.error('❌ [AUTH STORE] Error verificando refresh token:', tokenError)
+      console.error('❌ [AUTH STORE] Token puede estar corrupto, limpiando autenticación')
+      clearAuth()
+      router.push('/login')
+      throw new Error('Refresh token inválido')
+    }
+
     try {
       console.log('🔄 [AUTH STORE] Llamando a authService.refreshToken (flujo completo)...')
       const response = await authService.refreshToken(refreshToken.value)
@@ -222,6 +251,29 @@ export const useAuthStore = defineStore('auth', () => {
   const initializeAuth = async () => {
     if (accessToken.value && !user.value) {
       try {
+        // Verificar si los tokens están próximos a expirar antes de usarlos
+        if (refreshToken.value) {
+          try {
+            const tokenPayload = JSON.parse(atob(refreshToken.value.split('.')[1]))
+            const expDate = new Date(tokenPayload.exp * 1000)
+            const now = new Date()
+            const timeLeft = expDate - now
+
+            console.log('🔄 [AUTH STORE] Verificando tokens al inicializar...')
+            console.log('🔄 [AUTH STORE] Refresh token expira en:', expDate.toLocaleString())
+
+            if (timeLeft < 0) {
+              console.warn('⚠️ [AUTH STORE] Refresh token expirado al inicializar, limpiando autenticación')
+              clearAuth()
+              return
+            }
+          } catch (tokenError) {
+            console.error('❌ [AUTH STORE] Error verificando refresh token al inicializar:', tokenError)
+            clearAuth()
+            return
+          }
+        }
+
         // No mostrar error al usuario durante la inicialización silenciosa
         await fetchCurrentUser(false)
 
@@ -236,8 +288,70 @@ export const useAuthStore = defineStore('auth', () => {
         }
       } catch (err) {
         // Si falla, limpiar tokens inválidos
+        console.error('❌ [AUTH STORE] Error en inicialización, limpiando autenticación:', err.message)
         clearAuth()
       }
+    }
+  }
+
+  // NUEVA FUNCIÓN - Limpiar tokens expirados del localStorage
+  const clearExpiredTokens = () => {
+    try {
+      const storedAccessToken = localStorage.getItem('accessToken')
+      const storedRefreshToken = localStorage.getItem('refreshToken')
+
+      let shouldClear = false
+
+      // Verificar access token
+      if (storedAccessToken) {
+        try {
+          const payload = JSON.parse(atob(storedAccessToken.split('.')[1]))
+          const expDate = new Date(payload.exp * 1000)
+          const now = new Date()
+
+          if (expDate < now) {
+            console.log('🧹 [AUTH STORE] Access token expirado encontrado en localStorage')
+            shouldClear = true
+          }
+        } catch (error) {
+          console.log('🧹 [AUTH STORE] Access token corrupto encontrado en localStorage')
+          shouldClear = true
+        }
+      }
+
+      // Verificar refresh token
+      if (storedRefreshToken) {
+        try {
+          const payload = JSON.parse(atob(storedRefreshToken.split('.')[1]))
+          const expDate = new Date(payload.exp * 1000)
+          const now = new Date()
+
+          if (expDate < now) {
+            console.log('🧹 [AUTH STORE] Refresh token expirado encontrado en localStorage')
+            shouldClear = true
+          }
+        } catch (error) {
+          console.log('🧹 [AUTH STORE] Refresh token corrupto encontrado en localStorage')
+          shouldClear = true
+        }
+      }
+
+      if (shouldClear) {
+        console.log('🧹 [AUTH STORE] Limpiando tokens expirados del localStorage')
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('refreshToken')
+        localStorage.removeItem('user')
+        localStorage.removeItem('menus')
+
+        // Resetear estado
+        accessToken.value = null
+        refreshToken.value = null
+        user.value = null
+        menus.value = []
+      }
+
+    } catch (error) {
+      console.error('❌ [AUTH STORE] Error limpiando tokens expirados:', error)
     }
   }
 
@@ -323,5 +437,6 @@ export const useAuthStore = defineStore('auth', () => {
     refreshMenus,
     scheduleRefreshTokenRenewal,
     clearRefreshTokenTimer,
+    clearExpiredTokens,
   }
 })

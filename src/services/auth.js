@@ -150,7 +150,19 @@ export const authService = {
     console.log('🔄 [AUTH SERVICE] Intercambiando refreshToken por nuevo accessToken...')
     console.log('🔄 [AUTH SERVICE] Refresh token recibido:', refreshToken ? 'Presente' : 'Ausente')
 
+    // Verificar que el refreshToken no esté vacío
+    if (!refreshToken || refreshToken.trim() === '') {
+      console.error('❌ [AUTH SERVICE] Refresh token vacío o inválido')
+      throw new Error('Refresh token vacío o inválido')
+    }
+
+    // Mostrar información del refresh token antes de usarlo
+    logTokenInfo('REFRESH TOKEN (a usar)', refreshToken)
+
     try {
+      console.log('🔄 [AUTH SERVICE] Enviando request a /auth/access...')
+      console.log('🔄 [AUTH SERVICE] Header Authorization:', `Bearer ${refreshToken.substring(0, 20)}...`)
+
       const response = await api.post('/auth/access', {}, {
         headers: {
           'Authorization': `Bearer ${refreshToken}`
@@ -169,7 +181,14 @@ export const authService = {
       console.error('❌ [AUTH SERVICE] Response:', error.response?.data)
       console.error('❌ [AUTH SERVICE] Error completo:', error)
 
+      // Información adicional para debugging
       if (error.response?.status === 401) {
+        console.error('❌ [AUTH SERVICE] El refresh token es inválido o ha expirado')
+        console.error('❌ [AUTH SERVICE] Posibles causas:')
+        console.error('   - El refresh token ha expirado (7 días)')
+        console.error('   - El refresh token fue revocado en el servidor')
+        console.error('   - El formato del token es incorrecto')
+        console.error('   - El servidor no reconoce el token')
         throw new Error('Refresh token inválido o expirado')
       } else {
         throw new Error('Error al obtener nuevo access token')
