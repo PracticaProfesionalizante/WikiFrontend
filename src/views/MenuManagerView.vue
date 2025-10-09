@@ -36,6 +36,24 @@
               <i class="mdi mdi-refresh" :class="{ 'mdi-spin': isLoading }"></i>
               Actualizar
             </button>
+            <button
+              class="action-btn migration"
+              @click="migrateExistingPaths"
+              :disabled="isLoading"
+              title="Migrar paths existentes al nuevo formato"
+            >
+              <i class="mdi mdi-database-refresh"></i>
+              Migrar Paths
+            </button>
+            <button
+              class="action-btn diagnostic"
+              @click="diagnoseMenuStructure"
+              :disabled="isLoading"
+              title="Diagnosticar estructura de menús y detectar submenús huérfanos"
+            >
+              <i class="mdi mdi-magnify-scan"></i>
+              Diagnosticar
+            </button>
           </div>
         </div>
 
@@ -497,7 +515,30 @@
                       <i class="mdi mdi-link-variant" aria-hidden="true"></i>
                       Ruta de Acceso *
                     </label>
+
+                    <!-- Si tiene menú padre, mostrar parte estática y editable -->
+                    <div v-if="menuForm.parentId" class="path-input-container">
+                      <!-- Parte estática del path del menú padre -->
+                      <div class="path-static-part">
+                        {{ getParentPath(menuForm.parentId) || '/' }}
+                      </div>
+                      <!-- Parte editable del menú -->
+                      <input
+                        id="menuPath"
+                        v-model="menuForm.path"
+                        type="text"
+                        class="form-input path-editable-part"
+                        :class="{ error: validationErrors.path }"
+                        :placeholder="`Ej: ${getMenuPathPlaceholder()}`"
+                        @input="validateMenuPath"
+                        required
+                        aria-describedby="menuPath-help menuPath-error"
+                      />
+                    </div>
+
+                    <!-- Si es menú raíz, mostrar input normal -->
                     <input
+                      v-else
                       id="menuPath"
                       v-model="menuForm.path"
                       type="text"
@@ -508,6 +549,7 @@
                       required
                       aria-describedby="menuPath-help menuPath-error"
                     />
+
                     <div
                       v-if="validationErrors.path"
                       class="error-message"
@@ -521,7 +563,12 @@
                       <strong>
                         <i class="mdi mdi-information" aria-hidden="true"></i>
                         <span class="ml-1">
-                          URL que se usará para acceder a esta vista (se genera automáticamente)
+                          <span v-if="menuForm.parentId">
+                            La parte del menú padre es fija, solo puedes editar la parte específica del menú
+                          </span>
+                          <span v-else>
+                            URL que se usará para acceder a esta vista (se genera automáticamente)
+                          </span>
                         </span>
                       </strong>
                     </div>
@@ -907,14 +954,26 @@
                               <i class="mdi mdi-link" aria-hidden="true"></i>
                               Ruta del Submenú *
                             </label>
-                            <input
-                              :id="`submenu-path-${index}`"
-                              v-model="submenu.path"
-                              type="text"
-                              class="form-input"
-                              placeholder="Ej: /configuracion"
-                              required
-                            />
+                            <div class="path-input-container">
+                              <!-- Parte estática del path del menú padre -->
+                              <div class="path-static-part">
+                                {{ getParentPath(menuForm.parentId) || '/' }}
+                              </div>
+                              <!-- Parte editable del submenú -->
+                              <input
+                                :id="`submenu-path-${index}`"
+                                v-model="submenu.path"
+                                type="text"
+                                class="form-input path-editable-part"
+                                :placeholder="`Ej: ${getSubmenuPathPlaceholder(index)}`"
+                                @input="validateSubmenuPath(index)"
+                                required
+                              />
+                            </div>
+                            <div class="help-text">
+                              <i class="mdi mdi-information" aria-hidden="true"></i>
+                              <span>La parte del menú padre es fija, solo puedes editar la parte específica del submenú</span>
+                            </div>
                           </div>
 
                           <div class="form-group">
@@ -1677,9 +1736,44 @@ const saveMenu = async () => {
       // Configurar modal para edición
       progressModalTitle.value = 'Editando Menú'
       progressModalAction.value = 'Actualizando información del menú...'
-      submenuProgress.value = { current: 0, total: 1 }
 
-      parentMenuResult = await menuService.updateMenu(menuForm.value.id, menuForm.value)
+      // Obtener el menú original para comparar paths
+      const originalMenu = findMenuById(menuForm.value.id)
+      const originalPath = originalMenu ? originalMenu.path : ''
+
+      // Calcular el nuevo path completo
+      let newPath = menuForm.value.path
+      if (menuForm.value.parentId) {
+        const parentPath = getParentPath(menuForm.value.parentId)
+        newPath = parentPath + '/' + menuForm.value.path
+      }
+
+      // Actualizar el menú principal
+      const menuDataToUpdate = {
+        ...menuForm.value,
+        path: newPath
+      }
+
+      parentMenuResult = await menuService.updateMenu(menuForm.value.id, menuDataToUpdate)
+
+      // Si el path cambió y tiene submenús, actualizar todos los submenús
+      if (originalPath !== newPath && originalPath) {
+        const submenus = getAllSubmenus(menuForm.value.id)
+
+        if (submenus.length > 0) {
+          progressModalTitle.value = 'Editando Menú y Actualizando Submenús'
+          progressModalAction.value = `Actualizando ${submenus.length} submenús...`
+          submenuProgress.value = { current: 0, total: submenus.length + 1 }
+
+          try {
+            await updateSubmenusPaths(menuForm.value.id, originalPath, newPath)
+            progressModalAction.value = 'Todos los submenús actualizados exitosamente'
+          } catch (error) {
+            console.error('❌ [MENU MANAGER] Error actualizando submenús:', error)
+            progressModalAction.value = 'Menú actualizado, pero algunos submenús no se pudieron actualizar'
+          }
+        }
+      }
 
       // Actualizar progreso
       submenuProgress.value.current = 1
@@ -1697,6 +1791,12 @@ const saveMenu = async () => {
       const tempMenuData = {
         ...menuForm.value,
         order: 9999, // Orden temporal muy alto
+      }
+
+      // Si tiene menú padre, construir el path completo
+      if (menuForm.value.parentId) {
+        const parentPath = getParentPath(menuForm.value.parentId)
+        tempMenuData.path = parentPath + '/' + menuForm.value.path
       }
       parentMenuResult = await menuService.createMenu(tempMenuData)
 
@@ -1748,9 +1848,14 @@ const saveMenu = async () => {
 
           const batchPromises = batch.map(async (submenu, batchIndex) => {
             const globalIndex = i + batchIndex
+
+            // Construir el path completo del submenú
+            const parentPath = getParentPath(parentMenuId)
+            const fullSubmenuPath = parentPath + '/' + submenu.path
+
             const submenuData = {
               name: submenu.name,
-              path: submenu.path,
+              path: fullSubmenuPath,
               icon: submenu.icon || '',
               template: submenu.template || 'basic',
               order: submenu.order || globalIndex + 1,
@@ -1895,16 +2000,21 @@ const resetForm = () => {
 
 const generatePath = () => {
   if (menuForm.value.name && !isEditing.value) {
-    const path =
-      '/' +
-      menuForm.value.name
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '')
+    // Generar el path base del menú
+    const menuPathSegment = menuForm.value.name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
 
-    menuForm.value.path = path
+    // Si tiene un menú padre, solo guardar la parte editable
+    if (menuForm.value.parentId) {
+      menuForm.value.path = menuPathSegment
+    } else {
+      // Si es un menú raíz, usar el path completo con /
+      menuForm.value.path = '/' + menuPathSegment
+    }
   }
   validateForm()
 }
@@ -2373,19 +2483,461 @@ const removeSubmenu = (index) => {
   })
 }
 
+// Función para obtener el path completo de un menú padre
+const getParentPath = (parentId) => {
+  if (!parentId) return ''
+
+  const parentMenu = findMenuById(parentId)
+  if (!parentMenu) return ''
+
+  // Si el menú padre tiene su propio padre, construir el path completo recursivamente
+  if (parentMenu.parentId) {
+    return getParentPath(parentMenu.parentId) + parentMenu.path
+  }
+
+  return parentMenu.path
+}
+
+// Función para encontrar todos los submenús de un menú padre
+const getAllSubmenus = (parentId) => {
+  const submenus = []
+
+  const findSubmenusRecursive = (menuId) => {
+    const directChildren = menus.value.filter(menu => menu.parentId === menuId)
+
+    for (const child of directChildren) {
+      submenus.push(child)
+      // Buscar submenús de este hijo recursivamente
+      findSubmenusRecursive(child.id)
+    }
+  }
+
+  findSubmenusRecursive(parentId)
+  return submenus
+}
+
+// Función para actualizar paths de todos los submenús cuando cambia el padre
+const updateSubmenusPaths = async (parentId, oldParentPath, newParentPath) => {
+  console.log('🔄 [MENU MANAGER] Actualizando paths de submenús...')
+  console.log('🔄 [MENU MANAGER] Menú padre ID:', parentId)
+  console.log('🔄 [MENU MANAGER] Path anterior:', oldParentPath)
+  console.log('🔄 [MENU MANAGER] Path nuevo:', newParentPath)
+
+  const submenus = getAllSubmenus(parentId)
+  console.log('🔄 [MENU MANAGER] Submenús encontrados:', submenus.length)
+
+  if (submenus.length === 0) {
+    console.log('ℹ️ [MENU MANAGER] No hay submenús para actualizar')
+    return
+  }
+
+  const updatePromises = submenus.map(async (submenu) => {
+    try {
+      // Calcular el nuevo path del submenú
+      const newSubmenuPath = submenu.path.replace(oldParentPath, newParentPath)
+
+      console.log(`🔄 [MENU MANAGER] Actualizando submenú "${submenu.name}":`)
+      console.log(`   Path anterior: ${submenu.path}`)
+      console.log(`   Path nuevo: ${newSubmenuPath}`)
+
+      // Actualizar el submenú en el backend
+      await menuService.updateMenu(submenu.id, {
+        ...submenu,
+        path: newSubmenuPath
+      })
+
+      console.log(`✅ [MENU MANAGER] Submenú "${submenu.name}" actualizado exitosamente`)
+
+      return { success: true, submenu: submenu.name, newPath: newSubmenuPath }
+    } catch (error) {
+      console.error(`❌ [MENU MANAGER] Error actualizando submenú "${submenu.name}":`, error)
+      return { success: false, submenu: submenu.name, error: error.message }
+    }
+  })
+
+  // Ejecutar todas las actualizaciones
+  const results = await Promise.all(updatePromises)
+
+  // Mostrar resumen de resultados
+  const successful = results.filter(r => r.success)
+  const failed = results.filter(r => !r.success)
+
+  console.log(`✅ [MENU MANAGER] Actualización completada:`)
+  console.log(`   ✅ Exitosos: ${successful.length}`)
+  console.log(`   ❌ Fallidos: ${failed.length}`)
+
+  if (failed.length > 0) {
+    console.warn('⚠️ [MENU MANAGER] Algunos submenús no se pudieron actualizar:')
+    failed.forEach(f => console.warn(`   - ${f.submenu}: ${f.error}`))
+  }
+
+  return results
+}
+
+// Función para extraer solo la parte editable del path de un submenú
+const extractEditablePath = (fullPath, parentPath) => {
+  if (!fullPath || !parentPath) return fullPath
+
+  // Si el path completo contiene el path del padre, extraer solo la parte editable
+  if (fullPath.startsWith(parentPath + '/')) {
+    return fullPath.substring(parentPath.length + 1) // +1 para quitar la barra
+  }
+
+  return fullPath
+}
+
+// Función para migrar paths existentes al nuevo formato
+const migrateExistingPaths = async () => {
+  console.log('🔄 [MENU MANAGER] Iniciando migración de paths existentes...')
+  console.log('🔄 [MENU MANAGER] Total de menús cargados:', menus.value.length)
+
+  const menusToMigrate = []
+
+  // Buscar todos los menús que tienen parentId y paths completos
+  for (const menu of menus.value) {
+    console.log(`🔍 [MENU MANAGER] Analizando menú: "${menu.name}" (ID: ${menu.id})`)
+    console.log(`   - parentId: ${menu.parentId}`)
+    console.log(`   - path actual: "${menu.path}"`)
+
+    if (menu.parentId) {
+      const parentMenu = findMenuById(menu.parentId)
+      console.log(`   - menú padre encontrado:`, parentMenu ? `"${parentMenu.name}"` : 'No encontrado')
+
+      if (parentMenu) {
+        const parentPath = getParentPath(menu.parentId)
+        console.log(`   - path del padre: "${parentPath}"`)
+
+        const editablePath = extractEditablePath(menu.path, parentPath)
+        console.log(`   - path editable calculado: "${editablePath}"`)
+
+        // Si el path actual es diferente al editable, necesita migración
+        if (menu.path !== editablePath) {
+          console.log(`   ✅ NECESITA MIGRACIÓN: "${menu.path}" → "${editablePath}"`)
+          menusToMigrate.push({
+            menu,
+            oldPath: menu.path,
+            newPath: editablePath,
+            parentPath
+          })
+        } else {
+          console.log(`   ℹ️ Ya está en formato correcto`)
+        }
+      } else {
+        console.log(`   ⚠️ No se encontró el menú padre`)
+      }
+    } else {
+      console.log(`   ℹ️ Es un menú raíz, no necesita migración`)
+    }
+    console.log('   ---')
+  }
+
+  console.log(`🔄 [MENU MANAGER] Encontrados ${menusToMigrate.length} menús para migrar`)
+
+  if (menusToMigrate.length === 0) {
+    console.log('✅ [MENU MANAGER] No hay menús que necesiten migración')
+    console.log('ℹ️ [MENU MANAGER] Esto puede significar que:')
+    console.log('   - Todos los menús ya están en el formato correcto')
+    console.log('   - No hay submenús en la base de datos')
+    console.log('   - Los paths no contienen el path del padre')
+    return
+  }
+
+  // Mostrar modal de progreso para migración
+  showProgressModal.value = true
+  progressModalTitle.value = 'Migrando Paths Existentes'
+  progressModalAction.value = `Migrando ${menusToMigrate.length} menús...`
+  progressErrors.value = []
+  submenuProgress.value = { current: 0, total: menusToMigrate.length }
+
+  const migrationPromises = menusToMigrate.map(async (item, index) => {
+    try {
+      progressModalAction.value = `Migrando menú: ${item.menu.name}...`
+
+      console.log(`🔄 [MENU MANAGER] Migrando "${item.menu.name}":`)
+      console.log(`   Path anterior: ${item.oldPath}`)
+      console.log(`   Path nuevo: ${item.newPath}`)
+
+      // Actualizar el menú en el backend
+      await menuService.updateMenu(item.menu.id, {
+        ...item.menu,
+        path: item.newPath
+      })
+
+      // Actualizar progreso
+      submenuProgress.value.current = index + 1
+
+      console.log(`✅ [MENU MANAGER] Menú "${item.menu.name}" migrado exitosamente`)
+
+      return { success: true, menu: item.menu.name, oldPath: item.oldPath, newPath: item.newPath }
+    } catch (error) {
+      console.error(`❌ [MENU MANAGER] Error migrando menú "${item.menu.name}":`, error)
+      progressErrors.value.push(`${item.menu.name}: ${error.message}`)
+      return { success: false, menu: item.menu.name, error: error.message }
+    }
+  })
+
+  // Ejecutar todas las migraciones
+  const results = await Promise.all(migrationPromises)
+
+  // Mostrar resumen de resultados
+  const successful = results.filter(r => r.success)
+  const failed = results.filter(r => !r.success)
+
+  console.log(`✅ [MENU MANAGER] Migración completada:`)
+  console.log(`   ✅ Exitosos: ${successful.length}`)
+  console.log(`   ❌ Fallidos: ${failed.length}`)
+
+  if (successful.length > 0) {
+    console.log('✅ [MENU MANAGER] Menús migrados exitosamente:')
+    successful.forEach(s => console.log(`   - ${s.menu}: ${s.oldPath} → ${s.newPath}`))
+  }
+
+  if (failed.length > 0) {
+    console.warn('⚠️ [MENU MANAGER] Menús que fallaron en la migración:')
+    failed.forEach(f => console.warn(`   - ${f.menu}: ${f.error}`))
+  }
+
+  // Recargar menús después de la migración
+  progressModalAction.value = 'Recargando lista de menús...'
+  await loadMenus()
+
+  // Finalizar
+  progressModalAction.value = `Migración completada: ${successful.length}/${menusToMigrate.length} exitosos`
+
+  setTimeout(() => {
+    showProgressModal.value = false
+  }, 2000)
+
+  return results
+}
+
+// Función para diagnosticar estructura de menús y detectar submenús huérfanos
+const diagnoseMenuStructure = async () => {
+  console.log('🔍 [MENU MANAGER] Iniciando diagnóstico de estructura de menús...')
+  console.log('🔍 [MENU MANAGER] Total de menús cargados:', menus.value.length)
+
+  const orphanedSubmenus = []
+  const potentialParents = []
+
+  // Analizar todos los menús
+  for (const menu of menus.value) {
+    console.log(`🔍 [MENU MANAGER] Analizando menú: "${menu.name}" (ID: ${menu.id})`)
+    console.log(`   - parentId: ${menu.parentId}`)
+    console.log(`   - path: "${menu.path}"`)
+    console.log(`   - order: ${menu.order}`)
+
+    // Si no tiene parentId, podría ser un menú raíz o un submenú huérfano
+    if (!menu.parentId) {
+      // Verificar si parece ser un submenú basado en el path
+      const pathSegments = menu.path.split('/').filter(segment => segment.length > 0)
+
+      if (pathSegments.length > 1) {
+        // Tiene múltiples segmentos, podría ser un submenú huérfano
+        console.log(`   ⚠️ POSIBLE SUBMENÚ HUÉRFANO: Path tiene ${pathSegments.length} segmentos`)
+
+        // Buscar posibles padres basado en el path
+        const possibleParentPath = '/' + pathSegments[0]
+        const possibleParent = menus.value.find(m => m.path === possibleParentPath)
+
+        if (possibleParent) {
+          console.log(`   ✅ POSIBLE PADRE ENCONTRADO: "${possibleParent.name}" (ID: ${possibleParent.id})`)
+          orphanedSubmenus.push({
+            menu,
+            possibleParent,
+            suggestedPath: pathSegments.slice(1).join('/')
+          })
+        } else {
+          console.log(`   ❌ No se encontró posible padre para path: ${possibleParentPath}`)
+        }
+      } else {
+        console.log(`   ✅ Menú raíz válido`)
+        potentialParents.push(menu)
+      }
+    } else {
+      console.log(`   ✅ Submenú válido con padre`)
+    }
+    console.log('   ---')
+  }
+
+  console.log(`🔍 [MENU MANAGER] Diagnóstico completado:`)
+  console.log(`   📊 Total de menús: ${menus.value.length}`)
+  console.log(`   🏠 Menús raíz: ${potentialParents.length}`)
+  console.log(`   👶 Submenús válidos: ${menus.value.filter(m => m.parentId).length}`)
+  console.log(`   ⚠️ Submenús huérfanos detectados: ${orphanedSubmenus.length}`)
+
+  if (orphanedSubmenus.length > 0) {
+    console.log('🔍 [MENU MANAGER] Submenús huérfanos encontrados:')
+    orphanedSubmenus.forEach((item, index) => {
+      console.log(`   ${index + 1}. "${item.menu.name}"`)
+      console.log(`      - Path actual: "${item.menu.path}"`)
+      console.log(`      - Posible padre: "${item.possibleParent.name}"`)
+      console.log(`      - Path sugerido: "${item.suggestedPath}"`)
+    })
+
+    // Preguntar al usuario si quiere corregir automáticamente
+    const shouldFix = confirm(
+      `Se encontraron ${orphanedSubmenus.length} submenús huérfanos.\n\n` +
+      `¿Quieres corregir automáticamente asignando los padres correctos?\n\n` +
+      `Esto actualizará la base de datos.`
+    )
+
+    if (shouldFix) {
+      await fixOrphanedSubmenus(orphanedSubmenus)
+    }
+  } else {
+    console.log('✅ [MENU MANAGER] No se encontraron submenús huérfanos')
+    alert('✅ Estructura de menús correcta. No se encontraron submenús huérfanos.')
+  }
+}
+
+// Función para corregir submenús huérfanos
+const fixOrphanedSubmenus = async (orphanedSubmenus) => {
+  console.log('🔧 [MENU MANAGER] Iniciando corrección de submenús huérfanos...')
+
+  // Mostrar modal de progreso
+  showProgressModal.value = true
+  progressModalTitle.value = 'Corrigiendo Submenús Huérfanos'
+  progressModalAction.value = `Corrigiendo ${orphanedSubmenus.length} submenús...`
+  progressErrors.value = []
+  submenuProgress.value = { current: 0, total: orphanedSubmenus.length }
+
+  const fixPromises = orphanedSubmenus.map(async (item, index) => {
+    try {
+      progressModalAction.value = `Corrigiendo submenú: ${item.menu.name}...`
+
+      console.log(`🔧 [MENU MANAGER] Corrigiendo "${item.menu.name}":`)
+      console.log(`   - Asignando padre: "${item.possibleParent.name}" (ID: ${item.possibleParent.id})`)
+      console.log(`   - Nuevo path: "${item.suggestedPath}"`)
+
+      // Actualizar el submenú con el padre correcto
+      await menuService.updateMenu(item.menu.id, {
+        ...item.menu,
+        parentId: item.possibleParent.id,
+        path: item.suggestedPath
+      })
+
+      // Actualizar progreso
+      submenuProgress.value.current = index + 1
+
+      console.log(`✅ [MENU MANAGER] Submenú "${item.menu.name}" corregido exitosamente`)
+
+      return { success: true, menu: item.menu.name, parent: item.possibleParent.name }
+    } catch (error) {
+      console.error(`❌ [MENU MANAGER] Error corrigiendo submenú "${item.menu.name}":`, error)
+      progressErrors.value.push(`${item.menu.name}: ${error.message}`)
+      return { success: false, menu: item.menu.name, error: error.message }
+    }
+  })
+
+  // Ejecutar todas las correcciones
+  const results = await Promise.all(fixPromises)
+
+  // Mostrar resumen de resultados
+  const successful = results.filter(r => r.success)
+  const failed = results.filter(r => !r.success)
+
+  console.log(`✅ [MENU MANAGER] Corrección completada:`)
+  console.log(`   ✅ Exitosos: ${successful.length}`)
+  console.log(`   ❌ Fallidos: ${failed.length}`)
+
+  if (successful.length > 0) {
+    console.log('✅ [MENU MANAGER] Submenús corregidos exitosamente:')
+    successful.forEach(s => console.log(`   - ${s.menu} → padre: ${s.parent}`))
+  }
+
+  if (failed.length > 0) {
+    console.warn('⚠️ [MENU MANAGER] Submenús que fallaron en la corrección:')
+    failed.forEach(f => console.warn(`   - ${f.menu}: ${f.error}`))
+  }
+
+  // Recargar menús después de la corrección
+  progressModalAction.value = 'Recargando lista de menús...'
+  await loadMenus()
+
+  // Finalizar
+  progressModalAction.value = `Corrección completada: ${successful.length}/${orphanedSubmenus.length} exitosos`
+
+  setTimeout(() => {
+    showProgressModal.value = false
+  }, 2000)
+
+  return results
+}
+
+// Función para obtener el placeholder del path del submenú
+const getSubmenuPathPlaceholder = (index) => {
+  const submenu = menuForm.value.submenus[index]
+  if (submenu.name) {
+    return submenu.name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
+  return 'nombre-submenu'
+}
+
+// Función para obtener el placeholder del path del menú principal
+const getMenuPathPlaceholder = () => {
+  if (menuForm.value.name) {
+    return menuForm.value.name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+  }
+  return 'nombre-menu'
+}
+
+// Función para validar el path del menú principal
+const validateMenuPath = () => {
+  if (menuForm.value.path && !isEditing.value && menuForm.value.parentId) {
+    // Limpiar y formatear solo la parte editable del menú
+    const menuPathSegment = menuForm.value.path
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+
+    // Solo guardar la parte editable
+    menuForm.value.path = menuPathSegment
+  }
+  validateForm()
+}
+
+// Función para validar el path del submenú
+const validateSubmenuPath = (index) => {
+  const submenu = menuForm.value.submenus[index]
+  if (submenu.path && !isEditing.value) {
+    // Limpiar y formatear solo la parte editable del submenú
+    const submenuPathSegment = submenu.path
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+
+    // Solo guardar la parte editable
+    submenu.path = submenuPathSegment
+  }
+}
+
 const generateSubmenuPath = (index) => {
   const submenu = menuForm.value.submenus[index]
   if (submenu.name && !isEditing.value) {
-    const path =
-      '/' +
-      submenu.name
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '')
+    // Generar solo la parte editable del path del submenú
+    const submenuPathSegment = submenu.name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
 
-    submenu.path = path
+    // Solo guardar la parte editable del submenú
+    submenu.path = submenuPathSegment
   }
 }
 
@@ -2404,6 +2956,10 @@ const checkSuperAdminAccess = () => {
 watch(() => menuForm.value.name, () => {
   validateFormDebounced()
   updateCurrentStep()
+  // Regenerar el path cuando cambie el nombre
+  if (menuForm.value.name && !isEditing.value) {
+    generatePath()
+  }
 })
 watch(() => menuForm.value.path, () => {
   validateFormDebounced()
@@ -2415,7 +2971,13 @@ watch(() => menuForm.value.icon, () => {
 })
 watch(() => menuForm.value.template, validateFormDebounced)
 watch(() => menuForm.value.roles, validateFormDebounced)
-watch(() => menuForm.value.parentId, validateFormDebounced)
+watch(() => menuForm.value.parentId, () => {
+  validateFormDebounced()
+  // Regenerar el path cuando cambie el menú padre
+  if (menuForm.value.name && !isEditing.value) {
+    generatePath()
+  }
+})
 
 onMounted(() => {
   // Verificar permisos de SuperAdmin
@@ -2603,6 +3165,56 @@ onMounted(() => {
   border-color: var(--accent-primary);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn.migration {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  border: 2px solid transparent;
+  padding: 0.875rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.action-btn.migration:hover:not(:disabled) {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+.action-btn.migration:disabled {
+  background: #9ca3af;
+  color: #6b7280;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.action-btn.diagnostic {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  border: 2px solid transparent;
+  padding: 0.875rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.action-btn.diagnostic:hover:not(:disabled) {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+.action-btn.diagnostic:disabled {
+  background: #9ca3af;
+  color: #6b7280;
+  box-shadow: none;
+  cursor: not-allowed;
 }
 
 /* Barra de búsqueda y filtros */
@@ -5250,6 +5862,58 @@ button:disabled {
 .submenu-section .section-title {
   color: var(--accent-primary);
   margin-bottom: 1rem;
+}
+
+/* Estilos para el contenedor de path con parte estática y editable */
+.path-input-container {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.path-input-container:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.path-static-part {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  padding: 12px 16px;
+  border-right: 1px solid var(--border-color);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+  min-width: fit-content;
+  display: flex;
+  align-items: center;
+}
+
+.path-editable-part {
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  flex: 1;
+  padding: 12px 16px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+}
+
+.path-editable-part:focus {
+  outline: none;
+  box-shadow: none;
+  background: var(--bg-primary) !important;
+}
+
+.path-editable-part::placeholder {
+  color: var(--text-tertiary);
+  font-style: italic;
 }
 
 .submenus-list {
