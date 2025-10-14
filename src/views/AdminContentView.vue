@@ -552,7 +552,7 @@
                       <div class="url-title">{{ getUrlTitle(previewItem.content) }}</div>
                       <div class="url-domain">{{ getUrlDomain(previewItem.content) }}</div>
                     </div>
-                    <a :href="previewItem.content" target="_blank" rel="noopener noreferrer" class="preview-link">
+                    <a :href="normalizeUrl(previewItem.content)" target="_blank" rel="noopener noreferrer" class="preview-link">
                       <i class="mdi mdi-open-in-new"></i>
                       Abrir enlace
                     </a>
@@ -1389,10 +1389,23 @@ const renderedMarkdown = computed(() => {
 })
 
 // Funciones para manejar URLs
+const normalizeUrl = (url) => {
+  if (!url) return ''
+
+  // Si ya tiene protocolo, devolverlo tal como está
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+
+  // Si no tiene protocolo, agregar https://
+  return `https://${url}`
+}
+
 const getUrlTitle = (url) => {
   if (!url) return 'Enlace'
   try {
-    const urlObj = new URL(url)
+    const normalizedUrl = normalizeUrl(url)
+    const urlObj = new URL(normalizedUrl)
     return urlObj.hostname.replace('www.', '')
   } catch {
     return 'Enlace'
@@ -1402,7 +1415,8 @@ const getUrlTitle = (url) => {
 const getUrlDomain = (url) => {
   if (!url) return ''
   try {
-    const urlObj = new URL(url)
+    const normalizedUrl = normalizeUrl(url)
+    const urlObj = new URL(normalizedUrl)
     return urlObj.hostname
   } catch {
     return url
