@@ -23,8 +23,14 @@
         </div>
       </div>
 
+      <!-- Indicador de carga -->
+      <div v-if="loading" class="form-loading">
+        <div class="loading-spinner"></div>
+        <p>Cargando datos del documento...</p>
+      </div>
+
       <!-- Contenido del formulario -->
-      <div class="modal-body">
+      <div v-else class="modal-body">
         <form @submit.prevent="handleSubmit" class="document-form">
           <!-- Información básica -->
           <div class="form-section">
@@ -78,9 +84,9 @@
                   :disabled="isSaving"
                 >
                   <option value="">Selecciona un tipo</option>
-                  <option value="TEXT">📄 Texto/Markdown</option>
-                  <option value="URL">🔗 Enlace/URL</option>
-                  <option value="PDF">📋 Documento PDF</option>
+                  <option value="TYPE_URL">🔗 Enlace/URL</option>
+                  <option value="TYPE_TEXT">📄 Documento de Texto</option>
+                  <option value="TYPE_PDF">📋 Documento PDF</option>
                 </select>
                 <div v-if="validationErrors.type" class="error-message">
                   <i class="mdi mdi-alert-circle"></i>
@@ -94,6 +100,7 @@
                 <label for="documentSlug" class="form-label">
                   <i class="mdi mdi-folder-outline"></i>
                   Slug
+                  <span class="required">*</span>
                 </label>
                 <input
                   id="documentSlug"
@@ -101,12 +108,45 @@
                   type="text"
                   class="form-input"
                   :class="{ error: validationErrors.slug }"
-                  placeholder="Ej: reglamentos, manuales, guias"
+                  placeholder="ejemplo-de-slug"
                   @input="validateField('slug')"
                   :disabled="isSaving"
+                  required
                 />
                 <div class="form-help">
-                  Organiza tus documentos en slugs para facilitar la navegación
+                  <i class="mdi mdi-information"></i>
+                  Organiza tus documentos en slugs para facilitar la navegación. Solo letras minúsculas, números y guiones.
+                  <button
+                    type="button"
+                    class="slug-regenerate-btn"
+                    @click="regenerateSlug"
+                    :disabled="isSaving || !form.name"
+                    title="Regenerar slug único basado en el nombre"
+                  >
+                    <i class="mdi mdi-refresh"></i>
+                    Generar Único
+                  </button>
+                </div>
+
+                <!-- Opciones de slug alternativas -->
+                <div v-if="slugAlternatives.length > 0" class="slug-alternatives">
+                  <div class="slug-alternatives-header">
+                    <i class="mdi mdi-lightbulb"></i>
+                    <span>Slugs alternativos disponibles:</span>
+                  </div>
+                  <div class="slug-alternatives-list">
+                    <button
+                      v-for="(alternative, index) in slugAlternatives"
+                      :key="index"
+                      type="button"
+                      class="slug-alternative-btn"
+                      @click="selectSlugAlternative(alternative)"
+                      :disabled="isSaving"
+                    >
+                      <i class="mdi mdi-check"></i>
+                      {{ alternative }}
+                    </button>
+                  </div>
                 </div>
                 <div v-if="validationErrors.slug" class="error-message">
                   <i class="mdi mdi-alert-circle"></i>
@@ -140,9 +180,9 @@
                 <div class="section-title-content">
                   <h3 class="section-title">Contenido del Documento</h3>
                   <p class="section-description">
-                    {{ form.type === 'TEXT' ? 'Escribe el contenido en formato Markdown' :
-                       form.type === 'URL' ? 'Ingresa la URL del contenido' :
-                       form.type === 'PDF' ? 'Ingresa la URL del documento PDF' :
+                    {{ form.type === 'TYPE_TEXT' ? 'Escribe el contenido en formato Markdown' :
+                       form.type === 'TYPE_URL' ? 'Ingresa la URL del contenido' :
+                       form.type === 'TYPE_PDF' ? 'Ingresa la URL del documento PDF' :
                        'Selecciona el tipo de documento primero' }}
                   </p>
                 </div>
@@ -159,31 +199,31 @@
                 </div>
               </div>
 
-              <!-- Contenido TEXT/Markdown -->
-              <div v-else-if="form.type === 'TEXT'" class="content-editor">
+              <!-- Contenido TYPE_TEXT/Markdown -->
+              <div v-else-if="form.type === 'TYPE_TEXT'" class="content-editor">
                 <div class="editor-header">
                   <div class="editor-tabs">
-                    <button 
-                      type="button" 
-                      class="tab-btn" 
+                    <button
+                      type="button"
+                      class="tab-btn"
                       :class="{ active: activeTab === 'edit' }"
                       @click="activeTab = 'edit'"
                     >
                       <i class="mdi mdi-pencil"></i>
                       Editar
                     </button>
-                    <button 
-                      type="button" 
-                      class="tab-btn" 
+                    <button
+                      type="button"
+                      class="tab-btn"
                       :class="{ active: activeTab === 'preview' }"
                       @click="activeTab = 'preview'"
                     >
                       <i class="mdi mdi-eye"></i>
                       Vista Previa
                     </button>
-                    <button 
-                      type="button" 
-                      class="tab-btn" 
+                    <button
+                      type="button"
+                      class="tab-btn"
                       :class="{ active: activeTab === 'split' }"
                       @click="activeTab = 'split'"
                     >
@@ -192,9 +232,9 @@
                     </button>
                   </div>
                   <div class="editor-actions">
-                    <button 
-                      type="button" 
-                      class="action-btn" 
+                    <button
+                      type="button"
+                      class="action-btn"
                       @click="toggleFullscreen"
                       title="Pantalla completa"
                     >
@@ -265,8 +305,8 @@
 
                   <!-- Modo Vista Previa -->
                   <div v-else-if="activeTab === 'preview'" class="preview-panel">
-                    <div class="preview-content" v-html="renderedMarkdown"></div>
-                    <div v-if="!form.content" class="preview-empty">
+                    <div v-if="form.content" class="preview-content" v-html="renderedMarkdown"></div>
+                    <div v-else class="preview-empty">
                       <i class="mdi mdi-eye-outline"></i>
                       <p>Escribe algo en el editor para ver la vista previa</p>
                     </div>
@@ -295,8 +335,8 @@
                         <i class="mdi mdi-eye"></i>
                         <span>Vista Previa</span>
                       </div>
-                      <div class="preview-content split-preview-content" v-html="renderedMarkdown"></div>
-                      <div v-if="!form.content" class="preview-empty">
+                      <div class="preview-content split-preview-content" v-if="form.content" v-html="renderedMarkdown"></div>
+                      <div v-else class="preview-empty">
                         <i class="mdi mdi-eye-outline"></i>
                         <p>Escribe algo en el editor para ver la vista previa</p>
                       </div>
@@ -306,65 +346,172 @@
               </div>
 
               <!-- Contenido URL -->
-              <div v-else-if="form.type === 'URL'" class="url-input">
-                <div class="input-container">
-                  <div class="input-icon">
-                    <i class="mdi mdi-link-variant"></i>
+              <div v-else-if="form.type === 'TYPE_URL'" class="url-editor">
+                <div class="editor-header">
+                  <div class="editor-tabs">
+                    <button
+                      type="button"
+                      class="tab-btn"
+                      :class="{ active: activeTab === 'edit' }"
+                      @click="activeTab = 'edit'"
+                    >
+                      <i class="mdi mdi-pencil"></i>
+                      Editar URL
+                    </button>
+                    <button
+                      type="button"
+                      class="tab-btn"
+                      :class="{ active: activeTab === 'preview' }"
+                      @click="activeTab = 'preview'"
+                    >
+                      <i class="mdi mdi-eye"></i>
+                      Vista Previa
+                    </button>
                   </div>
-                  <input
-                    v-model="form.content"
-                    type="url"
-                    class="form-input"
-                    :class="{ error: validationErrors.content }"
-                    placeholder="https://ejemplo.com/documento"
-                    @input="validateField('content')"
-                    required
-                    :disabled="isSaving"
-                  />
                 </div>
-                <div class="url-preview" v-if="form.content && isValidUrl(form.content)">
-                  <div class="preview-header">
-                    <i class="mdi mdi-eye-outline"></i>
-                    Vista previa del enlace
+
+                <div class="editor-content">
+                  <!-- Modo Editar URL -->
+                  <div v-if="activeTab === 'edit'" class="editor-panel">
+                    <div class="input-container">
+                      <div class="input-icon">
+                        <i class="mdi mdi-link-variant"></i>
+                      </div>
+                      <input
+                        v-model="form.content"
+                        type="url"
+                        class="form-input"
+                        :class="{ error: validationErrors.content }"
+                        placeholder="https://ejemplo.com/documento"
+                        @input="validateField('content')"
+                        required
+                        :disabled="isSaving"
+                      />
+                    </div>
+                    <div class="editor-footer">
+                      <span class="char-count">{{ form.content?.length || 0 }} caracteres</span>
+                      <span class="url-help">
+                        <i class="mdi mdi-help-circle-outline"></i>
+                        Ingresa una URL válida para el contenido
+                      </span>
+                    </div>
                   </div>
-                  <div class="preview-content">
-                    <a :href="form.content" target="_blank" rel="noopener noreferrer" class="preview-link">
-                      {{ form.content }}
-                      <i class="mdi mdi-open-in-new"></i>
-                    </a>
+
+                  <!-- Modo Vista Previa URL -->
+                  <div v-else-if="activeTab === 'preview'" class="preview-panel">
+                    <div v-if="form.content && isValidUrl(form.content)" class="preview-content">
+                      <div class="url-preview-card">
+                        <div class="preview-header">
+                          <i class="mdi mdi-link-variant"></i>
+                          <span>Vista previa del enlace</span>
+                        </div>
+                        <div class="preview-body">
+                          <div class="url-info">
+                            <div class="url-title">{{ getUrlTitle(form.content) }}</div>
+                            <div class="url-domain">{{ getUrlDomain(form.content) }}</div>
+                          </div>
+                          <a :href="form.content" target="_blank" rel="noopener noreferrer" class="preview-link">
+                            <i class="mdi mdi-open-in-new"></i>
+                            Abrir enlace
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else class="preview-empty">
+                      <i class="mdi mdi-link-variant"></i>
+                      <p>Ingresa una URL válida para ver la vista previa</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
               <!-- Contenido PDF -->
-              <div v-else-if="form.type === 'PDF'" class="pdf-input">
-                <div class="input-container">
-                  <div class="input-icon">
-                    <i class="mdi mdi-file-pdf-box"></i>
+              <div v-else-if="form.type === 'TYPE_PDF'" class="pdf-editor">
+                <div class="editor-header">
+                  <div class="editor-tabs">
+                    <button
+                      type="button"
+                      class="tab-btn"
+                      :class="{ active: activeTab === 'edit' }"
+                      @click="activeTab = 'edit'"
+                    >
+                      <i class="mdi mdi-pencil"></i>
+                      Editar PDF
+                    </button>
+                    <button
+                      type="button"
+                      class="tab-btn"
+                      :class="{ active: activeTab === 'preview' }"
+                      @click="activeTab = 'preview'"
+                    >
+                      <i class="mdi mdi-eye"></i>
+                      Vista Previa
+                    </button>
                   </div>
-                  <input
-                    v-model="form.content"
-                    type="url"
-                    class="form-input"
-                    :class="{ error: validationErrors.content }"
-                    placeholder="https://ejemplo.com/documento.pdf"
-                    @input="validateField('content')"
-                    required
-                    :disabled="isSaving"
-                  />
                 </div>
-                <div class="pdf-preview" v-if="form.content && isValidUrl(form.content)">
-                  <div class="preview-header">
-                    <i class="mdi mdi-file-pdf-box"></i>
-                    Vista previa del PDF
+
+                <div class="editor-content">
+                  <!-- Modo Editar PDF -->
+                  <div v-if="activeTab === 'edit'" class="editor-panel">
+                    <div class="input-container">
+                      <div class="input-icon">
+                        <i class="mdi mdi-file-pdf-box"></i>
+                      </div>
+                      <input
+                        v-model="form.content"
+                        type="url"
+                        class="form-input"
+                        :class="{ error: validationErrors.content }"
+                        placeholder="https://ejemplo.com/documento.pdf"
+                        @input="validateField('content')"
+                        required
+                        :disabled="isSaving"
+                      />
+                    </div>
+                    <div class="editor-footer">
+                      <span class="char-count">{{ form.content?.length || 0 }} caracteres</span>
+                      <span class="pdf-help">
+                        <i class="mdi mdi-help-circle-outline"></i>
+                        Ingresa la URL del documento PDF
+                      </span>
+                    </div>
                   </div>
-                  <div class="preview-content">
-                    <iframe
-                      :src="form.content"
-                      class="pdf-viewer"
-                      frameborder="0"
-                      sandbox="allow-same-origin allow-scripts"
-                    ></iframe>
+
+                  <!-- Modo Vista Previa PDF -->
+                  <div v-else-if="activeTab === 'preview'" class="preview-panel">
+                    <div v-if="form.content && isValidUrl(form.content)" class="preview-content">
+                      <div class="pdf-preview-card">
+                        <div class="preview-header">
+                          <i class="mdi mdi-file-pdf-box"></i>
+                          <span>Vista previa del PDF</span>
+                        </div>
+                        <div class="preview-body">
+                          <div class="pdf-info">
+                            <div class="pdf-title">{{ getPdfTitle(form.content) }}</div>
+                            <div class="pdf-url">{{ form.content }}</div>
+                          </div>
+                          <div class="pdf-viewer-container">
+                            <iframe
+                              :src="form.content"
+                              class="pdf-viewer"
+                              frameborder="0"
+                              sandbox="allow-same-origin allow-scripts"
+                              @error="handlePdfError"
+                            ></iframe>
+                          </div>
+                          <div class="pdf-actions">
+                            <a :href="form.content" target="_blank" rel="noopener noreferrer" class="pdf-link">
+                              <i class="mdi mdi-open-in-new"></i>
+                              Abrir PDF en nueva pestaña
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else class="preview-empty">
+                      <i class="mdi mdi-file-pdf-box"></i>
+                      <p>Ingresa una URL válida de PDF para ver la vista previa</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -387,30 +534,46 @@
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="documentRoles" class="form-label">
-                <i class="mdi mdi-account-group-outline"></i>
-                Roles con Acceso
-              </label>
-              <div class="roles-selector">
-                <div class="role-options">
-                  <label v-for="role in roleOptions" :key="role.value" class="role-option">
-                    <input
-                      type="checkbox"
-                      :value="role.value"
-                      v-model="form.roles"
-                      :id="`role-${role.value}`"
-                      class="role-checkbox"
-                    />
-                    <span class="role-label">
-                      <i :class="role.icon"></i>
-                      {{ role.title }}
-                    </span>
-                  </label>
+            <!-- Roles de Acceso -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="mdi mdi-account-key"></i>
+                  Roles de Acceso
+                  <span class="required">*</span>
+                </label>
+                <fieldset class="roles-selector">
+                  <legend class="sr-only">
+                    Seleccionar roles que pueden acceder a este documento
+                  </legend>
+                  <div v-for="role in availableRolesList" :key="role.value" class="role-option">
+                    <label class="checkbox-label">
+                      <input
+                        v-model="form.roles"
+                        :value="role.value"
+                        type="checkbox"
+                        class="form-checkbox"
+                        :id="`role-${role.value}`"
+                        :aria-describedby="`role-${role.value}-desc`"
+                        :disabled="isSaving"
+                      />
+                      <span class="checkbox-text">
+                        <i :class="['mdi', role.icon]"></i>
+                        {{ role.label }}
+                      </span>
+                    </label>
+                    <div class="role-description" :id="`role-${role.value}-desc`">
+                      {{ role.description }}
+                    </div>
+                  </div>
+                </fieldset>
+                <div class="form-help">
+                  Selecciona los roles que pueden acceder a este documento
                 </div>
-              </div>
-              <div class="form-help">
-                Selecciona los roles que pueden acceder a este documento
+                <div v-if="validationErrors.roles" class="error-message">
+                  <i class="mdi mdi-alert-circle"></i>
+                  {{ validationErrors.roles }}
+                </div>
               </div>
             </div>
           </div>
@@ -457,6 +620,10 @@ const props = defineProps({
   document: {
     type: Object,
     default: null
+  },
+  loading: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -480,41 +647,45 @@ const form = ref({
 
 const validationErrors = ref({})
 const isSaving = ref(false)
+const slugAlternatives = ref([])
 
 // Editor de Markdown
 const activeTab = ref('edit')
 const isFullscreen = ref(false)
-
-// Document types and roles
-const roleOptions = [
-  { title: 'Administrador', value: 'ROLE_ADMIN', icon: 'mdi-shield-crown' },
-  { title: 'Super Usuario', value: 'ROLE_SUPER_USER', icon: 'mdi-shield-star' },
-  { title: 'Usuario', value: 'ROLE_USER', icon: 'mdi-account' },
-  { title: 'Estudiante', value: 'ROLE_STUDENT', icon: 'mdi-school' },
-  { title: 'Profesor', value: 'ROLE_TEACHER', icon: 'mdi-teach' }
-]
 
 // Computed
 const isEditing = computed(() => !!props.document)
 
 // Renderizar Markdown
 const renderedMarkdown = computed(() => {
-  if (!form.value.content) return ''
-  
+  console.log('📝 [MARKDOWN] Computed ejecutado, contenido:', form.value.content ? 'Sí' : 'No')
+
+  if (!form.value.content || form.value.content.trim() === '') {
+    console.log('📝 [MARKDOWN] No hay contenido para renderizar')
+    return ''
+  }
+
   try {
+    console.log('📝 [MARKDOWN] Renderizando contenido:', form.value.content.substring(0, 100) + '...')
+
     // Configurar marked para renderizado seguro
-    marked.setOptions({
+    const options = {
       breaks: true,
       gfm: true,
-      sanitize: false,
       smartLists: true,
       smartypants: true
-    })
-    
-    return marked(form.value.content)
+    }
+
+    // Usar la API correcta de marked v16
+    const result = marked(form.value.content, options)
+    console.log('📝 [MARKDOWN] Resultado renderizado:', result.substring(0, 100) + '...')
+    console.log('📝 [MARKDOWN] Longitud del resultado:', result.length)
+
+    return result
   } catch (error) {
-    console.error('Error renderizando Markdown:', error)
-    return '<p>Error al renderizar el Markdown</p>'
+    console.error('❌ [MARKDOWN] Error renderizando Markdown:', error)
+    console.error('❌ [MARKDOWN] Contenido que causó el error:', form.value.content)
+    return '<div class="markdown-error"><p>❌ Error al renderizar el Markdown</p><pre>' + error.message + '</pre></div>'
   }
 })
 
@@ -549,8 +720,14 @@ const validateField = (field) => {
       break
 
     case 'slug':
-      if (value && value.length > 50) {
-        validationErrors.value.slug = 'El slug no puede exceder 50 caracteres'
+      if (!value || value.trim() === '') {
+        validationErrors.value.slug = 'El slug es obligatorio'
+      } else if (value.length > 100) {
+        validationErrors.value.slug = 'El slug no puede exceder 100 caracteres'
+      } else if (!/^[a-z0-9-]+$/.test(value)) {
+        validationErrors.value.slug = 'El slug solo puede contener letras minúsculas, números y guiones'
+      } else if (value.startsWith('-') || value.endsWith('-')) {
+        validationErrors.value.slug = 'El slug no puede empezar o terminar con guión'
       } else {
         delete validationErrors.value.slug
       }
@@ -567,6 +744,19 @@ const validateField = (field) => {
         delete validationErrors.value.content
       }
       break
+
+    case 'roles':
+      if (!value || value.length === 0) {
+        validationErrors.value.roles = 'Debe seleccionar al menos un rol'
+      } else if (value.length > 3) {
+        validationErrors.value.roles = 'No puede seleccionar más de 3 roles'
+      } else {
+        delete validationErrors.value.roles
+      }
+      break
+
+    default:
+      break
   }
 }
 
@@ -575,6 +765,30 @@ const validateForm = () => {
   validateField('type')
   validateField('slug')
   validateField('content')
+  validateField('roles')
+}
+
+// Función para generar slug automáticamente
+const generateSlug = (name, makeUnique = false) => {
+  if (!name) return ''
+
+  let slug = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '') // Remover caracteres especiales
+    .replace(/\s+/g, '-') // Reemplazar espacios con guiones
+    .replace(/-+/g, '-') // Reemplazar múltiples guiones con uno solo
+    .replace(/^-|-$/g, '') // Remover guiones al inicio y final
+
+  // Si se solicita hacer único, agregar identificador único más robusto
+  if (makeUnique) {
+    // Usar timestamp completo + número aleatorio para mayor unicidad
+    const timestamp = Date.now().toString()
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+    slug = `${slug}-${timestamp}-${random}`
+  }
+
+  return slug
 }
 
 const isValidUrl = (string) => {
@@ -600,22 +814,78 @@ const toggleFullscreen = () => {
 const insertMarkdown = (before, after = '') => {
   const textarea = document.querySelector('.markdown-editor')
   if (!textarea) return
-  
+
   const start = textarea.selectionStart
   const end = textarea.selectionEnd
   const selectedText = form.value.content.substring(start, end)
-  
+
   const newText = before + selectedText + after
   const newContent = form.value.content.substring(0, start) + newText + form.value.content.substring(end)
-  
+
   form.value.content = newContent
-  
+
   // Restaurar posición del cursor
   nextTick(() => {
     textarea.focus()
     textarea.setSelectionRange(start + before.length, start + before.length + selectedText.length)
   })
 }
+
+// Funciones auxiliares para URL y PDF
+const getUrlTitle = (url) => {
+  try {
+    const urlObj = new URL(url)
+    return urlObj.hostname.replace('www.', '')
+  } catch {
+    return 'Enlace'
+  }
+}
+
+const getUrlDomain = (url) => {
+  try {
+    const urlObj = new URL(url)
+    return urlObj.hostname
+  } catch {
+    return url
+  }
+}
+
+const getPdfTitle = (url) => {
+  try {
+    const urlObj = new URL(url)
+    const pathname = urlObj.pathname
+    const filename = pathname.split('/').pop()
+    return filename || 'Documento PDF'
+  } catch {
+    return 'Documento PDF'
+  }
+}
+
+const handlePdfError = () => {
+  console.warn('⚠️ [PDF] Error cargando PDF:', form.value.content)
+}
+
+// Roles disponibles (mismos que en MenuManagerView)
+const availableRolesList = [
+  {
+    value: 'SUPER_USER',
+    label: 'Super Usuario',
+    icon: 'mdi-account-star',
+    description: 'Acceso completo al sistema',
+  },
+  {
+    value: 'ADMIN',
+    label: 'Administrador',
+    icon: 'mdi-account-key',
+    description: 'Gestión de usuarios y configuración',
+  },
+  {
+    value: 'COLLABORATOR',
+    label: 'Colaborador',
+    icon: 'mdi-account-group',
+    description: 'Acceso a funciones básicas',
+  },
+]
 
 const resetForm = () => {
   form.value = {
@@ -632,13 +902,25 @@ const resetForm = () => {
 const loadDocumentData = () => {
   if (props.document) {
     console.log('📄 [CONTENT FORM] Documento cargado para edición:', props.document?.name || 'Sin nombre')
+    console.log('📄 [CONTENT FORM] Roles del documento:', props.document.roles)
+
+    // Limpiar roles para remover prefijo ROLE_ si existe
+    const cleanRoles = (props.document.roles || []).map(role => {
+      if (typeof role === 'string' && role.startsWith('ROLE_')) {
+        return role.substring(5) // Remover 'ROLE_' (5 caracteres)
+      }
+      return role
+    })
+
+    console.log('📄 [CONTENT FORM] Roles limpios:', cleanRoles)
+
     form.value = {
       name: props.document.name || '',
       type: props.document.type || '',
       slug: props.document.slug || '',
       content: props.document.content || '',
       icon: props.document.icon || '',
-      roles: props.document.roles || []
+      roles: cleanRoles
     }
   } else {
     resetForm()
@@ -657,19 +939,60 @@ const handleSubmit = async () => {
 
   isSaving.value = true
 
+  let documentData = null
+
   try {
-    const documentData = {
-      name: form.value.name,
+    documentData = {
+      name: form.value.name.trim(),
       type: form.value.type,
-      slug: form.value.slug,
-      content: form.value.content,
-      icon: form.value.icon || (form.value.type === 'TEXT' ? 'mdi-file-document' :
-                                form.value.type === 'URL' ? 'mdi-link' :
-                                form.value.type === 'PDF' ? 'mdi-file-pdf-box' : 'mdi-file'),
-      roles: form.value.roles.length > 0 ? form.value.roles : ['ROLE_ADMIN']
+      slug: form.value.slug?.trim() || '',
+      status: true, // Campo requerido por el backend
+      content: form.value.content.trim(),
+      icon: form.value.icon || (form.value.type === 'TYPE_TEXT' ? 'mdi-file-document' :
+                                form.value.type === 'TYPE_URL' ? 'mdi-link' :
+                                form.value.type === 'TYPE_PDF' ? 'mdi-file-pdf-box' : 'mdi-file'),
+      roles: form.value.roles.length > 0 ? form.value.roles : []
+    }
+
+    // Validaciones adicionales antes de enviar
+    if (!documentData.name) {
+      throw new Error('El nombre del documento es obligatorio')
+    }
+
+    if (!documentData.type) {
+      throw new Error('El tipo de documento es obligatorio')
+    }
+
+    if (!documentData.content) {
+      throw new Error('El contenido del documento es obligatorio')
+    }
+
+    if (!documentData.roles || documentData.roles.length === 0) {
+      throw new Error('Debe seleccionar al menos un rol de acceso')
+    }
+
+    // Validar URL si es tipo URL o PDF
+    if ((documentData.type === 'TYPE_URL' || documentData.type === 'TYPE_PDF') && !isValidUrl(documentData.content)) {
+      throw new Error('La URL proporcionada no es válida')
     }
 
     console.log('📄 [CONTENT FORM] Datos del documento:', documentData)
+    console.log('📄 [CONTENT FORM] Roles específicos:', documentData.roles)
+    console.log('📄 [CONTENT FORM] Tipo de roles:', typeof documentData.roles)
+    console.log('📄 [CONTENT FORM] Es array:', Array.isArray(documentData.roles))
+    console.log('📄 [CONTENT FORM] Longitud:', documentData.roles?.length)
+    console.log('📄 [CONTENT FORM] Roles del formulario:', form.value.roles)
+    console.log('📄 [CONTENT FORM] Roles disponibles:', availableRolesList.map(r => r.value))
+
+    // Verificar que no hay prefijos ROLE_ duplicados
+    const hasDuplicatePrefix = documentData.roles.some(role =>
+      typeof role === 'string' && role.startsWith('ROLE_ROLE_')
+    )
+    console.log('📄 [CONTENT FORM] ¿Tiene prefijos duplicados?', hasDuplicatePrefix)
+
+    if (hasDuplicatePrefix) {
+      console.warn('⚠️ [CONTENT FORM] Detectados roles con prefijo ROLE_ duplicado:', documentData.roles)
+    }
 
     if (isEditing.value) {
       console.log('📄 [CONTENT FORM] Actualizando documento existente...')
@@ -681,11 +1004,107 @@ const handleSubmit = async () => {
       console.log('✅ [CONTENT FORM] Documento creado exitosamente')
     }
 
-    emit('saved')
+    // Agregar el ID al documentData para el emit
+    const documentDataWithId = {
+      ...documentData,
+      id: isEditing.value ? props.document.id : undefined
+    }
+
+    console.log('📄 [CONTENT FORM] Emitiendo evento saved con ID:', documentDataWithId.id)
+    console.log('📄 [CONTENT FORM] Documento completo:', documentDataWithId)
+
+    emit('saved', documentDataWithId)
     handleClose()
 
   } catch (error) {
     console.error('❌ [CONTENT FORM] Error guardando documento:', error)
+    console.error('❌ [CONTENT FORM] Status:', error.response?.status)
+    console.error('❌ [CONTENT FORM] Response data:', error.response?.data)
+
+    if (documentData) {
+      console.error('❌ [CONTENT FORM] Request data:', documentData)
+    } else {
+      console.error('❌ [CONTENT FORM] Request data: No disponible (error en validación)')
+    }
+
+    // Manejar error específico de slug duplicado
+    if (error.response?.status === 422 && error.response?.data?.detail?.includes('slug') && error.response?.data?.detail?.includes('ya existe')) {
+      console.log('🔄 [CONTENT FORM] Slug duplicado detectado, regenerando automáticamente...')
+
+      // Regenerar slug único
+      const newSlug = generateSlug(form.value.name, true)
+      form.value.slug = newSlug
+      validateField('slug')
+
+      console.log('📝 [CONTENT FORM] Nuevo slug generado:', newSlug)
+
+      // Mostrar mensaje al usuario
+      console.log('ℹ️ [CONTENT FORM] Slug regenerado automáticamente para evitar duplicados')
+
+      // Intentar guardar nuevamente con el nuevo slug
+      try {
+        const newDocumentData = {
+          ...documentData,
+          slug: newSlug
+        }
+
+        if (isEditing.value) {
+          await documentService.updateDocument(props.document.id, newDocumentData)
+        } else {
+          await documentService.createDocument(newDocumentData)
+        }
+
+        console.log('✅ [CONTENT FORM] Documento guardado exitosamente con slug único')
+
+        // Agregar el ID al newDocumentData para el emit
+        const newDocumentDataWithId = {
+          ...newDocumentData,
+          id: isEditing.value ? props.document.id : undefined
+        }
+
+        console.log('📄 [CONTENT FORM] Emitiendo evento saved con ID (slug único):', newDocumentDataWithId.id)
+        console.log('📄 [CONTENT FORM] Documento completo (slug único):', newDocumentDataWithId)
+
+        emit('saved', newDocumentDataWithId)
+        handleClose()
+        return
+
+      } catch (retryError) {
+        console.error('❌ [CONTENT FORM] Error en reintento:', retryError)
+        // Continuar con el manejo de errores normal
+      }
+    }
+
+    // Mostrar error específico según el código de estado
+    if (error.response?.status === 422) {
+      console.error('❌ [CONTENT FORM] Error 422: Datos no válidos')
+      console.error('❌ [CONTENT FORM] Detalles del error:', error.response?.data)
+
+      // Si hay errores de validación específicos, mostrarlos
+      if (error.response?.data?.errors) {
+        console.error('❌ [CONTENT FORM] Errores de validación:', error.response.data.errors)
+      }
+
+      // Mostrar mensaje más específico
+      if (error.response?.data?.message) {
+        console.error('❌ [CONTENT FORM] Mensaje del servidor:', error.response.data.message)
+      }
+
+      // Mostrar campos específicos que fallaron
+      if (error.response?.data?.validation) {
+        console.error('❌ [CONTENT FORM] Validación fallida:', error.response.data.validation)
+      }
+
+    } else if (error.response?.status === 400) {
+      console.error('❌ [CONTENT FORM] Error 400: Solicitud incorrecta')
+    } else if (error.response?.status === 401) {
+      console.error('❌ [CONTENT FORM] Error 401: No autorizado')
+    } else if (error.response?.status === 500) {
+      console.error('❌ [CONTENT FORM] Error 500: Error interno del servidor')
+    } else if (error.message) {
+      console.error('❌ [CONTENT FORM] Error de validación:', error.message)
+    }
+
     // Aquí podrías mostrar un mensaje de error al usuario
   } finally {
     isSaving.value = false
@@ -705,9 +1124,92 @@ watch(() => props.modelValue, (newValue) => {
     loadDocumentData()
   }
 })
+
+// Watcher para generar slug automáticamente cuando cambie el nombre
+watch(() => form.value.name, (newName) => {
+  if (newName && !form.value.slug) {
+    form.value.slug = generateSlug(newName)
+    validateField('slug')
+  }
+})
+
+// Función para regenerar slug manualmente
+const regenerateSlug = () => {
+  if (form.value.name) {
+    form.value.slug = generateSlug(form.value.name, true) // Hacer único por defecto
+    validateField('slug')
+    generateSlugAlternatives()
+  }
+}
+
+// Función para generar opciones de slug alternativas
+const generateSlugAlternatives = () => {
+  if (!form.value.name) return
+
+  const baseSlug = form.value.name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+
+  const alternatives = []
+
+  // Generar diferentes variaciones
+  alternatives.push(`${baseSlug}-${Date.now()}`)
+  alternatives.push(`${baseSlug}-${Math.floor(Math.random() * 10000)}`)
+  alternatives.push(`${baseSlug}-v2`)
+  alternatives.push(`${baseSlug}-nuevo`)
+  alternatives.push(`${baseSlug}-${new Date().getFullYear()}`)
+
+  slugAlternatives.value = alternatives.slice(0, 3) // Mostrar solo 3 opciones
+}
+
+// Función para seleccionar una opción de slug alternativa
+const selectSlugAlternative = (alternative) => {
+  form.value.slug = alternative
+  validateField('slug')
+  slugAlternatives.value = [] // Limpiar opciones después de seleccionar
+}
 </script>
 
 <style scoped>
+/* Estilos para indicador de carga del formulario */
+.form-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  color: #6c757d;
+  text-align: center;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.form-loading .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e9ecef;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.form-loading p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* Modal Overlay */
 .modal-overlay {
   position: fixed;
@@ -924,6 +1426,83 @@ watch(() => props.modelValue, (newValue) => {
   font-size: 0.85rem;
   color: #666;
   margin-top: 0.25rem;
+}
+
+.form-help {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+/* Roles Selector */
+.roles-selector {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.role-option {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+  transition: all 0.3s ease;
+}
+
+.role-option:hover {
+  background: #f0f0f0;
+  border-color: #1976d2;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  margin: 0;
+}
+
+.form-checkbox {
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: #1976d2;
+  cursor: pointer;
+}
+
+.checkbox-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #333;
+  flex: 1;
+}
+
+.checkbox-text i {
+  font-size: 1.1rem;
+  color: #1976d2;
+}
+
+.role-description {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 0.5rem;
+  margin-left: 2rem;
+  line-height: 1.4;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .error-message {
@@ -1296,30 +1875,180 @@ watch(() => props.modelValue, (newValue) => {
   .split-panel {
     flex-direction: column;
   }
-  
+
   .split-divider {
     width: 100%;
     height: 1px;
   }
-  
+
   .editor-tabs {
     flex-wrap: wrap;
   }
-  
+
   .tab-btn {
     font-size: 0.8rem;
     padding: 0.4rem 0.8rem;
   }
 }
 
-/* URL Input */
-.url-input {
+/* URL Editor */
+.url-editor {
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
   animation: fadeInUp 0.3s ease-out;
 }
 
-/* PDF Input */
-.pdf-input {
+/* PDF Editor */
+.pdf-editor {
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
   animation: fadeInUp 0.3s ease-out;
+}
+
+/* URL Preview Card */
+.url-preview-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1rem;
+}
+
+.url-preview-card .preview-header {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.url-preview-card .preview-body {
+  padding: 1rem;
+}
+
+.url-info {
+  margin-bottom: 1rem;
+}
+
+.url-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 0.25rem;
+}
+
+.url-domain {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.preview-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.preview-link:hover {
+  background: #0056b3;
+  color: white;
+}
+
+/* PDF Preview Card */
+.pdf-preview-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1rem;
+}
+
+.pdf-preview-card .preview-header {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.pdf-preview-card .preview-body {
+  padding: 1rem;
+}
+
+.pdf-info {
+  margin-bottom: 1rem;
+}
+
+.pdf-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 0.25rem;
+}
+
+.pdf-url {
+  font-size: 0.9rem;
+  color: #6c757d;
+  word-break: break-all;
+}
+
+.pdf-viewer-container {
+  margin: 1rem 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pdf-viewer {
+  width: 100%;
+  height: 400px;
+  border: none;
+}
+
+.pdf-actions {
+  text-align: center;
+}
+
+.pdf-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #dc3545;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.pdf-link:hover {
+  background: #c82333;
+  color: white;
+}
+
+/* Help text styles */
+.url-help,
+.pdf-help {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: #6c757d;
 }
 
 .editor-toolbar {
@@ -1565,6 +2294,234 @@ watch(() => props.modelValue, (newValue) => {
 .btn-primary {
   background: #1976d2;
   color: white;
+}
+
+/* Estilos para el botón de regenerar slug */
+.slug-regenerate-btn {
+  background: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #e3f2fd;
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+.slug-regenerate-btn:hover:not(:disabled) {
+  background: #1976d2;
+  color: white;
+  border-color: #1976d2;
+}
+
+.slug-regenerate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Estilos para opciones de slug alternativas */
+.slug-alternatives {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 0.5rem;
+  animation: fadeInUp 0.3s ease;
+}
+
+.slug-alternatives-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.slug-alternatives-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.slug-alternative-btn {
+  background: white;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.slug-alternative-btn:hover:not(:disabled) {
+  background: #e3f2fd;
+  color: #1976d2;
+  border-color: #1976d2;
+  transform: translateY(-1px);
+}
+
+.slug-alternative-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Estilos para vista previa de Markdown */
+.preview-content {
+  padding: 1rem;
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid #e9ecef;
+  min-height: 200px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.preview-content h1,
+.preview-content h2,
+.preview-content h3,
+.preview-content h4,
+.preview-content h5,
+.preview-content h6 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.preview-content h1 {
+  font-size: 2rem;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 0.5rem;
+}
+
+.preview-content h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 0.25rem;
+}
+
+.preview-content h3 {
+  font-size: 1.25rem;
+}
+
+.preview-content p {
+  margin-bottom: 1rem;
+}
+
+.preview-content ul,
+.preview-content ol {
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+}
+
+.preview-content li {
+  margin-bottom: 0.25rem;
+}
+
+.preview-content blockquote {
+  border-left: 4px solid #007bff;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.25rem;
+}
+
+.preview-content code {
+  background: #f8f9fa;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.preview-content pre {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.preview-content pre code {
+  background: none;
+  padding: 0;
+}
+
+.preview-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.preview-content th,
+.preview-content td {
+  border: 1px solid #dee2e6;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.preview-content th {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+
+.preview-content a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.preview-content a:hover {
+  text-decoration: underline;
+}
+
+.preview-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.25rem;
+  margin: 1rem 0;
+}
+
+.preview-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #6c757d;
+  text-align: center;
+}
+
+.preview-empty i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.markdown-error {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #f5c6cb;
+}
+
+.markdown-error pre {
+  background: #f1b0b7;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
 }
 
 .btn-primary:hover:not(:disabled) {

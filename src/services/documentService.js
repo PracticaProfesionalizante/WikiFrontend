@@ -26,104 +26,9 @@ class DocumentService {
       console.error('❌ [DOCUMENT SERVICE] Status:', error.response?.status)
       console.error('❌ [DOCUMENT SERVICE] Response:', error.response?.data)
 
-      // Si es error 500 o el endpoint no existe, devolver datos de prueba
-      if (error.response?.status === 500 || error.response?.status === 404) {
-        console.log('🔄 [DOCUMENT SERVICE] Backend no disponible, usando datos de prueba')
-        console.log('ℹ️ [DOCUMENT SERVICE] Esto es normal durante el desarrollo del backend')
-        return this.getSampleDocuments()
-      }
-
+      // Re-lanzar el error para que sea manejado por el componente
       throw error
     }
-  }
-
-  /**
-   * Obtener datos de prueba cuando el backend no está disponible
-   * @returns {Array} Lista de documentos de prueba
-   */
-  getSampleDocuments() {
-    console.log('📄 [DOCUMENT SERVICE] Generando datos de prueba...')
-
-    return [
-      {
-        id: 1,
-        name: 'Reglamento de Estudiantes',
-        type: 'TEXT',
-        slug: 'reglamentos',
-        content: '# Reglamento de Estudiantes\n\n## Capítulo 1: Disposiciones Generales\n\nEste documento establece las normas y procedimientos...',
-        icon: 'mdi-file-document',
-        createdBy: 'Admin Principal',
-        updatedBy: 'Admin Principal',
-        createdAt: '2025-01-10T10:00:00.000Z',
-        updatedAt: '2025-01-10T15:30:00.000Z',
-        roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
-      },
-      {
-        id: 2,
-        name: 'Manual de Usuario',
-        type: 'TEXT',
-        slug: 'manuales',
-        content: '# Manual de Usuario\n\n## Introducción\n\nBienvenido al sistema de gestión académica...',
-        icon: 'mdi-book-open',
-        createdBy: 'Editor Técnico',
-        updatedBy: 'Editor Técnico',
-        createdAt: '2025-01-11T14:30:00.000Z',
-        updatedAt: '2025-01-11T16:45:00.000Z',
-        roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
-      },
-      {
-        id: 3,
-        name: 'Guía de Programación',
-        type: 'URL',
-        slug: 'guias',
-        content: 'https://developer.mozilla.org/es/docs/Web/JavaScript',
-        icon: 'mdi-link',
-        createdBy: 'Administrador',
-        updatedBy: 'Administrador',
-        createdAt: '2025-01-09T09:15:00.000Z',
-        updatedAt: '2025-01-09T11:20:00.000Z',
-        roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
-      },
-      {
-        id: 4,
-        name: 'Documento de Configuración',
-        type: 'TEXT',
-        slug: 'configuracion',
-        content: '# Configuración del Sistema\n\n## Parámetros Generales\n\n- Puerto: 8080\n- Base de datos: MySQL\n- Cache: Redis',
-        icon: 'mdi-cog',
-        createdBy: 'Editor de Contenido',
-        updatedBy: 'Editor de Contenido',
-        createdAt: '2025-01-12T08:45:00.000Z',
-        updatedAt: '2025-01-12T10:15:00.000Z',
-        roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
-      },
-      {
-        id: 5,
-        name: 'Presentación Institucional',
-        type: 'URL',
-        slug: 'presentaciones',
-        content: 'https://ejemplo.com/presentacion-institucional.pdf',
-        icon: 'mdi-presentation',
-        createdBy: 'Admin Principal',
-        updatedBy: 'Admin Principal',
-        createdAt: '2025-01-08T16:00:00.000Z',
-        updatedAt: '2025-01-08T17:30:00.000Z',
-        roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
-      },
-      {
-        id: 6,
-        name: 'Política de Seguridad',
-        type: 'TEXT',
-        slug: 'politicas',
-        content: '# Política de Seguridad\n\n## Objetivos\n\nEsta política establece las medidas de seguridad...',
-        icon: 'mdi-shield-check',
-        createdBy: 'Admin Principal',
-        updatedBy: 'Admin Principal',
-        createdAt: '2025-01-13T09:00:00.000Z',
-        updatedAt: '2025-01-13T12:00:00.000Z',
-        roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
-      }
-    ]
   }
 
   /**
@@ -155,10 +60,14 @@ class DocumentService {
   async createDocument(documentData) {
     try {
       console.log('📄 [DOCUMENT SERVICE] Creando nuevo documento...')
-      console.log('📄 [DOCUMENT SERVICE] Datos:', {
+      console.log('📄 [DOCUMENT SERVICE] Datos completos:', documentData)
+      console.log('📄 [DOCUMENT SERVICE] Estructura:', {
         name: documentData.name,
         type: documentData.type,
-        slug: documentData.slug
+        slug: documentData.slug,
+        content: documentData.content,
+        icon: documentData.icon,
+        roles: documentData.roles
       })
 
       const response = await api.post('/documents', documentData)
@@ -169,6 +78,9 @@ class DocumentService {
       return response.data
     } catch (error) {
       console.error('❌ [DOCUMENT SERVICE] Error creando documento:', error)
+      console.error('❌ [DOCUMENT SERVICE] Status:', error.response?.status)
+      console.error('❌ [DOCUMENT SERVICE] Response data:', error.response?.data)
+      console.error('❌ [DOCUMENT SERVICE] Request data:', documentData)
       throw error
     }
   }

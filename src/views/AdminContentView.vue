@@ -29,17 +29,6 @@
               >
                 Crear Documento
               </v-btn>
-              <v-btn
-                color="secondary"
-                variant="outlined"
-                prepend-icon="mdi-database-refresh"
-                size="large"
-                class="load-sample-btn"
-                @click="loadSampleData"
-                :disabled="loading"
-              >
-                Cargar Datos de Prueba
-              </v-btn>
             </div>
           </div>
         </div>
@@ -57,30 +46,21 @@
               </div>
             </div>
             <div class="stat-card">
-              <div class="stat-icon published">
+              <div class="stat-icon active">
                 <i class="mdi mdi-check-circle"></i>
               </div>
               <div class="stat-content">
-                <div class="stat-value">{{ publishedCount }}</div>
-                <div class="stat-label">Publicados</div>
+                <div class="stat-value">{{ activeCount }}</div>
+                <div class="stat-label">Activos</div>
               </div>
             </div>
             <div class="stat-card">
-              <div class="stat-icon draft">
-                <i class="mdi mdi-file-edit"></i>
+              <div class="stat-icon inactive">
+                <i class="mdi mdi-pause-circle"></i>
               </div>
               <div class="stat-content">
-                <div class="stat-value">{{ draftCount }}</div>
-                <div class="stat-label">Borradores</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon archived">
-                <i class="mdi mdi-archive"></i>
-              </div>
-              <div class="stat-content">
-                <div class="stat-value">{{ archivedCount }}</div>
-                <div class="stat-label">Archivados</div>
+                <div class="stat-value">{{ inactiveCount }}</div>
+                <div class="stat-label">Inactivos</div>
               </div>
             </div>
           </div>
@@ -146,20 +126,18 @@
                 <label class="filter-label">Tipo:</label>
                 <select v-model="filterType" class="filter-select">
                   <option value="">Todos los tipos</option>
-                  <option value="Página">Páginas</option>
-                  <option value="Artículo">Artículos</option>
-                  <option value="Categoría">Categorías</option>
-                  <option value="Noticia">Noticias</option>
+                  <option value="TYPE_TEXT">TEXT</option>
+                  <option value="TYPE_URL">URL</option>
+                  <option value="TYPE_PDF">PDF</option>
                 </select>
-              </div>
+                </div>
 
               <div class="filter-group">
                 <label class="filter-label">Estado:</label>
                 <select v-model="filterStatus" class="filter-select">
                   <option value="">Todos los estados</option>
-                  <option value="Publicado">Publicado</option>
-                  <option value="Borrador">Borrador</option>
-                  <option value="Archivado">Archivado</option>
+                  <option value="Activo">Activo</option>
+                  <option value="Inactivo">Inactivo</option>
                 </select>
               </div>
 
@@ -294,22 +272,34 @@
                       </td>
                       <td class="title-column">
                         <div class="title-content">
-                          <div class="title-text">{{ item.name }}</div>
+                          <div
+                            @click="previewContent(item)"
+                            class="title-text clickable"
+                            :title="`Hacer clic para ver vista previa de: ${item.name}`"
+                          >
+                            {{ item.name }}
+                          </div>
                           <div class="title-description" v-if="item.slug">
                             📁 {{ item.slug }}
                           </div>
                         </div>
                       </td>
                       <td class="type-column">
-                        <div class="type-chip" :class="`type-${item.type.toLowerCase()}`">
+                        <div class="type-chip" :class="`type-${(item.type || 'unknown').toLowerCase()}`">
                           <i :class="getTypeIcon(item.type)"></i>
-                  {{ item.type }}
+                  {{ item.type || 'Unknown' }}
                         </div>
                       </td>
                       <td class="status-column">
-                        <div class="status-chip" :class="`status-${(item.status || 'Borrador').toLowerCase()}`">
-                          <i :class="getStatusIcon(item.status || 'Borrador')"></i>
-                          {{ item.status || 'Borrador' }}
+                        <div
+                          v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
+                          @click="toggleDocumentStatus(item)"
+                          class="status-chip clickable"
+                          :class="`status-${getDocumentStatus(item).toLowerCase()}`"
+                          :title="`Hacer clic para ${getDocumentStatus(item) === 'Activo' ? 'desactivar' : 'activar'}`"
+                        >
+                          <i :class="getStatusIcon(getDocumentStatus(item))"></i>
+                          {{ getDocumentStatus(item) }}
                         </div>
                       </td>
                       <td class="author-column">
@@ -319,7 +309,7 @@
                 </div>
                       </td>
                       <td class="date-column">
-                        {{ formatDate(item.createdAt) }}
+                {{ formatDate(item.createdAt) }}
                       </td>
                       <td class="date-column">
                         {{ formatDate(item.updatedAt || item.createdAt) }}
@@ -327,26 +317,12 @@
                       <td class="actions-column">
                         <div class="action-buttons">
                           <button
-                            @click="previewContent(item)"
-                            class="action-btn preview"
-                            title="Vista previa"
-                          >
-                            <i class="mdi mdi-eye"></i>
-                          </button>
-                          <button
                             v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
                             @click="openEditDialog(item)"
                             class="action-btn edit"
                             title="Editar"
                           >
                             <i class="mdi mdi-pencil"></i>
-                          </button>
-                          <button
-                            @click="duplicateContent(item)"
-                            class="action-btn duplicate"
-                            title="Duplicar"
-                          >
-                            <i class="mdi mdi-content-copy"></i>
                           </button>
                           <button
                             v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
@@ -368,7 +344,7 @@
             <div v-else class="grid-container">
               <div v-if="loading" class="loading-grid">
                 <div v-for="i in 6" :key="i" class="skeleton-card"></div>
-              </div>
+                </div>
               <div v-else-if="filteredItems.length === 0" class="no-data-grid">
                 <div class="no-data-content">
                   <i class="mdi mdi-file-document-outline"></i>
@@ -401,13 +377,25 @@
                       <i :class="getTypeIcon(item.type)"></i>
                       {{ item.type }}
                     </div>
-                    <div class="card-status" :class="`status-${(item.status || 'Borrador').toLowerCase()}`">
-                      <i :class="getStatusIcon(item.status || 'Borrador')"></i>
+                    <div
+                    v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
+                      @click="toggleDocumentStatus(item)"
+                      class="card-status clickable"
+                      :class="`status-${getDocumentStatus(item).toLowerCase()}`"
+                      :title="`Hacer clic para ${getDocumentStatus(item) === 'Activo' ? 'desactivar' : 'activar'}`"
+                    >
+                      <i :class="getStatusIcon(getDocumentStatus(item))"></i>
                     </div>
                   </div>
 
                   <div class="card-content">
-                    <h3 class="card-title">{{ item.name }}</h3>
+                    <h3
+                      @click="previewContent(item)"
+                      class="card-title clickable"
+                      :title="`Hacer clic para ver vista previa de: ${item.name}`"
+                    >
+                      {{ item.name }}
+                    </h3>
                     <p class="card-description" v-if="item.slug">
                       📁 {{ item.slug }}
                     </p>
@@ -426,26 +414,12 @@
 
                   <div class="card-actions">
                     <button
-                      @click="previewContent(item)"
-                      class="card-action-btn preview"
-                      title="Vista previa"
-                    >
-                      <i class="mdi mdi-eye"></i>
-                    </button>
-                    <button
                     v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
                     @click="openEditDialog(item)"
                       class="card-action-btn edit"
                       title="Editar"
                     >
                       <i class="mdi mdi-pencil"></i>
-                    </button>
-                    <button
-                      @click="duplicateContent(item)"
-                      class="card-action-btn duplicate"
-                      title="Duplicar"
-                    >
-                      <i class="mdi mdi-content-copy"></i>
                     </button>
                     <button
                     v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
@@ -541,7 +515,7 @@
         <div class="modal-content">
           <div class="preview-content">
             <div class="preview-header">
-              <h1 class="preview-title">{{ previewItem?.title }}</h1>
+              <h1 class="preview-title">{{ previewItem?.name }}</h1>
               <div class="preview-meta">
                 <div class="preview-type">
                   <i :class="getTypeIcon(previewItem?.type)"></i>
@@ -559,9 +533,91 @@
             </div>
             <div class="preview-body">
               <p v-if="previewItem?.description">{{ previewItem.description }}</p>
-              <div class="preview-placeholder">
+
+              <!-- Indicador de carga -->
+              <div v-if="previewLoading" class="preview-loading">
+                <div class="loading-spinner"></div>
+                <p>Cargando contenido del documento...</p>
+              </div>
+
+              <!-- Vista previa del contenido según el tipo -->
+              <div v-else-if="previewItem?.content" class="content-preview">
+                <!-- Contenido Markdown/TEXT -->
+                <div v-if="previewItem.type === 'TYPE_TEXT'" class="markdown-preview" v-html="renderedMarkdown"></div>
+
+                <!-- Contenido URL -->
+                <div v-else-if="previewItem.type === 'TYPE_URL'" class="url-preview">
+                  <div class="url-preview-card">
+                    <div class="url-info">
+                      <div class="url-title">{{ getUrlTitle(previewItem.content) }}</div>
+                      <div class="url-domain">{{ getUrlDomain(previewItem.content) }}</div>
+                    </div>
+                    <a :href="previewItem.content" target="_blank" rel="noopener noreferrer" class="preview-link">
+                      <i class="mdi mdi-open-in-new"></i>
+                      Abrir enlace
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Contenido PDF -->
+                <div v-else-if="previewItem.type === 'TYPE_PDF'" class="pdf-preview">
+                  <div class="pdf-preview-card">
+                    <div class="pdf-info">
+                      <div class="pdf-title">{{ getPdfTitle(previewItem.content) }}</div>
+                      <div class="pdf-url">{{ previewItem.content }}</div>
+                    </div>
+
+                    <!-- Para archivos PDF reales, usar el endpoint del backend -->
+                    <div v-if="previewItem.id" class="pdf-iframe-container">
+                      <iframe
+                        :src="`${apiBaseUrl}/documents/file/${previewItem.id}`"
+                        class="pdf-iframe"
+                        @error="handlePdfError"
+                        title="Vista previa del PDF"
+                        frameborder="0"
+                        sandbox="allow-same-origin allow-scripts"
+                      ></iframe>
+                      <div class="pdf-actions">
+                        <a :href="`${apiBaseUrl}/documents/file/${previewItem.id}`" target="_blank" rel="noopener noreferrer" class="pdf-link">
+                          <i class="mdi mdi-open-in-new"></i>
+                          Abrir PDF en nueva pestaña
+                        </a>
+                        <a :href="`${apiBaseUrl}/documents/file/${previewItem.id}`" download class="pdf-link">
+                          <i class="mdi mdi-download"></i>
+                          Descargar PDF
+                        </a>
+                      </div>
+                    </div>
+
+                    <!-- Si no hay ID, mostrar mensaje informativo -->
+                    <div v-else class="pdf-error">
+                      <div class="error-icon">
+                        <i class="mdi mdi-alert-circle"></i>
+                      </div>
+                      <div class="error-message">
+                        <h4>No se puede mostrar el PDF</h4>
+                        <p>El documento no tiene un ID válido para cargar el archivo PDF.</p>
+                        <p><strong>ID del documento:</strong> {{ previewItem.id }}</p>
+                        <p><strong>Contenido:</strong> {{ previewItem.content }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tipo desconocido -->
+                <div v-else class="unknown-content">
+                  <i class="mdi mdi-file-question"></i>
+                  <p>Tipo de contenido no soportado: {{ previewItem.type }}</p>
+                  <div class="raw-content">
+                    <pre>{{ previewItem.content }}</pre>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sin contenido -->
+              <div v-else class="preview-placeholder">
                 <i class="mdi mdi-file-document-outline"></i>
-                <p>Vista previa del contenido aparecería aquí</p>
+                <p>No hay contenido disponible para mostrar</p>
               </div>
             </div>
           </div>
@@ -593,8 +649,8 @@
         </div>
         <div class="modal-content">
           <p>
-            ¿Estás seguro de que deseas eliminar el contenido
-            <strong>"{{ selectedItem?.title }}"</strong>?
+            ¿Estás seguro de que deseas eliminar el documento
+            <strong>"{{ selectedItem?.name }}"</strong>?
           </p>
           <p class="warning-text">
             <i class="mdi mdi-alert"></i>
@@ -650,6 +706,7 @@
     <ContentForm
       v-model="editDialog"
       :document="selectedItem"
+      :loading="editLoading"
       @saved="handleSaveDocument"
       @close="closeEditDialog"
     />
@@ -663,6 +720,7 @@ import documentService from '@/services/documentService'
 import SidebarMenu from '@/components/common/SidebarMenu.vue'
 import AppHeader from '@/components/common/AppHeader.vue'
 import ContentForm from '@/components/ContentForm.vue'
+import { marked } from 'marked'
 
 const authStore = useAuthStore()
 
@@ -680,6 +738,8 @@ const showPreviewModal = ref(false)
 const showBulkDeleteModal = ref(false)
 const selectedItem = ref(null)
 const previewItem = ref(null)
+const previewLoading = ref(false)
+const editLoading = ref(false)
 const isEditing = ref(false)
 const deleting = ref(false)
 const bulkDeleting = ref(false)
@@ -698,99 +758,22 @@ const selectedItems = ref([])
 const currentPage = ref(1)
 const itemsPerPage = ref(25)
 
-// Datos de prueba para documentos (en caso de error del backend)
-const sampleData = [
-  {
-    id: 1,
-    name: 'Reglamento de Estudiantes',
-    type: 'TEXT',
-    slug: 'reglamentos',
-    content: '# Reglamento de Estudiantes\n\n## Capítulo 1: Disposiciones Generales\n\nEste documento establece las normas y procedimientos...',
-    icon: 'mdi-file-document',
-    createdBy: 'Admin Principal',
-    updatedBy: 'Admin Principal',
-    createdAt: '2025-01-10T10:00:00.000Z',
-    updatedAt: '2025-01-10T15:30:00.000Z',
-    roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
-  },
-  {
-    id: 2,
-    name: 'Manual de Usuario',
-    type: 'TEXT',
-    slug: 'manuales',
-    content: '# Manual de Usuario\n\n## Introducción\n\nBienvenido al sistema de gestión académica...',
-    icon: 'mdi-book-open',
-    createdBy: 'Editor Técnico',
-    updatedBy: 'Editor Técnico',
-    createdAt: '2025-01-11T14:30:00.000Z',
-    updatedAt: '2025-01-11T16:45:00.000Z',
-    roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
-  },
-  {
-    id: 3,
-    name: 'Guía de Programación',
-    type: 'URL',
-    slug: 'guias',
-    content: 'https://developer.mozilla.org/es/docs/Web/JavaScript',
-    icon: 'mdi-link',
-    createdBy: 'Administrador',
-    updatedBy: 'Administrador',
-    createdAt: '2025-01-09T09:15:00.000Z',
-    updatedAt: '2025-01-09T11:20:00.000Z',
-    roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
-  },
-  {
-    id: 4,
-    name: 'Documento de Configuración',
-    type: 'TEXT',
-    slug: 'configuracion',
-    content: '# Configuración del Sistema\n\n## Parámetros Generales\n\n- Puerto: 8080\n- Base de datos: MySQL\n- Cache: Redis',
-    icon: 'mdi-cog',
-    createdBy: 'Editor de Contenido',
-    updatedBy: 'Editor de Contenido',
-    createdAt: '2025-01-12T08:45:00.000Z',
-    updatedAt: '2025-01-12T10:15:00.000Z',
-    roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
-  },
-  {
-    id: 5,
-    name: 'Presentación Institucional',
-    type: 'URL',
-    slug: 'presentaciones',
-    content: 'https://ejemplo.com/presentacion-institucional.pdf',
-    icon: 'mdi-presentation',
-    createdBy: 'Admin Principal',
-    updatedBy: 'Admin Principal',
-    createdAt: '2025-01-08T16:00:00.000Z',
-    updatedAt: '2025-01-08T17:30:00.000Z',
-    roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
-  },
-  {
-    id: 6,
-    name: 'Política de Seguridad',
-    type: 'TEXT',
-    slug: 'politicas',
-    content: '# Política de Seguridad\n\n## Objetivos\n\nEsta política establece las medidas de seguridad...',
-    icon: 'mdi-shield-check',
-    createdBy: 'Admin Principal',
-    updatedBy: 'Admin Principal',
-    createdAt: '2025-01-13T09:00:00.000Z',
-    updatedAt: '2025-01-13T12:00:00.000Z',
-    roles: ['ROLE_ADMIN', 'ROLE_SUPER_USER']
-  }
-]
+// URL base de la API
+const apiBaseUrl = 'http://practicas.teclab.edu.ar:8080'
 
 // Computed properties para estadísticas
-const publishedCount = computed(() =>
-  documents.value.filter(item => item.roles?.includes('ROLE_ADMIN')).length
+const activeCount = computed(() =>
+  documents.value.filter(item => {
+    const status = getDocumentStatus(item)
+    return status === 'Activo'
+  }).length
 )
 
-const draftCount = computed(() =>
-  documents.value.filter(item => !item.roles?.includes('ROLE_ADMIN')).length
-)
-
-const archivedCount = computed(() =>
-  documents.value.filter(item => item.type === 'URL').length
+const inactiveCount = computed(() =>
+  documents.value.filter(item => {
+    const status = getDocumentStatus(item)
+    return status === 'Inactivo'
+  }).length
 )
 
 const textDocumentsCount = computed(() =>
@@ -832,7 +815,7 @@ const filteredItems = computed(() => {
   }
 
   if (filterStatus.value) {
-    items = items.filter(item => (item.status || 'Borrador') === filterStatus.value)
+    items = items.filter(item => getDocumentStatus(item) === filterStatus.value)
   }
 
   if (filterAuthor.value) {
@@ -921,42 +904,18 @@ const loadDocuments = async () => {
   loading.value = true
   error.value = null
   try {
-    console.log('📄 [ADMIN CONTENT] Cargando documentos...')
     const response = await documentService.getDocuments()
 
     // Verificar si la respuesta es válida
     if (Array.isArray(response)) {
       documents.value = response
-      console.log('✅ [ADMIN CONTENT] Documentos cargados exitosamente:', response.length)
-
-      // Si se cargaron datos de prueba, no mostrar error
-      if (response.length > 0 && response[0].name === 'Reglamento de Estudiantes') {
-        console.log('ℹ️ [ADMIN CONTENT] Se cargaron datos de prueba (backend no disponible)')
-        success.value = `Se cargaron ${response.length} documentos de prueba`
-      }
     } else {
-      console.warn('⚠️ [ADMIN CONTENT] Respuesta no es un array, usando datos de prueba')
-      documents.value = sampleData
-      success.value = `Se cargaron ${sampleData.length} documentos de prueba`
+      documents.value = []
     }
 
   } catch (err) {
-    console.error('❌ [ADMIN CONTENT] Error cargando documentos:', err)
-    console.error('❌ [ADMIN CONTENT] Error details:', {
-      message: err.message,
-      status: err.response?.status,
-      data: err.response?.data
-    })
-
-    // Solo mostrar error si no es un error 500 (backend no disponible)
-    if (err.response?.status !== 500) {
-      error.value = err.message || 'Error al cargar los documentos'
-    }
-
-    // Usar datos de prueba en caso de error
-    console.log('🔄 [ADMIN CONTENT] Usando datos de prueba debido al error')
-    documents.value = sampleData
-    success.value = `Se cargaron ${sampleData.length} documentos de prueba`
+    error.value = err.message || 'Error al cargar los documentos'
+    documents.value = []
   } finally {
     loading.value = false
   }
@@ -1014,9 +973,26 @@ const toggleSelectAll = () => {
 }
 
 // Funciones de contenido
-const previewContent = (item) => {
-  previewItem.value = item
+const previewContent = async (item) => {
+  // Abrir el modal inmediatamente
   showPreviewModal.value = true
+  previewItem.value = item
+
+  // Si no tiene contenido, intentar obtenerlo del backend
+  if (!item.content && item.id) {
+    previewLoading.value = true
+
+    try {
+      const fullDocument = await documentService.getDocumentById(item.id)
+
+      // Usar el documento completo con contenido
+      previewItem.value = fullDocument
+    } catch (error) {
+      // Mantener el documento original sin contenido
+    } finally {
+      previewLoading.value = false
+    }
+  }
 }
 
 const closePreviewModal = () => {
@@ -1048,12 +1024,56 @@ const duplicateContent = async (item) => {
   }
 }
 
-// Función para cargar datos de prueba
-const loadSampleData = () => {
-  console.log('📄 [ADMIN CONTENT] Cargando datos de prueba...')
-  documents.value = [...sampleData]
-  success.value = `Se cargaron ${sampleData.length} documentos de prueba`
-  console.log('✅ [ADMIN CONTENT] Datos de prueba cargados exitosamente')
+const toggleDocumentStatus = async (item) => {
+  if (!item || !item.id) {
+    return
+  }
+
+  try {
+    const currentStatus = getDocumentStatus(item)
+    const newStatus = currentStatus === 'Activo' ? false : true
+
+    // Limpiar roles para remover prefijo ROLE_ duplicado si existe
+    const cleanRoles = (item.roles || []).map(role => {
+      if (typeof role === 'string' && role.startsWith('ROLE_ROLE_')) {
+        return role.substring(10) // Remover 'ROLE_ROLE_' (10 caracteres)
+      } else if (typeof role === 'string' && role.startsWith('ROLE_')) {
+        return role.substring(5) // Remover 'ROLE_' (5 caracteres)
+      }
+      return role
+    })
+
+    // Preparar datos para actualización (solo campos necesarios)
+    const updateData = {
+      name: item.name,
+      type: item.type,
+      slug: item.slug,
+      status: newStatus,
+      content: item.content,
+      icon: item.icon,
+      roles: cleanRoles
+    }
+
+    // Actualizar el documento en el backend
+    const updatedDocument = await documentService.updateDocument(item.id, updateData)
+
+    // Actualizar en la lista local
+    const index = documents.value.findIndex(doc => doc.id === item.id)
+    if (index > -1) {
+      documents.value[index] = updatedDocument || { ...item, status: newStatus }
+    }
+
+    const statusText = newStatus ? 'activado' : 'desactivado'
+    success.value = `Documento "${item.name}" ${statusText} correctamente`
+
+  } catch (error) {
+    error.value = 'Error al cambiar el estado del documento'
+  }
+}
+
+// Función para refrescar datos
+const refreshData = () => {
+  loadDocuments()
 }
 
 // Funciones de diálogos
@@ -1063,10 +1083,30 @@ const openCreateDialog = () => {
   editDialog.value = true
 }
 
-const openEditDialog = (item) => {
-  selectedItem.value = { ...item }
-  isEditing.value = true
+const openEditDialog = async (item) => {
+  // Abrir el modal inmediatamente
   editDialog.value = true
+  isEditing.value = true
+
+  // Si no tiene contenido completo, obtenerlo del backend
+  if (!item.content && item.id) {
+    editLoading.value = true
+
+    try {
+      const fullDocument = await documentService.getDocumentById(item.id)
+
+      // Usar el documento completo con todos los datos
+      selectedItem.value = { ...fullDocument }
+    } catch (error) {
+      // Usar el documento original sin contenido completo
+      selectedItem.value = { ...item }
+    } finally {
+      editLoading.value = false
+    }
+  } else {
+    // Usar el documento original
+    selectedItem.value = { ...item }
+  }
 }
 
 const closeEditDialog = () => {
@@ -1076,13 +1116,19 @@ const closeEditDialog = () => {
 }
 
 const handleSaveDocument = async (documentData) => {
+  if (!documentData) {
+    return
+  }
+
   try {
-    console.log('📄 [ADMIN CONTENT] Guardando documento...')
-    console.log('📄 [ADMIN CONTENT] Datos:', documentData)
 
     if (isEditing.value) {
       // Update existing document
-      console.log('📄 [ADMIN CONTENT] Actualizando documento existente...')
+
+      if (!documentData.id) {
+        throw new Error('ID del documento no disponible para actualización')
+      }
+
       const updatedDocument = await documentService.updateDocument(documentData.id, documentData)
       const index = documents.value.findIndex(item => item.id === documentData.id)
       if (index > -1) {
@@ -1091,16 +1137,49 @@ const handleSaveDocument = async (documentData) => {
       success.value = `Documento "${documentData.name}" actualizado correctamente`
     } else {
       // Create new document
-      console.log('📄 [ADMIN CONTENT] Creando nuevo documento...')
       const newDocument = await documentService.createDocument(documentData)
       documents.value.unshift(newDocument || { ...documentData, id: Date.now() })
       success.value = `Documento "${documentData.name}" creado correctamente`
     }
 
     closeEditDialog()
-    console.log('✅ [ADMIN CONTENT] Documento guardado exitosamente')
   } catch (err) {
-    console.error('❌ [ADMIN CONTENT] Error guardando documento:', err)
+
+    // Manejar error específico de slug duplicado
+    if (err.response?.status === 422 && err.response?.data?.detail?.includes('slug') && err.response?.data?.detail?.includes('ya existe')) {
+
+      // Generar slug único con timestamp más largo
+      const timestamp = Date.now().toString()
+      const baseSlug = documentData.name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+      const newSlug = `${baseSlug}-${timestamp}`
+
+
+      // Actualizar documentData con nuevo slug
+      const newDocumentData = {
+        ...documentData,
+        slug: newSlug
+      }
+
+      try {
+        // Intentar guardar nuevamente con el nuevo slug
+        if (isEditing.value) {
+          const updatedDocument = await documentService.updateDocument(documentData.id, newDocumentData)
+          documents.value[documents.value.findIndex(item => item.id === documentData.id)] = updatedDocument
+          success.value = `Documento "${documentData.name}" actualizado correctamente`
+        } else {
+          const newDocument = await documentService.createDocument(newDocumentData)
+          documents.value.unshift(newDocument || { ...newDocumentData, id: Date.now() })
+          success.value = `Documento "${documentData.name}" creado correctamente`
+        }
+
+        closeEditDialog()
+        return
+
+      } catch (retryError) {
+        // Continuar con el manejo de errores normal
+      }
+    }
+
     error.value = err.message || `Error al ${isEditing.value ? 'actualizar' : 'crear'} el documento`
 
     // Para desarrollo, simular guardado exitoso
@@ -1135,8 +1214,8 @@ const confirmDelete = async () => {
   error.value = null
 
   try {
-    await contentService.delete(selectedItem.value.id)
-    success.value = `Contenido "${selectedItem.value.title}" eliminado correctamente`
+    await documentService.deleteDocument(selectedItem.value.id)
+    success.value = `Documento "${selectedItem.value.name}" eliminado correctamente`
     closeDeleteDialog()
     await loadDocuments()
 
@@ -1146,13 +1225,15 @@ const confirmDelete = async () => {
       selectedItems.value.splice(index, 1)
     }
   } catch (err) {
-    error.value = err.message || 'Error al eliminar el contenido'
+    error.value = err.message || 'Error al eliminar el documento'
     // Para desarrollo, simular eliminación exitosa
-    const index = documents.value.findIndex(item => item.id === selectedItem.value.id)
-    if (index > -1) {
-      documents.value.splice(index, 1)
-      success.value = `Contenido "${selectedItem.value.name}" eliminado correctamente`
-      closeDeleteDialog()
+    if (selectedItem.value) {
+      const index = documents.value.findIndex(item => item.id === selectedItem.value.id)
+      if (index > -1) {
+        documents.value.splice(index, 1)
+        success.value = `Documento "${selectedItem.value.name}" eliminado correctamente`
+        closeDeleteDialog()
+      }
     }
   } finally {
     deleting.value = false
@@ -1173,7 +1254,8 @@ const bulkArchive = async () => {
     selectedItems.value.forEach(itemId => {
       const item = documents.value.find(i => i.id === itemId)
       if (item) {
-        item.status = 'Archivado'
+        // Marcar como archivado agregando un campo temporal o usando roles
+        item.archived = true
         item.updatedAt = new Date().toISOString()
       }
     })
@@ -1198,10 +1280,10 @@ const confirmBulkDelete = async () => {
   try {
     // En una aplicación real, esto se enviaría al backend
     for (const itemId of selectedItems.value) {
-      await contentService.delete(itemId)
+      await documentService.deleteDocument(itemId)
     }
 
-    success.value = `${selectedItems.value.length} contenido(s) eliminado(s) correctamente`
+    success.value = `${selectedItems.value.length} documento(s) eliminado(s) correctamente`
     closeBulkDeleteModal()
     selectedItems.value = []
     await loadDocuments()
@@ -1224,21 +1306,49 @@ const confirmBulkDelete = async () => {
 }
 
 // Funciones de utilidad
+const getDocumentStatus = (item) => {
+  // Usar directamente el campo status del documento
+  if (item.status === true || item.status === 'true' || item.status === 1) {
+    return 'Activo'
+  } else if (item.status === false || item.status === 'false' || item.status === 0) {
+    return 'Inactivo'
+  }
+
+  // Fallback: si no hay campo status, usar lógica anterior
+  if (item.archived) {
+    return 'Inactivo'
+  }
+
+  // Si tiene roles de admin, considerarlo activo
+  if (item.roles && item.roles.includes('ROLE_ADMIN')) {
+    return 'Activo'
+  }
+
+  // Si es tipo URL, considerarlo activo por defecto
+  if (item.type === 'URL') {
+    return 'Activo'
+  }
+
+  // Por defecto, inactivo
+  return 'Inactivo'
+}
+
 const getTypeIcon = (type) => {
   const icons = {
-    'Página': 'mdi mdi-file-document',
-    'Artículo': 'mdi mdi-newspaper',
-    'Slug': 'mdi mdi-folder',
-    'Noticia': 'mdi mdi-bullhorn',
+    'TYPE_TEXT': 'mdi mdi-file-document',
+    'TYPE_URL': 'mdi mdi-link',
+    'TYPE_PDF': 'mdi mdi-file-pdf-box',
+    'TEXT': 'mdi mdi-file-document',
+    'URL': 'mdi mdi-link',
+    'PDF': 'mdi mdi-file-pdf-box',
   }
   return icons[type] || 'mdi mdi-file'
 }
 
 const getStatusIcon = (status) => {
   const icons = {
-    'Publicado': 'mdi mdi-check-circle',
-    'Borrador': 'mdi mdi-file-edit',
-    'Archivado': 'mdi mdi-archive',
+    'Activo': 'mdi mdi-check-circle',
+    'Inactivo': 'mdi mdi-close-circle',
   }
   return icons[status] || 'mdi mdi-help-circle'
 }
@@ -1253,6 +1363,80 @@ const formatDate = (dateString) => {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+// Función para renderizar Markdown
+const renderedMarkdown = computed(() => {
+  if (!previewItem.value?.content || previewItem.value.type !== 'TYPE_TEXT') {
+    return ''
+  }
+
+  try {
+    // Usar marked directamente (ya está importado)
+    const options = {
+      breaks: true,
+      gfm: true,
+      smartLists: true,
+      smartypants: true
+    }
+
+    const result = marked(previewItem.value.content, options)
+
+    return result
+  } catch (error) {
+    return '<p>Error al renderizar el Markdown</p>'
+  }
+})
+
+// Funciones para manejar URLs
+const getUrlTitle = (url) => {
+  if (!url) return 'Enlace'
+  try {
+    const urlObj = new URL(url)
+    return urlObj.hostname.replace('www.', '')
+  } catch {
+    return 'Enlace'
+  }
+}
+
+const getUrlDomain = (url) => {
+  if (!url) return ''
+  try {
+    const urlObj = new URL(url)
+    return urlObj.hostname
+  } catch {
+    return url
+  }
+}
+
+// Funciones para manejar PDFs
+const getPdfTitle = (content) => {
+  if (!content) return 'Documento PDF'
+
+  try {
+    // Si es una URL válida
+    if (content.startsWith('http://') || content.startsWith('https://')) {
+      const urlObj = new URL(content)
+      const pathname = urlObj.pathname
+      const filename = pathname.split('/').pop()
+      return filename || 'Documento PDF'
+    }
+
+    // Si parece ser un nombre de archivo PDF
+    if (content.includes('.pdf')) {
+      return content
+    }
+
+    // Si es otro tipo de contenido (probablemente metadatos del archivo)
+    return content.length > 50 ? content.substring(0, 50) + '...' : content
+
+  } catch (error) {
+    return 'Documento PDF'
+  }
+}
+
+const handlePdfError = (event) => {
+  // Error cargando PDF
 }
 
 // Cargar contenidos al montar el componente
@@ -1410,19 +1594,14 @@ onMounted(() => {
   color: var(--accent-primary);
 }
 
-.stat-icon.published {
+.stat-icon.active {
   background: rgba(16, 185, 129, 0.1);
   color: var(--success-color);
 }
 
-.stat-icon.draft {
-  background: rgba(245, 158, 11, 0.1);
-  color: var(--warning-color);
-}
-
-.stat-icon.archived {
-  background: rgba(107, 114, 128, 0.1);
-  color: var(--text-secondary);
+.stat-icon.inactive {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error-color);
 }
 
 .stat-icon i {
@@ -1734,6 +1913,26 @@ onMounted(() => {
 
 .table-wrapper {
   overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 .content-table {
@@ -1776,19 +1975,20 @@ onMounted(() => {
 }
 
 .checkbox-column {
-  width: 50px;
+  width: 40px;
   text-align: center;
 }
 
 .table-checkbox {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   accent-color: var(--accent-primary);
   cursor: pointer;
 }
 
 .title-column {
-  min-width: 250px;
+  min-width: 200px;
+  max-width: 300px;
 }
 
 .title-content {
@@ -1803,6 +2003,18 @@ onMounted(() => {
   font-size: 1rem;
 }
 
+.title-text.clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.title-text.clickable:hover {
+  color: #007bff;
+  text-decoration: underline;
+  transform: translateX(2px);
+}
+
 .title-description {
   font-size: 0.85rem;
   color: var(--text-muted);
@@ -1811,58 +2023,89 @@ onMounted(() => {
 
 .type-column,
 .status-column {
-  width: 120px;
+  width: 100px;
 }
 
 .type-chip,
 .status-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
   padding: 6px 12px;
   border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   white-space: nowrap;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-.type-chip.type-página {
-  background: rgba(59, 130, 246, 0.1);
-  color: #2563eb;
+.status-chip.clickable {
+  cursor: pointer;
+  user-select: none;
 }
 
-.type-chip.type-artículo {
+.status-chip.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.status-chip.clickable:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.type-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Tipos de documento principales */
+.type-chip.type-type_text,
+.type-chip.type-text {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.25));
+  color: #1d4ed8;
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.type-chip.type-type_url,
+.type-chip.type-url {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.25));
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.3);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.type-chip.type-type_pdf,
+.type-chip.type-pdf {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.25));
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.3);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.type-chip.type-unknown {
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.15), rgba(107, 114, 128, 0.25));
+  color: #6b7280;
+  border-color: rgba(107, 114, 128, 0.3);
+}
+
+.status-chip.status-activo {
   background: rgba(16, 185, 129, 0.1);
   color: #059669;
 }
 
-.type-chip.type-categoría {
-  background: rgba(245, 158, 11, 0.1);
-  color: #d97706;
-}
-
-.type-chip.type-noticia {
+.status-chip.status-inactivo {
   background: rgba(239, 68, 68, 0.1);
   color: #dc2626;
 }
 
-.status-chip.status-publicado {
-  background: rgba(16, 185, 129, 0.1);
-  color: #059669;
-}
-
-.status-chip.status-borrador {
-  background: rgba(245, 158, 11, 0.1);
-  color: #d97706;
-}
-
-.status-chip.status-archivado {
-  background: rgba(107, 114, 128, 0.1);
-  color: #6b7280;
-}
-
 .author-column {
-  width: 150px;
+  width: 120px;
 }
 
 .author-info {
@@ -1878,13 +2121,13 @@ onMounted(() => {
 }
 
 .date-column {
-  width: 140px;
+  width: 120px;
   font-size: 0.85rem;
   color: var(--text-secondary);
 }
 
 .actions-column {
-  width: 160px;
+  width: 140px;
   text-align: center;
 }
 
@@ -1939,6 +2182,22 @@ onMounted(() => {
 }
 
 .action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.action-btn.activate {
+  color: #059669;
+}
+
+.action-btn.activate:hover {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.action-btn.deactivate {
+  color: #dc2626;
+}
+
+.action-btn.deactivate:hover {
   background: rgba(239, 68, 68, 0.1);
 }
 
@@ -2082,6 +2341,21 @@ onMounted(() => {
   font-size: 14px;
 }
 
+.card-status.clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.card-status.clickable:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.card-status.clickable:active {
+  transform: scale(0.95);
+}
+
 .card-content {
   padding: 1.5rem;
 }
@@ -2092,6 +2366,18 @@ onMounted(() => {
   color: var(--text-primary);
   margin: 0 0 0.5rem 0;
   line-height: 1.4;
+}
+
+.card-title.clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.card-title.clickable:hover {
+  color: #007bff;
+  text-decoration: underline;
+  transform: translateX(2px);
 }
 
 .card-description {
@@ -2160,6 +2446,14 @@ onMounted(() => {
 
 .card-action-btn.delete {
   color: var(--error-color);
+}
+
+.card-action-btn.activate {
+  color: #059669;
+}
+
+.card-action-btn.deactivate {
+  color: #dc2626;
 }
 
 /* Pagination */
@@ -2489,6 +2783,36 @@ onMounted(() => {
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+  .title-column {
+    min-width: 180px;
+    max-width: 250px;
+  }
+
+  .type-column,
+  .status-column {
+    width: 90px;
+  }
+
+  .author-column {
+    width: 100px;
+  }
+
+  .date-column {
+    width: 100px;
+  }
+
+  .actions-column {
+    width: 120px;
+  }
+
+  .type-chip,
+  .status-chip {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
+}
+
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;
@@ -2525,6 +2849,45 @@ onMounted(() => {
 
   .table-wrapper {
     overflow-x: auto;
+  }
+
+  /* Table responsive adjustments */
+  .title-column {
+    min-width: 150px;
+    max-width: 200px;
+  }
+
+  .type-column,
+  .status-column {
+    width: 80px;
+  }
+
+  .author-column {
+    width: 90px;
+  }
+
+  .date-column {
+    width: 90px;
+  }
+
+  .actions-column {
+    width: 100px;
+  }
+
+  .action-buttons {
+    gap: 0.25rem;
+  }
+
+  .action-btn {
+    padding: 6px;
+    font-size: 0.8rem;
+  }
+
+  .type-chip,
+  .status-chip {
+    padding: 3px 6px;
+    font-size: 0.65rem;
+    gap: 0.2rem;
   }
 
   .content-table th,
@@ -2588,5 +2951,359 @@ onMounted(() => {
     flex-wrap: wrap;
     justify-content: center;
   }
+}
+
+/* Estilos para vista previa de contenido */
+.content-preview {
+  margin-top: 1rem;
+}
+
+.markdown-preview {
+  padding: 1rem;
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid #e9ecef;
+  min-height: 200px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.markdown-preview h1 {
+  font-size: 2rem;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 0.5rem;
+}
+
+.markdown-preview h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 0.25rem;
+}
+
+.markdown-preview h3 {
+  font-size: 1.25rem;
+}
+
+.markdown-preview p {
+  margin-bottom: 1rem;
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+}
+
+.markdown-preview li {
+  margin-bottom: 0.25rem;
+}
+
+.markdown-preview blockquote {
+  border-left: 4px solid #007bff;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.25rem;
+}
+
+.markdown-preview code {
+  background: #f8f9fa;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.markdown-preview pre {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.markdown-preview pre code {
+  background: none;
+  padding: 0;
+}
+
+.markdown-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.markdown-preview th,
+.markdown-preview td {
+  border: 1px solid #dee2e6;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.markdown-preview th {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+
+.markdown-preview a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.markdown-preview a:hover {
+  text-decoration: underline;
+}
+
+.markdown-preview img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.25rem;
+  margin: 1rem 0;
+}
+
+/* Estilos para vista previa de URL */
+.url-preview {
+  margin-top: 1rem;
+}
+
+.url-preview-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.url-info {
+  margin-bottom: 1rem;
+}
+
+.url-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+}
+
+.url-domain {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.preview-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #007bff;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.preview-link:hover {
+  background: #0056b3;
+  color: white;
+}
+
+/* Estilos para vista previa de PDF */
+.pdf-preview {
+  margin-top: 1rem;
+}
+
+.pdf-preview-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pdf-info {
+  margin-bottom: 1rem;
+}
+
+.pdf-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+}
+
+.pdf-url {
+  color: #6c757d;
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+
+.pdf-iframe-container {
+  margin: 1rem 0;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.pdf-iframe {
+  width: 100%;
+  height: 400px;
+  border: none;
+}
+
+.pdf-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.pdf-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.pdf-link:hover {
+  background: #0056b3;
+  color: white;
+  text-decoration: none;
+}
+
+.pdf-link i {
+  font-size: 1rem;
+}
+
+.pdf-error {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 2rem;
+  color: #f39c12;
+  margin-bottom: 0.5rem;
+}
+
+.error-message h4 {
+  color: #856404;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.error-message p {
+  color: #856404;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.error-message strong {
+  color: #6c757d;
+}
+
+/* Estilos para contenido desconocido */
+.unknown-content {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+  color: #6c757d;
+}
+
+.unknown-content i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.5;
+}
+
+.raw-content {
+  margin-top: 1rem;
+  text-align: left;
+}
+
+.raw-content pre {
+  background: white;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid #dee2e6;
+  overflow-x: auto;
+  font-size: 0.875rem;
+}
+
+/* Estilos para placeholder cuando no hay contenido */
+.preview-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #6c757d;
+  text-align: center;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+}
+
+.preview-placeholder i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* Estilos para indicador de carga */
+.preview-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #6c757d;
+  text-align: center;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e9ecef;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
