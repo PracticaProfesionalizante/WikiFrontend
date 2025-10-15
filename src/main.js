@@ -31,6 +31,9 @@ app.directive('can', vCan)
 const initializeAuth = async () => {
   const authStore = useAuthStore()
 
+  // Primero limpiar tokens expirados del localStorage
+  authStore.clearExpiredTokens()
+
   // Solo intentar inicializar si hay un token guardado
   if (authStore.accessToken) {
     try {

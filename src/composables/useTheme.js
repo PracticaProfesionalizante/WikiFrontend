@@ -48,7 +48,6 @@ const applyTheme = () => {
         vuetifyTheme.global.name = themeName
       }
     } catch (error) {
-      console.warn('Error applying Vuetify theme:', error)
     }
   }
 }
@@ -89,7 +88,6 @@ const initVuetifyTheme = () => {
     try {
       vuetifyTheme = useVuetifyTheme()
     } catch (error) {
-      console.warn('Vuetify theme not available:', error)
     }
   }
 }

@@ -84,6 +84,16 @@ const routes = [
     },
   },
   {
+    path: '/document/:id',
+    name: 'ContentView',
+    component: () => import('@/views/ContentView.vue'), // Lazy loading
+    beforeEnter: requireAuth,
+    meta: {
+      title: 'Ver Documento',
+      requiresAuth: true,
+    },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     redirect: '/login',
