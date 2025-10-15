@@ -182,7 +182,7 @@
                   <p class="section-description">
                     {{ form.type === 'TYPE_TEXT' ? 'Escribe el contenido en formato Markdown' :
                        form.type === 'TYPE_URL' ? 'Ingresa la URL del contenido' :
-                       form.type === 'TYPE_PDF' ? 'Ingresa la URL del documento PDF' :
+                       form.type === 'TYPE_PDF' ? 'Sube el archivo PDF del documento' :
                        'Selecciona el tipo de documento primero' }}
                   </p>
                 </div>
@@ -427,91 +427,66 @@
 
               <!-- Contenido PDF -->
               <div v-else-if="form.type === 'TYPE_PDF'" class="pdf-editor">
-                <div class="editor-header">
-                  <div class="editor-tabs">
+                <div class="file-upload-container">
+                  <div class="file-upload-area" :class="{ 'has-file': pdfFile, 'error': validationErrors.content }">
+                    <input
+                      ref="fileInput"
+                      type="file"
+                      accept=".pdf"
+                      @change="handleFileSelect"
+                      class="file-input"
+                      :disabled="isSaving"
+                    />
+
+                    <div v-if="!pdfFile" class="upload-placeholder">
+                      <div class="upload-icon">
+                        <i class="mdi mdi-cloud-upload"></i>
+                      </div>
+                      <div class="upload-text">
+                        <h4>Subir archivo PDF</h4>
+                        <p>Arrastra y suelta tu archivo PDF aquí o haz clic para seleccionar</p>
+                        <p class="upload-hint">Formatos aceptados: .pdf (máximo 10MB)</p>
+                      </div>
+                    </div>
+
+                    <div v-else class="file-selected">
+                      <div class="file-icon">
+                        <i class="mdi mdi-file-pdf-box"></i>
+                      </div>
+                      <div class="file-info">
+                        <div class="file-name">{{ pdfFile.name }}</div>
+                        <div class="file-size">{{ formatFileSize(pdfFile.size) }}</div>
+                      </div>
+                      <button
+                        type="button"
+                        @click="removeFile"
+                        class="remove-file-btn"
+                        :disabled="isSaving"
+                      >
+                        <i class="mdi mdi-close"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div v-if="pdfFile" class="file-actions">
                     <button
                       type="button"
-                      class="tab-btn"
-                      :class="{ active: activeTab === 'edit' }"
-                      @click="activeTab = 'edit'"
-                    >
-                      <i class="mdi mdi-pencil"></i>
-                      Editar PDF
-                    </button>
-                    <button
-                      type="button"
-                      class="tab-btn"
-                      :class="{ active: activeTab === 'preview' }"
-                      @click="activeTab = 'preview'"
+                      @click="previewPdf"
+                      class="action-btn preview-btn"
+                      :disabled="isSaving"
                     >
                       <i class="mdi mdi-eye"></i>
                       Vista Previa
                     </button>
-                  </div>
-                </div>
-
-                <div class="editor-content">
-                  <!-- Modo Editar PDF -->
-                  <div v-if="activeTab === 'edit'" class="editor-panel">
-                    <div class="input-container">
-                      <div class="input-icon">
-                        <i class="mdi mdi-file-pdf-box"></i>
-                      </div>
-                      <input
-                        v-model="form.content"
-                        type="url"
-                        class="form-input"
-                        :class="{ error: validationErrors.content }"
-                        placeholder="https://ejemplo.com/documento.pdf"
-                        @input="validateField('content')"
-                        required
-                        :disabled="isSaving"
-                      />
-                    </div>
-                    <div class="editor-footer">
-                      <span class="char-count">{{ form.content?.length || 0 }} caracteres</span>
-                      <span class="pdf-help">
-                        <i class="mdi mdi-help-circle-outline"></i>
-                        Ingresa la URL del documento PDF
-                      </span>
-                    </div>
-                  </div>
-
-                  <!-- Modo Vista Previa PDF -->
-                  <div v-else-if="activeTab === 'preview'" class="preview-panel">
-                    <div v-if="form.content && isValidUrl(form.content)" class="preview-content">
-                      <div class="pdf-preview-card">
-                        <div class="preview-header">
-                          <i class="mdi mdi-file-pdf-box"></i>
-                          <span>Vista previa del PDF</span>
-                        </div>
-                        <div class="preview-body">
-                          <div class="pdf-info">
-                            <div class="pdf-title">{{ getPdfTitle(form.content) }}</div>
-                            <div class="pdf-url">{{ form.content }}</div>
-                          </div>
-                          <div class="pdf-viewer-container">
-                            <iframe
-                              :src="form.content"
-                              class="pdf-viewer"
-                              frameborder="0"
-                              sandbox="allow-same-origin allow-scripts"
-                              @error="handlePdfError"
-                            ></iframe>
-                          </div>
-                          <div class="pdf-actions">
-                            <a :href="form.content" target="_blank" rel="noopener noreferrer" class="pdf-link">
-                              <i class="mdi mdi-open-in-new"></i>
-                              Abrir PDF en nueva pestaña
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div v-else class="preview-empty">
-                      <i class="mdi mdi-file-pdf-box"></i>
-                      <p>Ingresa una URL válida de PDF para ver la vista previa</p>
-                    </div>
+                    <button
+                      type="button"
+                      @click="openFileDialog"
+                      class="action-btn change-btn"
+                      :disabled="isSaving"
+                    >
+                      <i class="mdi mdi-file-replace"></i>
+                      Cambiar Archivo
+                    </button>
                   </div>
                 </div>
               </div>
@@ -653,6 +628,11 @@ const slugAlternatives = ref([])
 const activeTab = ref('edit')
 const isFullscreen = ref(false)
 
+// PDF File Upload
+const pdfFile = ref(null)
+const fileInput = ref(null)
+const pdfPreviewUrl = ref(null)
+
 // Computed
 const isEditing = computed(() => !!props.document)
 
@@ -736,8 +716,10 @@ const validateField = (field) => {
     case 'content':
       if (!value || value.trim().length === 0) {
         validationErrors.value.content = 'El contenido es obligatorio'
-      } else if ((form.value.type === 'URL' || form.value.type === 'PDF') && !isValidUrl(value)) {
+      } else if (form.value.type === 'TYPE_URL' && !isValidUrl(value)) {
         validationErrors.value.content = 'Debe ser una URL válida'
+      } else if (form.value.type === 'TYPE_PDF' && !pdfFile.value) {
+        validationErrors.value.content = 'Debe seleccionar un archivo PDF'
       } else if (value.length > 10000) {
         validationErrors.value.content = 'El contenido no puede exceder 10,000 caracteres'
       } else {
@@ -865,6 +847,107 @@ const handlePdfError = () => {
   console.warn('⚠️ [PDF] Error cargando PDF:', form.value.content)
 }
 
+// PDF File Upload Functions
+const handleFileSelect = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    validatePdfFile(file)
+  }
+}
+
+const validatePdfFile = (file) => {
+  // Limpiar errores previos
+  validationErrors.value.content = null
+
+  // Validar tipo de archivo
+  if (file.type !== 'application/pdf') {
+    validationErrors.value.content = 'Solo se permiten archivos PDF'
+    return false
+  }
+
+  // Validar tamaño (10MB máximo)
+  const maxSize = 10 * 1024 * 1024 // 10MB
+  if (file.size > maxSize) {
+    validationErrors.value.content = 'El archivo PDF no puede ser mayor a 10MB'
+    return false
+  }
+
+  // Archivo válido
+  pdfFile.value = file
+  form.value.content = file.name // Usar el nombre del archivo como contenido
+
+  // Validar el campo content después de asignar el archivo
+  validateField('content')
+
+  console.log('✅ [PDF UPLOAD] Archivo PDF válido:', file.name, formatFileSize(file.size))
+  return true
+}
+
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+const removeFile = () => {
+  pdfFile.value = null
+  form.value.content = ''
+  if (pdfPreviewUrl.value) {
+    URL.revokeObjectURL(pdfPreviewUrl.value)
+    pdfPreviewUrl.value = null
+  }
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
+
+const openFileDialog = () => {
+  if (fileInput.value) {
+    fileInput.value.click()
+  }
+}
+
+const previewPdf = () => {
+  if (pdfFile.value) {
+    if (pdfPreviewUrl.value) {
+      URL.revokeObjectURL(pdfPreviewUrl.value)
+    }
+    pdfPreviewUrl.value = URL.createObjectURL(pdfFile.value)
+
+    // Abrir en nueva ventana
+    window.open(pdfPreviewUrl.value, '_blank')
+  }
+}
+
+const uploadPdfFile = async (documentId, file) => {
+  try {
+    console.log('📄 [PDF UPLOAD] Subiendo archivo PDF:', file.name, 'para documento:', documentId)
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    // Agregar metadatos del documento
+    formData.append('name', form.value.name)
+    formData.append('type', 'TYPE_PDF')
+    formData.append('slug', form.value.slug)
+    formData.append('status', 'true')
+    formData.append('icon', form.value.icon || 'mdi-file-pdf-box')
+
+    // Enviar roles como array individual, no como JSON string
+    form.value.roles.forEach(role => {
+      formData.append('roles', role)
+    })
+
+    await documentService.uploadDocumentFile(documentId, formData)
+    console.log('✅ [PDF UPLOAD] Archivo PDF subido exitosamente')
+  } catch (error) {
+    console.error('❌ [PDF UPLOAD] Error subiendo archivo PDF:', error)
+    throw error
+  }
+}
+
 // Roles disponibles (mismos que en MenuManagerView)
 const availableRolesList = [
   {
@@ -971,9 +1054,29 @@ const handleSubmit = async () => {
       throw new Error('Debe seleccionar al menos un rol de acceso')
     }
 
-    // Validar URL si es tipo URL o PDF
-    if ((documentData.type === 'TYPE_URL' || documentData.type === 'TYPE_PDF') && !isValidUrl(documentData.content)) {
+    // Validar URL si es tipo URL (PDF ahora maneja archivos)
+    if (documentData.type === 'TYPE_URL' && !isValidUrl(documentData.content)) {
       throw new Error('La URL proporcionada no es válida')
+    }
+
+    // Validar archivo PDF si es tipo PDF
+    if (documentData.type === 'TYPE_PDF' && !pdfFile.value) {
+      throw new Error('Debe seleccionar un archivo PDF')
+    }
+
+    // Validación adicional para PDFs
+    if (documentData.type === 'TYPE_PDF') {
+      console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.value:', pdfFile.value)
+      console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.name:', pdfFile.value?.name)
+      console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.size:', pdfFile.value?.size)
+
+      if (!pdfFile.value) {
+        throw new Error('No se ha seleccionado ningún archivo PDF')
+      }
+
+      if (!pdfFile.value.name) {
+        throw new Error('El archivo PDF seleccionado no es válido')
+      }
     }
 
     console.log('📄 [CONTENT FORM] Datos del documento:', documentData)
@@ -994,20 +1097,45 @@ const handleSubmit = async () => {
       console.warn('⚠️ [CONTENT FORM] Detectados roles con prefijo ROLE_ duplicado:', documentData.roles)
     }
 
+    // Agregar el ID al documentData para el emit
+    const documentDataWithId = {
+      ...documentData,
+      id: isEditing.value ? props.document.id : undefined
+    }
+
+    let createdDocumentId = null
+
     if (isEditing.value) {
       console.log('📄 [CONTENT FORM] Actualizando documento existente...')
       await documentService.updateDocument(props.document.id, documentData)
       console.log('✅ [CONTENT FORM] Documento actualizado exitosamente')
     } else {
-      console.log('📄 [CONTENT FORM] Creando nuevo documento...')
-      await documentService.createDocument(documentData)
-      console.log('✅ [CONTENT FORM] Documento creado exitosamente')
+      // Para documentos PDF, usar el endpoint específico de creación con archivo
+      console.log('🔍 [CONTENT FORM] Debug - Tipo:', documentData.type)
+      console.log('🔍 [CONTENT FORM] Debug - pdfFile.value:', pdfFile.value)
+      console.log('🔍 [CONTENT FORM] Debug - Condición PDF:', documentData.type === 'TYPE_PDF' && pdfFile.value)
+
+      if (documentData.type === 'TYPE_PDF' && pdfFile.value) {
+        console.log('📄 [CONTENT FORM] Creando documento PDF con archivo...')
+        const createdDocument = await documentService.createDocumentWithFile(documentData, pdfFile.value)
+        console.log('✅ [CONTENT FORM] Documento PDF creado exitosamente')
+        createdDocumentId = createdDocument.id
+        documentDataWithId.id = createdDocumentId
+      } else {
+        console.log('📄 [CONTENT FORM] Creando nuevo documento...')
+        const createdDocument = await documentService.createDocument(documentData)
+        console.log('✅ [CONTENT FORM] Documento creado exitosamente')
+        createdDocumentId = createdDocument.id
+        documentDataWithId.id = createdDocumentId
+      }
     }
 
-    // Agregar el ID al documentData para el emit
-    const documentDataWithId = {
-      ...documentData,
-      id: isEditing.value ? props.document.id : undefined
+    // Si es un PDF con archivo y estamos editando, subir el archivo
+    if (isEditing.value && documentData.type === 'TYPE_PDF' && pdfFile.value) {
+      console.log('📄 [CONTENT FORM] Subiendo archivo PDF...')
+      const documentId = props.document.id
+      await uploadPdfFile(documentId, pdfFile.value)
+      console.log('✅ [CONTENT FORM] Archivo PDF subido exitosamente')
     }
 
     console.log('📄 [CONTENT FORM] Emitiendo evento saved con ID:', documentDataWithId.id)
@@ -1048,10 +1176,20 @@ const handleSubmit = async () => {
           slug: newSlug
         }
 
+        let createdDocumentId = null
+
         if (isEditing.value) {
           await documentService.updateDocument(props.document.id, newDocumentData)
         } else {
-          await documentService.createDocument(newDocumentData)
+          // Para documentos PDF, usar el endpoint específico de creación con archivo
+          if (newDocumentData.type === 'TYPE_PDF' && pdfFile.value) {
+            console.log('📄 [CONTENT FORM] Reintentando creación de documento PDF con archivo...')
+            const createdDocument = await documentService.createDocumentWithFile(newDocumentData, pdfFile.value)
+            createdDocumentId = createdDocument.id
+          } else {
+            const createdDocument = await documentService.createDocument(newDocumentData)
+            createdDocumentId = createdDocument.id
+          }
         }
 
         console.log('✅ [CONTENT FORM] Documento guardado exitosamente con slug único')
@@ -1059,7 +1197,7 @@ const handleSubmit = async () => {
         // Agregar el ID al newDocumentData para el emit
         const newDocumentDataWithId = {
           ...newDocumentData,
-          id: isEditing.value ? props.document.id : undefined
+          id: isEditing.value ? props.document.id : createdDocumentId
         }
 
         console.log('📄 [CONTENT FORM] Emitiendo evento saved con ID (slug único):', newDocumentDataWithId.id)
@@ -2583,5 +2721,165 @@ const selectSlugAlternative = (alternative) => {
   .role-options {
     grid-template-columns: 1fr;
   }
+}
+
+/* PDF File Upload Styles */
+.file-upload-container {
+  margin-top: 1rem;
+}
+
+.file-upload-area {
+  border: 2px dashed #e0e0e0;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  background: #fafafa;
+}
+
+.file-upload-area:hover {
+  border-color: #1976d2;
+  background: #f5f5f5;
+}
+
+.file-upload-area.has-file {
+  border-color: #4caf50;
+  background: #f1f8e9;
+}
+
+.file-upload-area.error {
+  border-color: #f44336;
+  background: #ffebee;
+}
+
+.file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: #1976d2;
+}
+
+.upload-text h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1.25rem;
+}
+
+.upload-text p {
+  margin: 0.5rem 0;
+  color: #666;
+}
+
+.upload-hint {
+  font-size: 0.875rem;
+  color: #999;
+}
+
+.file-selected {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid #e0e0e0;
+}
+
+.file-icon {
+  font-size: 2rem;
+  color: #f44336;
+}
+
+.file-info {
+  flex: 1;
+  text-align: left;
+}
+
+.file-name {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.file-size {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.remove-file-btn {
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.remove-file-btn:hover {
+  background: #d32f2f;
+}
+
+.file-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.action-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.preview-btn {
+  background: #1976d2;
+  color: white;
+}
+
+.preview-btn:hover {
+  background: #1565c0;
+}
+
+.change-btn {
+  background: #ff9800;
+  color: white;
+}
+
+.change-btn:hover {
+  background: #f57c00;
+}
+
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 </style>

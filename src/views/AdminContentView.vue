@@ -567,38 +567,116 @@
                       <div class="pdf-url">{{ previewItem.content }}</div>
                     </div>
 
-                    <!-- Para archivos PDF reales, usar el endpoint del backend -->
-                    <div v-if="previewItem.id" class="pdf-iframe-container">
-                      <iframe
-                        :src="`${apiBaseUrl}/documents/file/${previewItem.id}`"
-                        class="pdf-iframe"
-                        @error="handlePdfError"
-                        title="Vista previa del PDF"
-                        frameborder="0"
-                        sandbox="allow-same-origin allow-scripts"
-                      ></iframe>
-                      <div class="pdf-actions">
-                        <a :href="`${apiBaseUrl}/documents/file/${previewItem.id}`" target="_blank" rel="noopener noreferrer" class="pdf-link">
+                    <!-- Mostrar PDF usando vue-pdf-embed -->
+                    <div v-if="previewItem.id" class="pdf-viewer-container">
+                      <!-- Indicador de carga -->
+                      <div v-if="pdfLoading" class="pdf-loading">
+                        <div class="loading-spinner"></div>
+                        <p>Cargando PDF...</p>
+                      </div>
+
+                      <!-- Visor de PDF -->
+                      <VuePdfEmbed
+                        v-show="!pdfLoading && pdfBlobUrl"
+                        :source="pdfBlobUrl"
+                        :page="currentPdfPage"
+                        class="pdf-viewer"
+                        @loaded="onPdfLoaded"
+                        @error="onPdfError"
+                        @page-change="onPdfPageChange"
+                      />
+
+
+                      <!-- Mensaje de error si hay problema -->
+                      <div v-if="pdfError" class="pdf-error-message">
+                        <i class="mdi mdi-alert-circle"></i>
+                        <h4>Error al cargar el PDF</h4>
+                        <p>{{ pdfError.message || 'No se pudo cargar el documento PDF' }}</p>
+
+                        <!-- Botón especial para errores de autenticación -->
+                        <div v-if="pdfError.message && pdfError.message.includes('sesión')" class="auth-error-actions">
+                          <button @click="redirectToLogin" class="pdf-link auth-login">
+                            <i class="mdi mdi-login"></i>
+                            Ir al Login
+                          </button>
+                        </div>
+
+                        <!-- Mensaje especial para errores 422 -->
+                        <div v-else-if="pdfError.message && (pdfError.message.includes('no existe') || pdfError.message.includes('no se encuentra'))" class="document-error-actions">
+                          <p class="error-suggestion">
+                            <i class="mdi mdi-information"></i>
+                            Este documento puede haber sido eliminado o no tener un archivo PDF asociado.
+                          </p>
+                          <div class="error-actions">
+                            <button @click="retryPdfLoad" class="pdf-link refresh">
+                              <i class="mdi mdi-refresh"></i>
+                              Reintentar
+                            </button>
+                            <button @click="editFromPreview" class="pdf-link edit" v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']">
+                              <i class="mdi mdi-upload"></i>
+                              Subir PDF
+                            </button>
+                          </div>
+                        </div>
+
+                        <!-- Botón de reintento para otros errores -->
+                        <button v-else @click="retryPdfLoad" class="pdf-link refresh">
+                          <i class="mdi mdi-refresh"></i>
+                          Reintentar
+                        </button>
+                      </div>
+
+                      <!-- Controles de navegación -->
+                      <!-- <div v-if="!pdfLoading && !pdfError && totalPdfPages > 0" class="pdf-controls">
+                        <button
+                          @click="previousPage"
+                          :disabled="currentPdfPage <= 1"
+                          class="pdf-control-btn"
+                        >
+                          <i class="mdi mdi-chevron-left"></i>
+                          Anterior
+                        </button>
+
+                        <span class="pdf-page-info">
+                          Página {{ currentPdfPage }} de {{ totalPdfPages }}
+                        </span>
+
+                        <button
+                          @click="nextPage"
+                          :disabled="currentPdfPage >= totalPdfPages"
+                          class="pdf-control-btn"
+                        >
+                          Siguiente
+                          <i class="mdi mdi-chevron-right"></i>
+                        </button>
+                      </div> -->
+
+                      <!-- <div class="pdf-actions">
+                        <a :href="pdfBlobUrl" target="_blank" rel="noopener noreferrer" class="pdf-link">
                           <i class="mdi mdi-open-in-new"></i>
                           Abrir PDF en nueva pestaña
                         </a>
-                        <a :href="`${apiBaseUrl}/documents/file/${previewItem.id}`" download class="pdf-link">
+                        <a :href="pdfBlobUrl" download class="pdf-link">
                           <i class="mdi mdi-download"></i>
                           Descargar PDF
                         </a>
-                      </div>
+                        <button @click="refreshPdfViewer" class="pdf-link refresh">
+                          <i class="mdi mdi-refresh"></i>
+                          Actualizar vista
+                        </button>
+                      </div> -->
                     </div>
 
-                    <!-- Si no hay ID, mostrar mensaje informativo -->
+                    <!-- Mensaje de error si no hay ID válido -->
                     <div v-else class="pdf-error">
                       <div class="error-icon">
                         <i class="mdi mdi-alert-circle"></i>
                       </div>
                       <div class="error-message">
                         <h4>No se puede mostrar el PDF</h4>
-                        <p>El documento no tiene un ID válido para cargar el archivo PDF.</p>
-                        <p><strong>ID del documento:</strong> {{ previewItem.id }}</p>
-                        <p><strong>Contenido:</strong> {{ previewItem.content }}</p>
+                        <p v-if="!previewItem.id">El documento no tiene un ID válido para cargar el PDF.</p>
+                        <p v-else>Error al cargar el PDF.</p>
+                        <p><strong>ID del documento:</strong> {{ previewItem.id || 'No disponible' }}</p>
                       </div>
                     </div>
                   </div>
@@ -623,6 +701,81 @@
           </div>
         </div>
         <div class="modal-actions">
+          <!-- Panel de navegación PDF compacto -->
+          <div v-if="!pdfLoading && pdfBlobUrl && totalPdfPages > 1 && previewItem?.type === 'TYPE_PDF'" class="pdf-nav-compact">
+            <div class="nav-compact-controls">
+              <button
+                @click="previousPage"
+                :disabled="currentPdfPage <= 1"
+                class="nav-compact-btn prev-btn"
+                title="Página anterior"
+              >
+                <i class="mdi mdi-chevron-left"></i>
+              </button>
+
+              <div class="page-compact-info">
+                <span class="page-compact-counter">
+                  {{ currentPdfPage }} / {{ totalPdfPages }}
+                </span>
+                <div class="page-compact-progress">
+                  <div
+                    class="progress-compact-bar"
+                    :style="{ width: `${(currentPdfPage / totalPdfPages) * 100}%` }"
+                  ></div>
+                </div>
+              </div>
+
+              <button
+                @click="nextPage"
+                :disabled="currentPdfPage >= totalPdfPages"
+                class="nav-compact-btn next-btn"
+                title="Página siguiente"
+              >
+                <i class="mdi mdi-chevron-right"></i>
+              </button>
+
+              <div class="nav-compact-shortcuts">
+                <button
+                  @click="goToFirstPage"
+                  :disabled="currentPdfPage <= 1"
+                  class="shortcut-compact-btn"
+                  title="Primera página"
+                >
+                  <i class="mdi mdi-skip-previous"></i>
+                </button>
+
+                <button
+                  @click="goToLastPage"
+                  :disabled="currentPdfPage >= totalPdfPages"
+                  class="shortcut-compact-btn"
+                  title="Última página"
+                >
+                  <i class="mdi mdi-skip-next"></i>
+                </button>
+
+                <div class="zoom-compact-controls">
+                  <button
+                    @click="zoomOut"
+                    class="zoom-compact-btn"
+                    title="Alejar"
+                  >
+                    <i class="mdi mdi-magnify-minus"></i>
+                  </button>
+
+                  <span class="zoom-compact-level">{{ Math.round(pdfZoom * 100) }}%</span>
+
+                  <button
+                    @click="zoomIn"
+                    class="zoom-compact-btn"
+                    title="Acercar"
+                  >
+                    <i class="mdi mdi-magnify-plus"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <button @click="closePreviewModal" class="modal-btn secondary">
             Cerrar
           </button>
@@ -714,13 +867,21 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import documentService from '@/services/documentService'
 import SidebarMenu from '@/components/common/SidebarMenu.vue'
 import AppHeader from '@/components/common/AppHeader.vue'
 import ContentForm from '@/components/ContentForm.vue'
 import { marked } from 'marked'
+import VuePdfEmbed from 'vue-pdf-embed'
+import {
+  setupPdfWarningSuppression,
+  handleProblematicPdf,
+  isValidPdfUrl,
+  isKnownPdfWarning,
+  buildPdfUrl
+} from '@/utils/pdfUtils'
 
 const authStore = useAuthStore()
 
@@ -743,6 +904,62 @@ const editLoading = ref(false)
 const isEditing = ref(false)
 const deleting = ref(false)
 const bulkDeleting = ref(false)
+
+// Estado para PDF
+const currentPdfPage = ref(1)
+const totalPdfPages = ref(0)
+const pdfLoading = ref(false)
+const pdfError = ref(null)
+const pdfBlobUrl = ref(null) // URL del blob del PDF
+const pdfZoom = ref(1.0) // Nivel de zoom del PDF
+
+// Inicializar supresión de advertencias de PDF.js
+setupPdfWarningSuppression()
+
+// Función para manejar navegación con teclado
+const handleKeydown = (event) => {
+  // Solo procesar si el modal de preview está abierto y es un PDF
+  if (!showPreviewModal.value || previewItem.value?.type !== 'TYPE_PDF') {
+    return
+  }
+
+  // Evitar conflictos con inputs y otros elementos
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+    return
+  }
+
+  switch (event.key) {
+    case 'ArrowLeft':
+      event.preventDefault()
+      previousPage()
+      break
+    case 'ArrowRight':
+      event.preventDefault()
+      nextPage()
+      break
+    case 'Home':
+      event.preventDefault()
+      goToFirstPage()
+      break
+    case 'End':
+      event.preventDefault()
+      goToLastPage()
+      break
+    case '+':
+    case '=':
+      event.preventDefault()
+      zoomIn()
+      break
+    case '-':
+      event.preventDefault()
+      zoomOut()
+      break
+    case '0':
+      event.preventDefault()
+      resetZoom()
+      break
+  }
+}
 
 // Estados de filtros y búsqueda
 const searchQuery = ref('')
@@ -978,6 +1195,24 @@ const previewContent = async (item) => {
   showPreviewModal.value = true
   previewItem.value = item
 
+  // Inicializar estado del PDF
+  if (item.type === 'TYPE_PDF') {
+    pdfLoading.value = true
+    pdfError.value = null
+    currentPdfPage.value = 1
+    totalPdfPages.value = 0
+
+    // Cargar el PDF usando el servicio autenticado
+    try {
+      await loadPdfFile(item.id)
+      console.log('📄 PDF cargado exitosamente para documento:', item.id)
+    } catch (error) {
+      console.error('❌ Error cargando PDF:', error)
+      pdfError.value = error
+      pdfLoading.value = false
+    }
+  }
+
   // Si no tiene contenido, intentar obtenerlo del backend
   if (!item.content && item.id) {
     previewLoading.value = true
@@ -987,6 +1222,24 @@ const previewContent = async (item) => {
 
       // Usar el documento completo con contenido
       previewItem.value = fullDocument
+
+      // Reinicializar estado del PDF si es necesario
+      if (fullDocument.type === 'TYPE_PDF') {
+        pdfLoading.value = true
+        pdfError.value = null
+        currentPdfPage.value = 1
+        totalPdfPages.value = 0
+
+        // Cargar el PDF usando el servicio autenticado
+        try {
+          await loadPdfFile(fullDocument.id)
+          console.log('📄 PDF cargado exitosamente para documento completo:', fullDocument.id)
+        } catch (error) {
+          console.error('❌ Error cargando PDF:', error)
+          pdfError.value = error
+          pdfLoading.value = false
+        }
+      }
     } catch (error) {
       // Mantener el documento original sin contenido
     } finally {
@@ -998,6 +1251,18 @@ const previewContent = async (item) => {
 const closePreviewModal = () => {
   showPreviewModal.value = false
   previewItem.value = null
+
+  // Limpiar blob URL del PDF para liberar memoria
+  if (pdfBlobUrl.value) {
+    URL.revokeObjectURL(pdfBlobUrl.value)
+    pdfBlobUrl.value = null
+  }
+
+  // Resetear estado del PDF
+  pdfLoading.value = false
+  pdfError.value = null
+  currentPdfPage.value = 1
+  totalPdfPages.value = 0
 }
 
 const editFromPreview = () => {
@@ -1121,10 +1386,29 @@ const handleSaveDocument = async (documentData) => {
   }
 
   try {
+    // Si el documento ya tiene un ID, significa que fue creado exitosamente por ContentForm
+    if (documentData.id) {
+      console.log('📄 [ADMIN CONTENT VIEW] Documento ya creado por ContentForm, actualizando lista local')
+
+      // Solo actualizar la lista local, no crear/actualizar en el servidor
+      if (isEditing.value) {
+        const index = documents.value.findIndex(item => item.id === documentData.id)
+        if (index > -1) {
+          documents.value[index] = documentData
+        }
+        success.value = `Documento "${documentData.name}" actualizado correctamente`
+      } else {
+        // Agregar a la lista local
+        documents.value.unshift(documentData)
+        success.value = `Documento "${documentData.name}" creado correctamente`
+      }
+
+      closeEditDialog()
+      return
+    }
 
     if (isEditing.value) {
       // Update existing document
-
       if (!documentData.id) {
         throw new Error('ID del documento no disponible para actualización')
       }
@@ -1136,7 +1420,8 @@ const handleSaveDocument = async (documentData) => {
       }
       success.value = `Documento "${documentData.name}" actualizado correctamente`
     } else {
-      // Create new document
+      // Create new document (solo para documentos que no fueron creados por ContentForm)
+      console.log('📄 [ADMIN CONTENT VIEW] Creando documento desde AdminContentView')
       const newDocument = await documentService.createDocument(documentData)
       documents.value.unshift(newDocument || { ...documentData, id: Date.now() })
       success.value = `Documento "${documentData.name}" creado correctamente`
@@ -1423,7 +1708,201 @@ const getUrlDomain = (url) => {
   }
 }
 
-// Funciones para manejar PDFs
+// Función para cargar PDF usando el servicio autenticado
+const loadPdfFile = async (documentId) => {
+  if (!documentId) {
+    throw new Error('ID del documento no proporcionado')
+  }
+
+  try {
+    console.log('📄 Cargando PDF autenticado para documento:', documentId)
+
+    // Limpiar URL anterior si existe
+    if (pdfBlobUrl.value) {
+      URL.revokeObjectURL(pdfBlobUrl.value)
+      pdfBlobUrl.value = null
+    }
+
+    // Obtener el archivo PDF usando el servicio autenticado
+    const blobUrl = await documentService.getDocumentFileUrl(documentId)
+    pdfBlobUrl.value = blobUrl
+
+    console.log('✅ PDF cargado exitosamente como blob URL')
+    return blobUrl
+  } catch (error) {
+    console.error('❌ Error cargando PDF:', error)
+
+    // Manejar diferentes tipos de errores
+    if (error.message.includes('no autenticado') || error.message.includes('Token de acceso no disponible')) {
+      throw new Error('Sesión expirada. Por favor, inicie sesión nuevamente.')
+    } else if (error.response?.status === 401) {
+      throw new Error('No tiene permisos para acceder a este documento.')
+    } else if (error.response?.status === 404) {
+      throw new Error('El documento PDF no fue encontrado.')
+    } else if (error.response?.status === 403) {
+      throw new Error('Acceso denegado a este documento.')
+    } else if (error.response?.status === 422 || error.status === 422) {
+      // Error 422: Documento no encontrado o no válido
+      if (error.isFileNotFound) {
+        throw new Error('El archivo PDF no se encuentra en el servidor. Puede haber sido eliminado o nunca se subió correctamente.')
+      } else if (error.details) {
+        throw new Error(error.details.detail || 'El documento PDF no existe o no es válido.')
+      } else if (error.rawContent) {
+        throw new Error(`Error del servidor: ${error.rawContent}`)
+      } else {
+        throw new Error('El documento PDF no existe o no es válido.')
+      }
+    } else {
+      throw new Error(`Error cargando PDF: ${error.message}`)
+    }
+  }
+}
+
+const getPdfViewerUrl = (url) => {
+  if (!url) return ''
+
+  try {
+    const normalizedUrl = normalizeUrl(url)
+    const urlObj = new URL(normalizedUrl)
+
+    // Si es un PDF directo, usar Google Docs Viewer como fallback
+    if (urlObj.pathname.toLowerCase().endsWith('.pdf')) {
+      return `https://docs.google.com/gview?url=${encodeURIComponent(normalizedUrl)}&embedded=true`
+    }
+
+    // Si no es un PDF directo, intentar con la URL original
+    return normalizedUrl
+  } catch {
+    return url
+  }
+}
+
+const handlePdfLoad = (event) => {
+  // Verificar si el iframe cargó correctamente
+  const iframe = event.target
+  try {
+    // Intentar acceder al contenido del iframe
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document
+    if (iframeDoc && iframeDoc.body) {
+      // Si el contenido parece ser una página web en lugar de PDF
+      if (iframeDoc.body.innerHTML.includes('<html') && !iframeDoc.body.innerHTML.includes('pdf')) {
+        console.warn('El iframe cargó una página web en lugar de un PDF')
+      }
+    }
+  } catch (error) {
+    // Error de CORS, pero el PDF puede estar cargando correctamente
+    console.log('No se puede acceder al contenido del iframe (CORS), pero puede estar funcionando')
+  }
+}
+
+const refreshPdfViewer = async () => {
+  // Forzar recarga del PDF
+  currentPdfPage.value = 1
+  totalPdfPages.value = 0
+  pdfError.value = null
+  pdfLoading.value = true
+
+  try {
+    await loadPdfFile(previewItem.value?.id)
+    console.log('🔄 PDF recargado exitosamente')
+  } catch (error) {
+    console.error('❌ Error recargando PDF:', error)
+    pdfError.value = error
+    pdfLoading.value = false
+  }
+}
+
+const retryPdfLoad = async () => {
+  pdfError.value = null
+  pdfLoading.value = true
+  currentPdfPage.value = 1
+  totalPdfPages.value = 0
+
+  try {
+    await loadPdfFile(previewItem.value?.id)
+    console.log('🔄 PDF cargado exitosamente en reintento')
+  } catch (error) {
+    console.error('❌ Error en reintento de carga de PDF:', error)
+    pdfError.value = error
+    pdfLoading.value = false
+  }
+}
+
+// Funciones para manejar eventos del PDF
+const onPdfLoaded = (pdf) => {
+  totalPdfPages.value = pdf.numPages
+  pdfLoading.value = false
+  pdfError.value = null
+  console.log(`✅ PDF cargado exitosamente: ${totalPdfPages.value} páginas`)
+  console.log('📄 Objeto PDF:', pdf)
+}
+
+const onPdfError = (error) => {
+  pdfError.value = error
+  pdfLoading.value = false
+
+  // Usar la utilidad para verificar si es una advertencia conocida
+  if (isKnownPdfWarning(error)) {
+    console.warn('⚠️ Advertencia conocida de PDF.js (no crítica):', error.message)
+    // No mostrar error al usuario para advertencias conocidas
+    pdfError.value = null
+    pdfLoading.value = false
+    return
+  }
+
+  console.error('❌ Error cargando PDF:', error)
+  console.error('🔍 Detalles del error:', {
+    message: error.message,
+    stack: error.stack,
+    url: previewItem.value?.content
+  })
+}
+
+const onPdfPageChange = (page) => {
+  currentPdfPage.value = page
+}
+
+const previousPage = () => {
+  if (currentPdfPage.value > 1) {
+    currentPdfPage.value--
+  }
+}
+
+const nextPage = () => {
+  if (currentPdfPage.value < totalPdfPages.value) {
+    currentPdfPage.value++
+  }
+}
+
+const goToFirstPage = () => {
+  currentPdfPage.value = 1
+}
+
+const goToLastPage = () => {
+  currentPdfPage.value = totalPdfPages.value
+}
+
+const zoomIn = () => {
+  if (pdfZoom.value < 3.0) {
+    pdfZoom.value = Math.min(pdfZoom.value + 0.25, 3.0)
+  }
+}
+
+const zoomOut = () => {
+  if (pdfZoom.value > 0.5) {
+    pdfZoom.value = Math.max(pdfZoom.value - 0.25, 0.5)
+  }
+}
+
+const resetZoom = () => {
+  pdfZoom.value = 1.0
+}
+
+const redirectToLogin = () => {
+  console.log('🔄 Redirigiendo al login por error de autenticación')
+  window.location.href = '/login'
+}
+
 const getPdfTitle = (content) => {
   if (!content) return 'Documento PDF'
 
@@ -1456,6 +1935,17 @@ const handlePdfError = (event) => {
 // Cargar contenidos al montar el componente
 onMounted(() => {
   loadDocuments()
+  // Agregar listener para navegación con teclado
+  document.addEventListener('keydown', handleKeydown)
+})
+
+// Limpiar listeners al desmontar
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
+  // Limpiar URL del blob si existe
+  if (pdfBlobUrl.value) {
+    URL.revokeObjectURL(pdfBlobUrl.value)
+  }
 })
 </script>
 
@@ -2587,7 +3077,7 @@ onMounted(() => {
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
@@ -2637,6 +3127,8 @@ onMounted(() => {
   padding: 1.5rem;
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  max-height: none;
 }
 
 .modal-actions {
@@ -2685,6 +3177,187 @@ onMounted(() => {
 
 .modal-btn.danger:hover {
   background: var(--error-hover);
+}
+
+/* Panel de navegación PDF compacto en modal */
+.pdf-nav-compact {
+  flex: 1;
+  margin-right: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-compact-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.nav-compact-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.nav-compact-btn:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.nav-compact-btn:disabled {
+  background: var(--text-disabled);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+.page-compact-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 80px;
+}
+
+.page-compact-counter {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.page-compact-progress {
+  width: 60px;
+  height: 3px;
+  background: var(--border-color);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-compact-bar {
+  height: 100%;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.nav-compact-shortcuts {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shortcut-compact-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.shortcut-compact-btn:hover:not(:disabled) {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.shortcut-compact-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.zoom-compact-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid var(--border-color);
+}
+
+.zoom-compact-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--success-color);
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.zoom-compact-btn:hover {
+  background: var(--success-hover);
+  transform: translateY(-1px);
+}
+
+.zoom-compact-level {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 2.5rem;
+  text-align: center;
+  background: var(--bg-hover);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border-color);
+}
+
+/* Responsive para panel compacto */
+@media (max-width: 768px) {
+  .pdf-nav-compact {
+    margin-right: 0;
+    margin-bottom: 1rem;
+    order: -1;
+  }
+
+  .nav-compact-controls {
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .page-compact-info {
+    min-width: 60px;
+  }
+
+  .page-compact-progress {
+    width: 40px;
+  }
+
+  .nav-compact-shortcuts {
+    gap: 0.25rem;
+  }
+
+  .zoom-compact-controls {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+  }
 }
 
 .modal-btn:disabled {
@@ -3199,6 +3872,8 @@ onMounted(() => {
   font-size: 0.9rem;
   font-weight: 500;
   transition: background-color 0.2s ease;
+  border: none;
+  cursor: pointer;
 }
 
 .pdf-link:hover {
@@ -3207,8 +3882,214 @@ onMounted(() => {
   text-decoration: none;
 }
 
+.pdf-link:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.pdf-link.refresh {
+  background: #28a745;
+}
+
+.pdf-link.refresh:hover {
+  background: #1e7e34;
+}
+
 .pdf-link i {
   font-size: 1rem;
+}
+
+/* Estilos para el visor de PDF mejorado */
+.pdf-viewer-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  overflow: auto;
+  background: var(--bg-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-height: 70vh;
+}
+
+.pdf-viewer {
+  width: 100%;
+  min-height: 400px;
+  border: none;
+  display: block;
+  background: var(--bg-primary);
+}
+
+.pdf-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+}
+
+.pdf-control-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pdf-control-btn:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.pdf-control-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.pdf-page-info {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #495057;
+  min-width: 120px;
+  text-align: center;
+}
+
+
+/* Estilos para indicador de carga */
+.pdf-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e9ecef;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.pdf-loading p {
+  color: #6c757d;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Estilos para mensaje de error */
+.pdf-error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.pdf-error-message i {
+  font-size: 3rem;
+  color: #856404;
+  margin-bottom: 1rem;
+}
+
+.pdf-error-message h4 {
+  color: #856404;
+  margin-bottom: 0.5rem;
+}
+
+.pdf-error-message p {
+  color: #856404;
+  margin-bottom: 1rem;
+}
+
+.auth-error-actions {
+  margin-top: 1rem;
+}
+
+.pdf-link.auth-login {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.pdf-link.auth-login:hover {
+  background: #c82333;
+}
+
+.pdf-link.auth-login i {
+  margin-right: 0.5rem;
+}
+
+.document-error-actions {
+  margin-top: 1rem;
+}
+
+.error-suggestion {
+  background: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  color: #0066cc;
+  font-size: 0.9rem;
+}
+
+.error-suggestion i {
+  margin-right: 0.5rem;
+  color: #0066cc;
+}
+
+.error-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pdf-link.edit {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.pdf-link.edit:hover {
+  background: #218838;
+}
+
+.pdf-link.edit i {
+  margin-right: 0.5rem;
 }
 
 .pdf-error {

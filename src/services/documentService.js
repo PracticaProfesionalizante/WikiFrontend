@@ -1,4 +1,5 @@
 import api from './api'
+import { useAuthStore } from '@/stores/auth'
 
 /**
  * Servicio para gestión de documentos
@@ -194,6 +195,234 @@ class DocumentService {
       return response.data
     } catch (error) {
       console.error('❌ [DOCUMENT SERVICE] Error en búsqueda de documentos:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Debug del estado de autenticación
+   */
+  debugAuthState() {
+    const authStore = useAuthStore()
+    console.log('🔍 [DOCUMENT SERVICE] Estado de autenticación:')
+    console.log('🔍 [DOCUMENT SERVICE] - Access Token:', authStore.accessToken ? 'Presente' : 'Ausente')
+    console.log('🔍 [DOCUMENT SERVICE] - Refresh Token:', authStore.refreshToken ? 'Presente' : 'Ausente')
+    console.log('🔍 [DOCUMENT SERVICE] - Usuario:', authStore.user ? 'Presente' : 'Ausente')
+    console.log('🔍 [DOCUMENT SERVICE] - Autenticado:', authStore.isAuthenticated)
+
+    // Verificar localStorage también
+    console.log('🔍 [DOCUMENT SERVICE] localStorage:')
+    console.log('🔍 [DOCUMENT SERVICE] - access_token:', localStorage.getItem('access_token') ? 'Presente' : 'Ausente')
+    console.log('🔍 [DOCUMENT SERVICE] - refresh_token:', localStorage.getItem('refresh_token') ? 'Presente' : 'Ausente')
+    console.log('🔍 [DOCUMENT SERVICE] - user:', localStorage.getItem('user') ? 'Presente' : 'Ausente')
+  }
+
+  /**
+   * Leer contenido de un Blob como texto
+   * @param {Blob} blob - Blob a leer
+   * @returns {Promise<string>} Contenido del blob como texto
+   */
+  async readBlobAsText(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = reject
+      reader.readAsText(blob)
+    })
+  }
+
+  /**
+   * Obtener archivo PDF de un documento
+   * @param {string|number} id - ID del documento
+   * @returns {Promise<Blob>} Archivo PDF como Blob
+   */
+  async getDocumentFile(id) {
+    try {
+      console.log('📄 [DOCUMENT SERVICE] Obteniendo archivo PDF del documento:', id)
+
+      // Debug del estado de autenticación
+      this.debugAuthState()
+
+      const response = await api.get(`/documents/file/${id}`, {
+        responseType: 'blob',
+        headers: {
+          'Accept': 'application/pdf, */*'
+        }
+      })
+
+      console.log('✅ [DOCUMENT SERVICE] Archivo PDF obtenido exitosamente')
+      console.log('📄 [DOCUMENT SERVICE] Tamaño del archivo:', response.data.size, 'bytes')
+
+      return response.data
+    } catch (error) {
+      console.error('❌ [DOCUMENT SERVICE] Error obteniendo archivo PDF:', error)
+      console.error('❌ [DOCUMENT SERVICE] Status:', error.response?.status)
+      console.error('❌ [DOCUMENT SERVICE] Response:', error.response?.data)
+
+      // Si es error 401, debug adicional
+      if (error.response?.status === 401) {
+        console.error('🔍 [DOCUMENT SERVICE] Error 401 - Debug adicional:')
+        this.debugAuthState()
+      }
+
+      // Si es error 422 y la respuesta es un Blob con JSON, leer el contenido
+      if (error.response?.status === 422 && error.response?.data instanceof Blob) {
+        try {
+          const errorContent = await this.readBlobAsText(error.response.data)
+          console.error('🔍 [DOCUMENT SERVICE] Contenido del error 422:', errorContent)
+
+          // Intentar parsear como JSON
+          try {
+            const errorJson = JSON.parse(errorContent)
+            console.error('🔍 [DOCUMENT SERVICE] Error JSON parseado:', errorJson)
+
+            // Crear un error más descriptivo basado en el tipo de error
+            let errorMessage = errorJson.detail || errorJson.message || 'Error 422: Documento no encontrado o no válido'
+
+            // Detectar errores específicos del Mock Storage
+            if (errorJson.detail && errorJson.detail.includes('Mock Storage')) {
+              errorMessage = 'El archivo PDF no se encuentra en el servidor. Puede haber sido eliminado o nunca se subió correctamente.'
+            } else if (errorJson.detail && errorJson.detail.includes('no fue encontrado')) {
+              errorMessage = 'El archivo PDF no existe en el servidor.'
+            }
+
+            const enhancedError = new Error(errorMessage)
+            enhancedError.status = 422
+            enhancedError.details = errorJson
+            enhancedError.isFileNotFound = errorJson.detail && errorJson.detail.includes('no fue encontrado')
+            throw enhancedError
+          } catch (parseError) {
+            console.error('🔍 [DOCUMENT SERVICE] No se pudo parsear el error como JSON:', parseError)
+            const enhancedError = new Error(`Error 422: ${errorContent}`)
+            enhancedError.status = 422
+            enhancedError.rawContent = errorContent
+            throw enhancedError
+          }
+        } catch (readError) {
+          console.error('🔍 [DOCUMENT SERVICE] Error leyendo el Blob de error:', readError)
+        }
+      }
+
+      throw error
+    }
+  }
+
+  /**
+   * Validar que el usuario esté autenticado
+   */
+  validateAuthentication() {
+    const authStore = useAuthStore()
+
+    if (!authStore.isAuthenticated) {
+      console.error('❌ [DOCUMENT SERVICE] Usuario no autenticado')
+      throw new Error('Usuario no autenticado. Por favor, inicie sesión.')
+    }
+
+    if (!authStore.accessToken) {
+      console.error('❌ [DOCUMENT SERVICE] No hay access token disponible')
+      throw new Error('Token de acceso no disponible. Por favor, inicie sesión nuevamente.')
+    }
+
+    console.log('✅ [DOCUMENT SERVICE] Usuario autenticado correctamente')
+  }
+
+  /**
+   * Obtener URL autenticada para un archivo PDF
+   * @param {string|number} id - ID del documento
+   * @returns {Promise<string>} URL del PDF con autenticación
+   */
+  async getDocumentFileUrl(id) {
+    try {
+      console.log('📄 [DOCUMENT SERVICE] Generando URL autenticada para PDF:', id)
+
+      // Validar autenticación antes de hacer la petición
+      this.validateAuthentication()
+
+      // Obtener el archivo como blob
+      const blob = await this.getDocumentFile(id)
+
+      // Crear URL del blob
+      const url = URL.createObjectURL(blob)
+
+      console.log('✅ [DOCUMENT SERVICE] URL de PDF generada exitosamente')
+      return url
+    } catch (error) {
+      console.error('❌ [DOCUMENT SERVICE] Error generando URL de PDF:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Crear documento con archivo PDF usando el endpoint específico
+   * @param {Object} documentData - Datos del documento
+   * @param {File} file - Archivo PDF
+   * @returns {Promise<Object>} Documento creado
+   */
+  async createDocumentWithFile(documentData, file) {
+    try {
+      console.log('📄 [DOCUMENT SERVICE] Creando documento PDF con archivo:', file.name)
+
+      // Validar autenticación antes de hacer la petición
+      this.validateAuthentication()
+
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('name', documentData.name)
+      formData.append('type', documentData.type)
+      formData.append('slug', documentData.slug)
+      formData.append('status', documentData.status.toString())
+      formData.append('icon', documentData.icon)
+
+      // Enviar roles como array individual, no como JSON string
+      documentData.roles.forEach(role => {
+        formData.append('roles', role)
+      })
+
+      const response = await api.post('/documents/file', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+
+      console.log('✅ [DOCUMENT SERVICE] Documento PDF creado exitosamente')
+      console.log('📄 [DOCUMENT SERVICE] Documento creado:', response.data)
+
+      return response.data
+    } catch (error) {
+      console.error('❌ [DOCUMENT SERVICE] Error creando documento PDF:', error)
+      console.error('❌ [DOCUMENT SERVICE] Status:', error.response?.status)
+      console.error('❌ [DOCUMENT SERVICE] Response:', error.response?.data)
+      throw error
+    }
+  }
+
+  /**
+   * Subir archivo PDF para un documento
+   * @param {string|number} id - ID del documento
+   * @param {FormData} formData - Datos del formulario con el archivo
+   * @returns {Promise<Object>} Documento actualizado
+   */
+  async uploadDocumentFile(id, formData) {
+    try {
+      console.log('📄 [DOCUMENT SERVICE] Subiendo archivo PDF para documento:', id)
+
+      // Validar autenticación antes de hacer la petición
+      this.validateAuthentication()
+
+      const response = await api.put(`/documents/file/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+
+      console.log('✅ [DOCUMENT SERVICE] Archivo PDF subido exitosamente')
+      console.log('📄 [DOCUMENT SERVICE] Documento actualizado:', response.data)
+
+      return response.data
+    } catch (error) {
+      console.error('❌ [DOCUMENT SERVICE] Error subiendo archivo PDF:', error)
+      console.error('❌ [DOCUMENT SERVICE] Status:', error.response?.status)
+      console.error('❌ [DOCUMENT SERVICE] Response:', error.response?.data)
       throw error
     }
   }

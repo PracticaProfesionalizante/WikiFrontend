@@ -972,7 +972,7 @@
                             </div>
                             <div class="help-text">
                               <i class="mdi mdi-information" aria-hidden="true"></i>
-                              <span>La parte del menú padre es fija, solo puedes editar la parte específica del submenú</span>
+                              <span>La parte del menú padre es fija, solo puedes editar la parte específica del submenú. No incluyas el / inicial.</span>
                             </div>
                           </div>
 
@@ -1745,7 +1745,7 @@ const saveMenu = async () => {
       let newPath = menuForm.value.path
       if (menuForm.value.parentId) {
         const parentPath = getParentPath(menuForm.value.parentId)
-        newPath = parentPath + '/' + menuForm.value.path
+        newPath = buildCompletePath(parentPath, menuForm.value.path)
       }
 
       // Actualizar el menú principal
@@ -1796,7 +1796,7 @@ const saveMenu = async () => {
       // Si tiene menú padre, construir el path completo
       if (menuForm.value.parentId) {
         const parentPath = getParentPath(menuForm.value.parentId)
-        tempMenuData.path = parentPath + '/' + menuForm.value.path
+        tempMenuData.path = buildCompletePath(parentPath, menuForm.value.path)
       }
       parentMenuResult = await menuService.createMenu(tempMenuData)
 
@@ -1851,7 +1851,7 @@ const saveMenu = async () => {
 
             // Construir el path completo del submenú
             const parentPath = getParentPath(parentMenuId)
-            const fullSubmenuPath = parentPath + '/' + submenu.path
+            const fullSubmenuPath = buildCompletePath(parentPath, submenu.path)
 
             const submenuData = {
               name: submenu.name,
@@ -2156,10 +2156,10 @@ const validateForm = () => {
         // Validar ruta del submenú
         if (!submenu.path.trim()) {
           submenuErrors.path = `La ruta del submenú ${index + 1} es obligatoria`
-        } else if (!submenu.path.startsWith('/')) {
-          submenuErrors.path = `La ruta del submenú ${index + 1} debe comenzar con /`
-        } else if (!/^\/[a-z0-9\-\/]*$/.test(submenu.path)) {
-          submenuErrors.path = `La ruta del submenú ${index + 1} solo puede contener letras minúsculas, números, guiones y barras`
+        } else if (submenu.path.startsWith('/')) {
+          submenuErrors.path = `La ruta del submenú ${index + 1} no debe comenzar con / (se agrega automáticamente)`
+        } else if (!/^[a-z0-9\-]+$/.test(submenu.path)) {
+          submenuErrors.path = `La ruta del submenú ${index + 1} solo puede contener letras minúsculas, números y guiones`
         }
 
         // Verificar rutas duplicadas entre submenús
@@ -2483,6 +2483,33 @@ const removeSubmenu = (index) => {
   })
 }
 
+// Función para normalizar paths y evitar dobles slashes
+const normalizePath = (path) => {
+  if (!path) return ''
+
+  // Remover slashes múltiples y normalizar
+  return path
+    .replace(/\/+/g, '/') // Reemplazar múltiples slashes con uno solo
+    .replace(/\/$/, '') // Remover slash final
+    .replace(/^\/?/, '/') // Asegurar que empiece con un slash
+}
+
+// Función para construir path completo de manera segura
+const buildCompletePath = (parentPath, childPath) => {
+  const normalizedParent = normalizePath(parentPath)
+  const normalizedChild = childPath ? childPath.replace(/^\/+/, '') : '' // Remover slashes del inicio del hijo
+
+  if (!normalizedParent || normalizedParent === '/') {
+    return '/' + normalizedChild
+  }
+
+  if (!normalizedChild) {
+    return normalizedParent
+  }
+
+  return normalizedParent + '/' + normalizedChild
+}
+
 // Función para obtener el path completo de un menú padre
 const getParentPath = (parentId) => {
   if (!parentId) return ''
@@ -2492,10 +2519,10 @@ const getParentPath = (parentId) => {
 
   // Si el menú padre tiene su propio padre, construir el path completo recursivamente
   if (parentMenu.parentId) {
-    return getParentPath(parentMenu.parentId) + parentMenu.path
+    return buildCompletePath(getParentPath(parentMenu.parentId), parentMenu.path)
   }
 
-  return parentMenu.path
+  return normalizePath(parentMenu.path)
 }
 
 // Función para encontrar todos los submenús de un menú padre
@@ -2895,14 +2922,17 @@ const getMenuPathPlaceholder = () => {
 const validateMenuPath = () => {
   if (menuForm.value.path && !isEditing.value && menuForm.value.parentId) {
     // Limpiar y formatear solo la parte editable del menú
-    const menuPathSegment = menuForm.value.path
+    let menuPathSegment = menuForm.value.path
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '')
 
-    // Solo guardar la parte editable
+    // Remover cualquier slash que el usuario haya puesto manualmente
+    menuPathSegment = menuPathSegment.replace(/^\/+/, '')
+
+    // Solo guardar la parte editable (sin slash inicial)
     menuForm.value.path = menuPathSegment
   }
   validateForm()
@@ -2913,14 +2943,17 @@ const validateSubmenuPath = (index) => {
   const submenu = menuForm.value.submenus[index]
   if (submenu.path && !isEditing.value) {
     // Limpiar y formatear solo la parte editable del submenú
-    const submenuPathSegment = submenu.path
+    let submenuPathSegment = submenu.path
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '')
 
-    // Solo guardar la parte editable
+    // Remover cualquier slash que el usuario haya puesto manualmente
+    submenuPathSegment = submenuPathSegment.replace(/^\/+/, '')
+
+    // Solo guardar la parte editable (sin slash inicial)
     submenu.path = submenuPathSegment
   }
 }

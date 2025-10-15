@@ -144,6 +144,16 @@ api.interceptors.response.use(
       }
     }
 
+    // Manejar error 422 (Unprocessable Entity) con logging detallado
+    if (error.response?.status === 422) {
+      console.error('❌ [API INTERCEPTOR] Error 422 detectado:')
+      console.error('❌ [API INTERCEPTOR] URL:', originalRequest.url)
+      console.error('❌ [API INTERCEPTOR] Method:', originalRequest.method)
+      console.error('❌ [API INTERCEPTOR] Request data:', originalRequest.data)
+      console.error('❌ [API INTERCEPTOR] Response data:', error.response.data)
+      console.error('❌ [API INTERCEPTOR] Response headers:', error.response.headers)
+    }
+
     console.log('❌ [API INTERCEPTOR] Error no manejado por interceptor:', error.response?.status)
     return Promise.reject(error)
   },
