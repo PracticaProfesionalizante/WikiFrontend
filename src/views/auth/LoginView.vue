@@ -1,245 +1,274 @@
 <template>
-  <div class="login-container" :class="{ 'dark-mode': isDarkMode }">
+  <div class="login-container">
+    <!-- Background Elements -->
     <div class="background-image"></div>
-
     <div class="student-image-overlay"></div>
 
-    <!-- Theme Toggle Button -->
-    <div class="theme-toggle-container">
-      <button
-        @click="toggleTheme"
-        class="theme-toggle-btn"
-        :class="{ 'dark': isDarkMode }"
-        :title="isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
-      >
-        <i :class="isDarkMode ? 'mdi mdi-weather-sunny' : 'mdi mdi-weather-night'"></i>
-        <span class="theme-toggle-text">{{ isDarkMode ? 'Claro' : 'Oscuro' }}</span>
-      </button>
-    </div>
-
+    <!-- Main Content Layout -->
     <div class="content-layout">
+      <!-- Welcome Section -->
       <div class="welcome-section animate-slide-in-left">
-        <div class="logo-social-learning-section">
-          <img
-            src="@/assets/images/logos/LOGOSOCIALLEARNING.png"
-            alt="Social Learning Logo"
-            class="social-learning-logo animate-fade-in"
-          />
-        </div>
-
         <div class="greeting-content">
-          <h1 class="greeting-title animate-slide-up">Bienvenido a nuestra Wiki.</h1>
+          <h1 class="greeting-title animate-slide-up">Bienvenido a nuestra Wiki</h1>
           <p class="greeting-subtitle animate-slide-up-delay">
-            Ingresá tu email y contraseña para acceder.
+            Tu plataforma de conocimiento y aprendizaje colaborativo
           </p>
+          <div class="greeting-features animate-slide-up-delay-2">
+            <div class="feature-item">
+              <i class="mdi mdi-book-open-variant"></i>
+              <span>Conocimiento compartido</span>
+            </div>
+            <div class="feature-item">
+              <i class="mdi mdi-account-group"></i>
+              <span>Aprendizaje colaborativo</span>
+            </div>
+            <div class="feature-item">
+              <i class="mdi mdi-lightning-bolt"></i>
+              <span>Acceso instantáneo</span>
+            </div>
+          </div>
         </div>
       </div>
 
+      <!-- Form Section -->
       <div class="form-section">
         <div class="login-form-wrapper animate-slide-in-right">
-          <h2 class="form-title animate-fade-in-delay" v-if="!forgotPasswordSuccess">
-            {{ showForgotPassword ? 'Recuperar Contraseña' : 'Iniciar sesión' }}
-          </h2>
+          <!-- Logo Header -->
+          <div class="form-logo-section">
+            <img
+              src="@/assets/images/logos/LOGOSOCIALLEARNING.png"
+              alt="Social Learning Logo"
+              class="form-logo animate-fade-in"
+            />
+          </div>
 
-          <form
-            @submit.prevent="showForgotPassword ? handleSendResetEmail() : handleLogin()"
-            class="login-form"
-          >
-            <!-- Transición con animación -->
-            <transition name="form-slide" mode="out-in">
-              <!-- Formulario de Login -->
-              <div v-if="!showForgotPassword" key="login-form">
-                <div class="input-group">
-                  <div class="floating-input">
-                    <input
-                      v-model="credentials.email"
-                      type="email"
-                      id="email"
-                      class="form-input"
-                      :class="{
-                        error: emailError,
-                        success: !emailError && credentials.email && credentials.email.length > 0,
-                        'has-value': credentials.email || emailFocused,
-                      }"
-                      @focus="emailFocused = true"
-                      @blur="
-                        () => {
-                          emailFocused = false
-                          validateEmail()
-                        }
-                      "
-                      @input="validateEmailRealTime"
-                    />
-                    <label for="email" class="floating-label">Email</label>
-                    <div class="input-feedback">
-                      <i
-                        v-if="!emailError && credentials.email && credentials.email.length > 0"
-                        class="mdi mdi-check-circle success-icon"
-                      ></i>
-                      <i
-                        v-if="emailError && credentials.email"
-                        class="mdi mdi-alert-circle error-icon"
-                      ></i>
-                    </div>
-                  </div>
-                  <div v-if="emailError && credentials.email" class="field-error-message">
-                    Por favor ingresa un email válido
-                  </div>
-                </div>
-
-                <div class="input-group">
-                  <div class="floating-input password-wrapper">
-                    <input
-                      v-model="credentials.password"
-                      :type="showPassword ? 'text' : 'password'"
-                      id="password"
-                      class="form-input password-input"
-                      :class="{
-                        error: passwordError,
-                        success:
-                          !passwordError &&
-                          credentials.password &&
-                          credentials.password.length >= 6,
-                        'has-value': credentials.password || passwordFocused,
-                      }"
-                      @focus="passwordFocused = true"
-                      @blur="
-                        () => {
-                          passwordFocused = false
-                          validatePassword()
-                        }
-                      "
-                      @input="validatePasswordRealTime"
-                    />
-                    <label for="password" class="floating-label">Contraseña</label>
-                    <div class="password-controls">
-                      <button
-                        type="button"
-                        @click="showPassword = !showPassword"
-                        class="password-toggle"
-                      >
-                        <i v-if="showPassword" class="mdi mdi-eye"></i>
-                        <i v-else class="mdi mdi-eye-off"></i>
-                      </button>
+          <!-- Form Container -->
+          <div class="form-container">
+            <form
+              @submit.prevent="showForgotPassword ? handleSendResetEmail() : handleLogin()"
+              class="login-form"
+              novalidate
+            >
+              <!-- Form Transition -->
+              <transition name="form-slide" mode="out-in">
+                <!-- Login Form -->
+                <div v-if="!showForgotPassword" key="login-form" class="form-content">
+                  <!-- Email Field -->
+                  <div class="form-field">
+                    <div class="floating-input">
+                      <input
+                        v-model="credentials.email"
+                        type="email"
+                        id="email"
+                        class="form-input"
+                        :class="{
+                          error: emailError,
+                          success: !emailError && credentials.email && credentials.email.length > 0,
+                          'has-value': credentials.email || emailFocused,
+                        }"
+                        @focus="emailFocused = true"
+                        @blur="
+                          () => {
+                            emailFocused = false
+                            validateEmail()
+                          }
+                        "
+                        @input="validateEmailRealTime"
+                        placeholder=" "
+                        autocomplete="email"
+                        required
+                      />
+                      <label for="email" class="floating-label">Email</label>
                       <div class="input-feedback">
                         <i
-                          v-if="
-                            !passwordError &&
-                            credentials.password &&
-                            credentials.password.length >= 6
-                          "
+                          v-if="!emailError && credentials.email && credentials.email.length > 0"
                           class="mdi mdi-check-circle success-icon"
                         ></i>
                         <i
-                          v-if="passwordError && credentials.password"
+                          v-if="emailError && credentials.email"
                           class="mdi mdi-alert-circle error-icon"
                         ></i>
                       </div>
                     </div>
-                  </div>
-                  <div v-if="passwordError && credentials.password" class="field-error-message">
-                    La contraseña debe tener al menos 6 caracteres
-                  </div>
-                </div>
-
-                <div class="forgot-password-section">
-                  <button type="button" @click="handleForgotPassword" class="forgot-password-link">
-                    ¿Olvidaste tu contraseña?
-                  </button>
-                </div>
-
-                <div class="bottom-row">
-                  <button
-                    type="submit"
-                    :disabled="!isFormValid || isLoading"
-                    class="next-button"
-                    :class="{ disabled: !isFormValid || isLoading, loading: isLoading }"
-                  >
-                    <span v-if="!isLoading" class="button-text">Siguiente</span>
-                    <div v-else class="loading-spinner">
-                      <div class="spinner"></div>
-                      <span class="loading-text">{{
-                        successMessage ? 'Redirigiendo...' : 'Ingresando...'
-                      }}</span>
+                    <div v-if="emailError && credentials.email" class="field-error-message">
+                      Por favor ingresa un email válido
                     </div>
-                  </button>
-                </div>
+                  </div>
+
+                  <!-- Password Field with Forgot Link -->
+                  <div class="form-field">
+                    <div class="floating-input password-wrapper">
+                      <input
+                        v-model="credentials.password"
+                        :type="showPassword ? 'text' : 'password'"
+                        id="password"
+                        class="form-input password-input"
+                        :class="{
+                          error: passwordError,
+                          success:
+                            !passwordError &&
+                            credentials.password &&
+                            credentials.password.length >= 6,
+                          'has-value': credentials.password || passwordFocused,
+                        }"
+                        @focus="passwordFocused = true"
+                        @blur="
+                          () => {
+                            passwordFocused = false
+                            validatePassword()
+                          }
+                        "
+                        @input="validatePasswordRealTime"
+                        placeholder=" "
+                        autocomplete="current-password"
+                        required
+                      />
+                      <label for="password" class="floating-label">Contraseña</label>
+                      <div class="password-controls">
+                        <button
+                          type="button"
+                          @click="showPassword = !showPassword"
+                          class="password-toggle"
+                          :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                        >
+                          <i v-if="showPassword" class="mdi mdi-eye"></i>
+                          <i v-else class="mdi mdi-eye-off"></i>
+                        </button>
+                        <div class="input-feedback">
+                          <i
+                            v-if="
+                              !passwordError &&
+                              credentials.password &&
+                              credentials.password.length >= 6
+                            "
+                            class="mdi mdi-check-circle success-icon"
+                          ></i>
+                          <i
+                            v-if="passwordError && credentials.password"
+                            class="mdi mdi-alert-circle error-icon"
+                          ></i>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-if="passwordError && credentials.password" class="field-error-message">
+                      La contraseña debe tener al menos 6 caracteres
+                    </div>
+
+                    <!-- Forgot Password Link - Pegado al campo de contraseña -->
+                    <div class="forgot-password-section">
+                      <button type="button" @click="handleForgotPassword" class="forgot-password-link">
+                        ¿Olvidaste tu contraseña?
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Form Actions -->
+                  <div class="form-actions">
+
+                    <!-- Submit Button -->
+                    <div class="submit-section">
+                      <button
+                        type="submit"
+                        :disabled="!isFormValid || isLoading"
+                        class="next-button"
+                        :class="{ disabled: !isFormValid || isLoading, loading: isLoading }"
+                        :aria-label="isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'"
+                      >
+                        <span v-if="!isLoading" class="button-text">Iniciar Sesión</span>
+                        <div v-else class="loading-spinner">
+                          <div class="spinner"></div>
+                          <span class="loading-text">{{
+                            successMessage ? 'Redirigiendo...' : 'Ingresando...'
+                          }}</span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
               </div>
 
-              <!-- Formulario de Recuperación -->
-              <div v-else key="forgot-form">
-                <div v-if="!forgotPasswordSuccess">
-                  <div class="forgot-password-header">
-                    <!-- <h3 class="forgot-title">Recuperar Contraseña</h3> -->
-                    <p class="forgot-subtitle">Ingresa tu email para recibir instrucciones</p>
-                  </div>
-
-                  <div class="input-group">
-                    <div class="floating-input">
-                      <input
-                        v-model="forgotPasswordEmail"
-                        type="email"
-                        id="forgot-email"
-                        class="form-input"
-                        :class="{ 'has-value': forgotPasswordEmail }"
-                      />
-                      <label for="forgot-email" class="floating-label"
-                        >Email para recuperación</label
-                      >
+                <!-- Forgot Password Form -->
+                <div v-else key="forgot-form" class="form-content">
+                  <!-- Forgot Password Content -->
+                  <div v-if="!forgotPasswordSuccess">
+                    <div class="forgot-password-header">
+                      <p class="forgot-subtitle">Ingresa tu email para recibir instrucciones</p>
                     </div>
-                  </div>
 
-                  <div class="forgot-actions">
-                    <button type="button" @click="handleBackToLogin" class="back-to-login-btn">
-                      ← Volver al login
-                    </button>
+                    <!-- Email Field for Password Recovery -->
+                    <div class="form-field">
+                      <div class="floating-input">
+                        <input
+                          v-model="forgotPasswordEmail"
+                          type="email"
+                          id="forgot-email"
+                          class="form-input"
+                          :class="{ 'has-value': forgotPasswordEmail }"
+                          placeholder=" "
+                          autocomplete="email"
+                          required
+                        />
+                        <label for="forgot-email" class="floating-label">Email para recuperación</label>
+                      </div>
+                    </div>
+
+                    <!-- Recovery Form Actions -->
+                    <div class="form-actions">
+                      <div class="recovery-actions">
+                        <button type="button" @click="handleBackToLogin" class="back-to-login-btn">
+                          ← Volver al login
+                        </button>
+
+                        <button
+                          type="submit"
+                          :disabled="!forgotPasswordEmail || forgotPasswordLoading"
+                          class="next-button"
+                          :class="{
+                            disabled: !forgotPasswordEmail || forgotPasswordLoading,
+                            loading: forgotPasswordLoading,
+                          }"
+                          :aria-label="forgotPasswordLoading ? 'Enviando...' : 'Enviar instrucciones'"
+                        >
+                          <span v-if="!forgotPasswordLoading" class="button-text">Enviar</span>
+                          <div v-else class="loading-spinner">
+                            <div class="spinner"></div>
+                            <span class="loading-text">Enviando...</span>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                </div>
+
+                  <!-- Success Message -->
+                  <div v-else class="forgot-success">
+                    <div class="success-icon-large">
+                      <i class="mdi mdi-email-check-outline"></i>
+                    </div>
+                    <h3 class="success-title">¡Email enviado!</h3>
+                    <p class="success-text">
+                      Revisa tu bandeja de entrada y sigue las instrucciones para recuperar tu
+                      contraseña.
+                    </p>
 
                     <button
-                      type="submit"
-                      :disabled="!forgotPasswordEmail || forgotPasswordLoading"
-                      class="next-button"
-                      :class="{
-                        disabled: !forgotPasswordEmail || forgotPasswordLoading,
-                        loading: forgotPasswordLoading,
-                      }"
+                      type="button"
+                      @click="handleBackToLogin"
+                      class="back-to-login-btn-success"
                     >
-                      <span v-if="!forgotPasswordLoading" class="button-text">Enviar</span>
-                      <div v-else class="loading-spinner">
-                        <div class="spinner"></div>
-                        <span class="loading-text">Enviando...</span>
-                      </div>
+                      Volver al login
                     </button>
                   </div>
                 </div>
+              </transition>
+            </form>
+          </div>
 
-                <!-- Mensaje de éxito -->
-                <div v-else class="forgot-success">
-                  <div class="success-icon-large">
-                    <i class="mdi mdi-email-check-outline"></i>
-                  </div>
-                  <h3 class="success-title">¡Email enviado!</h3>
-                  <p class="success-text">
-                    Revisa tu bandeja de entrada y sigue las instrucciones para recuperar tu
-                    contraseña.
-                  </p>
-
-                  <button
-                    type="button"
-                    @click="handleBackToLogin"
-                    class="back-to-login-btn-success"
-                  >
-                    Volver al login
-                  </button>
-                </div>
-              </div>
-            </transition>
-          </form>
-
+          <!-- Error Messages -->
           <div v-if="error || authStore.error" class="error-message animate-shake">
             <i class="mdi mdi-alert-circle"></i>
             {{ error || authStore.error }}
           </div>
 
+          <!-- Success Messages -->
           <div v-if="successMessage" class="success-message animate-fade-in">
             <i class="mdi mdi-check-circle"></i>
             {{ successMessage }}
@@ -253,11 +282,9 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useTheme } from '@/composables/useTheme'
 
 // Composables
 const authStore = useAuthStore()
-const { isDarkMode, toggleTheme, initTheme } = useTheme()
 
 // Referencias reactivas
 const showPassword = ref(false)
@@ -410,11 +437,6 @@ const handleSendResetEmail = async () => {
   }
 }
 
-// Inicializar tema
-onMounted(() => {
-  initTheme()
-})
-
 // Limpiar errores cuando el componente se monta
 if (authStore.error) {
   authStore.clearError()
@@ -522,6 +544,17 @@ if (authStore.error) {
   }
 }
 
+@keyframes logoGlow {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
 /* Clases de animación */
 .animate-slide-in-left {
   animation: slideInLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -539,6 +572,11 @@ if (authStore.error) {
 
 .animate-slide-up-delay {
   animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s forwards;
+  opacity: 0;
+}
+
+.animate-slide-up-delay-2 {
+  animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.7s forwards;
   opacity: 0;
 }
 
@@ -577,78 +615,22 @@ img {
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
+  /* Forzar modo claro siempre */
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-sidebar: #ffffff;
+  --border-primary: #d1d5db;
+  --border-color: #e5e7eb;
+  --accent-color: #40DEFF;
+  --primary-color: #2563eb;
+  --accent-secondary: #10b981;
+  --accent-danger: #ef4444;
+  --button-primary-hover: #1d4ed8;
 }
 
-/* Theme Toggle Styles */
-.theme-toggle-container {
-  position: fixed;
-  top: 2rem;
-  right: 2rem;
-  z-index: 1000;
-}
-
-.theme-toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50px;
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  min-width: 100px;
-  justify-content: center;
-}
-
-.theme-toggle-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
-  background: rgba(255, 255, 255, 1);
-}
-
-.theme-toggle-btn.dark {
-  background: rgba(30, 41, 59, 0.95);
-  border-color: rgba(71, 85, 105, 0.5);
-  color: var(--text-primary);
-}
-
-.theme-toggle-btn.dark:hover {
-  background: rgba(30, 41, 59, 1);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
-}
-
-.theme-toggle-btn i {
-  font-size: 1.125rem;
-  transition: all 0.3s ease;
-}
-
-.theme-toggle-btn:hover i {
-  transform: rotate(15deg);
-}
-
-.theme-toggle-text {
-  font-weight: 600;
-  letter-spacing: 0.025em;
-}
-
-/* Dark mode container adjustments */
-.login-container.dark-mode {
-  --overlay-opacity: 0.7;
-}
-
-.login-container.dark-mode .background-image {
-  filter: brightness(0.6) contrast(1.1);
-}
-
-.login-container.dark-mode .student-image-overlay {
-  filter: brightness(0.5) saturate(0.8) contrast(1.2);
-}
 
 .background-image {
   position: absolute;
@@ -728,178 +710,72 @@ img {
   z-index: 2;
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  gap: 3rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  align-items: stretch;
+  padding: 0;
+  gap: 0;
+  max-width: none;
+  margin: 0;
 }
 
 /* Welcome Section - Left Side */
 .welcome-section {
   flex: 1;
-  max-width: 450px;
   display: flex;
   flex-direction: column;
-  gap: 1rem; /* Reducido de 2rem a 1rem para mejor distribución */
+  gap: 2rem;
   color: white;
-  padding-right: 1rem;
+  padding: 4rem 3rem;
   /* Mejora: Fondo semi-transparente para mejor contraste del texto */
   background: linear-gradient(
     135deg,
-    rgba(0, 0, 0, 0.3) 0%,
-    rgba(0, 0, 0, 0.1) 50%,
-    rgba(0, 0, 0, 0.2) 100%
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(0, 0, 0, 0.2) 50%,
+    rgba(0, 0, 0, 0.3) 100%
   );
-  backdrop-filter: blur(2px);
-  border-radius: 16px;
-  padding: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
   /* Mejora: Centrado vertical para mejor distribución */
   justify-content: center;
+  align-items: flex-start;
 }
-
-.logo-section {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 0.5rem;
-}
-
-.teclab-logo {
-  height: 4.5rem;
-  width: auto;
-  filter: brightness(0) invert(1) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  image-rendering: pixelated;
-}
-
-.teclab-logo:hover {
-  transform: translateY(-2px) scale(1.02);
-  filter: brightness(0) invert(1) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
-}
-
-/* 📌 Inicio: Nuevos estilos para el logo de Social Learning */
-.logo-social-learning-section {
-  display: flex;
-  justify-content: center; /* Centrado para mayor prominencia */
-  align-items: center;
-  margin-bottom: 0.75rem; /* Reducido para acercar al texto */
-  padding: 0.5rem 0; /* Reducido padding para menos espacio */
-  /* 📌 Mejora: Fondo sutil para destacar el logo */
-  background: radial-gradient(
-    ellipse at center,
-    rgba(73, 233, 237, 0.08) 0%,
-    rgba(73, 233, 237, 0.03) 40%,
-    transparent 70%
-  );
-  border-radius: 20px;
-  position: relative;
-}
-
-.social-learning-logo {
-  height: 6rem;
-  width: auto;
-  /* 📌 Mejora: Sombras más intensas y múltiples capas para máxima visibilidad */
-  filter: drop-shadow(0 8px 20px rgba(73, 233, 237, 0.6)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4))
-    drop-shadow(0 2px 6px rgba(73, 233, 237, 0.8)) brightness(1.1) contrast(1.15);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  /* 📌 Mejora: Resplandor adicional para destacar */
-  position: relative;
-  /* 📌 Mejora: Efecto de resplandor con pseudo-elemento */
-}
-
-.social-learning-logo::before {
-  content: '';
-  position: absolute;
-  top: -10px;
-  left: -10px;
-  right: -10px;
-  bottom: -10px;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(73, 233, 237, 0.15) 0%,
-    rgba(73, 233, 237, 0.08) 30%,
-    transparent 60%
-  );
-  border-radius: 50%;
-  z-index: -1;
-  opacity: 0.8;
-  animation: logoGlow 3s ease-in-out infinite alternate;
-}
-
-.social-learning-logo:hover {
-  transform: translateY(-4px) scale(1.05);
-  filter: drop-shadow(0 12px 28px rgba(73, 233, 237, 0.8))
-    drop-shadow(0 6px 16px rgba(0, 0, 0, 0.5)) drop-shadow(0 3px 8px rgba(73, 233, 237, 1))
-    brightness(1.2) contrast(1.2);
-}
-
-.social-learning-logo:hover::before {
-  opacity: 1;
-  transform: scale(1.1);
-  background: radial-gradient(
-    ellipse at center,
-    rgba(73, 233, 237, 0.25) 0%,
-    rgba(73, 233, 237, 0.15) 30%,
-    transparent 60%
-  );
-}
-
-/* 📌 Animación para el resplandor del logo */
-@keyframes logoGlow {
-  0% {
-    opacity: 0.6;
-    transform: scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-}
-/* 📌 Fin: Nuevos estilos para el logo de Social Learning */
 
 .greeting-content {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem; /* Reducido para acercar título y subtítulo */
-  margin-top: 0.5rem; /* Pequeño margen para separar del logo */
+  gap: 2rem;
+  margin-top: 0;
+  width: 100%;
 }
 
 .greeting-title {
-  font-size: 3rem;
-  font-weight: 800;
-  color: var(--accent-color);
+  font-size: 5rem;
+  font-weight: 900;
+  color: #40DEFF;
   margin: 0;
   line-height: 1.1;
   letter-spacing: -0.02em;
   /* Mejora: Sombras más intensas para mejor visibilidad */
   text-shadow:
-    0 6px 12px rgba(0, 0, 0, 0.7),
-    0 3px 6px rgba(73, 233, 237, 0.5),
-    0 1px 3px rgba(0, 0, 0, 0.9);
+    0 8px 16px rgba(0, 0, 0, 0.8),
+    0 4px 8px rgba(64, 222, 255, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.9);
   transition: all 0.3s ease;
   /* Mejora: Contorno sutil para mayor definición */
   -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.3);
 }
 
 .greeting-title:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   text-shadow:
-    0 8px 16px rgba(0, 0, 0, 0.8),
-    0 4px 8px rgba(73, 233, 237, 0.6),
-    0 2px 4px rgba(0, 0, 0, 0.9);
+    0 10px 20px rgba(0, 0, 0, 0.9),
+    0 5px 10px rgba(64, 222, 255, 0.7),
+    0 3px 6px rgba(0, 0, 0, 0.9);
 }
 
 .greeting-subtitle {
-  color: rgba(255, 255, 255, 0.98);
+  color: rgba(255, 255, 255, 0.95);
   margin: 0;
-  font-size: 1.3rem;
-  font-weight: 500;
+  font-size: 1.8rem;
+  font-weight: 600;
   line-height: 1.4;
   /* Mejora: Sombras más intensas para mejor legibilidad */
   text-shadow:
@@ -910,63 +786,157 @@ img {
   -webkit-text-stroke: 0.3px rgba(0, 0, 0, 0.4);
 }
 
+/* Características de la plataforma */
+.greeting-features {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(8px);
+  border-color: rgba(73, 233, 237, 0.4);
+}
+
+.feature-item i {
+  font-size: 1.5rem;
+  color: var(--accent-color);
+  min-width: 24px;
+}
+
+.feature-item span {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
 /* Form Section - Right Side */
 .form-section {
-  flex: 0 0 380px;
+  flex: 0 0 50%;
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
-  padding-left: 1rem;
+  background: white;
+  padding: 4rem 3rem;
 }
 
 .login-form-wrapper {
   width: 100%;
+  max-width: 450px;
+  background: transparent;
+  padding: 0;
+}
+
+/* Logo del formulario */
+.form-logo-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2.5rem;
+  padding: 1.5rem 0;
+  background: linear-gradient(
+    135deg,
+    rgba(64, 222, 255, 0.05) 0%,
+    rgba(64, 222, 255, 0.02) 50%,
+    transparent 100%
+  );
+  border-radius: 16px;
+  border: 1px solid rgba(64, 222, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Form Container */
+.form-container {
+  width: 100%;
   max-width: 400px;
-  /* Mejora: Fondo más elegante y moderno */
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  padding: 2rem 2.5rem 2.5rem 2.5rem;
-  /* Mejora: Sombras más suaves y profundas */
-  box-shadow:
-    0 25px 50px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(255, 255, 255, 0.05),
-    0 8px 16px rgba(73, 233, 237, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  margin: 0 auto;
+}
+
+/* Form Content */
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Form Field */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+/* Submit Section */
+.submit-section {
+  display: flex;
+  justify-content: center;
+}
+
+/* Recovery Actions */
+.recovery-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.form-logo-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(64, 222, 255, 0.08) 0%,
+    rgba(64, 222, 255, 0.03) 40%,
+    transparent 70%
+  );
+  z-index: -1;
+  opacity: 0.6;
+  animation: logoGlow 3s ease-in-out infinite alternate;
+}
+
+.form-logo {
+  height: 6rem;
+  width: auto;
+  filter: drop-shadow(0 6px 20px rgba(64, 222, 255, 0.4)) brightness(1.1) contrast(1.15);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
-/* Dark mode form styles */
-.login-container.dark-mode .login-form-wrapper {
-  background: rgba(30, 41, 59, 0.95);
-  border: 1px solid rgba(71, 85, 105, 0.5);
-  box-shadow:
-    0 25px 50px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(71, 85, 105, 0.2),
-    0 8px 16px rgba(96, 165, 250, 0.1);
+.form-logo:hover {
+  transform: translateY(-3px) scale(1.05);
+  filter: drop-shadow(0 8px 24px rgba(64, 222, 255, 0.5)) brightness(1.15) contrast(1.2);
 }
 
-.login-form-wrapper:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 32px 64px rgba(0, 0, 0, 0.12),
-    0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 12px 24px rgba(73, 233, 237, 0.15);
-}
 
-.form-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  text-align: center;
-  margin-bottom: 1.75rem;
-  margin-top: 0;
-  /* Mejora: Sombra sutil para mejor definición */
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  letter-spacing: -0.01em;
-  /* Evitar que el texto se divida en múltiples líneas */
-  white-space: nowrap;
-}
 
 /* Form */
 .login-form {
@@ -987,83 +957,54 @@ img {
 .form-input {
   width: 100%;
   padding: 1rem 1rem 0.5rem 1rem;
-  border: 1px solid var(--border-primary);
+  border: 1px solid #d1d5db;
   /* Mejora: Bordes más redondeados y modernos */
   border-radius: 12px;
   font-size: 1rem;
   font-weight: 400;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
-  background: transparent;
-  /* Asegurar que el texto sea siempre visible independientemente del tema */
-  color: var(--text-primary) !important;
+  background: #ffffff;
+  /* Forzar modo claro siempre */
+  color: #1f2937 !important;
 }
 
-/* Dark mode input styles */
-.login-container.dark-mode .form-input {
-  background: rgba(51, 65, 85, 0.5);
-  border-color: var(--border-primary);
-  color: var(--text-primary) !important;
-}
-
-.login-container.dark-mode .form-input:focus {
-  background: rgba(51, 65, 85, 0.7);
-  border-color: var(--accent-color);
-  box-shadow:
-    0 0 0 4px rgba(96, 165, 250, 0.15),
-    0 4px 12px rgba(96, 165, 250, 0.1);
-}
-
-.login-container.dark-mode .form-input:hover:not(:focus) {
-  background: rgba(51, 65, 85, 0.6);
-  border-color: var(--text-muted);
-}
 
 /* Estilos específicos para autocompletado del navegador */
 .form-input:-webkit-autofill,
 .form-input:-webkit-autofill:hover,
 .form-input:-webkit-autofill:focus,
 .form-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px transparent inset !important;
-  -webkit-text-fill-color: var(--text-primary) !important;
-  color: var(--text-primary) !important;
-  background-color: transparent !important;
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+  -webkit-text-fill-color: #1f2937 !important;
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
 }
 
-/* Estilos específicos para autocompletado en modo oscuro */
-.login-container.dark-mode .form-input:-webkit-autofill,
-.login-container.dark-mode .form-input:-webkit-autofill:hover,
-.login-container.dark-mode .form-input:-webkit-autofill:focus,
-.login-container.dark-mode .form-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px rgba(51, 65, 85, 0.5) inset !important;
-  -webkit-text-fill-color: #f8fafc !important;
-  color: #f8fafc !important;
-  background-color: rgba(51, 65, 85, 0.5) !important;
-}
 
 .form-input:focus {
   outline: none;
-  border-color: var(--accent-color);
+  border-color: #245FE7;
   /* Mejora: Glow effect más elegante */
   box-shadow:
-    0 0 0 4px rgba(37, 99, 235, 0.15),
-    0 4px 12px rgba(37, 99, 235, 0.1);
+    0 0 0 4px rgba(36, 95, 231, 0.15),
+    0 4px 12px rgba(36, 95, 231, 0.1);
   transform: translateY(-2px);
 }
 
 .form-input:hover:not(:focus) {
-  border-color: var(--text-muted);
+  border-color: #9ca3af;
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .form-input.error {
-  border-color: var(--accent-danger);
+  border-color: #ef4444;
   box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
 }
 
 .form-input.success {
-  border-color: var(--accent-secondary);
+  border-color: #10b981;
   box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
 }
 
@@ -1073,7 +1014,7 @@ img {
   top: 0.75rem;
   font-size: 1rem;
   font-weight: 500;
-  color: var(--text-secondary) !important;
+  color: #6b7280 !important;
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: left top;
@@ -1088,26 +1029,19 @@ img {
   left: 0.75rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--accent-color) !important;
+  color: #40DEFF !important;
   transform: scale(1);
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffffff;
   padding: 0 0.5rem;
   border-radius: 6px;
   backdrop-filter: blur(8px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Dark mode floating label styles */
-.login-container.dark-mode .form-input:focus + .floating-label,
-.login-container.dark-mode .form-input.has-value + .floating-label {
-  background: rgba(30, 41, 59, 0.95);
-  color: var(--accent-color) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
 
 .form-input.error + .floating-label {
   color: #ef4444 !important;
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffffff;
   padding: 0 0.5rem;
   border-radius: 6px;
   backdrop-filter: blur(8px);
@@ -1116,7 +1050,7 @@ img {
 
 .form-input.success + .floating-label {
   color: #10b981 !important;
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffffff;
   padding: 0 0.5rem;
   border-radius: 6px;
   backdrop-filter: blur(8px);
@@ -1139,13 +1073,13 @@ img {
 }
 
 .success-icon {
-  color: var(--accent-secondary);
+  color: #10b981;
   font-size: 1.2rem;
   animation: bounceIn 0.6s ease-out;
 }
 
 .error-icon {
-  color: var(--accent-danger);
+  color: #ef4444;
   font-size: 1.2rem;
   animation: shake 0.5s ease-in-out;
 }
@@ -1183,7 +1117,7 @@ img {
 .password-toggle {
   background: none;
   border: none;
-  color: var(--text-secondary) !important;
+  color: #6b7280 !important;
   cursor: pointer;
   padding: 0;
   display: flex;
@@ -1196,8 +1130,8 @@ img {
 }
 
 .password-toggle:hover {
-  color: var(--accent-color) !important;
-  background-color: rgba(37, 99, 235, 0.1);
+  color: #40DEFF !important;
+  background-color: rgba(64, 222, 255, 0.1);
   transform: scale(1.1);
 }
 
@@ -1205,13 +1139,13 @@ img {
 .forgot-password-section {
   display: flex;
   justify-content: flex-end;
-  margin: 0.75rem 0 1rem 0;
+  margin: 0.25rem 0 0 0;
 }
 
 .forgot-password-link {
   background: none;
   border: none;
-  color: var(--accent-color);
+  color: #1f2937;
   font-size: 0.875rem;
   cursor: pointer;
   text-decoration: none;
@@ -1221,9 +1155,9 @@ img {
 }
 
 .forgot-password-link:hover {
-  color: var(--accent-color);
+  color: #374151;
   text-decoration: underline;
-  background-color: rgba(73, 233, 237, 0.1);
+  background-color: rgba(31, 41, 55, 0.1);
   transform: translateY(-1px);
 }
 
@@ -1262,8 +1196,8 @@ img {
 
 .next-button {
   padding: 0.75rem 2rem;
-  background-color: var(--border-primary);
-  color: var(--text-secondary);
+  background-color: #d1d5db;
+  color: #6b7280;
   border: none;
   border-radius: 9999px;
   font-weight: 500;
@@ -1279,35 +1213,26 @@ img {
 }
 
 .next-button:not(.disabled):not(.loading) {
-  background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+  background: #245FE7;
   color: white;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 15px rgba(36, 95, 231, 0.3);
 }
 
-/* Dark mode button styles */
-.login-container.dark-mode .next-button:not(.disabled):not(.loading) {
-  background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
-  box-shadow: 0 4px 15px rgba(96, 165, 250, 0.4);
-}
-
-.login-container.dark-mode .next-button:not(.disabled):not(.loading):hover {
-  box-shadow: 0 8px 25px rgba(96, 165, 250, 0.5);
-}
 
 .next-button:not(.disabled):not(.loading):hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
-  background: linear-gradient(135deg, var(--primary-color), var(--button-primary-hover));
+  box-shadow: 0 8px 25px rgba(36, 95, 231, 0.4);
+  background: #1E4ED8;
 }
 
 .next-button:not(.disabled):not(.loading):active {
   transform: translateY(0);
-  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 2px 10px rgba(36, 95, 231, 0.3);
 }
 
 .next-button.loading {
-  background: linear-gradient(135deg, #49e9ed, #2563eb);
+  background: #245FE7;
   color: white;
   cursor: not-allowed;
 }
@@ -1377,7 +1302,7 @@ img {
 .back-to-login-btn {
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: #1f2937;
   font-size: 0.875rem;
   cursor: pointer;
   padding: 0.5rem;
@@ -1389,8 +1314,8 @@ img {
 }
 
 .back-to-login-btn:hover {
-  color: var(--accent-color);
-  background-color: rgba(37, 99, 235, 0.1);
+  color: #374151;
+  background-color: rgba(31, 41, 55, 0.1);
 }
 
 /* Estilos para mensaje de éxito */
@@ -1431,7 +1356,7 @@ img {
 }
 
 .back-to-login-btn-success {
-  background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+  background: #245FE7;
   color: white;
   border: none;
   padding: 0.75rem 2rem;
@@ -1439,13 +1364,13 @@ img {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 15px rgba(36, 95, 231, 0.3);
 }
 
 .back-to-login-btn-success:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
-  background: linear-gradient(135deg, var(--primary-color), var(--button-primary-hover));
+  box-shadow: 0 8px 25px rgba(36, 95, 231, 0.4);
+  background: #1E4ED8;
 }
 
 @keyframes successPulse {
@@ -1526,20 +1451,6 @@ img {
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
 }
 
-/* Dark mode error and success messages */
-.login-container.dark-mode .error-message {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.15));
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #f87171;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-}
-
-.login-container.dark-mode .success-message {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.15));
-  border: 1px solid rgba(52, 211, 153, 0.3);
-  color: #34d399;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-}
 
 .error-message i,
 .success-message i {
@@ -1550,60 +1461,84 @@ img {
 @media (max-width: 1024px) {
   .content-layout {
     flex-direction: column;
-    padding: 2rem;
-    gap: 2rem;
   }
 
   .welcome-section {
-    max-width: 100%;
+    flex: none;
+    padding: 3rem 2rem;
     text-align: center;
+    align-items: center;
   }
 
   .form-section {
     flex: none;
-    width: 100%;
-    max-width: 400px;
+    padding: 3rem 2rem;
   }
 
   .greeting-title {
-    font-size: 2rem;
+    font-size: 3.5rem;
   }
 
-  .student-image-overlay {
-    display: none;
+  .greeting-subtitle {
+    font-size: 1.4rem;
   }
 
-  .theme-toggle-container {
-    top: 1rem;
-    right: 1rem;
+  .greeting-features {
+    gap: 0.75rem;
   }
 
-  .theme-toggle-btn {
+  .feature-item {
     padding: 0.5rem 0.75rem;
-    min-width: 80px;
-    font-size: 0.8rem;
   }
 
-  .theme-toggle-text {
-    display: none;
+  .feature-item i {
+    font-size: 1.2rem;
+  }
+
+  .feature-item span {
+    font-size: 1rem;
   }
 }
 
 @media (max-width: 768px) {
-  .content-layout {
-    padding: 1rem;
-  }
-
-  .login-form-wrapper {
+  .welcome-section {
     padding: 2rem 1.5rem;
   }
 
+  .form-section {
+    padding: 2rem 1.5rem;
+  }
+
+  .login-form-wrapper {
+    padding: 0;
+  }
+
   .greeting-title {
-    font-size: 1.75rem;
+    font-size: 2.8rem;
   }
 
   .greeting-subtitle {
-    font-size: 1rem;
+    font-size: 1.2rem;
+  }
+
+  .greeting-features {
+    gap: 0.5rem;
+  }
+
+  .feature-item {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .feature-item i {
+    font-size: 1.1rem;
+  }
+
+  .feature-item span {
+    font-size: 0.9rem;
+  }
+
+  .form-logo {
+    height: 5rem;
   }
 
   .bottom-row {
@@ -1622,16 +1557,44 @@ img {
 }
 
 @media (max-width: 640px) {
-  .content-layout {
-    padding: 1rem;
+  .welcome-section {
+    padding: 1.5rem 1rem;
+  }
+
+  .form-section {
+    padding: 1.5rem 1rem;
   }
 
   .login-form-wrapper {
-    padding: 1.5rem;
+    padding: 0;
   }
 
   .greeting-title {
-    font-size: 1.5rem;
+    font-size: 2.2rem;
+  }
+
+  .greeting-subtitle {
+    font-size: 1rem;
+  }
+
+  .greeting-features {
+    gap: 0.5rem;
+  }
+
+  .feature-item {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .feature-item i {
+    font-size: 1rem;
+  }
+
+  .feature-item span {
+    font-size: 0.85rem;
+  }
+
+  .form-logo {
+    height: 4rem;
   }
 }
 </style>

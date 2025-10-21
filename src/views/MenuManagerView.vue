@@ -395,729 +395,595 @@
           aria-labelledby="modal-title"
           aria-describedby="modal-description"
         >
-          <div class="dialog-content enhanced-modal" @click.stop tabindex="-1" ref="modalContent">
-            <!-- Header limpio y organizado -->
-            <div class="dialog-header clean-header">
-              <div class="header-main">
-                <div class="header-left">
-                  <div class="header-icon">
-                    <i class="mdi mdi-menu-open" aria-hidden="true"></i>
-                  </div>
-                  <div class="header-text">
-                    <h2 id="modal-title">
-                      {{ isEditing ? 'Editar' : 'Crear' }} Menú
-                    </h2>
-                    <p class="header-subtitle">
-                      {{ isEditing ? 'Modifica la configuración del menú existente' : 'Configura un nuevo elemento del menú' }}
-                    </p>
+          <div class="dialog-content wizard-modal" @click.stop tabindex="-1" ref="modalContent">
+            <!-- Header del Wizard -->
+            <div class="wizard-header">
+              <div class="wizard-title-section">
+                <div class="wizard-icon">
+                  <i class="mdi mdi-menu-open" aria-hidden="true"></i>
+                </div>
+              <div class="wizard-text">
+                <h2 id="modal-title">
+                  {{ isEditing ? 'Editar' : 'Crear' }} Menú
+                </h2>
+                <p class="wizard-subtitle">
+                  {{ isEditing ? 'Modifica la configuración del menú existente' : 'Configura un nuevo elemento del menú' }}
+                </p>
+
+                <!-- Indicador de roles activos al editar -->
+                <div v-if="isEditing && menuForm.roles && menuForm.roles.length > 0" class="active-roles-indicator">
+                  <span class="indicator-label">Roles activos:</span>
+                  <div class="active-roles-list">
+                    <div
+                      v-for="role in getSelectedRolesInfo()"
+                      :key="role.value"
+                      class="active-role-item"
+                      :class="role.value"
+                    >
+                      <i :class="['mdi', role.icon]"></i>
+                      <span>{{ role.label }}</span>
+                      <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-badge">
+                        <i class="mdi mdi-crown"></i>
+                        Máximo
+                      </span>
+                    </div>
                   </div>
                 </div>
-
-                <button
-                  @click="closeDialog"
-                  class="close-btn clean-close"
-                  aria-label="Cerrar modal"
-                  type="button"
-                >
-                  <i class="mdi mdi-close" aria-hidden="true"></i>
-                </button>
+              </div>
               </div>
 
-              <!-- Indicador de progreso compacto -->
-              <div class="progress-indicator compact">
-                <div class="progress-bar">
-                  <div class="progress-fill" :style="{ width: `${(currentStep / 3) * 100}%` }"></div>
+              <button
+                @click="closeDialog"
+                class="wizard-close-btn"
+                aria-label="Cerrar modal"
+                type="button"
+              >
+                <i class="mdi mdi-close" aria-hidden="true"></i>
+              </button>
+            </div>
+
+            <!-- Indicador de Pasos -->
+            <div class="wizard-steps">
+              <div
+                v-for="(step, index) in wizardSteps"
+                :key="step.id"
+                class="wizard-step"
+                :class="{
+                  'active': currentWizardStep === index + 1,
+                  'completed': currentWizardStep > index + 1,
+                  'disabled': currentWizardStep < index + 1
+                }"
+              >
+                <div class="step-indicator">
+                  <i v-if="currentWizardStep > index + 1" class="mdi mdi-check"></i>
+                  <span v-else>{{ index + 1 }}</span>
                 </div>
-                <div class="progress-steps">
-                  <div class="step" :class="{ active: currentStep >= 1, completed: currentStep > 1 }">
-                    <i class="mdi mdi-information-outline"></i>
-                    <span>Básico</span>
-                  </div>
-                  <div class="step" :class="{ active: currentStep >= 2, completed: currentStep > 2 }">
-                    <i class="mdi mdi-emoticon-outline"></i>
-                    <span>Icono</span>
-                  </div>
-                  <div class="step" :class="{ active: currentStep >= 3, completed: currentStep > 3 }">
-                    <i class="mdi mdi-cog-outline"></i>
-                    <span>Config</span>
-                  </div>
+                <div class="step-content">
+                  <h4 class="step-title">{{ step.title }}</h4>
+                  <p class="step-description">{{ step.description }}</p>
                 </div>
               </div>
             </div>
 
-            <div class="dialog-body enhanced-body">
+            <!-- Contenido del Wizard -->
+            <div class="wizard-body">
               <p id="modal-description" class="sr-only">
                 Formulario para {{ isEditing ? 'editar' : 'crear' }} un elemento del menú. Complete
                 los campos requeridos y presione guardar.
               </p>
-              <form @submit.prevent="saveMenu" role="form" id="menu-form" class="enhanced-form">
-                <!-- Información básica mejorada -->
-                <div class="form-section enhanced-section" :class="{ 'step-active': currentStep >= 1 }">
-                  <div class="section-header">
-                    <div class="section-icon">
-                      <i class="mdi mdi-information-outline" aria-hidden="true"></i>
-                    </div>
-                    <div class="section-title-content">
-                      <h3 class="section-title">
-                        Información Básica
-                      </h3>
-                      <p class="section-description">
-                        Define el nombre y la ruta de acceso del menú
-                      </p>
-                    </div>
-                    <div class="section-status">
-                      <i v-if="menuForm.name && menuForm.path" class="mdi mdi-check-circle success"></i>
-                      <i v-else class="mdi mdi-circle-outline"></i>
-                    </div>
+
+              <form @submit.prevent="saveMenu" role="form" id="menu-form" class="wizard-form">
+
+                <!-- Paso 1: Información Básica -->
+                <div v-show="currentWizardStep === 1" class="wizard-step-content">
+                  <div class="step-header">
+                    <h3 class="step-title">
+                      <i class="mdi mdi-information-outline"></i>
+                      Información Básica
+                    </h3>
+                    <p class="step-description">
+                      Define el nombre, ruta y tipo de menú
+                    </p>
                   </div>
 
-                  <div class="form-group">
-                    <label for="menuName" class="form-label">
-                      <i class="mdi mdi-format-title" aria-hidden="true"></i>
-                      Nombre del Menú *
-                    </label>
-                    <input
-                      id="menuName"
-                      v-model="menuForm.name"
-                      type="text"
-                      class="form-input"
-                      :class="{
-                        error: validationErrors.name,
-                        success: !validationErrors.name && menuForm.name.trim().length >= 3,
-                        validating: isValidating
-                      }"
-                      placeholder="Ej: Gestión de Usuarios"
-                      @input="generatePath"
-                      maxlength="50"
-                      required
-                      aria-describedby="menuName-help menuName-error"
-                      ref="firstInput"
-                    />
-                    <div
-                      v-if="validationErrors.name"
-                      class="error-message"
-                      id="menuName-error"
-                      role="alert"
-                    >
-                      <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
-                      {{ validationErrors.name }}
-                    </div>
-                    <div class="help-text" id="menuName-help">
-                      <strong>
-                        <i class="mdi mdi-information" aria-hidden="true"></i>
-                        Este será el nombre que aparecerá en el menú lateral
-                      </strong>
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="menuPath" class="form-label">
-                      <i class="mdi mdi-link-variant" aria-hidden="true"></i>
-                      Ruta de Acceso *
-                    </label>
-
-                    <!-- Si tiene menú padre, mostrar parte estática y editable -->
-                    <div v-if="menuForm.parentId" class="path-input-container">
-                      <!-- Parte estática del path del menú padre -->
-                      <div class="path-static-part">
-                        {{ getParentPath(menuForm.parentId) || '/' }}
-                      </div>
-                      <!-- Parte editable del menú -->
+                  <div class="step-fields">
+                    <div class="form-group">
+                      <label for="menuName" class="form-label">
+                        <i class="mdi mdi-format-title"></i>
+                        Nombre del Menú *
+                      </label>
                       <input
+                        id="menuName"
+                        v-model="menuForm.name"
+                        type="text"
+                        class="form-input"
+                        :class="{
+                          error: validationErrors.name,
+                          success: !validationErrors.name && menuForm.name.trim().length >= 3
+                        }"
+                        placeholder="Ej: Gestión de Usuarios"
+                        @input="generatePath"
+                        maxlength="50"
+                        required
+                        ref="firstInput"
+                      />
+                      <div v-if="validationErrors.name" class="error-message" role="alert">
+                        <i class="mdi mdi-alert-circle"></i>
+                        {{ validationErrors.name }}
+                      </div>
+                      <div class="help-text">
+                        <i class="mdi mdi-information"></i>
+                        Este será el nombre que aparecerá en el menú lateral
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="menuPath" class="form-label">
+                        <i class="mdi mdi-link-variant"></i>
+                        Ruta de Acceso *
+                      </label>
+
+                      <div v-if="menuForm.parentId" class="path-input-container">
+                        <div class="path-static-part">
+                          {{ getParentPath(menuForm.parentId) || '/' }}
+                        </div>
+                        <input
+                          id="menuPath"
+                          v-model="menuForm.path"
+                          type="text"
+                          class="form-input path-editable-part"
+                          :class="{ error: validationErrors.path }"
+                          :placeholder="`Ej: ${getMenuPathPlaceholder()}`"
+                          @input="validateMenuPath"
+                          required
+                        />
+                      </div>
+
+                      <input
+                        v-else
                         id="menuPath"
                         v-model="menuForm.path"
                         type="text"
-                        class="form-input path-editable-part"
+                        class="form-input"
                         :class="{ error: validationErrors.path }"
-                        :placeholder="`Ej: ${getMenuPathPlaceholder()}`"
-                        @input="validateMenuPath"
+                        placeholder="Ej: /gestion-usuarios"
+                        @input="validateForm"
                         required
-                        aria-describedby="menuPath-help menuPath-error"
                       />
-                    </div>
 
-                    <!-- Si es menú raíz, mostrar input normal -->
-                    <input
-                      v-else
-                      id="menuPath"
-                      v-model="menuForm.path"
-                      type="text"
-                      class="form-input"
-                      :class="{ error: validationErrors.path }"
-                      placeholder="Ej: /gestion-usuarios"
-                      @input="validateForm"
-                      required
-                      aria-describedby="menuPath-help menuPath-error"
-                    />
-
-                    <div
-                      v-if="validationErrors.path"
-                      class="error-message"
-                      id="menuPath-error"
-                      role="alert"
-                    >
-                      <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
-                      {{ validationErrors.path }}
-                    </div>
-                    <div class="help-text d-flex align-center" id="menuPath-help">
-                      <strong>
-                        <i class="mdi mdi-information" aria-hidden="true"></i>
-                        <span class="ml-1">
-                          <span v-if="menuForm.parentId">
-                            La parte del menú padre es fija, solo puedes editar la parte específica del menú
-                          </span>
-                          <span v-else>
-                            URL que se usará para acceder a esta vista (se genera automáticamente)
-                          </span>
+                      <div v-if="validationErrors.path" class="error-message" role="alert">
+                        <i class="mdi mdi-alert-circle"></i>
+                        {{ validationErrors.path }}
+                      </div>
+                      <div class="help-text">
+                        <i class="mdi mdi-information"></i>
+                        <span v-if="menuForm.parentId">
+                          La parte del menú padre es fija, solo puedes editar la parte específica del menú
                         </span>
-                      </strong>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Selector de iconos mejorado -->
-                <div class="form-section enhanced-section" :class="{ 'step-active': currentStep >= 2 }">
-                  <div class="section-header">
-                    <div class="section-icon">
-                      <i class="mdi mdi-emoticon-outline" aria-hidden="true"></i>
-                    </div>
-                    <div class="section-title-content">
-                      <h3 class="section-title">
-                        Seleccionar Icono
-                      </h3>
-                      <p class="section-description">
-                        Elige un icono que represente la función del menú
-                      </p>
-                    </div>
-                    <div class="section-status">
-                      <i v-if="menuForm.icon && menuForm.icon.startsWith('mdi-')" class="mdi mdi-check-circle success"></i>
-                      <i v-else class="mdi mdi-circle-outline"></i>
-                    </div>
-                  </div>
-
-                  <div
-                    v-if="validationErrors.icon"
-                    class="error-message enhanced-error"
-                    role="alert"
-                    aria-live="polite"
-                  >
-                    <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
-                    {{ validationErrors.icon }}
-                  </div>
-
-                  <div class="icon-selector-wrapper">
-                    <IconSelector
-                      v-model="menuForm.icon"
-                      @update:modelValue="validateForm"
-                      aria-label="Seleccionar icono para el menú"
-                    />
-                  </div>
-                </div>
-
-                <!-- Selector de plantillas -->
-                <div class="form-section">
-                  <h3 class="section-title">
-                    <i class="mdi mdi-view-dashboard-outline" aria-hidden="true"></i>
-                    Tipo de Vista *
-                  </h3>
-                  <div
-                    v-if="validationErrors.template"
-                    class="error-message"
-                    role="alert"
-                    aria-live="polite"
-                  >
-                    <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
-                    {{ validationErrors.template }}
-                  </div>
-                  <div class="help-text">
-                    <i class="mdi mdi-information" aria-hidden="true"></i>
-                    Selecciona el tipo de vista que mejor se adapte a tu contenido
-                  </div>
-
-                  <div
-                    class="template-selector"
-                    role="radiogroup"
-                    aria-labelledby="template-section-title"
-                  >
-                    <div
-                      v-for="template in viewTemplates"
-                      :key="template.value"
-                      class="template-option"
-                      :class="{ selected: menuForm.template === template.value }"
-                      @click="selectTemplate(template.value)"
-                      @keydown.enter="selectTemplate(template.value)"
-                      @keydown.space.prevent="selectTemplate(template.value)"
-                      role="radio"
-                      :aria-checked="menuForm.template === template.value"
-                      :aria-labelledby="`template-${template.value}-label`"
-                      tabindex="0"
-                    >
-                      <div class="template-preview">
-                        <i :class="['mdi', template.icon]" aria-hidden="true"></i>
-                        <div class="template-mockup" aria-hidden="true">
-                          <!-- Mockup para Vista Básica -->
-                          <div v-if="template.value === 'basic'" class="mockup-basic">
-                            <div class="mockup-header"></div>
-                            <div class="mockup-content">
-                              <div class="mockup-line"></div>
-                              <div class="mockup-line short"></div>
-                              <div class="mockup-line"></div>
-                            </div>
-                          </div>
-
-                          <!-- Mockup para Vista de Formulario -->
-                          <div v-else-if="template.value === 'form'" class="mockup-form">
-                            <div class="mockup-field"></div>
-                            <div class="mockup-field"></div>
-                            <div class="mockup-field"></div>
-                            <div class="mockup-button"></div>
-                          </div>
-
-                          <!-- Mockup para Vista de Tabla -->
-                          <div v-else-if="template.value === 'table'" class="mockup-table">
-                            <div class="mockup-table-header"></div>
-                            <div class="mockup-table-row"></div>
-                            <div class="mockup-table-row"></div>
-                            <div class="mockup-table-row"></div>
-                          </div>
-
-                          <!-- Mockup para Vista de Dashboard -->
-                          <div v-else-if="template.value === 'dashboard'" class="mockup-dashboard">
-                            <div class="mockup-cards">
-                              <div class="mockup-card"></div>
-                              <div class="mockup-card"></div>
-                              <div class="mockup-card"></div>
-                            </div>
-                            <div class="mockup-chart"></div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="template-info">
-                        <h4 class="template-name" :id="`template-${template.value}-label`">
-                          {{ template.name }}
-                        </h4>
-                        <p class="template-description">{{ template.description }}</p>
-                        <div class="template-features">
-                          <span
-                            v-for="feature in template.features"
-                            :key="feature"
-                            class="feature-tag"
-                          >
-                            {{ feature }}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Configuración adicional mejorada -->
-                <div class="form-section enhanced-section" :class="{ 'step-active': currentStep >= 3 }">
-                  <div class="section-header">
-                    <div class="section-icon">
-                      <i class="mdi mdi-cog-outline" aria-hidden="true"></i>
-                    </div>
-                    <div class="section-title-content">
-                      <h3 class="section-title" id="additional-config-title">
-                        Configuración Adicional
-                      </h3>
-                      <p class="section-description">
-                        Define el tipo de menú, jerarquía y permisos de acceso
-                      </p>
-                    </div>
-                    <div class="section-status">
-                      <i v-if="menuForm.template && menuForm.roles && menuForm.roles.length > 0" class="mdi mdi-check-circle success"></i>
-                      <i v-else class="mdi mdi-circle-outline"></i>
-                    </div>
-                  </div>
-
-                  <!-- Selector de tipo de menú -->
-                  <div class="form-group">
-                    <label class="form-label">
-                      <i class="mdi mdi-format-list-bulleted-type" aria-hidden="true"></i>
-                      Tipo de Menú
-                    </label>
-                    <div
-                      class="menu-type-selector"
-                      role="radiogroup"
-                      aria-labelledby="additional-config-title"
-                    >
-                      <div
-                        class="menu-type-option"
-                        :class="{ active: menuForm.parentId === null }"
-                        @click="setMenuType('root')"
-                        @keydown.enter="setMenuType('root')"
-                        @keydown.space.prevent="setMenuType('root')"
-                        role="radio"
-                        :aria-checked="menuForm.parentId === null"
-                        aria-labelledby="root-menu-label"
-                        tabindex="0"
-                      >
-                        <i class="mdi mdi-home-outline" aria-hidden="true"></i>
-                        <div class="option-content">
-                          <span class="option-title" id="root-menu-label">Menú Principal</span>
-                          <span class="option-description"
-                            >Aparece en el nivel raíz del menú lateral</span
-                          >
-                        </div>
-                      </div>
-                      <div
-                        class="menu-type-option"
-                        :class="{ active: menuForm.parentId !== null }"
-                        @click="setMenuType('submenu')"
-                        @keydown.enter="setMenuType('submenu')"
-                        @keydown.space.prevent="setMenuType('submenu')"
-                        role="radio"
-                        :aria-checked="menuForm.parentId !== null"
-                        aria-labelledby="submenu-label"
-                        tabindex="0"
-                      >
-                        <i class="mdi mdi-subdirectory-arrow-right" aria-hidden="true"></i>
-                        <div class="option-content">
-                          <span class="option-title" id="submenu-label">Submenú</span>
-                          <span class="option-description"
-                            >Aparece dentro de otro menú como elemento hijo</span
-                          >
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Selector de menú padre (solo si es submenú) -->
-                  <div v-if="menuForm.parentId !== null" class="form-group">
-                    <label class="form-label">
-                      <i class="mdi mdi-file-tree" aria-hidden="true"></i>
-                      Menú Padre *
-                    </label>
-
-                    <!-- Selector de árbol jerárquico -->
-                    <MenuTreeSelector
-                      :menus="menus"
-                      :selected-id="menuForm.parentId"
-                      :excluded-id="isEditing ? menuForm.id : null"
-                      @select="handleParentSelect"
-                      aria-label="Seleccionar menú padre"
-                    />
-
-                    <div v-if="validationErrors.parentId" class="error-message" role="alert">
-                      <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
-                      {{ validationErrors.parentId }}
-                    </div>
-                    <div class="help-text">
-                      <i class="mdi mdi-information" aria-hidden="true"></i>
-                      Selecciona el menú padre donde aparecerá este submenú. Puedes expandir los
-                      nodos para ver la estructura completa.
-                    </div>
-                  </div>
-
-                  <!-- Vista previa de jerarquía -->
-                  <div v-if="menuForm.parentId" class="form-group">
-                    <label class="form-label">
-                      <i class="mdi mdi-file-tree-outline" aria-hidden="true"></i>
-                      Vista Previa de Jerarquía
-                    </label>
-                    <div
-                      class="hierarchy-preview"
-                      aria-label="Vista previa de la jerarquía del menú"
-                    >
-                      <div class="hierarchy-item parent">
-                        <i class="mdi mdi-folder-outline" aria-hidden="true"></i>
-                        <span>{{ getParentMenuName(menuForm.parentId) }}</span>
-                      </div>
-                      <div class="hierarchy-connector">
-                        <i class="mdi mdi-subdirectory-arrow-right" aria-hidden="true"></i>
-                      </div>
-                      <div class="hierarchy-item child">
-                        <i
-                          :class="['mdi', menuForm.icon] || 'mdi mdi-circle-outline'"
-                          aria-hidden="true"
-                        ></i>
-                        <span>{{ menuForm.name || 'Nuevo submenú' }}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="menuOrder" class="form-label">
-                      <i class="mdi mdi-sort-numeric-ascending" aria-hidden="true"></i>
-                      Posición en el menú
-                    </label>
-                    <select
-                      id="menuOrder"
-                      v-model.number="menuForm.order"
-                      class="form-input"
-                      aria-describedby="menuOrder-help"
-                    >
-                      <option
-                        v-for="position in availablePositions"
-                        :key="position.value"
-                        :value="position.value"
-                      >
-                        {{ position.label }}
-                      </option>
-                    </select>
-                    <div class="help-text" id="menuOrder-help">
-                      <strong>
-                        <i class="mdi mdi-information" aria-hidden="true"></i>
-                        <span>
-                          {{
-                            menuForm.parentId
-                              ? 'Selecciona dónde colocar este elemento dentro del submenú. El orden determina cómo aparecerán los elementos en la navegación.'
-                              : 'Selecciona dónde colocar este elemento en el menú principal. Los elementos se mostrarán en el orden que elijas.'
-                          }}
+                        <span v-else>
+                          URL que se usará para acceder a esta vista (se genera automáticamente)
                         </span>
-                      </strong>
+                      </div>
                     </div>
-                    <div class="help-text" style="margin-top: 8px; color: #6b7280">
-                      <strong>
-                        <i class="mdi mdi-lightbulb-outline mr-1" aria-hidden="true"></i> Consejo:
-                        Puedes reorganizar los menús más tarde editándolos y cambiando su posición.
-                      </strong>
-                    </div>
-                  </div>
 
-                  <!-- Checkbox para crear submenús (solo para menús principales) -->
-                  <div v-if="menuForm.parentId === null && !isEditing" class="form-group">
-                    <label class="checkbox-label">
-                      <input
-                        id="createSubmenus"
-                        v-model="menuForm.createSubmenus"
-                        type="checkbox"
-                        class="form-checkbox"
-                        aria-describedby="createSubmenus-help"
+                    <div class="form-group">
+                      <label class="form-label">
+                        <i class="mdi mdi-format-list-bulleted-type"></i>
+                        Tipo de Menú
+                      </label>
+                      <div class="menu-type-selector">
+                        <div
+                          class="menu-type-option"
+                          :class="{ active: menuForm.parentId === null }"
+                          @click="setMenuType('root')"
+                          role="radio"
+                          :aria-checked="menuForm.parentId === null"
+                          tabindex="0"
+                        >
+                          <i class="mdi mdi-home-outline"></i>
+                          <div class="option-content">
+                            <span class="option-title">Menú Principal</span>
+                            <span class="option-description">Aparece en el nivel raíz del menú lateral</span>
+                          </div>
+                        </div>
+                        <div
+                          class="menu-type-option"
+                          :class="{ active: menuForm.parentId !== null }"
+                          @click="setMenuType('submenu')"
+                          role="radio"
+                          :aria-checked="menuForm.parentId !== null"
+                          tabindex="0"
+                        >
+                          <i class="mdi mdi-subdirectory-arrow-right"></i>
+                          <div class="option-content">
+                            <span class="option-title">Submenú</span>
+                            <span class="option-description">Aparece dentro de otro menú como elemento hijo</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Selector de menú padre (solo si es submenú) -->
+                    <div v-if="menuForm.parentId !== null" class="form-group">
+                      <label class="form-label">
+                        <i class="mdi mdi-file-tree"></i>
+                        Menú Padre *
+                      </label>
+                      <MenuTreeSelector
+                        :menus="menus"
+                        :selected-id="menuForm.parentId"
+                        :excluded-id="isEditing ? menuForm.id : null"
+                        @select="handleParentSelect"
                       />
-                      <span class="checkbox-text">
-                        <i class="mdi mdi-plus-box-multiple" aria-hidden="true"></i>
-                        Crear submenús junto con este menú
-                      </span>
-                    </label>
-                    <div class="help-text" id="createSubmenus-help">
-                      <strong>
-                        <i class="mdi mdi-information" aria-hidden="true"></i>
-                        Activa esta opción para crear submenús al mismo tiempo que el menú principal
-                      </strong>
+                      <div v-if="validationErrors.parentId" class="error-message" role="alert">
+                        <i class="mdi mdi-alert-circle"></i>
+                        {{ validationErrors.parentId }}
+                      </div>
                     </div>
                   </div>
+                </div>
 
-                  <!-- Sección de submenús (solo si está activada) -->
-                  <div
-                    v-if="menuForm.createSubmenus && menuForm.parentId === null && !isEditing"
-                    class="form-section submenu-section"
-                  >
-                    <h4 class="section-title">
-                      <i class="mdi mdi-file-tree" aria-hidden="true"></i>
-                      Submenús a Crear
-                    </h4>
+                <!-- Paso 2: Apariencia -->
+                <div v-show="currentWizardStep === 2" class="wizard-step-content">
+                  <div class="step-header">
+                    <h3 class="step-title">
+                      <i class="mdi mdi-palette"></i>
+                      Apariencia
+                    </h3>
+                    <p class="step-description">
+                      Selecciona el icono y tipo de vista para tu menú
+                    </p>
+                  </div>
 
-                    <!-- Lista de submenús -->
-                    <div class="submenus-list">
-                      <div
-                        v-for="(submenu, index) in menuForm.submenus"
-                        :key="index"
-                        class="submenu-item"
-                      >
-                        <div class="submenu-header">
-                          <h5 class="submenu-title">
-                            <i class="mdi mdi-subdirectory-arrow-right" aria-hidden="true"></i>
-                            Submenú {{ index + 1 }}
-                          </h5>
-                          <button
-                            type="button"
-                            @click="removeSubmenu(index)"
-                            class="remove-submenu-btn"
-                            :aria-label="`Eliminar submenú ${index + 1}`"
-                          >
-                            <i class="mdi mdi-close" aria-hidden="true"></i>
-                          </button>
-                        </div>
+                  <div class="step-fields">
+                    <div class="form-group">
+                      <label class="form-label">
+                        <i class="mdi mdi-emoticon-outline"></i>
+                        Icono del Menú
+                      </label>
+                      <div class="icon-selector-wrapper">
+                        <IconSelector
+                          v-model="menuForm.icon"
+                          @update:modelValue="validateForm"
+                        />
+                      </div>
+                      <div v-if="validationErrors.icon" class="error-message" role="alert">
+                        <i class="mdi mdi-alert-circle"></i>
+                        {{ validationErrors.icon }}
+                      </div>
+                    </div>
 
-                        <div class="submenu-fields">
-                          <div class="form-group">
-                            <label :for="`submenu-name-${index}`" class="form-label">
-                              <i class="mdi mdi-format-title" aria-hidden="true"></i>
-                              Nombre del Submenú *
-                            </label>
-                            <input
-                              :id="`submenu-name-${index}`"
-                              v-model="submenu.name"
-                              type="text"
-                              class="form-input"
-                              placeholder="Ej: Configuración"
-                              @input="generateSubmenuPath(index)"
-                              required
-                            />
-                          </div>
-
-                          <div class="form-group">
-                            <label :for="`submenu-path-${index}`" class="form-label">
-                              <i class="mdi mdi-link" aria-hidden="true"></i>
-                              Ruta del Submenú *
-                            </label>
-                            <div class="path-input-container">
-                              <!-- Parte estática del path del menú padre -->
-                              <div class="path-static-part">
-                                {{ getParentPath(menuForm.parentId) || '/' }}
+                    <div class="form-group">
+                      <label class="form-label">
+                        <i class="mdi mdi-view-dashboard-outline"></i>
+                        Tipo de Vista *
+                      </label>
+                      <div class="template-selector">
+                        <div
+                          v-for="template in viewTemplates"
+                          :key="template.value"
+                          class="template-option"
+                          :class="{ selected: menuForm.template === template.value }"
+                          @click="selectTemplate(template.value)"
+                          role="radio"
+                          :aria-checked="menuForm.template === template.value"
+                          tabindex="0"
+                        >
+                          <div class="template-preview">
+                            <i :class="['mdi', template.icon]"></i>
+                            <div class="template-mockup">
+                              <div v-if="template.value === 'basic'" class="mockup-basic">
+                                <div class="mockup-header"></div>
+                                <div class="mockup-content">
+                                  <div class="mockup-line"></div>
+                                  <div class="mockup-line short"></div>
+                                  <div class="mockup-line"></div>
+                                </div>
                               </div>
-                              <!-- Parte editable del submenú -->
-                              <input
-                                :id="`submenu-path-${index}`"
-                                v-model="submenu.path"
-                                type="text"
-                                class="form-input path-editable-part"
-                                :placeholder="`Ej: ${getSubmenuPathPlaceholder(index)}`"
-                                @input="validateSubmenuPath(index)"
-                                required
-                              />
-                            </div>
-                            <div class="help-text">
-                              <i class="mdi mdi-information" aria-hidden="true"></i>
-                              <span>La parte del menú padre es fija, solo puedes editar la parte específica del submenú. No incluyas el / inicial.</span>
+                              <div v-else-if="template.value === 'form'" class="mockup-form">
+                                <div class="mockup-field"></div>
+                                <div class="mockup-field"></div>
+                                <div class="mockup-field"></div>
+                                <div class="mockup-button"></div>
+                              </div>
+                              <div v-else-if="template.value === 'table'" class="mockup-table">
+                                <div class="mockup-table-header"></div>
+                                <div class="mockup-table-row"></div>
+                                <div class="mockup-table-row"></div>
+                                <div class="mockup-table-row"></div>
+                              </div>
                             </div>
                           </div>
-
-                          <div class="form-group">
-                            <label :for="`submenu-icon-${index}`" class="form-label">
-                              <i class="mdi mdi-emoticon-outline" aria-hidden="true"></i>
-                              Icono del Submenú
-                            </label>
-                            <IconSelector
-                              :id="`submenu-icon-${index}`"
-                              v-model="submenu.icon"
-                              :placeholder="'Seleccionar icono para el submenú'"
-                            />
+                          <div class="template-info">
+                            <h4 class="template-name">{{ template.name }}</h4>
+                            <p class="template-description">{{ template.description }}</p>
+                            <div class="template-features">
+                              <span
+                                v-for="feature in template.features"
+                                :key="feature"
+                                class="feature-tag"
+                              >
+                                {{ feature }}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
+                      <div v-if="validationErrors.template" class="error-message" role="alert">
+                        <i class="mdi mdi-alert-circle"></i>
+                        {{ validationErrors.template }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                      <!-- Botón para agregar nuevo submenú -->
-                      <button
-                        type="button"
-                        @click="addSubmenu"
-                        class="add-submenu-btn"
-                        aria-label="Agregar nuevo submenú"
+                <!-- Paso 3: Configuración -->
+                <div v-show="currentWizardStep === 3" class="wizard-step-content">
+                  <div class="step-header">
+                    <h3 class="step-title">
+                      <i class="mdi mdi-cog-outline"></i>
+                      Configuración
+                    </h3>
+                    <p class="step-description">
+                      Define permisos, posición y estado del menú
+                    </p>
+                  </div>
+
+                  <div class="step-fields">
+                    <div class="form-group">
+                      <label for="menuOrder" class="form-label">
+                        <i class="mdi mdi-sort-numeric-ascending"></i>
+                        Posición en el menú
+                      </label>
+                      <select
+                        id="menuOrder"
+                        v-model.number="menuForm.order"
+                        class="form-input"
                       >
-                        <i class="mdi mdi-plus" aria-hidden="true"></i>
-                        Agregar Submenú
-                      </button>
+                        <option
+                          v-for="position in availablePositions"
+                          :key="position.value"
+                          :value="position.value"
+                        >
+                          {{ position.label }}
+                        </option>
+                      </select>
+                      <div class="help-text">
+                        <i class="mdi mdi-information"></i>
+                        {{ menuForm.parentId ? 'Selecciona dónde colocar este elemento dentro del submenú' : 'Selecciona dónde colocar este elemento en el menú principal' }}
+                      </div>
                     </div>
-                  </div>
 
-                  <div class="form-group">
-                    <label class="form-label">
-                      <i class="mdi mdi-account-key" aria-hidden="true"></i>
-                      Roles de Acceso *
-                    </label>
-                    <fieldset class="roles-selector" aria-describedby="roles-help">
-                      <legend class="sr-only">
-                        Seleccionar roles que pueden acceder a este menú
-                      </legend>
-                      <div v-for="role in availableRolesList" :key="role.value" class="role-option">
-                        <label class="checkbox-label">
-                          <input
-                            v-model="menuForm.roles"
-                            :value="role.value"
-                            type="checkbox"
-                            class="form-checkbox"
-                            :id="`role-${role.value}`"
-                            :aria-describedby="`role-${role.value}-desc`"
-                          />
-                          <span class="checkbox-text">
-                            <i :class="['mdi', role.icon]" aria-hidden="true"></i>
-                            {{ role.label }}
-                          </span>
-                        </label>
-                        <div class="role-description" :id="`role-${role.value}-desc`">
-                          {{ role.description }}
+                    <div class="form-group">
+                      <label class="form-label">
+                        <i class="mdi mdi-account-key"></i>
+                        Roles de Acceso *
+                      </label>
+
+                      <!-- Información sobre jerarquía de roles -->
+                      <div class="role-hierarchy-info">
+                        <i class="mdi mdi-information"></i>
+                        <span>Los roles siguen una jerarquía: Super Usuario > Administrador > Colaborador</span>
+                      </div>
+
+                      <div class="roles-selector">
+                        <div v-for="role in availableRolesList" :key="role.value" class="role-option">
+                          <label class="checkbox-label" :class="{ 'disabled': isRoleDisabled(role.value) }">
+                            <input
+                              v-model="menuForm.roles"
+                              :value="role.value"
+                              type="checkbox"
+                              class="form-checkbox"
+                              :id="`role-${role.value}`"
+                              :disabled="isRoleDisabled(role.value)"
+                              @change="handleRoleChange(role.value)"
+                            />
+                            <span class="checkbox-text">
+                              <i :class="['mdi', role.icon]"></i>
+                              {{ role.label }}
+                              <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-badge super-user">
+                                Máximo Privilegio
+                              </span>
+                            </span>
+                          </label>
+                          <div class="role-description">
+                            {{ role.description }}
+                            <div v-if="role.value === 'ROLE_SUPER_USER' && menuForm.roles.includes('ROLE_SUPER_USER')" class="role-warning">
+                              <i class="mdi mdi-shield-check"></i>
+                              Super Usuario tiene acceso completo, otros roles son redundantes
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </fieldset>
-                    <div v-if="validationErrors.roles" class="error-message" role="alert">
-                      <i class="mdi mdi-alert-circle" aria-hidden="true"></i>
-                      {{ validationErrors.roles }}
+
+                      <div v-if="validationErrors.roles" class="error-message" role="alert">
+                        <i class="mdi mdi-alert-circle"></i>
+                        {{ validationErrors.roles }}
+                      </div>
+
+                      <!-- Resumen de roles seleccionados -->
+                      <div v-if="menuForm.roles.length > 0" class="selected-roles-summary">
+                        <h5 class="summary-title">
+                          <i class="mdi mdi-check-circle"></i>
+                          Roles Seleccionados
+                        </h5>
+                        <div class="selected-roles-list">
+                          <div
+                            v-for="role in getSelectedRolesInfo()"
+                            :key="role.value"
+                            class="selected-role-item"
+                            :class="role.value"
+                          >
+                            <i :class="['mdi', role.icon]"></i>
+                            <span>{{ role.label }}</span>
+                            <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-indicator">
+                              <i class="mdi mdi-crown"></i>
+                              Máximo
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div class="help-text" id="roles-help">
-                      <strong>
-                        <i class="mdi mdi-information" aria-hidden="true"></i>
-                        Selecciona los roles que tendrán acceso a este menú
-                      </strong>
+
+                    <div class="form-group">
+                      <label class="checkbox-label">
+                        <input
+                          id="menuActive"
+                          v-model="menuForm.isActive"
+                          type="checkbox"
+                          class="form-checkbox"
+                        />
+                        <span class="checkbox-text">
+                          <i class="mdi mdi-check-circle"></i>
+                          Menú activo
+                        </span>
+                      </label>
+                      <div class="help-text">
+                        <i class="mdi mdi-information"></i>
+                        Los menús inactivos no aparecerán en la navegación
+                      </div>
                     </div>
                   </div>
+                </div>
 
-                  <div class="form-group">
-                    <label class="checkbox-label">
-                      <input
-                        id="menuActive"
-                        v-model="menuForm.isActive"
-                        type="checkbox"
-                        class="form-checkbox"
-                        aria-describedby="menuActive-help"
-                      />
-                      <span class="checkbox-text">
-                        <i class="mdi mdi-check-circle" aria-hidden="true"></i>
-                        Menú activo
-                      </span>
-                    </label>
-                    <div class="help-text" id="menuActive-help">
-                      <strong>
-                        <i class="mdi mdi-information" aria-hidden="true"></i>
-                        Los menús inactivos no aparecerán en la navegación
-                      </strong>
+                <!-- Paso 4: Resumen -->
+                <div v-show="currentWizardStep === 4" class="wizard-step-content">
+                  <div class="step-header">
+                    <h3 class="step-title">
+                      <i class="mdi mdi-eye"></i>
+                      Resumen
+                    </h3>
+                    <p class="step-description">
+                      Revisa la configuración antes de crear el menú
+                    </p>
+                  </div>
+
+                  <div class="summary-content">
+                    <div class="summary-section">
+                      <h4 class="summary-title">
+                        <i class="mdi mdi-information-outline"></i>
+                        Información Básica
+                      </h4>
+                      <div class="summary-item">
+                        <span class="summary-label">Nombre:</span>
+                        <span class="summary-value">{{ menuForm.name || 'No especificado' }}</span>
+                      </div>
+                      <div class="summary-item">
+                        <span class="summary-label">Ruta:</span>
+                        <span class="summary-value">{{ menuForm.path || 'No especificada' }}</span>
+                      </div>
+                      <div class="summary-item">
+                        <span class="summary-label">Tipo:</span>
+                        <span class="summary-value">{{ menuForm.parentId ? 'Submenú' : 'Menú Principal' }}</span>
+                      </div>
+                    </div>
+
+                    <div class="summary-section">
+                      <h4 class="summary-title">
+                        <i class="mdi mdi-palette"></i>
+                        Apariencia
+                      </h4>
+                      <div class="summary-item">
+                        <span class="summary-label">Icono:</span>
+                        <span class="summary-value">
+                          <i v-if="menuForm.icon" :class="['mdi', menuForm.icon]"></i>
+                          {{ menuForm.icon || 'No seleccionado' }}
+                        </span>
+                      </div>
+                      <div class="summary-item">
+                        <span class="summary-label">Tipo de Vista:</span>
+                        <span class="summary-value">{{ getTemplateName(menuForm.template) }}</span>
+                      </div>
+                    </div>
+
+                    <div class="summary-section">
+                      <h4 class="summary-title">
+                        <i class="mdi mdi-cog-outline"></i>
+                        Configuración
+                      </h4>
+                      <div class="summary-item">
+                        <span class="summary-label">Posición:</span>
+                        <span class="summary-value">{{ getPositionLabel(menuForm.order) }}</span>
+                      </div>
+                      <div class="summary-item">
+                        <span class="summary-label">Roles:</span>
+                        <div class="summary-value roles-summary">
+                          <div
+                            v-for="role in getSelectedRolesInfo()"
+                            :key="role.value"
+                            class="role-summary-item"
+                            :class="role.value"
+                          >
+                            <i :class="['mdi', role.icon]"></i>
+                            <span>{{ role.label }}</span>
+                            <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-badge">
+                              <i class="mdi mdi-crown"></i>
+                              Máximo
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="summary-item">
+                        <span class="summary-label">Estado:</span>
+                        <span class="summary-value">{{ menuForm.isActive ? 'Activo' : 'Inactivo' }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </form>
             </div>
 
-            <!-- Footer mejorado con indicadores de estado -->
-            <div class="dialog-footer enhanced-footer">
-              <!-- Indicador de validación -->
-              <div class="validation-status">
-                <div v-if="isValidating" class="status-item validating">
-                  <i class="mdi mdi-loading mdi-spin"></i>
-                  <span>Validando...</span>
+            <!-- Footer del Wizard -->
+            <div class="wizard-footer">
+              <!-- Indicador de progreso -->
+              <div class="wizard-progress">
+                <div class="progress-bar">
+                  <div class="progress-fill" :style="{ width: `${(currentWizardStep / wizardSteps.length) * 100}%` }"></div>
                 </div>
-                <div v-else-if="Object.keys(validationErrors).length === 0 && menuForm.name && menuForm.path" class="status-item success">
-                  <i class="mdi mdi-check-circle"></i>
-                  <span>Formulario válido</span>
-                </div>
-                <div v-else-if="Object.keys(validationErrors).length > 0" class="status-item error">
-                  <i class="mdi mdi-alert-circle"></i>
-                  <span>{{ Object.keys(validationErrors).length }} error(es)</span>
-                </div>
+                <span class="progress-text">Paso {{ currentWizardStep }} de {{ wizardSteps.length }}</span>
               </div>
 
-              <!-- Botones de acción -->
-              <div class="action-buttons">
+              <!-- Botones de navegación -->
+              <div class="wizard-actions">
                 <button
+                  v-if="currentWizardStep > 1"
                   type="button"
-                  @click="openPreview"
-                  class="btn btn-secondary"
-                  :disabled="!validateForm()"
-                  aria-label="Vista previa del menú"
+                  @click="previousStep"
+                  class="wizard-btn wizard-btn-secondary"
                 >
-                  <i class="mdi mdi-eye" aria-hidden="true"></i>
-                  Vista Previa
+                  <i class="mdi mdi-chevron-left"></i>
+                  Anterior
                 </button>
+
+                <button
+                  v-if="currentWizardStep < wizardSteps.length"
+                  type="button"
+                  @click="nextStep"
+                  class="wizard-btn wizard-btn-primary"
+                  :disabled="!canProceedToNextStep"
+                >
+                  Siguiente
+                  <i class="mdi mdi-chevron-right"></i>
+                </button>
+
+                <button
+                  v-if="currentWizardStep === wizardSteps.length"
+                  type="submit"
+                  class="wizard-btn wizard-btn-success"
+                  :disabled="!validateForm()"
+                  form="menu-form"
+                >
+                  <i class="mdi mdi-check"></i>
+                  {{ isEditing ? 'Actualizar' : 'Crear' }} Menú
+                </button>
+
                 <button
                   type="button"
                   @click="closeDialog"
-                  class="btn btn-secondary"
-                  aria-label="Cancelar y cerrar modal"
+                  class="wizard-btn wizard-btn-cancel"
                 >
-                  <i class="mdi mdi-close" aria-hidden="true"></i>
+                  <i class="mdi mdi-close"></i>
                   Cancelar
-                </button>
-                <button
-                  type="submit"
-                  class="btn btn-primary enhanced-save"
-                  :disabled="!validateForm() || isValidating"
-                  :aria-label="isEditing ? 'Actualizar menú existente' : 'Crear nuevo menú'"
-                  form="menu-form"
-                >
-                  <i v-if="isValidating" class="mdi mdi-loading mdi-spin" aria-hidden="true"></i>
-                  <i v-else class="mdi mdi-content-save" aria-hidden="true"></i>
-                  {{ isEditing ? 'Actualizar' : 'Crear' }} Menú
                 </button>
               </div>
             </div>
@@ -1237,6 +1103,31 @@ const showDialog = ref(false)
 const isEditing = ref(false)
 const editingMenuId = ref(null)
 const currentStep = ref(1)
+const currentWizardStep = ref(1)
+
+// Configuración del wizard
+const wizardSteps = ref([
+  {
+    id: 'basic',
+    title: 'Información Básica',
+    description: 'Nombre, ruta y tipo'
+  },
+  {
+    id: 'appearance',
+    title: 'Apariencia',
+    description: 'Icono y vista'
+  },
+  {
+    id: 'configuration',
+    title: 'Configuración',
+    description: 'Permisos y posición'
+  },
+  {
+    id: 'summary',
+    title: 'Resumen',
+    description: 'Revisar y confirmar'
+  }
+])
 const menuForm = ref({
   name: '',
   path: '',
@@ -1513,6 +1404,22 @@ const availablePositions = computed(() => {
   return positions
 })
 
+// Computed para validar si se puede proceder al siguiente paso
+const canProceedToNextStep = computed(() => {
+  switch (currentWizardStep.value) {
+    case 1: // Información básica
+      return menuForm.value.name && menuForm.value.path && !validationErrors.value.name && !validationErrors.value.path
+    case 2: // Apariencia
+      return menuForm.value.template && !validationErrors.value.template
+    case 3: // Configuración
+      return menuForm.value.roles && menuForm.value.roles.length > 0 && !validationErrors.value.roles
+    case 4: // Resumen
+      return validateForm()
+    default:
+      return false
+  }
+})
+
 // displayedIcons ahora se maneja en IconSelector.vue
 
 // Función para actualizar el paso actual
@@ -1532,11 +1439,90 @@ const updateCurrentStep = () => {
 const openDialog = () => {
   resetForm()
   currentStep.value = 1
+  currentWizardStep.value = 1
   showDialog.value = true
+}
+
+// Métodos del wizard
+const nextStep = () => {
+  if (currentWizardStep.value < wizardSteps.value.length && canProceedToNextStep.value) {
+    currentWizardStep.value++
+  }
+}
+
+const previousStep = () => {
+  if (currentWizardStep.value > 1) {
+    currentWizardStep.value--
+  }
+}
+
+// Funciones auxiliares para el resumen
+const getTemplateName = (template) => {
+  const templateMap = {
+    'basic': 'Vista Básica',
+    'form': 'Vista de Formulario',
+    'table': 'Vista de Tabla',
+    'dashboard': 'Vista de Dashboard'
+  }
+  return templateMap[template] || 'No especificado'
+}
+
+const getPositionLabel = (order) => {
+  const position = availablePositions.value.find(p => p.value === order)
+  return position ? position.label : 'No especificado'
+}
+
+const getRolesText = () => {
+  if (!menuForm.value.roles || menuForm.value.roles.length === 0) {
+    return 'No especificados'
+  }
+  return menuForm.value.roles.map(role => {
+    const roleInfo = availableRolesList.find(r => r.value === role)
+    return roleInfo ? roleInfo.label : role
+  }).join(', ')
+}
+
+// Funciones para manejo inteligente de roles
+const isRoleDisabled = (roleValue) => {
+  // Si Super Usuario está seleccionado, deshabilitar otros roles
+  if (menuForm.value.roles.includes('ROLE_SUPER_USER') && roleValue !== 'ROLE_SUPER_USER') {
+    return true
+  }
+  return false
+}
+
+const handleRoleChange = (roleValue) => {
+  if (roleValue === 'ROLE_SUPER_USER') {
+    // Si se selecciona Super Usuario, limpiar otros roles
+    if (menuForm.value.roles.includes('ROLE_SUPER_USER')) {
+      menuForm.value.roles = ['ROLE_SUPER_USER']
+    }
+  } else {
+    // Si se selecciona otro rol y Super Usuario está activo, remover Super Usuario
+    if (menuForm.value.roles.includes('ROLE_SUPER_USER')) {
+      menuForm.value.roles = menuForm.value.roles.filter(role => role !== 'ROLE_SUPER_USER')
+    }
+  }
+}
+
+const getSelectedRolesInfo = () => {
+  return menuForm.value.roles.map(roleValue => {
+    return availableRolesList.find(role => role.value === roleValue)
+  }).filter(Boolean)
+}
+
+const getRoleHierarchyLevel = (roleValue) => {
+  const hierarchy = {
+    'ROLE_SUPER_USER': 3,
+    'ROLE_ADMIN': 2,
+    'ROLE_COLLABORATOR': 1
+  }
+  return hierarchy[roleValue] || 0
 }
 
 const closeDialog = () => {
   showDialog.value = false
+  currentWizardStep.value = 1
   // Cerrar también el modal de progreso
   showProgressModal.value = false
 
@@ -6078,6 +6064,663 @@ button:disabled {
 
   .submenu-section {
     padding: 1rem;
+  }
+}
+
+/* ===== ESTILOS DEL WIZARD ===== */
+
+/* Modal del wizard */
+.wizard-modal {
+  max-width: 800px;
+  width: 90vw;
+  max-height: 90vh;
+  background: var(--bg-primary);
+  border-radius: 16px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header del wizard */
+.wizard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  color: white;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.wizard-title-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.wizard-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.wizard-text h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.wizard-subtitle {
+  margin: 0.25rem 0 0 0;
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
+.wizard-close-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.wizard-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Indicador de pasos */
+.wizard-steps {
+  display: flex;
+  padding: 1.5rem 2rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  gap: 1rem;
+}
+
+.wizard-step {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.wizard-step.active {
+  opacity: 1;
+}
+
+.wizard-step.completed {
+  opacity: 1;
+}
+
+.wizard-step.disabled {
+  opacity: 0.3;
+}
+
+.step-indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--border-color);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.wizard-step.active .step-indicator {
+  background: var(--accent-color);
+  color: white;
+}
+
+.wizard-step.completed .step-indicator {
+  background: #10b981;
+  color: white;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.step-description {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Contenido del wizard */
+.wizard-body {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.wizard-form {
+  height: 100%;
+}
+
+.wizard-step-content {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.step-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.step-header .step-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.step-header .step-description {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.step-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Resumen */
+.summary-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.summary-section {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.summary-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.summary-value {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  text-align: right;
+  max-width: 60%;
+  word-break: break-word;
+}
+
+.summary-value i {
+  margin-right: 0.25rem;
+}
+
+/* Footer del wizard */
+.wizard-footer {
+  padding: 1.5rem 2rem;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.wizard-progress {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--border-color);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.wizard-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.wizard-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.wizard-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wizard-btn-secondary {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.wizard-btn-secondary:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.wizard-btn-primary {
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  color: white;
+}
+
+.wizard-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+.wizard-btn-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.wizard-btn-success:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.wizard-btn-cancel {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.wizard-btn-cancel:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* Responsive para el wizard */
+@media (max-width: 768px) {
+  .wizard-modal {
+    width: 95vw;
+    max-height: 95vh;
+  }
+
+  .wizard-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .wizard-steps {
+    padding: 1rem 1.5rem;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .wizard-step {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .step-content {
+    flex: 1;
+  }
+
+  .wizard-body {
+    padding: 1.5rem;
+  }
+
+  .wizard-footer {
+    padding: 1rem 1.5rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .wizard-progress {
+    width: 100%;
+  }
+
+  .wizard-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .wizard-btn {
+    min-width: auto;
+    flex: 1;
+    padding: 0.75rem 1rem;
+  }
+
+  .summary-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== ESTILOS PARA ROLES MEJORADOS ===== */
+
+/* Información de jerarquía de roles */
+.role-hierarchy-info {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #3b82f6;
+  font-size: 0.9rem;
+}
+
+.role-hierarchy-info i {
+  color: #3b82f6;
+}
+
+/* Opciones de roles mejoradas */
+.role-option {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.role-option:hover {
+  border-color: var(--accent-color);
+  background: var(--bg-hover);
+}
+
+.checkbox-label.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.checkbox-label.disabled .checkbox-text {
+  color: var(--text-secondary);
+}
+
+/* Badge de rol */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.role-badge.super-user {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+.role-badge i {
+  font-size: 0.7rem;
+}
+
+/* Advertencia de rol */
+.role-warning {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #10b981;
+  font-size: 0.8rem;
+}
+
+.role-warning i {
+  color: #10b981;
+}
+
+/* Resumen de roles seleccionados */
+.selected-roles-summary {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.summary-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selected-roles-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.selected-role-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+}
+
+.selected-role-item.ROLE_SUPER_USER {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+}
+
+.selected-role-item.ROLE_ADMIN {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+}
+
+.selected-role-item.ROLE_COLLABORATOR {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.role-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* Indicador de roles activos en el header */
+.active-roles-indicator {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.indicator-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.active-roles-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.active-role-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.active-role-item.ROLE_SUPER_USER {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3));
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.active-role-item.ROLE_ADMIN {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.active-role-item.ROLE_COLLABORATOR {
+  background: rgba(16, 185, 129, 0.3);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+/* Resumen de roles en el paso de resumen */
+.roles-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.role-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+}
+
+.role-summary-item.ROLE_SUPER_USER {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+}
+
+.role-summary-item.ROLE_ADMIN {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+}
+
+.role-summary-item.ROLE_COLLABORATOR {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+/* Responsive para roles */
+@media (max-width: 768px) {
+  .selected-roles-list,
+  .active-roles-list {
+    flex-direction: column;
+  }
+
+  .role-option {
+    padding: 0.75rem;
+  }
+
+  .role-hierarchy-info {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
   }
 }
 </style>
