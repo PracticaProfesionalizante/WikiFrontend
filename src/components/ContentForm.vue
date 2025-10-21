@@ -1,23 +1,23 @@
 <template>
   <div class="modal-overlay" v-if="dialog" @click="handleClose">
     <div class="modal-container" @click.stop>
-      <!-- Header -->
-      <div class="modal-header">
-        <div class="header-content">
-          <div class="header-left">
-            <div class="header-icon">
+      <!-- Wizard Header -->
+      <div class="wizard-header">
+        <div class="wizard-header-content">
+          <div class="wizard-title-section">
+            <div class="wizard-icon">
               <i :class="isEditing ? 'mdi mdi-pencil' : 'mdi mdi-plus'"></i>
             </div>
-            <div class="header-text">
-              <h2 class="modal-title">
+            <div class="wizard-text">
+              <h2 class="wizard-title">
                 {{ isEditing ? 'Editar Documento' : 'Crear Nuevo Documento' }}
               </h2>
-              <p class="modal-subtitle">
+              <p class="wizard-subtitle">
                 {{ isEditing ? 'Modifica la información del documento' : 'Completa los datos para crear un nuevo documento' }}
               </p>
             </div>
           </div>
-          <button @click="handleClose" class="close-btn" :disabled="isSaving">
+          <button @click="handleClose" class="wizard-close-btn" :disabled="isSaving">
             <i class="mdi mdi-close"></i>
           </button>
         </div>
@@ -29,23 +29,41 @@
         <p>Cargando datos del documento...</p>
       </div>
 
-      <!-- Contenido del formulario -->
-      <div v-else class="modal-body">
-        <form @submit.prevent="handleSubmit" class="document-form">
-          <!-- Información básica -->
-          <div class="form-section">
-            <div class="section-header">
-              <div class="section-icon">
-                <i class="mdi mdi-information-outline"></i>
-              </div>
-              <div class="section-title-content">
-                <h3 class="section-title">Información Básica</h3>
-                <p class="section-description">Datos principales del documento</p>
-              </div>
+      <!-- Wizard Steps Indicator -->
+      <div v-else class="wizard-steps">
+        <div
+          v-for="(step, index) in wizardSteps"
+          :key="step.id"
+          class="wizard-step"
+          :class="{
+            'active': currentWizardStep === index + 1,
+            'completed': currentWizardStep > index + 1,
+            'disabled': currentWizardStep < index + 1
+          }"
+        >
+          <div class="step-indicator">
+            <i v-if="currentWizardStep > index + 1" class="mdi mdi-check"></i>
+            <span v-else>{{ index + 1 }}</span>
+          </div>
+          <div class="step-content">
+            <h4 class="step-title">{{ step.title }}</h4>
+            <p class="step-description">{{ step.description }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wizard Body -->
+      <div v-if="!loading" class="wizard-body">
+        <form @submit.prevent="handleSubmit" class="wizard-form">
+          <!-- Paso 1: Información Básica -->
+          <div v-show="currentWizardStep === 1" class="wizard-step-content">
+            <div class="step-header">
+              <h3 class="step-title">Información Básica</h3>
+              <p class="step-description">Datos principales del documento</p>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
+            <div class="form-fields">
+              <div class="form-field">
                 <label for="documentName" class="form-label">
                   <i class="mdi mdi-file-document-outline"></i>
                   Nombre del Documento
@@ -68,7 +86,7 @@
                 </div>
               </div>
 
-              <div class="form-group">
+              <div class="form-field">
                 <label for="documentType" class="form-label">
                   <i class="mdi mdi-format-list-bulleted-type"></i>
                   Tipo de Documento
@@ -93,68 +111,8 @@
                   {{ validationErrors.type }}
                 </div>
               </div>
-            </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="documentSlug" class="form-label">
-                  <i class="mdi mdi-folder-outline"></i>
-                  Slug
-                  <span class="required">*</span>
-                </label>
-                <input
-                  id="documentSlug"
-                  v-model="form.slug"
-                  type="text"
-                  class="form-input"
-                  :class="{ error: validationErrors.slug }"
-                  placeholder="ejemplo-de-slug"
-                  @input="validateField('slug')"
-                  :disabled="isSaving"
-                  required
-                />
-                <div class="form-help">
-                  <i class="mdi mdi-information"></i>
-                  Organiza tus documentos en slugs para facilitar la navegación. Solo letras minúsculas, números y guiones.
-                  <button
-                    type="button"
-                    class="slug-regenerate-btn"
-                    @click="regenerateSlug"
-                    :disabled="isSaving || !form.name"
-                    title="Regenerar slug único basado en el nombre"
-                  >
-                    <i class="mdi mdi-refresh"></i>
-                    Generar Único
-                  </button>
-                </div>
-
-                <!-- Opciones de slug alternativas -->
-                <div v-if="slugAlternatives.length > 0" class="slug-alternatives">
-                  <div class="slug-alternatives-header">
-                    <i class="mdi mdi-lightbulb"></i>
-                    <span>Slugs alternativos disponibles:</span>
-                  </div>
-                  <div class="slug-alternatives-list">
-                    <button
-                      v-for="(alternative, index) in slugAlternatives"
-                      :key="index"
-                      type="button"
-                      class="slug-alternative-btn"
-                      @click="selectSlugAlternative(alternative)"
-                      :disabled="isSaving"
-                    >
-                      <i class="mdi mdi-check"></i>
-                      {{ alternative }}
-                    </button>
-                  </div>
-                </div>
-                <div v-if="validationErrors.slug" class="error-message">
-                  <i class="mdi mdi-alert-circle"></i>
-                  {{ validationErrors.slug }}
-                </div>
-              </div>
-
-              <div class="form-group">
+              <div class="form-field">
                 <label for="documentIcon" class="form-label">
                   <i class="mdi mdi-palette"></i>
                   Icono
@@ -171,23 +129,19 @@
             </div>
           </div>
 
-            <!-- Contenido del documento -->
-            <div class="form-section">
-              <div class="section-header">
-                <div class="section-icon">
-                  <i class="mdi mdi-content-save-outline"></i>
-                </div>
-                <div class="section-title-content">
-                  <h3 class="section-title">Contenido del Documento</h3>
-                  <p class="section-description">
-                    {{ form.type === 'TYPE_TEXT' ? 'Escribe el contenido en formato Markdown' :
-                       form.type === 'TYPE_URL' ? 'Ingresa la URL del contenido' :
-                       form.type === 'TYPE_PDF' ? 'Ingresa la URL del documento PDF' :
-                       'Selecciona el tipo de documento primero' }}
-                  </p>
-                </div>
-              </div>
+          <!-- Paso 2: Contenido del Documento -->
+          <div v-show="currentWizardStep === 2" class="wizard-step-content">
+            <div class="step-header">
+              <h3 class="step-title">Contenido del Documento</h3>
+              <p class="step-description">
+                {{ form.type === 'TYPE_TEXT' ? 'Escribe el contenido en formato Markdown' :
+                   form.type === 'TYPE_URL' ? 'Ingresa la URL del contenido' :
+                   form.type === 'TYPE_PDF' ? 'Sube el archivo PDF del documento' :
+                   'Selecciona el tipo de documento primero' }}
+              </p>
+            </div>
 
+            <div class="form-fields">
               <!-- Mensaje cuando no hay tipo seleccionado -->
               <div v-if="!form.type" class="no-type-selected">
                 <div class="no-type-icon">
@@ -195,7 +149,7 @@
                 </div>
                 <div class="no-type-text">
                   <h4>Selecciona un tipo de documento</h4>
-                  <p>Elige entre Texto/Markdown, URL o PDF para continuar</p>
+                  <p>Primero debes seleccionar el tipo de documento en el paso anterior para continuar.</p>
                 </div>
               </div>
 
@@ -221,349 +175,295 @@
                       <i class="mdi mdi-eye"></i>
                       Vista Previa
                     </button>
+                  </div>
+                  <button
+                    type="button"
+                    class="fullscreen-btn"
+                    @click="toggleFullscreen"
+                    :title="isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'"
+                  >
+                    <i :class="isFullscreen ? 'mdi mdi-fullscreen-exit' : 'mdi mdi-fullscreen'"></i>
+                  </button>
+                </div>
+
+                <!-- Toolbar de Markdown -->
+                <div v-if="activeTab === 'edit'" class="markdown-toolbar">
+                  <div class="toolbar-group">
                     <button
                       type="button"
-                      class="tab-btn"
-                      :class="{ active: activeTab === 'split' }"
-                      @click="activeTab = 'split'"
+                      @click="insertMarkdown('bold')"
+                      class="toolbar-btn"
+                      title="Negrita"
                     >
-                      <i class="mdi mdi-view-split-horizontal"></i>
-                      Dividir
+                      <i class="mdi mdi-format-bold"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('italic')"
+                      class="toolbar-btn"
+                      title="Cursiva"
+                    >
+                      <i class="mdi mdi-format-italic"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('strikethrough')"
+                      class="toolbar-btn"
+                      title="Tachado"
+                    >
+                      <i class="mdi mdi-format-strikethrough"></i>
                     </button>
                   </div>
-                  <div class="editor-actions">
+
+                  <div class="toolbar-separator"></div>
+
+                  <div class="toolbar-group">
                     <button
                       type="button"
-                      class="action-btn"
-                      @click="toggleFullscreen"
-                      title="Pantalla completa"
+                      @click="insertMarkdown('h1')"
+                      class="toolbar-btn"
+                      title="Título 1"
                     >
-                      <i class="mdi mdi-fullscreen"></i>
+                      <i class="mdi mdi-format-header-1"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('h2')"
+                      class="toolbar-btn"
+                      title="Título 2"
+                    >
+                      <i class="mdi mdi-format-header-2"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('h3')"
+                      class="toolbar-btn"
+                      title="Título 3"
+                    >
+                      <i class="mdi mdi-format-header-3"></i>
+                    </button>
+                  </div>
+
+                  <div class="toolbar-separator"></div>
+
+                  <div class="toolbar-group">
+                    <button
+                      type="button"
+                      @click="insertMarkdown('link')"
+                      class="toolbar-btn"
+                      title="Enlace"
+                    >
+                      <i class="mdi mdi-link"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('image')"
+                      class="toolbar-btn"
+                      title="Imagen"
+                    >
+                      <i class="mdi mdi-image"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('code')"
+                      class="toolbar-btn"
+                      title="Código"
+                    >
+                      <i class="mdi mdi-code-tags"></i>
+                    </button>
+                  </div>
+
+                  <div class="toolbar-separator"></div>
+
+                  <div class="toolbar-group">
+                    <button
+                      type="button"
+                      @click="insertMarkdown('list')"
+                      class="toolbar-btn"
+                      title="Lista"
+                    >
+                      <i class="mdi mdi-format-list-bulleted"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('orderedList')"
+                      class="toolbar-btn"
+                      title="Lista numerada"
+                    >
+                      <i class="mdi mdi-format-list-numbered"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('quote')"
+                      class="toolbar-btn"
+                      title="Cita"
+                    >
+                      <i class="mdi mdi-format-quote-close"></i>
+                    </button>
+                  </div>
+
+                  <div class="toolbar-separator"></div>
+
+                  <div class="toolbar-group">
+                    <button
+                      type="button"
+                      @click="insertMarkdown('table')"
+                      class="toolbar-btn"
+                      title="Tabla"
+                    >
+                      <i class="mdi mdi-table"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('horizontalRule')"
+                      class="toolbar-btn"
+                      title="Línea horizontal"
+                    >
+                      <i class="mdi mdi-minus"></i>
                     </button>
                   </div>
                 </div>
 
-                <div class="editor-content" :class="{ 'fullscreen': isFullscreen }">
-                  <!-- Modo Editar -->
-                  <div v-if="activeTab === 'edit'" class="editor-panel">
-                    <div class="editor-toolbar">
-                      <div class="toolbar-group">
-                        <button type="button" class="toolbar-btn" @click="insertMarkdown('**', '**')" title="Negrita">
-                          <i class="mdi mdi-format-bold"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" @click="insertMarkdown('*', '*')" title="Cursiva">
-                          <i class="mdi mdi-format-italic"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" @click="insertMarkdown('# ', '')" title="Título">
-                          <i class="mdi mdi-format-header-1"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" @click="insertMarkdown('## ', '')" title="Subtítulo">
-                          <i class="mdi mdi-format-header-2"></i>
-                        </button>
-                      </div>
-                      <div class="toolbar-group">
-                        <button type="button" class="toolbar-btn" @click="insertMarkdown('- ', '')" title="Lista">
-                          <i class="mdi mdi-format-list-bulleted"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" @click="insertMarkdown('1. ', '')" title="Lista numerada">
-                          <i class="mdi mdi-format-list-numbered"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" @click="insertMarkdown('> ', '')" title="Cita">
-                          <i class="mdi mdi-format-quote-close"></i>
-                        </button>
-                      </div>
-                      <div class="toolbar-group">
-                        <button type="button" class="toolbar-btn" @click="insertMarkdown('`', '`')" title="Código">
-                          <i class="mdi mdi-code-tags"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" @click="insertMarkdown('[', '](url)')" title="Enlace">
-                          <i class="mdi mdi-link"></i>
-                        </button>
-                        <button type="button" class="toolbar-btn" @click="insertMarkdown('```\n', '\n```')" title="Bloque de código">
-                          <i class="mdi mdi-code-braces"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <textarea
-                      v-model="form.content"
-                      class="markdown-editor"
-                      :class="{ error: validationErrors.content }"
-                      placeholder="Escribe tu contenido en Markdown aquí..."
-                      @input="validateField('content')"
-                      required
+                <div class="editor-content" :class="{ fullscreen: isFullscreen }">
+                  <textarea
+                    v-if="activeTab === 'edit'"
+                    id="documentContent"
+                    v-model="form.content"
+                    class="markdown-textarea"
+                    :class="{ error: validationErrors.content }"
+                    placeholder="Escribe tu contenido en formato Markdown..."
+                    @input="validateField('content')"
+                    :disabled="isSaving"
+                    required
+                  ></textarea>
+                  <div
+                    v-else
+                    class="markdown-preview"
+                    v-html="renderedMarkdown"
+                  ></div>
+                </div>
+
+                <div v-if="validationErrors.content" class="error-message">
+                  <i class="mdi mdi-alert-circle"></i>
+                  {{ validationErrors.content }}
+                </div>
+              </div>
+
+              <!-- Contenido TYPE_URL -->
+              <div v-else-if="form.type === 'TYPE_URL'" class="content-url">
+                <div class="form-field">
+                  <label for="documentUrl" class="form-label">
+                    <i class="mdi mdi-link"></i>
+                    URL del Contenido
+                    <span class="required">*</span>
+                  </label>
+                  <input
+                    id="documentUrl"
+                    v-model="form.content"
+                    type="url"
+                    class="form-input"
+                    :class="{ error: validationErrors.content }"
+                    placeholder="https://ejemplo.com/documento"
+                    @input="validateField('content')"
+                    :disabled="isSaving"
+                    required
+                  />
+                  <div class="form-help">
+                    <i class="mdi mdi-information"></i>
+                    Ingresa la URL completa del contenido que quieres enlazar
+                  </div>
+                  <div v-if="validationErrors.content" class="error-message">
+                    <i class="mdi mdi-alert-circle"></i>
+                    {{ validationErrors.content }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contenido TYPE_PDF -->
+              <div v-else-if="form.type === 'TYPE_PDF'" class="content-pdf">
+                <div class="form-field">
+                  <label for="pdfFile" class="form-label">
+                    <i class="mdi mdi-file-pdf-box"></i>
+                    Archivo PDF
+                    <span class="required">*</span>
+                  </label>
+                  <div class="file-upload-area" :class="{ 'has-file': pdfFile }">
+                    <input
+                      id="pdfFile"
+                      ref="pdfFileInput"
+                      type="file"
+                      accept=".pdf"
+                      @change="handlePdfFileChange"
                       :disabled="isSaving"
-                      rows="15"
-                    ></textarea>
-                    <div class="editor-footer">
-                      <span class="char-count">{{ form.content?.length || 0 }} caracteres</span>
-                      <span class="markdown-help">
-                        <i class="mdi mdi-help-circle-outline"></i>
-                        Usa Markdown para formatear tu contenido
-                      </span>
-                    </div>
-                  </div>
-
-                  <!-- Modo Vista Previa -->
-                  <div v-else-if="activeTab === 'preview'" class="preview-panel">
-                    <div v-if="form.content" class="preview-content" v-html="renderedMarkdown"></div>
-                    <div v-else class="preview-empty">
-                      <i class="mdi mdi-eye-outline"></i>
-                      <p>Escribe algo en el editor para ver la vista previa</p>
-                    </div>
-                  </div>
-
-                  <!-- Modo Dividir -->
-                  <div v-else-if="activeTab === 'split'" class="split-panel">
-                    <div class="split-editor">
-                      <div class="split-header">
-                        <i class="mdi mdi-pencil"></i>
-                        <span>Editor</span>
+                      class="file-input"
+                    />
+                    <div class="upload-content">
+                      <div v-if="!pdfFile" class="upload-placeholder">
+                        <i class="mdi mdi-cloud-upload"></i>
+                        <p>Arrastra tu archivo PDF aquí o haz clic para seleccionar</p>
+                        <span class="upload-hint">Solo archivos PDF (máximo 10MB)</span>
                       </div>
-                      <textarea
-                        v-model="form.content"
-                        class="markdown-editor split-textarea"
-                        :class="{ error: validationErrors.content }"
-                        placeholder="Escribe tu contenido en Markdown aquí..."
-                        @input="validateField('content')"
-                        required
-                        :disabled="isSaving"
-                      ></textarea>
-                    </div>
-                    <div class="split-divider"></div>
-                    <div class="split-preview">
-                      <div class="split-header">
-                        <i class="mdi mdi-eye"></i>
-                        <span>Vista Previa</span>
-                      </div>
-                      <div class="preview-content split-preview-content" v-if="form.content" v-html="renderedMarkdown"></div>
-                      <div v-else class="preview-empty">
-                        <i class="mdi mdi-eye-outline"></i>
-                        <p>Escribe algo en el editor para ver la vista previa</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Contenido URL -->
-              <div v-else-if="form.type === 'TYPE_URL'" class="url-editor">
-                <div class="editor-header">
-                  <div class="editor-tabs">
-                    <button
-                      type="button"
-                      class="tab-btn"
-                      :class="{ active: activeTab === 'edit' }"
-                      @click="activeTab = 'edit'"
-                    >
-                      <i class="mdi mdi-pencil"></i>
-                      Editar URL
-                    </button>
-                    <button
-                      type="button"
-                      class="tab-btn"
-                      :class="{ active: activeTab === 'preview' }"
-                      @click="activeTab = 'preview'"
-                    >
-                      <i class="mdi mdi-eye"></i>
-                      Vista Previa
-                    </button>
-                  </div>
-                </div>
-
-                <div class="editor-content">
-                  <!-- Modo Editar URL -->
-                  <div v-if="activeTab === 'edit'" class="editor-panel">
-                    <div class="input-container">
-                      <div class="input-icon">
-                        <i class="mdi mdi-link-variant"></i>
-                      </div>
-                      <input
-                        v-model="form.content"
-                        type="url"
-                        class="form-input"
-                        :class="{ error: validationErrors.content }"
-                        placeholder="https://ejemplo.com/documento"
-                        @input="validateField('content')"
-                        required
-                        :disabled="isSaving"
-                      />
-                    </div>
-                    <div class="editor-footer">
-                      <span class="char-count">{{ form.content?.length || 0 }} caracteres</span>
-                      <span class="url-help">
-                        <i class="mdi mdi-help-circle-outline"></i>
-                        Ingresa una URL válida para el contenido
-                      </span>
-                    </div>
-                  </div>
-
-                  <!-- Modo Vista Previa URL -->
-                  <div v-else-if="activeTab === 'preview'" class="preview-panel">
-                    <div v-if="form.content && isValidUrl(form.content)" class="preview-content">
-                      <div class="url-preview-card">
-                        <div class="preview-header">
-                          <i class="mdi mdi-link-variant"></i>
-                          <span>Vista previa del enlace</span>
-                        </div>
-                        <div class="preview-body">
-                          <div class="url-info">
-                            <div class="url-title">{{ getUrlTitle(form.content) }}</div>
-                            <div class="url-domain">{{ getUrlDomain(form.content) }}</div>
-                          </div>
-                          <a :href="form.content" target="_blank" rel="noopener noreferrer" class="preview-link">
-                            <i class="mdi mdi-open-in-new"></i>
-                            Abrir enlace
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                    <div v-else class="preview-empty">
-                      <i class="mdi mdi-link-variant"></i>
-                      <p>Ingresa una URL válida para ver la vista previa</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Contenido PDF -->
-              <div v-else-if="form.type === 'TYPE_PDF'" class="pdf-editor">
-                <div class="editor-header">
-                  <div class="editor-tabs">
-                    <button
-                      type="button"
-                      class="tab-btn"
-                      :class="{ active: activeTab === 'edit' }"
-                      @click="activeTab = 'edit'"
-                    >
-                      <i class="mdi mdi-pencil"></i>
-                      Editar PDF
-                    </button>
-                    <button
-                      type="button"
-                      class="tab-btn"
-                      :class="{ active: activeTab === 'preview' }"
-                      @click="activeTab = 'preview'"
-                    >
-                      <i class="mdi mdi-eye"></i>
-                      Vista Previa
-                    </button>
-                  </div>
-                </div>
-
-                <div class="editor-content">
-                  <!-- Modo Editar PDF -->
-                  <div v-if="activeTab === 'edit'" class="editor-panel">
-                    <div class="input-container">
-                      <div class="input-icon">
+                      <div v-else class="upload-success">
                         <i class="mdi mdi-file-pdf-box"></i>
+                        <div class="file-info">
+                          <p class="file-name">{{ pdfFile.name }}</p>
+                          <p class="file-size">{{ formatFileSize(pdfFile.size) }}</p>
+                        </div>
+                        <button
+                          type="button"
+                          class="remove-file-btn"
+                          @click="removePdfFile"
+                          :disabled="isSaving"
+                        >
+                          <i class="mdi mdi-close"></i>
+                        </button>
                       </div>
-                      <input
-                        v-model="form.content"
-                        type="url"
-                        class="form-input"
-                        :class="{ error: validationErrors.content }"
-                        placeholder="https://ejemplo.com/documento.pdf"
-                        @input="validateField('content')"
-                        required
-                        :disabled="isSaving"
-                      />
-                    </div>
-                    <div class="editor-footer">
-                      <span class="char-count">{{ form.content?.length || 0 }} caracteres</span>
-                      <span class="pdf-help">
-                        <i class="mdi mdi-help-circle-outline"></i>
-                        Ingresa la URL del documento PDF
-                      </span>
                     </div>
                   </div>
-
-                  <!-- Modo Vista Previa PDF -->
-                  <div v-else-if="activeTab === 'preview'" class="preview-panel">
-                    <div v-if="form.content && isValidUrl(form.content)" class="preview-content">
-                      <div class="pdf-preview-card">
-                        <div class="preview-header">
-                          <i class="mdi mdi-file-pdf-box"></i>
-                          <span>Vista previa del PDF</span>
-                        </div>
-                        <div class="preview-body">
-                          <div class="pdf-info">
-                            <div class="pdf-title">{{ getPdfTitle(form.content) }}</div>
-                            <div class="pdf-url">{{ form.content }}</div>
-                          </div>
-                          <div class="pdf-viewer-container">
-                            <iframe
-                              :src="form.content"
-                              class="pdf-viewer"
-                              frameborder="0"
-                              sandbox="allow-same-origin allow-scripts"
-                              @error="handlePdfError"
-                            ></iframe>
-                          </div>
-                          <div class="pdf-actions">
-                            <a :href="form.content" target="_blank" rel="noopener noreferrer" class="pdf-link">
-                              <i class="mdi mdi-open-in-new"></i>
-                              Abrir PDF en nueva pestaña
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div v-else class="preview-empty">
-                      <i class="mdi mdi-file-pdf-box"></i>
-                      <p>Ingresa una URL válida de PDF para ver la vista previa</p>
-                    </div>
+                  <div v-if="validationErrors.pdfFile" class="error-message">
+                    <i class="mdi mdi-alert-circle"></i>
+                    {{ validationErrors.pdfFile }}
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
 
-              <div v-if="validationErrors.content" class="error-message">
-                <i class="mdi mdi-alert-circle"></i>
-                {{ validationErrors.content }}
-              </div>
+          <!-- Paso 3: Configuración y Permisos -->
+          <div v-show="currentWizardStep === 3" class="wizard-step-content">
+            <div class="step-header">
+              <h3 class="step-title">Configuración y Permisos</h3>
+              <p class="step-description">Define quién puede acceder a este documento</p>
             </div>
 
-          <!-- Configuración de acceso -->
-          <div class="form-section">
-            <div class="section-header">
-              <div class="section-icon">
-                <i class="mdi mdi-shield-account"></i>
-              </div>
-              <div class="section-title-content">
-                <h3 class="section-title">Configuración de Acceso</h3>
-                <p class="section-description">Define quién puede acceder a este documento</p>
-              </div>
-            </div>
-
-            <!-- Roles de Acceso -->
-            <div class="form-row">
-              <div class="form-group">
+            <div class="form-fields">
+              <div class="form-field">
                 <label class="form-label">
-                  <i class="mdi mdi-account-key"></i>
-                  Roles de Acceso
+                  <i class="mdi mdi-account-group"></i>
+                  Roles con Acceso
                   <span class="required">*</span>
                 </label>
-                <fieldset class="roles-selector">
-                  <legend class="sr-only">
-                    Seleccionar roles que pueden acceder a este documento
-                  </legend>
-                  <div v-for="role in availableRolesList" :key="role.value" class="role-option">
-                    <label class="checkbox-label">
+                <fieldset class="roles-fieldset">
+                  <legend class="roles-legend">Selecciona los roles que pueden acceder a este documento</legend>
+                  <div class="roles-grid">
+                    <div
+                      v-for="role in availableRoles"
+                      :key="role.value"
+                      class="role-option"
+                    >
                       <input
+                        :id="`role-${role.value}`"
                         v-model="form.roles"
                         :value="role.value"
                         type="checkbox"
-                        class="form-checkbox"
-                        :id="`role-${role.value}`"
-                        :aria-describedby="`role-${role.value}-desc`"
+                        class="role-checkbox"
                         :disabled="isSaving"
                       />
-                      <span class="checkbox-text">
+                      <label :for="`role-${role.value}`" class="role-label">
                         <i :class="['mdi', role.icon]"></i>
-                        {{ role.label }}
-                      </span>
-                    </label>
-                    <div class="role-description" :id="`role-${role.value}-desc`">
-                      {{ role.description }}
+                        <span class="role-name">{{ role.label }}</span>
+                        <span class="role-description">{{ role.description }}</span>
+                      </label>
                     </div>
                   </div>
                 </fieldset>
@@ -578,28 +478,159 @@
             </div>
           </div>
 
-          <!-- Acciones del formulario -->
-          <div class="form-actions">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              @click="handleClose"
-              :disabled="isSaving"
-            >
-              <i class="mdi mdi-close"></i>
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              class="btn btn-primary"
-              :disabled="!isFormValid || isSaving"
-            >
-              <i v-if="isSaving" class="mdi mdi-loading mdi-spin"></i>
-              <i v-else :class="isEditing ? 'mdi mdi-content-save' : 'mdi mdi-plus'"></i>
-              {{ isSaving ? 'Guardando...' : (isEditing ? 'Actualizar Documento' : 'Crear Documento') }}
-            </button>
+          <!-- Paso 4: Resumen -->
+          <div v-show="currentWizardStep === 4" class="wizard-step-content">
+            <div class="step-header">
+              <h3 class="step-title">Resumen del Documento</h3>
+              <p class="step-description">Revisa la información antes de crear el documento</p>
+            </div>
+
+            <div class="summary-content">
+              <div class="summary-section">
+                <h4 class="summary-title">
+                  <i class="mdi mdi-information-outline"></i>
+                  Información Básica
+                </h4>
+                <div class="summary-item">
+                  <span class="summary-label">Nombre:</span>
+                  <span class="summary-value">{{ form.name || 'No especificado' }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Tipo:</span>
+                  <span class="summary-value">{{ getTypeLabel(form.type) }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Slug:</span>
+                  <span class="summary-value">{{ generateSlug(form.name) || 'Se generará automáticamente' }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Icono:</span>
+                  <span class="summary-value">
+                    <i v-if="form.icon" :class="['mdi', form.icon]"></i>
+                    <span v-else>No especificado</span>
+                  </span>
+                </div>
+              </div>
+
+              <div class="summary-section">
+                <h4 class="summary-title">
+                  <i class="mdi mdi-content-save-outline"></i>
+                  Contenido
+                </h4>
+                <div class="summary-item">
+                  <span class="summary-label">Tipo de contenido:</span>
+                  <span class="summary-value">{{ getTypeLabel(form.type) }}</span>
+                </div>
+                <div v-if="form.type === 'TYPE_TEXT'" class="summary-item">
+                  <span class="summary-label">Contenido:</span>
+                  <span class="summary-value">{{ form.content ? 'Contenido en Markdown' : 'No especificado' }}</span>
+                </div>
+                <div v-else-if="form.type === 'TYPE_URL'" class="summary-item">
+                  <span class="summary-label">URL:</span>
+                  <span class="summary-value">{{ form.content || 'No especificado' }}</span>
+                </div>
+                <div v-else-if="form.type === 'TYPE_PDF'" class="summary-item">
+                  <span class="summary-label">Archivo PDF:</span>
+                  <span class="summary-value">{{ pdfFile ? pdfFile.name : 'No especificado' }}</span>
+                </div>
+              </div>
+
+              <div class="summary-section">
+                <h4 class="summary-title">
+                  <i class="mdi mdi-account-group"></i>
+                  Permisos
+                </h4>
+                <div class="summary-item">
+                  <span class="summary-label">Roles con acceso:</span>
+                  <span class="summary-value">
+                    <span v-if="form.roles && form.roles.length > 0">
+                      {{ getRolesText() }}
+                    </span>
+                    <span v-else>No especificado</span>
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </form>
+      </div>
+
+      <!-- Wizard Footer -->
+      <div v-if="!loading" class="wizard-footer">
+        <div class="wizard-progress">
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              :style="{ width: `${(currentWizardStep / wizardSteps.length) * 100}%` }"
+            ></div>
+          </div>
+          <span class="progress-text">
+            Paso {{ currentWizardStep }} de {{ wizardSteps.length }}
+          </span>
+        </div>
+
+        <div class="wizard-actions">
+          <!-- Indicador de roles activos al editar -->
+          <div v-if="isEditing && form.roles && form.roles.length > 0" class="active-roles-indicator">
+            <span class="indicator-label">Roles activos:</span>
+            <div class="active-roles-list">
+              <div
+                v-for="role in getSelectedRolesInfo()"
+                :key="role.value"
+                class="active-role-item"
+                :class="role.value"
+              >
+                <i :class="['mdi', role.icon]"></i>
+                <span>{{ role.label }}</span>
+                <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-badge">
+                  <i class="mdi mdi-crown"></i>
+                  Máximo
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            v-if="currentWizardStep > 1"
+            type="button"
+            @click="previousStep"
+            class="wizard-btn wizard-btn-secondary"
+          >
+            <i class="mdi mdi-chevron-left"></i>
+            Anterior
+          </button>
+
+          <button
+            v-if="currentWizardStep < wizardSteps.length"
+            type="button"
+            @click="nextStep"
+            class="wizard-btn wizard-btn-primary"
+            :disabled="!canProceedToNextStep"
+          >
+            Siguiente
+            <i class="mdi mdi-chevron-right"></i>
+          </button>
+
+          <button
+            v-if="currentWizardStep === wizardSteps.length"
+            type="submit"
+            class="wizard-btn wizard-btn-success"
+            :disabled="!isFormValid || isSaving"
+          >
+            <i v-if="isSaving" class="mdi mdi-loading mdi-spin"></i>
+            <i v-else class="mdi mdi-check"></i>
+            {{ isSaving ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }} Documento
+          </button>
+
+          <button
+            type="button"
+            @click="handleClose"
+            class="wizard-btn wizard-btn-cancel"
+          >
+            <i class="mdi mdi-close"></i>
+            Cancelar
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -653,6 +684,36 @@ const slugAlternatives = ref([])
 const activeTab = ref('edit')
 const isFullscreen = ref(false)
 
+// Wizard variables
+const currentWizardStep = ref(1)
+const wizardSteps = ref([
+  {
+    id: 'basic',
+    title: 'Información Básica',
+    description: 'Datos principales del documento'
+  },
+  {
+    id: 'content',
+    title: 'Contenido',
+    description: 'Contenido del documento'
+  },
+  {
+    id: 'permissions',
+    title: 'Permisos',
+    description: 'Configuración de acceso'
+  },
+  {
+    id: 'summary',
+    title: 'Resumen',
+    description: 'Revisar información'
+  }
+])
+
+// PDF File Upload
+const pdfFile = ref(null)
+const fileInput = ref(null)
+const pdfPreviewUrl = ref(null)
+
 // Computed
 const isEditing = computed(() => !!props.document)
 
@@ -662,7 +723,7 @@ const renderedMarkdown = computed(() => {
 
   if (!form.value.content || form.value.content.trim() === '') {
     console.log('📝 [MARKDOWN] No hay contenido para renderizar')
-    return ''
+    return '<div class="markdown-empty"><p>No hay contenido para mostrar</p></div>'
   }
 
   try {
@@ -673,7 +734,9 @@ const renderedMarkdown = computed(() => {
       breaks: true,
       gfm: true,
       smartLists: true,
-      smartypants: true
+      smartypants: true,
+      sanitize: false,
+      silent: false
     }
 
     // Usar la API correcta de marked v16
@@ -695,6 +758,74 @@ const isFormValid = computed(() => {
          form.value.content &&
          Object.keys(validationErrors.value).length === 0
 })
+
+// Wizard Computed Properties
+const canProceedToNextStep = computed(() => {
+  switch (currentWizardStep.value) {
+    case 1:
+      // Paso 1: Información Básica (sin slug, se genera automáticamente)
+      return form.value.name &&
+             form.value.type &&
+             !validationErrors.value.name &&
+             !validationErrors.value.type
+    case 2:
+      // Paso 2: Contenido del Documento
+      if (!form.value.type) return false
+      if (form.value.type === 'TYPE_PDF') {
+        return !!pdfFile.value && !validationErrors.value.pdfFile
+      }
+      return form.value.content && !validationErrors.value.content
+    case 3:
+      // Paso 3: Permisos
+      return form.value.roles && form.value.roles.length > 0 && !validationErrors.value.roles
+    case 4:
+      // Paso 4: Resumen (siempre puede proceder)
+      return true
+    default:
+      return false
+  }
+})
+
+// Wizard Methods
+const nextStep = () => {
+  if (currentWizardStep.value < wizardSteps.value.length && canProceedToNextStep.value) {
+    currentWizardStep.value++
+  }
+}
+
+const previousStep = () => {
+  if (currentWizardStep.value > 1) {
+    currentWizardStep.value--
+  }
+}
+
+const getTypeLabel = (type) => {
+  const types = {
+    'TYPE_TEXT': '📄 Documento de Texto',
+    'TYPE_URL': '🔗 Enlace/URL',
+    'TYPE_PDF': '📋 Documento PDF'
+  }
+  return types[type] || 'No especificado'
+}
+
+const getRolesText = () => {
+  if (!form.value.roles || form.value.roles.length === 0) {
+    return 'Ninguno'
+  }
+
+  const roleLabels = form.value.roles.map(roleValue => {
+    const role = availableRolesList.find(r => r.value === roleValue)
+    return role ? role.label : roleValue
+  })
+
+  return roleLabels.join(', ')
+}
+
+const getSelectedRolesInfo = () => {
+  return form.value.roles.map(roleValue => {
+    return availableRolesList.find(role => role.value === roleValue)
+  }).filter(Boolean)
+}
 
 // Methods
 const validateField = (field) => {
@@ -736,8 +867,10 @@ const validateField = (field) => {
     case 'content':
       if (!value || value.trim().length === 0) {
         validationErrors.value.content = 'El contenido es obligatorio'
-      } else if ((form.value.type === 'URL' || form.value.type === 'PDF') && !isValidUrl(value)) {
+      } else if (form.value.type === 'TYPE_URL' && !isValidUrl(value)) {
         validationErrors.value.content = 'Debe ser una URL válida'
+      } else if (form.value.type === 'TYPE_PDF' && !pdfFile.value) {
+        validationErrors.value.content = 'Debe seleccionar un archivo PDF'
       } else if (value.length > 10000) {
         validationErrors.value.content = 'El contenido no puede exceder 10,000 caracteres'
       } else {
@@ -763,7 +896,10 @@ const validateField = (field) => {
 const validateForm = () => {
   validateField('name')
   validateField('type')
-  validateField('slug')
+  // No validar slug en modo edición ya que se genera automáticamente
+  if (!isEditing.value) {
+    validateField('slug')
+  }
   validateField('content')
   validateField('roles')
 }
@@ -811,24 +947,124 @@ const toggleFullscreen = () => {
   isFullscreen.value = !isFullscreen.value
 }
 
-const insertMarkdown = (before, after = '') => {
-  const textarea = document.querySelector('.markdown-editor')
+// Funciones del toolbar de Markdown
+const insertMarkdown = (type) => {
+  const textarea = document.querySelector('.markdown-textarea')
   if (!textarea) return
 
   const start = textarea.selectionStart
   const end = textarea.selectionEnd
-  const selectedText = form.value.content.substring(start, end)
+  const selectedText = textarea.value.substring(start, end)
+  const beforeText = textarea.value.substring(0, start)
+  const afterText = textarea.value.substring(end)
 
-  const newText = before + selectedText + after
-  const newContent = form.value.content.substring(0, start) + newText + form.value.content.substring(end)
+  let before = ''
+  let after = ''
+  let placeholder = ''
 
-  form.value.content = newContent
+  switch (type) {
+    case 'bold':
+      before = '**'
+      after = '**'
+      placeholder = 'texto en negrita'
+      break
+    case 'italic':
+      before = '*'
+      after = '*'
+      placeholder = 'texto en cursiva'
+      break
+    case 'strikethrough':
+      before = '~~'
+      after = '~~'
+      placeholder = 'texto tachado'
+      break
+    case 'h1':
+      before = '# '
+      after = ''
+      placeholder = 'Título 1'
+      break
+    case 'h2':
+      before = '## '
+      after = ''
+      placeholder = 'Título 2'
+      break
+    case 'h3':
+      before = '### '
+      after = ''
+      placeholder = 'Título 3'
+      break
+    case 'link':
+      const url = prompt('Ingresa la URL del enlace:')
+      if (url) {
+        before = '['
+        after = `](${url})`
+        placeholder = 'texto del enlace'
+      } else {
+        return
+      }
+      break
+    case 'image':
+      const imageUrl = prompt('Ingresa la URL de la imagen:')
+      if (imageUrl) {
+        before = '!['
+        after = `](${imageUrl})`
+        placeholder = 'texto alternativo'
+      } else {
+        return
+      }
+      break
+    case 'code':
+      before = '`'
+      after = '`'
+      placeholder = 'código'
+      break
+    case 'list':
+      before = '- '
+      after = ''
+      placeholder = 'elemento de lista'
+      break
+    case 'orderedList':
+      before = '1. '
+      after = ''
+      placeholder = 'elemento de lista numerada'
+      break
+    case 'quote':
+      before = '> '
+      after = ''
+      placeholder = 'texto de cita'
+      break
+    case 'table':
+      const tableMarkdown = `| Columna 1 | Columna 2 | Columna 3 |
+|-----------|-----------|-----------|
+| Fila 1    | Fila 1    | Fila 1    |
+| Fila 2    | Fila 2    | Fila 2    |`
+      before = tableMarkdown + '\n\n'
+      after = ''
+      placeholder = ''
+      break
+    case 'horizontalRule':
+      before = '---\n'
+      after = ''
+      placeholder = ''
+      break
+    default:
+      return
+  }
 
-  // Restaurar posición del cursor
-  nextTick(() => {
-    textarea.focus()
-    textarea.setSelectionRange(start + before.length, start + before.length + selectedText.length)
-  })
+  // Si no hay texto seleccionado, usar placeholder
+  const textToInsert = selectedText || placeholder
+
+  const newText = beforeText + before + textToInsert + after + afterText
+  textarea.value = newText
+
+  // Restaurar la selección
+  const newStart = start + before.length
+  const newEnd = newStart + textToInsert.length
+  textarea.setSelectionRange(newStart, newEnd)
+  textarea.focus()
+
+  // Actualizar el modelo
+  form.value.content = textarea.value
 }
 
 // Funciones auxiliares para URL y PDF
@@ -865,6 +1101,107 @@ const handlePdfError = () => {
   console.warn('⚠️ [PDF] Error cargando PDF:', form.value.content)
 }
 
+// PDF File Upload Functions
+const handleFileSelect = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    validatePdfFile(file)
+  }
+}
+
+const validatePdfFile = (file) => {
+  // Limpiar errores previos
+  validationErrors.value.content = null
+
+  // Validar tipo de archivo
+  if (file.type !== 'application/pdf') {
+    validationErrors.value.content = 'Solo se permiten archivos PDF'
+    return false
+  }
+
+  // Validar tamaño (10MB máximo)
+  const maxSize = 10 * 1024 * 1024 // 10MB
+  if (file.size > maxSize) {
+    validationErrors.value.content = 'El archivo PDF no puede ser mayor a 10MB'
+    return false
+  }
+
+  // Archivo válido
+  pdfFile.value = file
+  form.value.content = file.name // Usar el nombre del archivo como contenido
+
+  // Validar el campo content después de asignar el archivo
+  validateField('content')
+
+  console.log('✅ [PDF UPLOAD] Archivo PDF válido:', file.name, formatFileSize(file.size))
+  return true
+}
+
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+const removeFile = () => {
+  pdfFile.value = null
+  form.value.content = ''
+  if (pdfPreviewUrl.value) {
+    URL.revokeObjectURL(pdfPreviewUrl.value)
+    pdfPreviewUrl.value = null
+  }
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
+
+const openFileDialog = () => {
+  if (fileInput.value) {
+    fileInput.value.click()
+  }
+}
+
+const previewPdf = () => {
+  if (pdfFile.value) {
+    if (pdfPreviewUrl.value) {
+      URL.revokeObjectURL(pdfPreviewUrl.value)
+    }
+    pdfPreviewUrl.value = URL.createObjectURL(pdfFile.value)
+
+    // Abrir en nueva ventana
+    window.open(pdfPreviewUrl.value, '_blank')
+  }
+}
+
+const uploadPdfFile = async (documentId, file) => {
+  try {
+    console.log('📄 [PDF UPLOAD] Subiendo archivo PDF:', file.name, 'para documento:', documentId)
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    // Agregar metadatos del documento
+    formData.append('name', form.value.name)
+    formData.append('type', 'TYPE_PDF')
+    formData.append('slug', form.value.slug)
+    formData.append('status', 'true')
+    formData.append('icon', form.value.icon || 'mdi-file-pdf-box')
+
+    // Enviar roles como array individual, no como JSON string
+    form.value.roles.forEach(role => {
+      formData.append('roles', role)
+    })
+
+    await documentService.uploadDocumentFile(documentId, formData)
+    console.log('✅ [PDF UPLOAD] Archivo PDF subido exitosamente')
+  } catch (error) {
+    console.error('❌ [PDF UPLOAD] Error subiendo archivo PDF:', error)
+    throw error
+  }
+}
+
 // Roles disponibles (mismos que en MenuManagerView)
 const availableRolesList = [
   {
@@ -897,6 +1234,9 @@ const resetForm = () => {
     roles: []
   }
   validationErrors.value = {}
+  currentWizardStep.value = 1
+  pdfFile.value = null
+  activeTab.value = 'edit'
 }
 
 const loadDocumentData = () => {
@@ -904,24 +1244,43 @@ const loadDocumentData = () => {
     console.log('📄 [CONTENT FORM] Documento cargado para edición:', props.document?.name || 'Sin nombre')
     console.log('📄 [CONTENT FORM] Roles del documento:', props.document.roles)
 
-    // Limpiar roles para remover prefijo ROLE_ si existe
-    const cleanRoles = (props.document.roles || []).map(role => {
-      if (typeof role === 'string' && role.startsWith('ROLE_')) {
-        return role.substring(5) // Remover 'ROLE_' (5 caracteres)
-      }
-      return role
-    })
+    // Procesar roles para asegurar que sea un array y manejar diferentes formatos
+    let cleanRoles = []
 
-    console.log('📄 [CONTENT FORM] Roles limpios:', cleanRoles)
+    if (props.document.roles) {
+      if (typeof props.document.roles === 'string') {
+        // Si roles es un string, convertir a array
+        if (props.document.roles.includes(',')) {
+          cleanRoles = props.document.roles.split(',').map(role => role.trim())
+        } else {
+          cleanRoles = [props.document.roles]
+        }
+      } else if (Array.isArray(props.document.roles)) {
+        cleanRoles = [...props.document.roles]
+      }
+
+      // Limpiar prefijos ROLE_ si existen
+      cleanRoles = cleanRoles.map(role => {
+        if (typeof role === 'string' && role.startsWith('ROLE_')) {
+          return role.substring(5) // Remover 'ROLE_' (5 caracteres)
+        }
+        return role
+      })
+    }
+
+    console.log('📄 [CONTENT FORM] Roles procesados:', cleanRoles)
 
     form.value = {
       name: props.document.name || '',
       type: props.document.type || '',
-      slug: props.document.slug || '',
+      slug: '', // Se genera automáticamente en edición
       content: props.document.content || '',
       icon: props.document.icon || '',
       roles: cleanRoles
     }
+
+    // Resetear el paso del wizard a 1
+    currentWizardStep.value = 1
   } else {
     resetForm()
   }
@@ -945,7 +1304,7 @@ const handleSubmit = async () => {
     documentData = {
       name: form.value.name.trim(),
       type: form.value.type,
-      slug: form.value.slug?.trim() || '',
+      slug: generateSlug(form.value.name, true) || '',
       status: true, // Campo requerido por el backend
       content: form.value.content.trim(),
       icon: form.value.icon || (form.value.type === 'TYPE_TEXT' ? 'mdi-file-document' :
@@ -971,9 +1330,29 @@ const handleSubmit = async () => {
       throw new Error('Debe seleccionar al menos un rol de acceso')
     }
 
-    // Validar URL si es tipo URL o PDF
-    if ((documentData.type === 'TYPE_URL' || documentData.type === 'TYPE_PDF') && !isValidUrl(documentData.content)) {
+    // Validar URL si es tipo URL (PDF ahora maneja archivos)
+    if (documentData.type === 'TYPE_URL' && !isValidUrl(documentData.content)) {
       throw new Error('La URL proporcionada no es válida')
+    }
+
+    // Validar archivo PDF si es tipo PDF
+    if (documentData.type === 'TYPE_PDF' && !pdfFile.value) {
+      throw new Error('Debe seleccionar un archivo PDF')
+    }
+
+    // Validación adicional para PDFs
+    if (documentData.type === 'TYPE_PDF') {
+      console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.value:', pdfFile.value)
+      console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.name:', pdfFile.value?.name)
+      console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.size:', pdfFile.value?.size)
+
+      if (!pdfFile.value) {
+        throw new Error('No se ha seleccionado ningún archivo PDF')
+      }
+
+      if (!pdfFile.value.name) {
+        throw new Error('El archivo PDF seleccionado no es válido')
+      }
     }
 
     console.log('📄 [CONTENT FORM] Datos del documento:', documentData)
@@ -994,20 +1373,45 @@ const handleSubmit = async () => {
       console.warn('⚠️ [CONTENT FORM] Detectados roles con prefijo ROLE_ duplicado:', documentData.roles)
     }
 
+    // Agregar el ID al documentData para el emit
+    const documentDataWithId = {
+      ...documentData,
+      id: isEditing.value ? props.document.id : undefined
+    }
+
+    let createdDocumentId = null
+
     if (isEditing.value) {
       console.log('📄 [CONTENT FORM] Actualizando documento existente...')
       await documentService.updateDocument(props.document.id, documentData)
       console.log('✅ [CONTENT FORM] Documento actualizado exitosamente')
     } else {
-      console.log('📄 [CONTENT FORM] Creando nuevo documento...')
-      await documentService.createDocument(documentData)
-      console.log('✅ [CONTENT FORM] Documento creado exitosamente')
+      // Para documentos PDF, usar el endpoint específico de creación con archivo
+      console.log('🔍 [CONTENT FORM] Debug - Tipo:', documentData.type)
+      console.log('🔍 [CONTENT FORM] Debug - pdfFile.value:', pdfFile.value)
+      console.log('🔍 [CONTENT FORM] Debug - Condición PDF:', documentData.type === 'TYPE_PDF' && pdfFile.value)
+
+      if (documentData.type === 'TYPE_PDF' && pdfFile.value) {
+        console.log('📄 [CONTENT FORM] Creando documento PDF con archivo...')
+        const createdDocument = await documentService.createDocumentWithFile(documentData, pdfFile.value)
+        console.log('✅ [CONTENT FORM] Documento PDF creado exitosamente')
+        createdDocumentId = createdDocument.id
+        documentDataWithId.id = createdDocumentId
+      } else {
+        console.log('📄 [CONTENT FORM] Creando nuevo documento...')
+        const createdDocument = await documentService.createDocument(documentData)
+        console.log('✅ [CONTENT FORM] Documento creado exitosamente')
+        createdDocumentId = createdDocument.id
+        documentDataWithId.id = createdDocumentId
+      }
     }
 
-    // Agregar el ID al documentData para el emit
-    const documentDataWithId = {
-      ...documentData,
-      id: isEditing.value ? props.document.id : undefined
+    // Si es un PDF con archivo y estamos editando, subir el archivo
+    if (isEditing.value && documentData.type === 'TYPE_PDF' && pdfFile.value) {
+      console.log('📄 [CONTENT FORM] Subiendo archivo PDF...')
+      const documentId = props.document.id
+      await uploadPdfFile(documentId, pdfFile.value)
+      console.log('✅ [CONTENT FORM] Archivo PDF subido exitosamente')
     }
 
     console.log('📄 [CONTENT FORM] Emitiendo evento saved con ID:', documentDataWithId.id)
@@ -1048,10 +1452,20 @@ const handleSubmit = async () => {
           slug: newSlug
         }
 
+        let createdDocumentId = null
+
         if (isEditing.value) {
           await documentService.updateDocument(props.document.id, newDocumentData)
         } else {
-          await documentService.createDocument(newDocumentData)
+          // Para documentos PDF, usar el endpoint específico de creación con archivo
+          if (newDocumentData.type === 'TYPE_PDF' && pdfFile.value) {
+            console.log('📄 [CONTENT FORM] Reintentando creación de documento PDF con archivo...')
+            const createdDocument = await documentService.createDocumentWithFile(newDocumentData, pdfFile.value)
+            createdDocumentId = createdDocument.id
+          } else {
+            const createdDocument = await documentService.createDocument(newDocumentData)
+            createdDocumentId = createdDocument.id
+          }
         }
 
         console.log('✅ [CONTENT FORM] Documento guardado exitosamente con slug único')
@@ -1059,7 +1473,7 @@ const handleSubmit = async () => {
         // Agregar el ID al newDocumentData para el emit
         const newDocumentDataWithId = {
           ...newDocumentData,
-          id: isEditing.value ? props.document.id : undefined
+          id: isEditing.value ? props.document.id : createdDocumentId
         }
 
         console.log('📄 [CONTENT FORM] Emitiendo evento saved con ID (slug único):', newDocumentDataWithId.id)
@@ -1113,8 +1527,12 @@ const handleSubmit = async () => {
 
 const handleClose = () => {
   console.log('📄 [CONTENT FORM] Cerrando formulario...')
+  console.log('📄 [CONTENT FORM] Estado de edición:', isEditing.value)
+
   resetForm()
   emit('close')
+
+  console.log('📄 [CONTENT FORM] Formulario cerrado')
 }
 
 // Watchers
@@ -1223,18 +1641,32 @@ const selectSlugAlternative = (alternative) => {
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
+  backdrop-filter: blur(8px);
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
 }
 
 .modal-container {
-  background: white;
+  background: var(--bg-card);
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px var(--shadow-color);
   max-width: 900px;
   width: 100%;
   max-height: 90vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--border-color);
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .modal-container {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-primary);
 }
 
 /* Header */
@@ -1532,6 +1964,99 @@ const selectSlugAlternative = (alternative) => {
   border-bottom: 1px solid #dee2e6;
 }
 
+/* Markdown Toolbar */
+.markdown-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 24px;
+  background: var(--border-color);
+  margin: 0 0.5rem;
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+.toolbar-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.toolbar-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px var(--shadow-color);
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.toolbar-btn:disabled:hover {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Dark mode para toolbar */
+.dark-theme .markdown-toolbar {
+  background: var(--bg-tertiary);
+  border-bottom-color: var(--border-primary);
+}
+
+.dark-theme .toolbar-separator {
+  background: var(--border-primary);
+}
+
+.dark-theme .toolbar-btn {
+  background: var(--bg-primary);
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
+}
+
+.dark-theme .toolbar-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .toolbar-btn:active {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
 .editor-tabs {
   display: flex;
   gap: 0.5rem;
@@ -1605,6 +2130,320 @@ const selectSlugAlternative = (alternative) => {
   z-index: 9999;
   background: white;
   border-radius: 0;
+}
+
+/* Markdown Textarea */
+.markdown-textarea {
+  width: 100%;
+  min-height: 400px;
+  padding: 1.5rem;
+  border: none;
+  outline: none;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  resize: vertical;
+  border-radius: 0;
+}
+
+.markdown-textarea:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--accent-color);
+}
+
+.markdown-textarea::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.markdown-textarea.error {
+  border-left: 4px solid var(--error-color);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+/* Dark mode para textarea */
+.dark-theme .markdown-textarea {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark-theme .markdown-textarea:focus {
+  box-shadow: inset 0 0 0 2px var(--accent-color);
+}
+
+.dark-theme .markdown-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.dark-theme .markdown-textarea.error {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Markdown Preview */
+.markdown-preview {
+  width: 100%;
+  min-height: 400px;
+  padding: 1.5rem;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: none;
+  outline: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-y: auto;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.markdown-preview h1 {
+  font-size: 2rem;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.markdown-preview h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.25rem;
+}
+
+.markdown-preview h3 {
+  font-size: 1.25rem;
+}
+
+.markdown-preview p {
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.markdown-preview strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.markdown-preview em {
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.markdown-preview code {
+  background: var(--bg-tertiary);
+  color: var(--accent-color);
+  padding: 0.125rem 0.25rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875em;
+}
+
+.markdown-preview pre {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.markdown-preview pre code {
+  background: none;
+  padding: 0;
+  color: var(--text-primary);
+}
+
+.markdown-preview blockquote {
+  border-left: 4px solid var(--accent-color);
+  background: var(--bg-secondary);
+  margin: 1rem 0;
+  padding: 1rem 1.5rem;
+  border-radius: 0 8px 8px 0;
+  color: var(--text-secondary);
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.markdown-preview li {
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.markdown-preview a {
+  color: var(--accent-color);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.markdown-preview a:hover {
+  border-bottom-color: var(--accent-color);
+}
+
+.markdown-preview img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  margin: 1rem 0;
+}
+
+.markdown-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.markdown-preview th,
+.markdown-preview td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.markdown-preview th {
+  background: var(--bg-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.markdown-preview td {
+  color: var(--text-primary);
+}
+
+.markdown-preview hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+  margin: 2rem 0;
+}
+
+/* Dark mode para preview */
+.dark-theme .markdown-preview {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark-theme .markdown-preview h1,
+.dark-theme .markdown-preview h2,
+.dark-theme .markdown-preview h3,
+.dark-theme .markdown-preview h4,
+.dark-theme .markdown-preview h5,
+.dark-theme .markdown-preview h6 {
+  color: var(--text-primary);
+}
+
+.dark-theme .markdown-preview h1 {
+  border-bottom-color: var(--border-primary);
+}
+
+.dark-theme .markdown-preview h2 {
+  border-bottom-color: var(--border-primary);
+}
+
+.dark-theme .markdown-preview code {
+  background: var(--bg-tertiary);
+  color: var(--accent-color);
+}
+
+.dark-theme .markdown-preview pre {
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+}
+
+.dark-theme .markdown-preview blockquote {
+  background: var(--bg-secondary);
+  border-left-color: var(--accent-color);
+  color: var(--text-secondary);
+}
+
+.dark-theme .markdown-preview table {
+  background: var(--bg-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .markdown-preview th {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.dark-theme .markdown-preview th,
+.dark-theme .markdown-preview td {
+  border-bottom-color: var(--border-primary);
+}
+
+.dark-theme .markdown-preview img {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .markdown-preview hr {
+  background: linear-gradient(90deg, transparent, var(--border-primary), transparent);
+}
+
+/* Estados especiales del preview */
+.markdown-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-muted);
+  font-style: italic;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin: 1rem;
+}
+
+.markdown-error {
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--error-color);
+  border-radius: 8px;
+  color: var(--error-color);
+  margin: 1rem;
+}
+
+.markdown-error pre {
+  background: rgba(239, 68, 68, 0.05);
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  overflow-x: auto;
+}
+
+/* Dark mode para estados especiales */
+.dark-theme .markdown-empty {
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+}
+
+.dark-theme .markdown-error {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--error-color);
+  color: var(--error-color);
+}
+
+.dark-theme .markdown-error pre {
+  background: rgba(239, 68, 68, 0.1);
 }
 
 /* Editor Panel */
@@ -2582,6 +3421,1175 @@ const selectSlugAlternative = (alternative) => {
 
   .role-options {
     grid-template-columns: 1fr;
+  }
+}
+
+/* PDF File Upload Styles */
+.file-upload-container {
+  margin-top: 1rem;
+}
+
+.file-upload-area {
+  border: 2px dashed #e0e0e0;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  background: #fafafa;
+}
+
+.file-upload-area:hover {
+  border-color: #1976d2;
+  background: #f5f5f5;
+}
+
+.file-upload-area.has-file {
+  border-color: #4caf50;
+  background: #f1f8e9;
+}
+
+.file-upload-area.error {
+  border-color: #f44336;
+  background: #ffebee;
+}
+
+.file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: #1976d2;
+}
+
+.upload-text h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1.25rem;
+}
+
+.upload-text p {
+  margin: 0.5rem 0;
+  color: #666;
+}
+
+.upload-hint {
+  font-size: 0.875rem;
+  color: #999;
+}
+
+.file-selected {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid #e0e0e0;
+}
+
+.file-icon {
+  font-size: 2rem;
+  color: #f44336;
+}
+
+.file-info {
+  flex: 1;
+  text-align: left;
+}
+
+.file-name {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.file-size {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.remove-file-btn {
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.remove-file-btn:hover {
+  background: #d32f2f;
+}
+
+.file-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.action-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.preview-btn {
+  background: #1976d2;
+  color: white;
+}
+
+.preview-btn:hover {
+  background: #1565c0;
+}
+
+.change-btn {
+  background: #ff9800;
+  color: white;
+}
+
+.change-btn:hover {
+  background: #f57c00;
+}
+
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ================================
+   WIZARD STYLES
+   ================================ */
+
+/* Wizard Header */
+.wizard-header {
+  background: #245FE7;
+  color: white;
+  padding: 2rem;
+  border-radius: 12px 12px 0 0;
+  position: relative;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+}
+
+.dark-theme .modal-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.dark-theme .wizard-header {
+  background: #245FE7;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .wizard-header::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+}
+
+.dark-theme .wizard-steps {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.dark-theme .wizard-step.active {
+  background: var(--bg-hover);
+}
+
+.dark-theme .wizard-step.active .step-indicator {
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  color: var(--text-inverse);
+  box-shadow: 0 4px 12px var(--focus-shadow);
+}
+
+.dark-theme .wizard-step.active .step-title {
+  color: var(--accent-color);
+}
+
+.dark-theme .wizard-body {
+  background: var(--bg-primary);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+.dark-theme .wizard-footer {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
+}
+
+.dark-theme .wizard-btn-secondary {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+
+.dark-theme .wizard-btn-secondary:hover:not(:disabled) {
+  background: var(--bg-secondary);
+  border-color: var(--border-hover);
+}
+
+.dark-theme .no-type-selected {
+  background: var(--bg-tertiary);
+  border: 2px dashed var(--border-color);
+  color: var(--text-muted);
+}
+
+.dark-theme .wizard-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+}
+
+.dark-theme .wizard-step.active .step-indicator {
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  color: var(--text-inverse);
+  box-shadow: 0 4px 12px var(--focus-shadow);
+}
+
+.dark-theme .wizard-btn-primary {
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  color: var(--text-inverse);
+  box-shadow: 0 4px 12px var(--focus-shadow);
+}
+
+.dark-theme .wizard-btn-primary:hover:not(:disabled) {
+  box-shadow: 0 6px 20px var(--focus-shadow);
+}
+
+.dark-theme .progress-fill {
+  background: linear-gradient(90deg, var(--accent-color), #1d4ed8);
+}
+
+.dark-theme .form-input {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.dark-theme .form-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--focus-shadow);
+}
+
+.dark-theme .form-select {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.dark-theme .form-textarea {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.dark-theme .form-label {
+  color: var(--text-primary);
+}
+
+.dark-theme .form-help {
+  color: var(--text-secondary);
+}
+
+.dark-theme .error-message {
+  color: var(--error-color);
+}
+
+.dark-theme .summary-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.dark-theme .summary-title {
+  color: var(--text-primary);
+}
+
+.dark-theme .summary-title i {
+  color: var(--accent-color);
+}
+
+.dark-theme .summary-item {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dark-theme .summary-label {
+  color: var(--text-secondary);
+}
+
+.dark-theme .summary-value {
+  color: var(--text-primary);
+}
+
+.wizard-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark-theme .wizard-header::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+}
+
+.wizard-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 0;
+}
+
+.wizard-title-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.wizard-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+}
+
+.wizard-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.wizard-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-inverse);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 1.2;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.wizard-subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.wizard-close-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: var(--text-inverse);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+  margin-top: 0.5rem;
+}
+
+.wizard-close-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.wizard-close-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Wizard Steps */
+.wizard-steps {
+  display: flex;
+  justify-content: space-between;
+  padding: 1.5rem 2rem 1rem 2rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  gap: 1rem;
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .wizard-steps {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.wizard-step {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  position: relative;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.wizard-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 2px;
+  background: var(--border-primary);
+  transition: all 0.3s ease;
+}
+
+.wizard-step.completed::after {
+  background: var(--success-color);
+}
+
+.wizard-step.active {
+  background: var(--bg-hover);
+}
+
+.step-indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.wizard-step.active .step-indicator {
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  color: var(--text-inverse);
+  box-shadow: 0 4px 12px var(--focus-shadow);
+}
+
+.wizard-step.completed .step-indicator {
+  background: var(--success-color);
+  color: var(--text-inverse);
+}
+
+.step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex: 1;
+}
+
+.step-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.wizard-step.active .step-title {
+  color: var(--accent-color);
+}
+
+.wizard-step.completed .step-title {
+  color: var(--success-color);
+}
+
+.step-description {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.wizard-step.disabled .step-title,
+.wizard-step.disabled .step-description {
+  opacity: 0.5;
+}
+
+/* Wizard Body */
+.wizard-body {
+  padding: 2rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: var(--bg-primary);
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .wizard-body {
+  background: var(--bg-primary);
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 4px;
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+.wizard-form {
+  width: 100%;
+}
+
+.wizard-step-content {
+  animation: fadeIn 0.3s ease;
+}
+
+.step-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.step-header .step-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.step-header .step-description {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Summary Content */
+.summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.summary-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.summary-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.summary-title i {
+  color: var(--accent-color);
+  font-size: 1.25rem;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.summary-label {
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 150px;
+}
+
+.summary-value {
+  color: var(--text-secondary);
+  text-align: right;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Wizard Footer */
+.wizard-footer {
+  background: var(--bg-secondary);
+  padding: 1rem 2rem;
+  border-radius: 0 0 12px 12px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .wizard-footer {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
+}
+
+.wizard-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.progress-bar {
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-color), #1d4ed8);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.progress-text {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
+  font-weight: 500;
+}
+
+.wizard-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.wizard-btn {
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+}
+
+.wizard-btn-primary {
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  color: var(--text-inverse);
+  box-shadow: 0 4px 12px var(--focus-shadow);
+}
+
+.wizard-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--focus-shadow);
+}
+
+.wizard-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.wizard-btn-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.wizard-btn-success:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.wizard-btn-success:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.wizard-btn-secondary {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+
+.wizard-btn-secondary:hover:not(:disabled) {
+  background: var(--bg-secondary);
+  border-color: var(--border-hover);
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .wizard-btn-secondary {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+
+.dark-theme .wizard-btn-secondary:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  border-color: var(--border-hover);
+}
+
+.wizard-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wizard-btn-cancel {
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+}
+
+.wizard-btn-cancel:hover:not(:disabled) {
+  color: var(--error-color);
+  background: var(--error-bg);
+}
+
+.wizard-btn-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* No Type Selected Message */
+.no-type-selected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border-primary);
+  border-radius: 8px;
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .no-type-selected {
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border-primary);
+}
+
+.no-type-icon {
+  font-size: 3rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.no-type-text h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.no-type-text p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mejoras adicionales para modo oscuro */
+.dark-theme .wizard-header {
+  position: relative;
+}
+
+.dark-theme .wizard-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse at center, rgba(96, 165, 250, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.dark-theme .wizard-step.active {
+  background: rgba(96, 165, 250, 0.1);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.dark-theme .wizard-step.active .step-indicator {
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+}
+
+.dark-theme .wizard-btn-primary {
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+}
+
+.dark-theme .wizard-btn-primary:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(96, 165, 250, 0.4);
+}
+
+.dark-theme .progress-fill {
+  box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
+}
+
+/* Mejoras para elementos de formulario en modo oscuro */
+.dark-theme .form-input,
+.dark-theme .form-select,
+.dark-theme .form-textarea {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-primary);
+}
+
+.dark-theme .form-input:focus,
+.dark-theme .form-select:focus,
+.dark-theme .form-textarea:focus {
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px var(--focus-shadow);
+}
+
+.dark-theme .form-label {
+  color: var(--text-primary);
+}
+
+.dark-theme .form-help {
+  color: var(--text-secondary);
+}
+
+.dark-theme .error-message {
+  background: var(--error-bg);
+  color: var(--error-text);
+  border: 1px solid var(--error-light);
+}
+
+/* Mejoras para el resumen en modo oscuro */
+.dark-theme .summary-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+}
+
+.dark-theme .summary-title {
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-primary);
+}
+
+.dark-theme .summary-item {
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.dark-theme .summary-label {
+  color: var(--text-primary);
+}
+
+.dark-theme .summary-value {
+  color: var(--text-secondary);
+}
+
+/* Indicador de roles activos en el footer */
+.active-roles-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.indicator-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.active-roles-list {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.active-role-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.active-role-item.ROLE_SUPER_USER {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #f59e0b;
+}
+
+.active-role-item.ROLE_ADMIN {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #3b82f6;
+}
+
+.active-role-item.ROLE_COLLABORATOR {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #10b981;
+}
+
+.role-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .wizard-header {
+    padding: 1.5rem;
+    min-height: 100px;
+  }
+
+  .wizard-title {
+    font-size: 1.5rem;
+  }
+
+  .wizard-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .wizard-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .wizard-title-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .wizard-close-btn {
+    align-self: flex-end;
+    margin-top: 0;
+  }
+
+  .active-roles-indicator {
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  .active-roles-list {
+    gap: 0.25rem;
+  }
+
+  .active-role-item {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .wizard-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+
+  .wizard-title {
+    line-height: 1.3;
+  }
+
+  .wizard-subtitle {
+    line-height: 1.3;
+  }
+
+  .wizard-close-btn {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+
+  .active-role-item {
+    white-space: normal;
+    word-wrap: break-word;
+  }
+
+  .wizard-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .active-roles-indicator {
+    order: -1;
+    justify-content: center;
+    padding: 0.5rem;
+  }
+
+  .active-roles-list {
+    justify-content: center;
+  }
+
+  .wizard-steps {
+    flex-direction: column;
+    padding: 1.5rem;
+  }
+
+  .wizard-step:not(:last-child)::after {
+    display: none;
+  }
+
+  .wizard-body {
+    padding: 1.5rem;
+    max-height: 50vh;
+  }
+
+  .wizard-footer {
+    padding: 1rem 1.5rem;
+  }
+
+  .wizard-actions {
+    flex-direction: column-reverse;
+  }
+
+  .wizard-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .summary-item {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .summary-label {
+    min-width: unset;
+  }
+
+  .summary-value {
+    text-align: left;
+    justify-content: flex-start;
   }
 }
 </style>

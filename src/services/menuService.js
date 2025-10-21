@@ -107,6 +107,9 @@ const menuService = {
    */
   async updateMenu(id, menuData) {
     try {
+      console.log('🔄 [MENU SERVICE] Actualizando menú:', id)
+      console.log('🔄 [MENU SERVICE] Datos recibidos:', menuData)
+
       // Detectar si es una operación de movimiento (solo parentId y order)
       const isMoveOperation =
         Object.keys(menuData).length <= 2 && ('parentId' in menuData || 'order' in menuData)
@@ -114,6 +117,7 @@ const menuService = {
       let backendData
 
       if (isMoveOperation) {
+        console.log('🔄 [MENU SERVICE] Operación de movimiento detectada')
         // Para operaciones de movimiento, enviar solo los campos necesarios
         backendData = {}
 
@@ -125,6 +129,7 @@ const menuService = {
           backendData.order = menuData.order
         }
       } else {
+        console.log('🔄 [MENU SERVICE] Actualización completa detectada')
         // Para actualizaciones completas, procesar todos los campos
         // Asegurar que roles sea un array
         let rolesArray = []
@@ -153,13 +158,42 @@ const menuService = {
         }
       }
 
+      console.log('🔄 [MENU SERVICE] Datos a enviar al backend:', backendData)
+      console.log('🔄 [MENU SERVICE] URL de la petición:', `/menu/${id}`)
+
+      // Validar que no haya conflictos antes de enviar
+      if (!isMoveOperation) {
+        await this.validateMenuData(backendData, id)
+      }
+
       const response = await api.put(`/menu/${id}`, backendData)
+      console.log('✅ [MENU SERVICE] Menú actualizado exitosamente:', response.data)
       return response.data
     } catch (error) {
+      console.error('❌ [MENU SERVICE] Error actualizando menú:', error)
+      console.error('❌ [MENU SERVICE] Status:', error.response?.status)
+      console.error('❌ [MENU SERVICE] Response data:', error.response?.data)
+      console.error('❌ [MENU SERVICE] Request data:', backendData)
+
       if (error.response?.status === 422) {
-        const validationErrors =
-          error.response?.data?.errors || error.response?.data?.message || 'Datos inválidos'
-        throw new Error(`Error de validación: ${JSON.stringify(validationErrors)}`)
+        const responseData = error.response?.data
+        let errorMessage = 'Datos inválidos'
+
+        // Manejar diferentes tipos de errores 422
+        if (responseData?.detail?.includes('duplicate key')) {
+          if (responseData.detail.includes('constraint')) {
+            errorMessage = 'Ya existe un menú con estos datos. Verifica que la ruta y el orden no estén duplicados.'
+          } else {
+            errorMessage = 'Conflicto de datos: Ya existe un menú con la misma información.'
+          }
+        } else if (responseData?.detail) {
+          errorMessage = responseData.detail
+        } else if (responseData?.errors) {
+          errorMessage = JSON.stringify(responseData.errors)
+        }
+
+        console.error('❌ [MENU SERVICE] Errores de validación:', errorMessage)
+        throw new Error(`Error de validación: ${errorMessage}`)
       } else if (error.response?.status === 404) {
         throw new Error(`Menú no encontrado: ${error.response?.data?.message || 'No existe'}`)
       } else if (error.response?.status === 400) {
@@ -319,6 +353,59 @@ const menuService = {
       return response.data
     } catch (error) {
       throw new Error('Error al cargar la estructura de menús')
+    }
+  },
+
+  /**
+   * Validar datos del menú antes de actualizar
+   * @param {Object} menuData - Datos del menú a validar
+   * @param {number} excludeId - ID del menú a excluir de la validación
+   * @returns {Promise} Resultado de validación
+   */
+  async validateMenuData(menuData, excludeId = null) {
+    try {
+      console.log('🔍 [MENU SERVICE] Validando datos del menú:', menuData)
+
+      // Obtener todos los menús para verificar conflictos
+      const allMenus = await this.getAllMenus()
+
+      // Validar path si existe
+      if (menuData.path) {
+        const existingMenu = allMenus.find(menu =>
+          menu.path === menuData.path && menu.id !== excludeId
+        )
+
+        if (existingMenu) {
+          throw new Error(`La ruta "${menuData.path}" ya está en uso por el menú "${existingMenu.name}" (ID: ${existingMenu.id})`)
+        }
+      }
+
+      // Validar orden si existe
+      if (menuData.order !== undefined && menuData.parentId !== undefined) {
+        const existingOrder = allMenus.find(menu =>
+          menu.order === menuData.order &&
+          menu.parentId === menuData.parentId &&
+          menu.id !== excludeId
+        )
+
+        if (existingOrder) {
+          throw new Error(`Ya existe un menú con el orden ${menuData.order} en el mismo nivel`)
+        }
+      }
+
+      // Validar que el parentId existe si se especifica
+      if (menuData.parentId) {
+        const parentExists = allMenus.find(menu => menu.id === menuData.parentId)
+        if (!parentExists) {
+          throw new Error(`El menú padre con ID ${menuData.parentId} no existe`)
+        }
+      }
+
+      console.log('✅ [MENU SERVICE] Validación exitosa')
+      return { valid: true }
+    } catch (error) {
+      console.error('❌ [MENU SERVICE] Error en validación:', error.message)
+      throw error
     }
   },
 
