@@ -389,36 +389,16 @@
                     <h2 class="wizard-title">
                       {{ isEditing ? 'Editar Menú' : 'Crear Nuevo Menú' }}
                     </h2>
-                    <p class="wizard-subtitle">
-                      {{ isEditing ? 'Modifica la configuración del menú existente' : 'Completa los datos para crear un nuevo menú' }}
-                    </p>
-
-                    <!-- Indicador de roles activos al editar -->
-                    <div v-if="isEditing && menuForm.roles && menuForm.roles.length > 0" class="active-roles-indicator">
-                      <span class="indicator-label">Roles activos:</span>
-                      <div class="active-roles-list">
-                        <div
-                          v-for="role in getSelectedRolesInfo()"
-                          :key="role.value"
-                          class="active-role-item"
-                          :class="role.value"
-                        >
-                          <i :class="['mdi', role.icon]"></i>
-                          <span>{{ role.label }}</span>
-                          <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-badge">
-                            <i class="mdi mdi-crown"></i>
-                            Máximo
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <p class="wizard-subtitle">
+                    {{ isEditing ? 'Modifica la configuración del menú existente' : 'Completa los datos para crear un nuevo menú' }}
+                  </p>
                 </div>
-                <button @click="closeDialog" class="wizard-close-btn" :disabled="isSaving">
-                  <i class="mdi mdi-close"></i>
-                </button>
               </div>
+              <button @click="closeDialog" class="wizard-close-btn" :disabled="isSaving">
+                <i class="mdi mdi-close"></i>
+              </button>
             </div>
+          </div>
 
             <!-- Indicador de Pasos -->
             <div class="wizard-steps">
@@ -923,6 +903,26 @@
 
               <!-- Botones de navegación -->
               <div class="wizard-actions">
+                <!-- Indicador de roles activos al editar -->
+                <div v-if="isEditing && menuForm.roles && menuForm.roles.length > 0" class="active-roles-indicator">
+                  <span class="indicator-label">Roles activos:</span>
+                  <div class="active-roles-list">
+                    <div
+                      v-for="role in getSelectedRolesInfo()"
+                      :key="role.value"
+                      class="active-role-item"
+                      :class="role.value"
+                    >
+                      <i :class="['mdi', role.icon]"></i>
+                      <span>{{ role.label }}</span>
+                      <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-badge">
+                        <i class="mdi mdi-crown"></i>
+                        Máximo
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 <button
                   v-if="currentWizardStep > 1"
                   type="button"
@@ -1499,41 +1499,84 @@ const getRoleHierarchyLevel = (roleValue) => {
 }
 
 const closeDialog = () => {
+  console.log('📝 [MENU MANAGER] Cerrando diálogo...')
+  console.log('📝 [MENU MANAGER] Estado de edición:', isEditing.value)
+
   showDialog.value = false
   currentWizardStep.value = 1
   // Cerrar también el modal de progreso
   showProgressModal.value = false
 
   if (!isEditing.value) {
+    // Si no está editando, resetear completamente el formulario
     resetForm()
   } else {
-    // Solo resetear el estado de edición, mantener los datos del formulario
+    // Si está editando, solo resetear el estado de edición
     isEditing.value = false
+    editingMenuId.value = null
     validationErrors.value = {}
+    // No resetear el formulario para mantener los datos
   }
+
+  console.log('📝 [MENU MANAGER] Diálogo cerrado')
 }
 
 const editMenu = (menu) => {
+  console.log('📝 [MENU MANAGER] Editando menú:', menu.name)
+  console.log('📝 [MENU MANAGER] Datos originales:', menu)
+
   // Crear una copia del menú y asegurar que roles sea un array
   const menuCopy = { ...menu }
 
-  // Procesar roles para asegurar que sea un array
-  if (typeof menu.roles === 'string') {
-    // Si roles es un string, convertir a array
-    if (menu.roles.includes(',')) {
-      menuCopy.roles = menu.roles.split(',').map((role) => role.trim())
-    } else {
-      menuCopy.roles = [menu.roles]
+  // Procesar roles para asegurar que sea un array y manejar diferentes formatos
+  let processedRoles = []
+
+  if (menu.roles) {
+    if (typeof menu.roles === 'string') {
+      // Si roles es un string, convertir a array
+      if (menu.roles.includes(',')) {
+        processedRoles = menu.roles.split(',').map(role => role.trim())
+      } else {
+        processedRoles = [menu.roles]
+      }
+    } else if (Array.isArray(menu.roles)) {
+      processedRoles = [...menu.roles]
     }
-  } else if (!Array.isArray(menu.roles)) {
-    // Si no es array ni string, inicializar como array vacío
-    menuCopy.roles = []
+
+    // Asegurar que todos los roles tengan el prefijo ROLE_ si no lo tienen
+    processedRoles = processedRoles.map(role => {
+      if (typeof role === 'string' && !role.startsWith('ROLE_')) {
+        return `ROLE_${role}`
+      }
+      return role
+    })
   }
 
-  menuForm.value = menuCopy
+  console.log('📝 [MENU MANAGER] Roles procesados:', processedRoles)
+
+  // Procesar el path para mostrar solo la parte editable
+  let editablePath = menu.path
+  if (menu.parentId) {
+    const parentMenu = findMenuById(menu.parentId)
+    if (parentMenu) {
+      editablePath = extractEditablePath(menu.path, parentMenu.path)
+    }
+  }
+
+  console.log('📝 [MENU MANAGER] Path editable:', editablePath)
+
+  menuForm.value = {
+    ...menuCopy,
+    roles: processedRoles,
+    path: editablePath
+  }
+
   editingMenuId.value = menu.id
   isEditing.value = true
+  currentWizardStep.value = 1 // Resetear al primer paso
   showDialog.value = true
+
+  console.log('📝 [MENU MANAGER] Formulario cargado:', menuForm.value)
 }
 
 const deleteMenu = async (menuData) => {
@@ -3701,16 +3744,14 @@ onMounted(() => {
 
 .dialog-content {
   background: var(--bg-primary);
-  border-radius: 20px;
+  border-radius: 16px;
   width: 100%;
-  max-width: 950px;
-  max-height: 95vh;
+  max-width: 900px;
+  max-height: 90vh;
   overflow: hidden;
-  box-shadow:
-    0 25px 80px rgba(0, 0, 0, 0.25),
-    0 0 0 1px var(--border-color);
+  box-shadow: 0 20px 60px var(--shadow-color);
   animation: slideIn 0.3s ease-out;
-  border: 1px solid var(--border-primary);
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
 }
@@ -6181,7 +6222,7 @@ button:disabled {
 .wizard-steps {
   display: flex;
   justify-content: space-between;
-  padding: 2rem 2rem 1.5rem 2rem;
+  padding: 1.5rem 2rem 1rem 2rem;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
   gap: 1rem;
@@ -6196,8 +6237,8 @@ button:disabled {
 .wizard-step {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 0.75rem;
+  padding: 0.75rem;
   border-radius: 8px;
   transition: all 0.3s ease;
   flex: 1;
@@ -6217,8 +6258,8 @@ button:disabled {
 }
 
 .step-indicator {
-  width: 2rem;
-  height: 2rem;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--bg-tertiary);
   color: var(--text-muted);
@@ -6229,6 +6270,7 @@ button:disabled {
   font-size: 0.875rem;
   transition: all 0.3s ease;
   border: 2px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .wizard-step.active .step-indicator {
@@ -6247,7 +6289,7 @@ button:disabled {
 .step-content {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.125rem;
   flex: 1;
 }
 
@@ -6261,7 +6303,7 @@ button:disabled {
 .step-description {
   font-size: 0.75rem;
   color: var(--text-secondary);
-  line-height: 1.3;
+  line-height: 1.2;
   transition: color 0.3s ease;
 }
 
@@ -6422,12 +6464,12 @@ button:disabled {
 /* Footer del wizard */
 .wizard-footer {
   background: var(--bg-secondary);
-  padding: 1.5rem 2rem;
+  padding: 1rem 2rem;
   border-radius: 0 0 12px 12px;
   border-top: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 /* Mejoras para modo oscuro */
@@ -6438,44 +6480,45 @@ button:disabled {
 
 .wizard-progress {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex: 1;
+  flex-direction: column;
+  gap: 0.375rem;
 }
 
 .progress-bar {
-  flex: 1;
-  height: 6px;
-  background: var(--border-color);
-  border-radius: 3px;
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  background: linear-gradient(90deg, var(--accent-color), #1d4ed8);
   transition: width 0.3s ease;
+  border-radius: 4px;
 }
 
 .progress-text {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
-  font-weight: 600;
-  white-space: nowrap;
+  text-align: center;
+  font-weight: 500;
 }
 
 .wizard-actions {
   display: flex;
-  gap: 0.75rem;
+  justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .wizard-btn {
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   border: none;
   border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -6747,60 +6790,137 @@ button:disabled {
   font-weight: 600;
 }
 
-/* Indicador de roles activos en el header */
+/* Indicador de roles activos en el footer */
 .active-roles-indicator {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-tertiary);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  max-width: 100%;
-  overflow: hidden;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .indicator-label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  display: block;
-  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .active-roles-list {
   display: flex;
-  flex-wrap: wrap;
   gap: 0.5rem;
-  max-width: 100%;
+  flex-wrap: wrap;
 }
 
 .active-role-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .active-role-item.ROLE_SUPER_USER {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3));
-  border-color: rgba(245, 158, 11, 0.5);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #f59e0b;
 }
 
 .active-role-item.ROLE_ADMIN {
-  background: rgba(59, 130, 246, 0.3);
-  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #3b82f6;
 }
 
 .active-role-item.ROLE_COLLABORATOR {
-  background: rgba(16, 185, 129, 0.3);
-  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #10b981;
+}
+
+.role-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .wizard-header {
+    padding: 1.5rem;
+    min-height: 120px;
+  }
+
+  .wizard-title {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+
+  .wizard-subtitle {
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+
+  .wizard-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .wizard-title-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .wizard-close-btn {
+    align-self: flex-end;
+    margin-top: 0;
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+
+  .wizard-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+
+  .wizard-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .active-roles-indicator {
+    order: -1;
+    justify-content: center;
+    padding: 0.5rem;
+  }
+
+  .active-roles-list {
+    justify-content: center;
+  }
+
+  .active-role-item {
+    white-space: normal;
+    word-wrap: break-word;
+  }
 }
 
 /* Resumen de roles en el paso de resumen */

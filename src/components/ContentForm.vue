@@ -15,26 +15,6 @@
               <p class="wizard-subtitle">
                 {{ isEditing ? 'Modifica la información del documento' : 'Completa los datos para crear un nuevo documento' }}
               </p>
-
-              <!-- Indicador de roles activos al editar -->
-              <div v-if="isEditing && form.roles && form.roles.length > 0" class="active-roles-indicator">
-                <span class="indicator-label">Roles activos:</span>
-                <div class="active-roles-list">
-                  <div
-                    v-for="role in getSelectedRolesInfo()"
-                    :key="role.value"
-                    class="active-role-item"
-                    :class="role.value"
-                  >
-                    <i :class="['mdi', role.icon]"></i>
-                    <span>{{ role.label }}</span>
-                    <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-badge">
-                      <i class="mdi mdi-crown"></i>
-                      Máximo
-                    </span>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
           <button @click="handleClose" class="wizard-close-btn" :disabled="isSaving">
@@ -206,6 +186,144 @@
                   </button>
                 </div>
 
+                <!-- Toolbar de Markdown -->
+                <div v-if="activeTab === 'edit'" class="markdown-toolbar">
+                  <div class="toolbar-group">
+                    <button
+                      type="button"
+                      @click="insertMarkdown('bold')"
+                      class="toolbar-btn"
+                      title="Negrita"
+                    >
+                      <i class="mdi mdi-format-bold"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('italic')"
+                      class="toolbar-btn"
+                      title="Cursiva"
+                    >
+                      <i class="mdi mdi-format-italic"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('strikethrough')"
+                      class="toolbar-btn"
+                      title="Tachado"
+                    >
+                      <i class="mdi mdi-format-strikethrough"></i>
+                    </button>
+                  </div>
+
+                  <div class="toolbar-separator"></div>
+
+                  <div class="toolbar-group">
+                    <button
+                      type="button"
+                      @click="insertMarkdown('h1')"
+                      class="toolbar-btn"
+                      title="Título 1"
+                    >
+                      <i class="mdi mdi-format-header-1"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('h2')"
+                      class="toolbar-btn"
+                      title="Título 2"
+                    >
+                      <i class="mdi mdi-format-header-2"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('h3')"
+                      class="toolbar-btn"
+                      title="Título 3"
+                    >
+                      <i class="mdi mdi-format-header-3"></i>
+                    </button>
+                  </div>
+
+                  <div class="toolbar-separator"></div>
+
+                  <div class="toolbar-group">
+                    <button
+                      type="button"
+                      @click="insertMarkdown('link')"
+                      class="toolbar-btn"
+                      title="Enlace"
+                    >
+                      <i class="mdi mdi-link"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('image')"
+                      class="toolbar-btn"
+                      title="Imagen"
+                    >
+                      <i class="mdi mdi-image"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('code')"
+                      class="toolbar-btn"
+                      title="Código"
+                    >
+                      <i class="mdi mdi-code-tags"></i>
+                    </button>
+                  </div>
+
+                  <div class="toolbar-separator"></div>
+
+                  <div class="toolbar-group">
+                    <button
+                      type="button"
+                      @click="insertMarkdown('list')"
+                      class="toolbar-btn"
+                      title="Lista"
+                    >
+                      <i class="mdi mdi-format-list-bulleted"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('orderedList')"
+                      class="toolbar-btn"
+                      title="Lista numerada"
+                    >
+                      <i class="mdi mdi-format-list-numbered"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('quote')"
+                      class="toolbar-btn"
+                      title="Cita"
+                    >
+                      <i class="mdi mdi-format-quote-close"></i>
+                    </button>
+                  </div>
+
+                  <div class="toolbar-separator"></div>
+
+                  <div class="toolbar-group">
+                    <button
+                      type="button"
+                      @click="insertMarkdown('table')"
+                      class="toolbar-btn"
+                      title="Tabla"
+                    >
+                      <i class="mdi mdi-table"></i>
+                    </button>
+                    <button
+                      type="button"
+                      @click="insertMarkdown('horizontalRule')"
+                      class="toolbar-btn"
+                      title="Línea horizontal"
+                    >
+                      <i class="mdi mdi-minus"></i>
+                    </button>
+                  </div>
+                </div>
+
                 <div class="editor-content" :class="{ fullscreen: isFullscreen }">
                   <textarea
                     v-if="activeTab === 'edit'"
@@ -221,7 +339,7 @@
                   <div
                     v-else
                     class="markdown-preview"
-                    v-html="getMarkdownPreview()"
+                    v-html="renderedMarkdown"
                   ></div>
                 </div>
 
@@ -452,6 +570,26 @@
         </div>
 
         <div class="wizard-actions">
+          <!-- Indicador de roles activos al editar -->
+          <div v-if="isEditing && form.roles && form.roles.length > 0" class="active-roles-indicator">
+            <span class="indicator-label">Roles activos:</span>
+            <div class="active-roles-list">
+              <div
+                v-for="role in getSelectedRolesInfo()"
+                :key="role.value"
+                class="active-role-item"
+                :class="role.value"
+              >
+                <i :class="['mdi', role.icon]"></i>
+                <span>{{ role.label }}</span>
+                <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-badge">
+                  <i class="mdi mdi-crown"></i>
+                  Máximo
+                </span>
+              </div>
+            </div>
+          </div>
+
           <button
             v-if="currentWizardStep > 1"
             type="button"
@@ -585,7 +723,7 @@ const renderedMarkdown = computed(() => {
 
   if (!form.value.content || form.value.content.trim() === '') {
     console.log('📝 [MARKDOWN] No hay contenido para renderizar')
-    return ''
+    return '<div class="markdown-empty"><p>No hay contenido para mostrar</p></div>'
   }
 
   try {
@@ -596,7 +734,9 @@ const renderedMarkdown = computed(() => {
       breaks: true,
       gfm: true,
       smartLists: true,
-      smartypants: true
+      smartypants: true,
+      sanitize: false,
+      silent: false
     }
 
     // Usar la API correcta de marked v16
@@ -756,7 +896,10 @@ const validateField = (field) => {
 const validateForm = () => {
   validateField('name')
   validateField('type')
-  validateField('slug')
+  // No validar slug en modo edición ya que se genera automáticamente
+  if (!isEditing.value) {
+    validateField('slug')
+  }
   validateField('content')
   validateField('roles')
 }
@@ -804,24 +947,124 @@ const toggleFullscreen = () => {
   isFullscreen.value = !isFullscreen.value
 }
 
-const insertMarkdown = (before, after = '') => {
-  const textarea = document.querySelector('.markdown-editor')
+// Funciones del toolbar de Markdown
+const insertMarkdown = (type) => {
+  const textarea = document.querySelector('.markdown-textarea')
   if (!textarea) return
 
   const start = textarea.selectionStart
   const end = textarea.selectionEnd
-  const selectedText = form.value.content.substring(start, end)
+  const selectedText = textarea.value.substring(start, end)
+  const beforeText = textarea.value.substring(0, start)
+  const afterText = textarea.value.substring(end)
 
-  const newText = before + selectedText + after
-  const newContent = form.value.content.substring(0, start) + newText + form.value.content.substring(end)
+  let before = ''
+  let after = ''
+  let placeholder = ''
 
-  form.value.content = newContent
+  switch (type) {
+    case 'bold':
+      before = '**'
+      after = '**'
+      placeholder = 'texto en negrita'
+      break
+    case 'italic':
+      before = '*'
+      after = '*'
+      placeholder = 'texto en cursiva'
+      break
+    case 'strikethrough':
+      before = '~~'
+      after = '~~'
+      placeholder = 'texto tachado'
+      break
+    case 'h1':
+      before = '# '
+      after = ''
+      placeholder = 'Título 1'
+      break
+    case 'h2':
+      before = '## '
+      after = ''
+      placeholder = 'Título 2'
+      break
+    case 'h3':
+      before = '### '
+      after = ''
+      placeholder = 'Título 3'
+      break
+    case 'link':
+      const url = prompt('Ingresa la URL del enlace:')
+      if (url) {
+        before = '['
+        after = `](${url})`
+        placeholder = 'texto del enlace'
+      } else {
+        return
+      }
+      break
+    case 'image':
+      const imageUrl = prompt('Ingresa la URL de la imagen:')
+      if (imageUrl) {
+        before = '!['
+        after = `](${imageUrl})`
+        placeholder = 'texto alternativo'
+      } else {
+        return
+      }
+      break
+    case 'code':
+      before = '`'
+      after = '`'
+      placeholder = 'código'
+      break
+    case 'list':
+      before = '- '
+      after = ''
+      placeholder = 'elemento de lista'
+      break
+    case 'orderedList':
+      before = '1. '
+      after = ''
+      placeholder = 'elemento de lista numerada'
+      break
+    case 'quote':
+      before = '> '
+      after = ''
+      placeholder = 'texto de cita'
+      break
+    case 'table':
+      const tableMarkdown = `| Columna 1 | Columna 2 | Columna 3 |
+|-----------|-----------|-----------|
+| Fila 1    | Fila 1    | Fila 1    |
+| Fila 2    | Fila 2    | Fila 2    |`
+      before = tableMarkdown + '\n\n'
+      after = ''
+      placeholder = ''
+      break
+    case 'horizontalRule':
+      before = '---\n'
+      after = ''
+      placeholder = ''
+      break
+    default:
+      return
+  }
 
-  // Restaurar posición del cursor
-  nextTick(() => {
-    textarea.focus()
-    textarea.setSelectionRange(start + before.length, start + before.length + selectedText.length)
-  })
+  // Si no hay texto seleccionado, usar placeholder
+  const textToInsert = selectedText || placeholder
+
+  const newText = beforeText + before + textToInsert + after + afterText
+  textarea.value = newText
+
+  // Restaurar la selección
+  const newStart = start + before.length
+  const newEnd = newStart + textToInsert.length
+  textarea.setSelectionRange(newStart, newEnd)
+  textarea.focus()
+
+  // Actualizar el modelo
+  form.value.content = textarea.value
 }
 
 // Funciones auxiliares para URL y PDF
@@ -1001,24 +1244,43 @@ const loadDocumentData = () => {
     console.log('📄 [CONTENT FORM] Documento cargado para edición:', props.document?.name || 'Sin nombre')
     console.log('📄 [CONTENT FORM] Roles del documento:', props.document.roles)
 
-    // Limpiar roles para remover prefijo ROLE_ si existe
-    const cleanRoles = (props.document.roles || []).map(role => {
-      if (typeof role === 'string' && role.startsWith('ROLE_')) {
-        return role.substring(5) // Remover 'ROLE_' (5 caracteres)
-      }
-      return role
-    })
+    // Procesar roles para asegurar que sea un array y manejar diferentes formatos
+    let cleanRoles = []
 
-    console.log('📄 [CONTENT FORM] Roles limpios:', cleanRoles)
+    if (props.document.roles) {
+      if (typeof props.document.roles === 'string') {
+        // Si roles es un string, convertir a array
+        if (props.document.roles.includes(',')) {
+          cleanRoles = props.document.roles.split(',').map(role => role.trim())
+        } else {
+          cleanRoles = [props.document.roles]
+        }
+      } else if (Array.isArray(props.document.roles)) {
+        cleanRoles = [...props.document.roles]
+      }
+
+      // Limpiar prefijos ROLE_ si existen
+      cleanRoles = cleanRoles.map(role => {
+        if (typeof role === 'string' && role.startsWith('ROLE_')) {
+          return role.substring(5) // Remover 'ROLE_' (5 caracteres)
+        }
+        return role
+      })
+    }
+
+    console.log('📄 [CONTENT FORM] Roles procesados:', cleanRoles)
 
     form.value = {
       name: props.document.name || '',
       type: props.document.type || '',
-      slug: '', // Se genera automáticamente
+      slug: '', // Se genera automáticamente en edición
       content: props.document.content || '',
       icon: props.document.icon || '',
       roles: cleanRoles
     }
+
+    // Resetear el paso del wizard a 1
+    currentWizardStep.value = 1
   } else {
     resetForm()
   }
@@ -1265,8 +1527,12 @@ const handleSubmit = async () => {
 
 const handleClose = () => {
   console.log('📄 [CONTENT FORM] Cerrando formulario...')
+  console.log('📄 [CONTENT FORM] Estado de edición:', isEditing.value)
+
   resetForm()
   emit('close')
+
+  console.log('📄 [CONTENT FORM] Formulario cerrado')
 }
 
 // Watchers
@@ -1698,6 +1964,99 @@ const selectSlugAlternative = (alternative) => {
   border-bottom: 1px solid #dee2e6;
 }
 
+/* Markdown Toolbar */
+.markdown-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 24px;
+  background: var(--border-color);
+  margin: 0 0.5rem;
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+.toolbar-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.toolbar-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px var(--shadow-color);
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.toolbar-btn:disabled:hover {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Dark mode para toolbar */
+.dark-theme .markdown-toolbar {
+  background: var(--bg-tertiary);
+  border-bottom-color: var(--border-primary);
+}
+
+.dark-theme .toolbar-separator {
+  background: var(--border-primary);
+}
+
+.dark-theme .toolbar-btn {
+  background: var(--bg-primary);
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
+}
+
+.dark-theme .toolbar-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .toolbar-btn:active {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
 .editor-tabs {
   display: flex;
   gap: 0.5rem;
@@ -1771,6 +2130,320 @@ const selectSlugAlternative = (alternative) => {
   z-index: 9999;
   background: white;
   border-radius: 0;
+}
+
+/* Markdown Textarea */
+.markdown-textarea {
+  width: 100%;
+  min-height: 400px;
+  padding: 1.5rem;
+  border: none;
+  outline: none;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  resize: vertical;
+  border-radius: 0;
+}
+
+.markdown-textarea:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--accent-color);
+}
+
+.markdown-textarea::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.markdown-textarea.error {
+  border-left: 4px solid var(--error-color);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+/* Dark mode para textarea */
+.dark-theme .markdown-textarea {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark-theme .markdown-textarea:focus {
+  box-shadow: inset 0 0 0 2px var(--accent-color);
+}
+
+.dark-theme .markdown-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.dark-theme .markdown-textarea.error {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Markdown Preview */
+.markdown-preview {
+  width: 100%;
+  min-height: 400px;
+  padding: 1.5rem;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: none;
+  outline: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-y: auto;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.markdown-preview h1 {
+  font-size: 2rem;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.markdown-preview h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.25rem;
+}
+
+.markdown-preview h3 {
+  font-size: 1.25rem;
+}
+
+.markdown-preview p {
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.markdown-preview strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.markdown-preview em {
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.markdown-preview code {
+  background: var(--bg-tertiary);
+  color: var(--accent-color);
+  padding: 0.125rem 0.25rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875em;
+}
+
+.markdown-preview pre {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.markdown-preview pre code {
+  background: none;
+  padding: 0;
+  color: var(--text-primary);
+}
+
+.markdown-preview blockquote {
+  border-left: 4px solid var(--accent-color);
+  background: var(--bg-secondary);
+  margin: 1rem 0;
+  padding: 1rem 1.5rem;
+  border-radius: 0 8px 8px 0;
+  color: var(--text-secondary);
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.markdown-preview li {
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.markdown-preview a {
+  color: var(--accent-color);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.markdown-preview a:hover {
+  border-bottom-color: var(--accent-color);
+}
+
+.markdown-preview img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  margin: 1rem 0;
+}
+
+.markdown-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.markdown-preview th,
+.markdown-preview td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.markdown-preview th {
+  background: var(--bg-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.markdown-preview td {
+  color: var(--text-primary);
+}
+
+.markdown-preview hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+  margin: 2rem 0;
+}
+
+/* Dark mode para preview */
+.dark-theme .markdown-preview {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark-theme .markdown-preview h1,
+.dark-theme .markdown-preview h2,
+.dark-theme .markdown-preview h3,
+.dark-theme .markdown-preview h4,
+.dark-theme .markdown-preview h5,
+.dark-theme .markdown-preview h6 {
+  color: var(--text-primary);
+}
+
+.dark-theme .markdown-preview h1 {
+  border-bottom-color: var(--border-primary);
+}
+
+.dark-theme .markdown-preview h2 {
+  border-bottom-color: var(--border-primary);
+}
+
+.dark-theme .markdown-preview code {
+  background: var(--bg-tertiary);
+  color: var(--accent-color);
+}
+
+.dark-theme .markdown-preview pre {
+  background: var(--bg-tertiary);
+  border-color: var(--border-primary);
+}
+
+.dark-theme .markdown-preview blockquote {
+  background: var(--bg-secondary);
+  border-left-color: var(--accent-color);
+  color: var(--text-secondary);
+}
+
+.dark-theme .markdown-preview table {
+  background: var(--bg-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .markdown-preview th {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.dark-theme .markdown-preview th,
+.dark-theme .markdown-preview td {
+  border-bottom-color: var(--border-primary);
+}
+
+.dark-theme .markdown-preview img {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .markdown-preview hr {
+  background: linear-gradient(90deg, transparent, var(--border-primary), transparent);
+}
+
+/* Estados especiales del preview */
+.markdown-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-muted);
+  font-style: italic;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin: 1rem;
+}
+
+.markdown-error {
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--error-color);
+  border-radius: 8px;
+  color: var(--error-color);
+  margin: 1rem;
+}
+
+.markdown-error pre {
+  background: rgba(239, 68, 68, 0.05);
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  overflow-x: auto;
+}
+
+/* Dark mode para estados especiales */
+.dark-theme .markdown-empty {
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+}
+
+.dark-theme .markdown-error {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--error-color);
+  color: var(--error-color);
+}
+
+.dark-theme .markdown-error pre {
+  background: rgba(239, 68, 68, 0.1);
 }
 
 /* Editor Panel */
@@ -2922,16 +3595,187 @@ const selectSlugAlternative = (alternative) => {
   padding: 2rem;
   border-radius: 12px 12px 0 0;
   position: relative;
-  min-height: 120px;
+  min-height: 140px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  overflow: hidden;
 }
 
 /* Mejoras para modo oscuro */
+.dark-theme .modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+}
+
+.dark-theme .modal-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
 .dark-theme .wizard-header {
   background: #245FE7;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .wizard-header::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+}
+
+.dark-theme .wizard-steps {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.dark-theme .wizard-step.active {
+  background: var(--bg-hover);
+}
+
+.dark-theme .wizard-step.active .step-indicator {
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  color: var(--text-inverse);
+  box-shadow: 0 4px 12px var(--focus-shadow);
+}
+
+.dark-theme .wizard-step.active .step-title {
+  color: var(--accent-color);
+}
+
+.dark-theme .wizard-body {
+  background: var(--bg-primary);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+.dark-theme .wizard-footer {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
+}
+
+.dark-theme .wizard-btn-secondary {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+
+.dark-theme .wizard-btn-secondary:hover:not(:disabled) {
+  background: var(--bg-secondary);
+  border-color: var(--border-hover);
+}
+
+.dark-theme .no-type-selected {
+  background: var(--bg-tertiary);
+  border: 2px dashed var(--border-color);
+  color: var(--text-muted);
+}
+
+.dark-theme .wizard-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+}
+
+.dark-theme .wizard-step.active .step-indicator {
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  color: var(--text-inverse);
+  box-shadow: 0 4px 12px var(--focus-shadow);
+}
+
+.dark-theme .wizard-btn-primary {
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  color: var(--text-inverse);
+  box-shadow: 0 4px 12px var(--focus-shadow);
+}
+
+.dark-theme .wizard-btn-primary:hover:not(:disabled) {
+  box-shadow: 0 6px 20px var(--focus-shadow);
+}
+
+.dark-theme .progress-fill {
+  background: linear-gradient(90deg, var(--accent-color), #1d4ed8);
+}
+
+.dark-theme .form-input {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.dark-theme .form-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--focus-shadow);
+}
+
+.dark-theme .form-select {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.dark-theme .form-textarea {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.dark-theme .form-label {
+  color: var(--text-primary);
+}
+
+.dark-theme .form-help {
+  color: var(--text-secondary);
+}
+
+.dark-theme .error-message {
+  color: var(--error-color);
+}
+
+.dark-theme .summary-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.dark-theme .summary-title {
+  color: var(--text-primary);
+}
+
+.dark-theme .summary-title i {
+  color: var(--accent-color);
+}
+
+.dark-theme .summary-item {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dark-theme .summary-label {
+  color: var(--text-secondary);
+}
+
+.dark-theme .summary-value {
+  color: var(--text-primary);
 }
 
 .wizard-header::before {
@@ -2958,13 +3802,15 @@ const selectSlugAlternative = (alternative) => {
   position: relative;
   z-index: 1;
   width: 100%;
+  min-height: 0;
 }
 
 .wizard-title-section {
   display: flex;
-  align-items: center;
-  gap: 1.5rem;
+  align-items: flex-start;
+  gap: 1rem;
   flex: 1;
+  min-width: 0;
 }
 
 .wizard-icon {
@@ -2977,10 +3823,12 @@ const selectSlugAlternative = (alternative) => {
   justify-content: center;
   font-size: 28px;
   backdrop-filter: blur(10px);
+  flex-shrink: 0;
 }
 
 .wizard-text {
   flex: 1;
+  min-width: 0;
 }
 
 .wizard-title {
@@ -2989,6 +3837,9 @@ const selectSlugAlternative = (alternative) => {
   font-weight: 700;
   color: var(--text-inverse);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 1.2;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .wizard-subtitle {
@@ -2996,6 +3847,9 @@ const selectSlugAlternative = (alternative) => {
   font-size: 0.95rem;
   color: rgba(255, 255, 255, 0.9);
   font-weight: 400;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .wizard-close-btn {
@@ -3031,7 +3885,7 @@ const selectSlugAlternative = (alternative) => {
 .wizard-steps {
   display: flex;
   justify-content: space-between;
-  padding: 2rem 2rem 1.5rem 2rem;
+  padding: 1.5rem 2rem 1rem 2rem;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
   gap: 1rem;
@@ -3046,10 +3900,10 @@ const selectSlugAlternative = (alternative) => {
 .wizard-step {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   flex: 1;
   position: relative;
-  padding: 1rem;
+  padding: 0.75rem;
   border-radius: 8px;
   transition: all 0.3s ease;
 }
@@ -3075,8 +3929,8 @@ const selectSlugAlternative = (alternative) => {
 }
 
 .step-indicator {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--bg-tertiary);
   color: var(--text-muted);
@@ -3084,7 +3938,7 @@ const selectSlugAlternative = (alternative) => {
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.875rem;
   transition: all 0.3s ease;
   flex-shrink: 0;
 }
@@ -3103,13 +3957,13 @@ const selectSlugAlternative = (alternative) => {
 .step-content {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.125rem;
   flex: 1;
 }
 
 .step-title {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   color: var(--text-primary);
   margin: 0;
 }
@@ -3123,7 +3977,7 @@ const selectSlugAlternative = (alternative) => {
 }
 
 .step-description {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
 }
 
@@ -3264,12 +4118,12 @@ const selectSlugAlternative = (alternative) => {
 /* Wizard Footer */
 .wizard-footer {
   background: var(--bg-secondary);
-  padding: 1.5rem 2rem;
+  padding: 1rem 2rem;
   border-radius: 0 0 12px 12px;
   border-top: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 /* Mejoras para modo oscuro */
@@ -3281,7 +4135,7 @@ const selectSlugAlternative = (alternative) => {
 .wizard-progress {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
 }
 
 .progress-bar {
@@ -3299,7 +4153,7 @@ const selectSlugAlternative = (alternative) => {
 }
 
 .progress-text {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   text-align: center;
   font-weight: 500;
@@ -3307,16 +4161,17 @@ const selectSlugAlternative = (alternative) => {
 
 .wizard-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
 .wizard-btn {
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   border-radius: 8px;
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -3541,69 +4396,71 @@ const selectSlugAlternative = (alternative) => {
   color: var(--text-secondary);
 }
 
-/* Indicador de roles activos en el header */
+/* Indicador de roles activos en el footer */
 .active-roles-indicator {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-tertiary);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  max-width: 100%;
-  overflow: hidden;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .indicator-label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  display: block;
-  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .active-roles-list {
   display: flex;
-  flex-wrap: wrap;
   gap: 0.5rem;
-  max-width: 100%;
+  flex-wrap: wrap;
 }
 
 .active-role-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .active-role-item.ROLE_SUPER_USER {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3));
-  border-color: rgba(245, 158, 11, 0.5);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #f59e0b;
 }
 
 .active-role-item.ROLE_ADMIN {
-  background: rgba(59, 130, 246, 0.3);
-  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #3b82f6;
 }
 
 .active-role-item.ROLE_COLLABORATOR {
-  background: rgba(16, 185, 129, 0.3);
-  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #10b981;
 }
 
 .role-badge {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: #f59e0b;
 }
 
 /* Responsive Adjustments */
@@ -3657,6 +4514,41 @@ const selectSlugAlternative = (alternative) => {
     width: 48px;
     height: 48px;
     font-size: 24px;
+  }
+
+  .wizard-title {
+    line-height: 1.3;
+  }
+
+  .wizard-subtitle {
+    line-height: 1.3;
+  }
+
+  .wizard-close-btn {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+
+  .active-role-item {
+    white-space: normal;
+    word-wrap: break-word;
+  }
+
+  .wizard-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .active-roles-indicator {
+    order: -1;
+    justify-content: center;
+    padding: 0.5rem;
+  }
+
+  .active-roles-list {
+    justify-content: center;
   }
 
   .wizard-steps {
