@@ -375,15 +375,29 @@ export default {
   flex-direction: column;
   height: 100%;
   max-height: 600px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: white;
+  background: var(--bg-primary);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .icon-selector {
+  border: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .icon-selector-header {
   padding: 16px;
-  border-bottom: 1px solid #e0e0e0;
-  background: #f8f9fa;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .icon-selector-header {
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
 }
 
 .search-container {
@@ -394,16 +408,30 @@ export default {
 .icon-search {
   width: 100%;
   padding: 10px 40px 10px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .icon-search:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--focus-shadow);
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .icon-search {
+  border: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark-theme .icon-search:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
 }
 
 .search-icon {
@@ -411,18 +439,43 @@ export default {
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #666;
+  color: var(--text-muted);
   pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .search-icon {
+  color: var(--text-muted);
 }
 
 .category-select {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 14px;
-  background: white;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   outline: none;
+  transition: all 0.2s ease;
+}
+
+.category-select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--focus-shadow);
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .category-select {
+  border: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark-theme .category-select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
 }
 
 .icon-grid-container {
@@ -431,6 +484,26 @@ export default {
   overflow-x: hidden;
   position: relative;
   width: 100%;
+  background: var(--bg-primary);
+}
+
+/* Scrollbar personalizado para modo oscuro */
+.dark-theme .icon-grid-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dark-theme .icon-grid-container::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+.dark-theme .icon-grid-container::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 4px;
+}
+
+.dark-theme .icon-grid-container::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 .loading-state,
@@ -440,18 +513,33 @@ export default {
   align-items: center;
   justify-content: center;
   height: 200px;
-  color: #666;
+  color: var(--text-muted);
 }
 
 .loading-state i {
   font-size: 24px;
   margin-bottom: 8px;
+  color: var(--accent-color);
 }
 
 .empty-state i {
   font-size: 48px;
   margin-bottom: 16px;
-  color: #ccc;
+  color: var(--text-muted);
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .loading-state,
+.dark-theme .empty-state {
+  color: var(--text-muted);
+}
+
+.dark-theme .loading-state i {
+  color: var(--accent-color);
+}
+
+.dark-theme .empty-state i {
+  color: var(--text-muted);
 }
 
 .icon-grid {
@@ -471,50 +559,149 @@ export default {
   border: 2px solid transparent;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
-  background: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--bg-primary);
   min-height: 72px;
   width: 100%;
   box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+
+.icon-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(96, 165, 250, 0.05));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .icon-item:hover {
-  background: #f8f9fa;
-  border-color: #e0e0e0;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--bg-secondary);
+  border-color: var(--border-hover);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.icon-item:hover::before {
+  opacity: 1;
 }
 
 .icon-item.selected {
-  background: #e3f2fd;
-  border-color: #2196f3;
-  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+  background: var(--accent-bg);
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 12px var(--focus-shadow);
+  transform: translateY(-1px);
+}
+
+.icon-item.selected::before {
+  opacity: 1;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(96, 165, 250, 0.1));
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .icon-item {
+  background: var(--bg-primary);
+  border: 2px solid transparent;
+}
+
+.dark-theme .icon-item:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-hover);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .icon-item.selected {
+  background: rgba(96, 165, 250, 0.15);
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
 }
 
 .icon-preview {
   font-size: 24px;
   margin-bottom: 4px;
-  color: #333;
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.icon-item:hover .icon-preview {
+  color: var(--accent-color);
+  transform: scale(1.1);
+}
+
+.icon-item.selected .icon-preview {
+  color: var(--accent-color);
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .icon-preview {
+  color: var(--text-primary);
+}
+
+.dark-theme .icon-item:hover .icon-preview {
+  color: var(--accent-color);
+}
+
+.dark-theme .icon-item.selected .icon-preview {
+  color: var(--accent-color);
 }
 
 .icon-name {
   font-size: 10px;
   text-align: center;
-  color: #666;
+  color: var(--text-secondary);
   line-height: 1.2;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.icon-item:hover .icon-name {
+  color: var(--text-primary);
+}
+
+.icon-item.selected .icon-name {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .icon-name {
+  color: var(--text-secondary);
+}
+
+.dark-theme .icon-item:hover .icon-name {
+  color: var(--text-primary);
+}
+
+.dark-theme .icon-item.selected .icon-name {
+  color: var(--text-primary);
 }
 
 .icon-selector-footer {
   padding: 12px 16px;
-  border-top: 1px solid #e0e0e0;
-  background: #f8f9fa;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .icon-selector-footer {
+  border-top: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
 }
 
 .selected-icon-preview {
@@ -525,30 +712,108 @@ export default {
 
 .selected-preview {
   font-size: 20px;
-  color: #2196f3;
+  color: var(--accent-color);
+  transition: all 0.3s ease;
 }
 
 .selected-name {
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary);
   font-family: monospace;
+  transition: color 0.3s ease;
 }
 
 .icon-count {
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
 }
 
 .loading-more {
   margin-left: 8px;
   font-size: 11px;
-  color: #007bff;
+  color: var(--accent-color);
+  transition: color 0.3s ease;
 }
 
 .loading-more i {
   font-size: 12px;
   margin-right: 4px;
 }
+
+/* Mejoras para modo oscuro */
+.dark-theme .selected-preview {
+  color: var(--accent-color);
+}
+
+.dark-theme .selected-name {
+  color: var(--text-secondary);
+}
+
+.dark-theme .icon-count {
+  color: var(--text-secondary);
+}
+
+.dark-theme .loading-more {
+  color: var(--accent-color);
+}
+/* Efectos especiales para modo oscuro */
+.dark-theme .icon-selector {
+  position: relative;
+}
+
+.dark-theme .icon-selector::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse at center, rgba(96, 165, 250, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark-theme .icon-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  border-radius: 8px;
+}
+
+.dark-theme .icon-item:hover::after {
+  opacity: 1;
+}
+
+.dark-theme .icon-item.selected::after {
+  opacity: 1;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(96, 165, 250, 0.1));
+}
+
+/* Animaciones mejoradas */
+@keyframes iconGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(96, 165, 250, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(96, 165, 250, 0);
+  }
+}
+
+.dark-theme .icon-item.selected {
+  animation: iconGlow 2s infinite;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .icon-grid {

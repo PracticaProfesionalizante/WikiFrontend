@@ -36,24 +36,6 @@
               <i class="mdi mdi-refresh" :class="{ 'mdi-spin': isLoading }"></i>
               Actualizar
             </button>
-            <button
-              class="action-btn migration"
-              @click="migrateExistingPaths"
-              :disabled="isLoading"
-              title="Migrar paths existentes al nuevo formato"
-            >
-              <i class="mdi mdi-database-refresh"></i>
-              Migrar Paths
-            </button>
-            <button
-              class="action-btn diagnostic"
-              @click="diagnoseMenuStructure"
-              :disabled="isLoading"
-              title="Diagnosticar estructura de menús y detectar submenús huérfanos"
-            >
-              <i class="mdi mdi-magnify-scan"></i>
-              Diagnosticar
-            </button>
           </div>
         </div>
 
@@ -398,48 +380,44 @@
           <div class="dialog-content wizard-modal" @click.stop tabindex="-1" ref="modalContent">
             <!-- Header del Wizard -->
             <div class="wizard-header">
-              <div class="wizard-title-section">
-                <div class="wizard-icon">
-                  <i class="mdi mdi-menu-open" aria-hidden="true"></i>
-                </div>
-              <div class="wizard-text">
-                <h2 id="modal-title">
-                  {{ isEditing ? 'Editar' : 'Crear' }} Menú
-                </h2>
-                <p class="wizard-subtitle">
-                  {{ isEditing ? 'Modifica la configuración del menú existente' : 'Configura un nuevo elemento del menú' }}
-                </p>
+              <div class="wizard-header-content">
+                <div class="wizard-title-section">
+                  <div class="wizard-icon">
+                    <i :class="isEditing ? 'mdi mdi-pencil' : 'mdi mdi-plus'"></i>
+                  </div>
+                  <div class="wizard-text">
+                    <h2 class="wizard-title">
+                      {{ isEditing ? 'Editar Menú' : 'Crear Nuevo Menú' }}
+                    </h2>
+                    <p class="wizard-subtitle">
+                      {{ isEditing ? 'Modifica la configuración del menú existente' : 'Completa los datos para crear un nuevo menú' }}
+                    </p>
 
-                <!-- Indicador de roles activos al editar -->
-                <div v-if="isEditing && menuForm.roles && menuForm.roles.length > 0" class="active-roles-indicator">
-                  <span class="indicator-label">Roles activos:</span>
-                  <div class="active-roles-list">
-                    <div
-                      v-for="role in getSelectedRolesInfo()"
-                      :key="role.value"
-                      class="active-role-item"
-                      :class="role.value"
-                    >
-                      <i :class="['mdi', role.icon]"></i>
-                      <span>{{ role.label }}</span>
-                      <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-badge">
-                        <i class="mdi mdi-crown"></i>
-                        Máximo
-                      </span>
+                    <!-- Indicador de roles activos al editar -->
+                    <div v-if="isEditing && menuForm.roles && menuForm.roles.length > 0" class="active-roles-indicator">
+                      <span class="indicator-label">Roles activos:</span>
+                      <div class="active-roles-list">
+                        <div
+                          v-for="role in getSelectedRolesInfo()"
+                          :key="role.value"
+                          class="active-role-item"
+                          :class="role.value"
+                        >
+                          <i :class="['mdi', role.icon]"></i>
+                          <span>{{ role.label }}</span>
+                          <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-badge">
+                            <i class="mdi mdi-crown"></i>
+                            Máximo
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
+                <button @click="closeDialog" class="wizard-close-btn" :disabled="isSaving">
+                  <i class="mdi mdi-close"></i>
+                </button>
               </div>
-              </div>
-
-              <button
-                @click="closeDialog"
-                class="wizard-close-btn"
-                aria-label="Cerrar modal"
-                type="button"
-              >
-                <i class="mdi mdi-close" aria-hidden="true"></i>
-              </button>
             </div>
 
             <!-- Indicador de Pasos -->
@@ -6085,13 +6063,47 @@ button:disabled {
 
 /* Header del wizard */
 .wizard-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  background: #245FE7;
   color: white;
-  border-bottom: 1px solid var(--border-color);
+  padding: 2rem;
+  border-radius: 12px 12px 0 0;
+  position: relative;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .wizard-header {
+  background: #245FE7;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.wizard-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark-theme .wizard-header::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+}
+
+.wizard-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
+  width: 100%;
 }
 
 .wizard-title-section {
@@ -6101,109 +6113,180 @@ button:disabled {
 }
 
 .wizard-icon {
-  width: 48px;
-  height: 48px;
+  width: 3rem;
+  height: 3rem;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
+  color: var(--text-inverse);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.wizard-text h2 {
-  margin: 0;
-  font-size: 1.5rem;
+.wizard-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wizard-text h2,
+.wizard-title {
+  font-size: 1.75rem;
   font-weight: 700;
+  margin: 0;
+  color: var(--text-inverse);
+  line-height: 1.2;
 }
 
 .wizard-subtitle {
-  margin: 0.25rem 0 0 0;
-  opacity: 0.9;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
+  font-weight: 400;
 }
 
 .wizard-close-btn {
-  width: 40px;
-  height: 40px;
-  border: none;
   background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
+  border: none;
+  color: var(--text-inverse);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+  margin-top: 0.5rem;
 }
 
-.wizard-close-btn:hover {
+.wizard-close-btn:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.wizard-close-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Indicador de pasos */
 .wizard-steps {
   display: flex;
-  padding: 1.5rem 2rem;
+  justify-content: space-between;
+  padding: 2rem 2rem 1.5rem 2rem;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
   gap: 1rem;
 }
 
+/* Mejoras para modo oscuro */
+.dark-theme .wizard-steps {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+}
+
 .wizard-step {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  flex: 1;
-  opacity: 0.5;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
   transition: all 0.3s ease;
+  flex: 1;
+  position: relative;
 }
 
 .wizard-step.active {
-  opacity: 1;
+  background: var(--bg-hover);
 }
 
 .wizard-step.completed {
-  opacity: 1;
+  opacity: 0.8;
 }
 
 .wizard-step.disabled {
-  opacity: 0.3;
+  opacity: 0.5;
 }
 
 .step-indicator {
-  width: 32px;
-  height: 32px;
+  width: 2rem;
+  height: 2rem;
   border-radius: 50%;
-  background: var(--border-color);
-  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   transition: all 0.3s ease;
+  border: 2px solid var(--border-color);
 }
 
 .wizard-step.active .step-indicator {
-  background: var(--accent-color);
-  color: white;
+  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
+  color: var(--text-inverse);
+  box-shadow: 0 4px 12px var(--focus-shadow);
+  border-color: var(--accent-color);
 }
 
 .wizard-step.completed .step-indicator {
-  background: #10b981;
-  color: white;
+  background: var(--success-color);
+  color: var(--text-inverse);
+  border-color: var(--success-color);
 }
 
 .step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
   flex: 1;
 }
 
 .step-title {
-  margin: 0;
-  font-size: 0.9rem;
   font-weight: 600;
+  font-size: 0.875rem;
   color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+.step-description {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+  transition: color 0.3s ease;
+}
+
+.wizard-step.active .step-title {
+  color: var(--accent-color);
+}
+
+.wizard-step.completed .step-title,
+.wizard-step.completed .step-description {
+  color: var(--success-color);
+}
+
+.wizard-step.disabled .step-title,
+.wizard-step.disabled .step-description {
+  opacity: 0.5;
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .wizard-step.active {
+  background: rgba(96, 165, 250, 0.1);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.dark-theme .wizard-step.active .step-indicator {
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
 }
 
 .step-description {
@@ -6216,7 +6299,32 @@ button:disabled {
 .wizard-body {
   flex: 1;
   padding: 2rem;
+  max-height: 60vh;
   overflow-y: auto;
+  background: var(--bg-primary);
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .wizard-body {
+  background: var(--bg-primary);
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 4px;
+}
+
+.dark-theme .wizard-body::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 .wizard-form {
@@ -6313,13 +6421,19 @@ button:disabled {
 
 /* Footer del wizard */
 .wizard-footer {
-  padding: 1.5rem 2rem;
   background: var(--bg-secondary);
+  padding: 1.5rem 2rem;
+  border-radius: 0 0 12px 12px;
   border-top: 1px solid var(--border-color);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .wizard-footer {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
 }
 
 .wizard-progress {
@@ -6379,11 +6493,24 @@ button:disabled {
 .wizard-btn-secondary {
   background: var(--bg-primary);
   color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-primary);
 }
 
 .wizard-btn-secondary:hover:not(:disabled) {
-  background: var(--bg-hover);
+  background: var(--bg-secondary);
+  border-color: var(--border-hover);
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .wizard-btn-secondary {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+
+.dark-theme .wizard-btn-secondary:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  border-color: var(--border-hover);
 }
 
 .wizard-btn-primary {
@@ -6622,11 +6749,13 @@ button:disabled {
 
 /* Indicador de roles activos en el header */
 .active-roles-indicator {
-  margin-top: 0.75rem;
+  margin-top: 1rem;
   padding: 0.75rem;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .indicator-label {
@@ -6641,6 +6770,7 @@ button:disabled {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  max-width: 100%;
 }
 
 .active-role-item {
@@ -6654,6 +6784,8 @@ button:disabled {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .active-role-item.ROLE_SUPER_USER {
@@ -6722,5 +6854,95 @@ button:disabled {
     padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
   }
+}
+
+/* Mejoras adicionales para modo oscuro */
+.dark-theme .wizard-header {
+  position: relative;
+}
+
+.dark-theme .wizard-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse at center, rgba(96, 165, 250, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.dark-theme .wizard-step.active {
+  background: rgba(96, 165, 250, 0.1);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.dark-theme .wizard-step.active .step-indicator {
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+}
+
+.dark-theme .wizard-btn-primary {
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+}
+
+.dark-theme .wizard-btn-primary:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(96, 165, 250, 0.4);
+}
+
+.dark-theme .progress-fill {
+  box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
+}
+
+/* Mejoras para elementos de formulario en modo oscuro */
+.dark-theme .form-input,
+.dark-theme .form-select,
+.dark-theme .form-textarea {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-primary);
+}
+
+.dark-theme .form-input:focus,
+.dark-theme .form-select:focus,
+.dark-theme .form-textarea:focus {
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px var(--focus-shadow);
+}
+
+.dark-theme .form-label {
+  color: var(--text-primary);
+}
+
+.dark-theme .form-help {
+  color: var(--text-secondary);
+}
+
+.dark-theme .error-message {
+  background: var(--error-bg);
+  color: var(--error-text);
+  border: 1px solid var(--error-light);
+}
+
+/* Mejoras para el resumen en modo oscuro */
+.dark-theme .summary-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+}
+
+.dark-theme .summary-title {
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-primary);
+}
+
+.dark-theme .summary-item {
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.dark-theme .summary-label {
+  color: var(--text-primary);
+}
+
+.dark-theme .summary-value {
+  color: var(--text-secondary);
 }
 </style>
