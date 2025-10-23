@@ -13,20 +13,6 @@
           <p class="greeting-subtitle animate-slide-up-delay">
             Tu plataforma de conocimiento y aprendizaje colaborativo
           </p>
-          <div class="greeting-features animate-slide-up-delay-2">
-            <div class="feature-item">
-              <i class="mdi mdi-book-open-variant"></i>
-              <span>Conocimiento compartido</span>
-            </div>
-            <div class="feature-item">
-              <i class="mdi mdi-account-group"></i>
-              <span>Aprendizaje colaborativo</span>
-            </div>
-            <div class="feature-item">
-              <i class="mdi mdi-lightning-bolt"></i>
-              <span>Acceso instantáneo</span>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -741,9 +727,13 @@ img {
 .greeting-content {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 2rem;
   margin-top: 0;
   width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .greeting-title {
@@ -777,6 +767,8 @@ img {
   font-size: 1.8rem;
   font-weight: 600;
   line-height: 1.4;
+  text-align: center;
+  max-width: 500px;
   /* Mejora: Sombras más intensas para mejor legibilidad */
   text-shadow:
     0 4px 8px rgba(0, 0, 0, 0.8),
@@ -786,44 +778,7 @@ img {
   -webkit-text-stroke: 0.3px rgba(0, 0, 0, 0.4);
 }
 
-/* Características de la plataforma */
-.greeting-features {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.feature-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-.feature-item:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateX(8px);
-  border-color: rgba(73, 233, 237, 0.4);
-}
-
-.feature-item i {
-  font-size: 1.5rem;
-  color: var(--accent-color);
-  min-width: 24px;
-}
-
-.feature-item span {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-}
+/* Animaciones */
 
 /* Form Section - Right Side */
 .form-section {
@@ -1482,22 +1437,6 @@ img {
   .greeting-subtitle {
     font-size: 1.4rem;
   }
-
-  .greeting-features {
-    gap: 0.75rem;
-  }
-
-  .feature-item {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .feature-item i {
-    font-size: 1.2rem;
-  }
-
-  .feature-item span {
-    font-size: 1rem;
-  }
 }
 
 @media (max-width: 768px) {
@@ -1519,22 +1458,6 @@ img {
 
   .greeting-subtitle {
     font-size: 1.2rem;
-  }
-
-  .greeting-features {
-    gap: 0.5rem;
-  }
-
-  .feature-item {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .feature-item i {
-    font-size: 1.1rem;
-  }
-
-  .feature-item span {
-    font-size: 0.9rem;
   }
 
   .form-logo {
@@ -1575,22 +1498,6 @@ img {
 
   .greeting-subtitle {
     font-size: 1rem;
-  }
-
-  .greeting-features {
-    gap: 0.5rem;
-  }
-
-  .feature-item {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .feature-item i {
-    font-size: 1rem;
-  }
-
-  .feature-item span {
-    font-size: 0.85rem;
   }
 
   .form-logo {

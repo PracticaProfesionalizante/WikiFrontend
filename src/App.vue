@@ -19,14 +19,6 @@
       <!-- Router view para las páginas -->
       <router-view />
     </v-main>
-
-    <!-- Snackbar para notificaciones globales -->
-    <v-snackbar v-model="showError" color="error" timeout="5000" top>
-      {{ authStore.error }}
-      <template v-slot:actions>
-        <v-btn color="white" variant="text" @click="clearError"> Cerrar </v-btn>
-      </template>
-    </v-snackbar>
   </v-app>
 </template>
 
@@ -40,17 +32,6 @@ const authStore = useAuthStore()
 
 // Composable de tema
 const { initTheme, initVuetifyTheme } = useTheme()
-
-// Computed para mostrar errores
-const showError = computed({
-  get: () => !!authStore.error,
-  set: () => authStore.clearError(),
-})
-
-// Función para limpiar errores
-const clearError = () => {
-  authStore.clearError()
-}
 
 // Inicializar autenticación al montar el componente
 onMounted(async () => {
