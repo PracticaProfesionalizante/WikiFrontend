@@ -1,8 +1,8 @@
-<template>
+﻿<template>
   <div class="menu-tree-selector">
     <div class="selector-header">
       <div class="search-box">
-        <i class="mdi mdi-magnify search-icon"></i>
+        <i class="fas fa-magnify search-icon"></i>
         <input
           v-model="searchQuery"
           type="text"
@@ -10,22 +10,22 @@
           class="search-input"
         />
         <button v-if="searchQuery" @click="clearSearch" class="clear-button">
-          <i class="mdi mdi-close"></i>
+          <i class="fas fa-close"></i>
         </button>
       </div>
       <div class="tree-actions">
         <button @click="expandAll" class="tree-action-btn" title="Expandir todo">
-          <i class="mdi mdi-unfold-more-horizontal"></i>
+          <i class="fas fa-unfold-more-horizontal"></i>
         </button>
         <button @click="collapseAll" class="tree-action-btn" title="Contraer todo">
-          <i class="mdi mdi-unfold-less-horizontal"></i>
+          <i class="fas fa-unfold-less-horizontal"></i>
         </button>
       </div>
     </div>
 
     <div class="tree-container">
       <div v-if="filteredMenus.length === 0" class="empty-state">
-        <i class="mdi mdi-file-tree-outline"></i>
+        <i class="fas fa-file-tree-outline"></i>
         <p>{{ searchQuery ? 'No se encontraron menús' : 'No hay menús disponibles' }}</p>
       </div>
 

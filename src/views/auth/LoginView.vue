@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="login-container">
     <!-- Background Elements -->
     <div class="background-image"></div>
@@ -68,11 +68,11 @@
                       <div class="input-feedback">
                         <i
                           v-if="!emailError && credentials.email && credentials.email.length > 0"
-                          class="mdi mdi-check-circle success-icon"
+                          class="fas fa-check-circle success-icon"
                         ></i>
                         <i
                           v-if="emailError && credentials.email"
-                          class="mdi mdi-alert-circle error-icon"
+                          class="fas fa-alert-circle error-icon"
                         ></i>
                       </div>
                     </div>
@@ -117,8 +117,8 @@
                           class="password-toggle"
                           :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
                         >
-                          <i v-if="showPassword" class="mdi mdi-eye"></i>
-                          <i v-else class="mdi mdi-eye-off"></i>
+                          <i v-if="showPassword" class="fas fa-eye"></i>
+                          <i v-else class="fas fa-eye-off"></i>
                         </button>
                         <div class="input-feedback">
                           <i
@@ -127,11 +127,11 @@
                               credentials.password &&
                               credentials.password.length >= 6
                             "
-                            class="mdi mdi-check-circle success-icon"
+                            class="fas fa-check-circle success-icon"
                           ></i>
                           <i
                             v-if="passwordError && credentials.password"
-                            class="mdi mdi-alert-circle error-icon"
+                            class="fas fa-alert-circle error-icon"
                           ></i>
                         </div>
                       </div>
@@ -227,7 +227,7 @@
                   <!-- Success Message -->
                   <div v-else class="forgot-success">
                     <div class="success-icon-large">
-                      <i class="mdi mdi-email-check-outline"></i>
+                      <i class="fas fa-email-check-outline"></i>
                     </div>
                     <h3 class="success-title">¡Email enviado!</h3>
                     <p class="success-text">
@@ -250,13 +250,13 @@
 
           <!-- Error Messages -->
           <div v-if="error || authStore.error" class="error-message animate-shake">
-            <i class="mdi mdi-alert-circle"></i>
+            <i class="fas fa-alert-circle"></i>
             {{ error || authStore.error }}
           </div>
 
           <!-- Success Messages -->
           <div v-if="successMessage" class="success-message animate-fade-in">
-            <i class="mdi mdi-check-circle"></i>
+            <i class="fas fa-check-circle"></i>
             {{ successMessage }}
           </div>
         </div>

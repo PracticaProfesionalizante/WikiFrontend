@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="settings-layout">
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
@@ -10,7 +10,7 @@
         <div class="settings-content">
           <div class="settings-header">
             <h1 class="settings-title">
-              <i class="mdi mdi-cog"></i>
+              <i class="fas fa-cog"></i>
               Configuración de Perfil
             </h1>
             <p class="settings-subtitle">
@@ -23,11 +23,14 @@
             <div class="settings-section">
               <div class="section-header" @click="toggleSection('personal')">
                 <h2 class="section-title">
-                  <i class="mdi mdi-account-circle"></i>
+                  <i class="fas fa-user-circle"></i>
                   Información Personal
                 </h2>
                 <button class="accordion-toggle" :class="{ expanded: expandedSections.personal }">
-                  <i class="mdi" :class="expandedSections.personal ? 'mdi-minus' : 'mdi-plus'"></i>
+                  <i
+                    class="fas"
+                    :class="expandedSections.personal ? 'fas fa-minus' : 'fas fa-plus'"
+                  ></i>
                 </button>
               </div>
               <div
@@ -84,8 +87,8 @@
                   </div>
                   <div class="form-actions">
                     <button type="submit" class="btn btn-primary" :disabled="isUpdatingProfile">
-                      <i v-if="isUpdatingProfile" class="mdi mdi-loading mdi-spin"></i>
-                      <i v-else class="mdi mdi-content-save"></i>
+                      <i v-if="isUpdatingProfile" class="fas fa-spinner fa-spin"></i>
+                      <i v-else class="fas fa-save"></i>
                       {{ isUpdatingProfile ? 'Guardando...' : 'Guardar Cambios' }}
                     </button>
                   </div>
@@ -97,11 +100,14 @@
             <div class="settings-section">
               <div class="section-header" @click="toggleSection('password')">
                 <h2 class="section-title">
-                  <i class="mdi mdi-lock"></i>
+                  <i class="fas fa-lock"></i>
                   Cambiar contraseña
                 </h2>
                 <button class="accordion-toggle" :class="{ expanded: expandedSections.password }">
-                  <i class="mdi" :class="expandedSections.password ? 'mdi-minus' : 'mdi-plus'"></i>
+                  <i
+                    class="fas"
+                    :class="expandedSections.password ? 'fas fa-minus' : 'fas fa-plus'"
+                  ></i>
                 </button>
               </div>
               <div
@@ -125,7 +131,9 @@
                         class="password-toggle"
                         @click="showCurrentPassword = !showCurrentPassword"
                       >
-                        <i :class="showCurrentPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"></i>
+                        <i
+                          :class="showCurrentPassword ? 'fas fas fa-eye-slash' : 'fas fas fa-eye'"
+                        ></i>
                       </button>
                     </div>
                     <span v-if="errors.currentPassword" class="error-message">{{
@@ -148,7 +156,9 @@
                           class="password-toggle"
                           @click="showNewPassword = !showNewPassword"
                         >
-                          <i :class="showNewPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"></i>
+                          <i
+                            :class="showNewPassword ? 'fas fas fa-eye-slash' : 'fas fas fa-eye'"
+                          ></i>
                         </button>
                       </div>
                       <span v-if="errors.newPassword" class="error-message">{{
@@ -170,7 +180,9 @@
                           class="password-toggle"
                           @click="showConfirmPassword = !showConfirmPassword"
                         >
-                          <i :class="showConfirmPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"></i>
+                          <i
+                            :class="showConfirmPassword ? 'fas fas fa-eye-slash' : 'fas fas fa-eye'"
+                          ></i>
                         </button>
                       </div>
                       <span v-if="errors.confirmPassword" class="error-message">{{
@@ -180,8 +192,8 @@
                   </div>
                   <div class="form-actions">
                     <button type="submit" class="btn btn-primary" :disabled="isChangingPassword">
-                      <i v-if="isChangingPassword" class="mdi mdi-loading mdi-spin"></i>
-                      <i v-else class="mdi mdi-shield-check"></i>
+                      <i v-if="isChangingPassword" class="fas fa-spinner fa-spin"></i>
+                      <i v-else class="fas fa-shield-check"></i>
                       {{ isChangingPassword ? 'Cambiando...' : 'Cambiar Contraseña' }}
                     </button>
                   </div>
@@ -193,7 +205,7 @@
             <div class="settings-section">
               <div class="section-header" @click="toggleSection('preferences')">
                 <h2 class="section-title">
-                  <i class="mdi mdi-tune"></i>
+                  <i class="fas fa-sliders-h"></i>
                   Preferencias
                 </h2>
                 <button
@@ -201,8 +213,8 @@
                   :class="{ expanded: expandedSections.preferences }"
                 >
                   <i
-                    class="mdi"
-                    :class="expandedSections.preferences ? 'mdi-minus' : 'mdi-plus'"
+                    class="fas"
+                    :class="expandedSections.preferences ? 'fas fa-minus' : 'fas fa-plus'"
                   ></i>
                 </button>
               </div>
@@ -268,11 +280,11 @@
 
     <!-- Success/Error Messages -->
     <div v-if="successMessage" class="notification success">
-      <i class="mdi mdi-check-circle"></i>
+      <i class="fas fa-check-circle"></i>
       {{ successMessage }}
     </div>
     <div v-if="errorMessage" class="notification error">
-      <i class="mdi mdi-alert-circle"></i>
+      <i class="fas fa-exclamation-circle"></i>
       {{ errorMessage }}
     </div>
   </div>

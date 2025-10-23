@@ -1,13 +1,13 @@
 <template>
   <div class="sidebar-container" :class="{ expanded: isExpanded, 'mobile-open': isMobileOpen }">
     <button class="mobile-toggle" @click="toggleMobile" v-show="isMobile">
-      <i class="mdi mdi-menu"></i>
+      <i class="fas fa-bars"></i>
     </button>
 
     <nav class="sidebar-menu" @mouseenter="expandMenu" @mouseleave="collapseMenu">
       <div class="menu-header">
         <div class="logo-container">
-          <i class="menu-logo mdi mdi-school"></i>
+          <i class="menu-logo fas fa-school"></i>
           <span class="logo-text" v-show="isExpanded">Portal Wiki</span>
         </div>
       </div>
@@ -16,12 +16,12 @@
       <div v-if="currentView !== 'main' && isExpanded" class="breadcrumb-container">
         <div class="breadcrumb">
           <span class="breadcrumb-item" @click="goBackToMain">
-            <i class="mdi mdi-arrow-left"></i>
+            <i class="fas fa-arrow-left"></i>
             <span>Volver</span>
           </span>
-          <i class="mdi mdi-chevron-right breadcrumb-separator"></i>
+          <i class="fas fa-chevron-right breadcrumb-separator"></i>
           <span class="breadcrumb-item active">
-            <i :class="['mdi', currentParentMenu?.icon]"></i>
+            <i :class="['fas fas', currentParentMenu?.icon]"></i>
             <span>{{ currentParentMenu?.text }}</span>
           </span>
         </div>
@@ -41,17 +41,17 @@
               @click="selectItem(item)"
             >
               <div class="item-icon-container">
-                <i :class="['mdi', item.icon]" class="item-icon"></i>
+                <i :class="['fas fas', item.icon]" class="item-icon"></i>
               </div>
               <span class="item-text">{{ item.text }}</span>
               <div class="item-actions">
                 <i
                   v-if="item.submenu && item.submenu.length > 0"
-                  class="mdi mdi-chevron-right submenu-arrow"
+                  class="fas fa-chevron-right submenu-arrow"
                 ></i>
                 <i
                   v-else-if="item.children && item.children.length > 0"
-                  class="mdi mdi-chevron-right submenu-arrow"
+                  class="fas fa-chevron-right submenu-arrow"
                 ></i>
               </div>
             </div>
@@ -72,17 +72,17 @@
               @click="selectSubmenu(submenu)"
             >
               <div class="item-icon-container">
-                <i :class="['mdi', submenu.icon || 'mdi-circle-small']" class="item-icon"></i>
+                <i :class="['fas fas', submenu.icon || 'fas fa-circle']" class="item-icon"></i>
               </div>
               <span class="item-text">{{ submenu.text }}</span>
               <div class="item-actions">
                 <i
                   v-if="submenu.submenu && submenu.submenu.length > 0"
-                  class="mdi mdi-chevron-right submenu-arrow"
+                  class="fas fa-chevron-right submenu-arrow"
                 ></i>
                 <i
                   v-else-if="submenu.children && submenu.children.length > 0"
-                  class="mdi mdi-chevron-right submenu-arrow"
+                  class="fas fa-chevron-right submenu-arrow"
                 ></i>
               </div>
             </div>
@@ -93,7 +93,7 @@
         <template v-else-if="currentView === 'documentation'">
           <div class="menu-item back-item" @click="goBackToMain">
             <div class="item-content">
-              <i class="mdi mdi-arrow-left item-icon"></i>
+              <i class="fas fa-arrow-left item-icon"></i>
               <span class="item-text">Volver</span>
             </div>
           </div>
@@ -108,7 +108,7 @@
               :class="{ active: activeDocumentationId === item.id }"
               @click="selectDocumentationItem(item)"
             >
-              <i class="mdi mdi-circle-small item-icon"></i>
+              <i class="fas fa-circle item-icon"></i>
               <span class="item-text">{{ item.text }}</span>
             </div>
           </div>
@@ -124,7 +124,7 @@
             :class="{ active: route.path === '/gestion-menus' }"
             @click="navigateToMenuManager"
           >
-            <i class="mdi mdi-pencil-outline item-icon"></i>
+            <i class="fas fa-edit item-icon"></i>
             <span class="item-text">Editar</span>
           </div>
         </div>
@@ -161,7 +161,7 @@ const menuItems = computed(() => {
   // Transformar menús del backend al formato esperado por el componente
   const transformMenu = (menu) => ({
     id: menu.id,
-    icon: menu.icon || 'mdi mdi-circle-outline',
+    icon: menu.icon || 'fas fa-circle',
     text: menu.name,
     active: false,
     route: menu.path,

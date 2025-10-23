@@ -5,7 +5,7 @@ import router from './core/router'
 import vuetify from './core/plugins/vuetify'
 import './core/plugins/webfontloader'
 import './styles/themes.css'
-import '@mdi/font/css/materialdesignicons.css'
+import '@fortawesome/fontawesome-free/css/all.css'
 
 // Importar el store de autenticación
 import { useAuthStore } from './stores/auth'

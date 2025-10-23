@@ -1,5 +1,5 @@
 // Styles
-import '@mdi/font/css/materialdesignicons.css'
+// MDI removed - using Font Awesome instead
 import 'vuetify/styles'
 
 // Vuetify

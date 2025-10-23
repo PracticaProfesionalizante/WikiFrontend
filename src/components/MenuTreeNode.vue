@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="menu-tree-node">
     <!-- Zona de drop superior -->
     <div
@@ -37,7 +37,7 @@
         :title="expanded ? 'Contraer submenús' : 'Expandir submenús'"
       >
         <i
-          :class="expanded ? 'mdi mdi-chevron-down' : 'mdi mdi-chevron-right'"
+          :class="expanded ? 'fas fas fa-chevron-down' : 'fas fas fa-chevron-right'"
           class="expand-icon"
         ></i>
       </button>
@@ -46,7 +46,7 @@
       <!-- Información del menú -->
       <div class="menu-info">
         <div class="menu-header">
-          <i :class="['mdi', menu.icon] || 'fas fa-link'" class="menu-icon"></i>
+          <i :class="['fas fas', menu.icon] || 'fas fas fa-link'" class="menu-icon"></i>
           <span class="menu-name" v-html="highlightSearchTerm(menu.name)"></span>
           <span class="menu-order">#{{ menu.order }}</span>
         </div>
@@ -73,13 +73,13 @@
           @click="emit('create-submenu', menu)"
           title="Agregar submenú"
         >
-          <i class="mdi mdi-plus"></i>
+          <i class="fas fa-plus"></i>
         </button>
         <button class="action-button edit" @click="emit('edit', menu)" title="Editar menú">
-          <i class="mdi mdi-pencil"></i>
+          <i class="fas fa-pencil"></i>
         </button>
         <button class="action-button delete" @click="emit('delete', menu)" title="Eliminar menú">
-          <i class="mdi mdi-delete"></i>
+          <i class="fas fa-delete"></i>
         </button>
       </div>
     </div>
@@ -643,7 +643,11 @@ const handleCreateSubmenu = () => {
 /* Estados de drag & drop mejorados y optimizados */
 .menu-node.drop-inside {
   border-color: var(--success-color, #4caf50);
-  background: linear-gradient(135deg, var(--success-bg, #f1f8e9) 0%, var(--success-light, #e8f5e8) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--success-bg, #f1f8e9) 0%,
+    var(--success-light, #e8f5e8) 100%
+  );
   box-shadow: inset 0 0 0 2px rgba(76, 175, 80, 0.3);
   transform: scale(1.02);
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);

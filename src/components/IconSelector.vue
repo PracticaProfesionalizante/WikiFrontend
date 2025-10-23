@@ -9,7 +9,7 @@
           class="icon-search"
           @input="onSearchInput"
         />
-        <i class="mdi mdi-magnify search-icon"></i>
+        <i class="fas fa-search search-icon"></i>
       </div>
 
       <div class="category-filter">
@@ -24,12 +24,12 @@
 
     <div class="icon-grid-container" ref="gridContainer">
       <div v-if="isLoading" class="loading-state">
-        <i class="mdi mdi-loading mdi-spin"></i>
+        <i class="fas fa-spinner fa-spin"></i>
         <span>Cargando iconos...</span>
       </div>
 
       <div v-else-if="filteredIcons.length === 0" class="empty-state">
-        <i class="mdi mdi-emoticon-sad-outline"></i>
+        <i class="fas fa-frown"></i>
         <p>No se encontraron iconos</p>
         <small>Intenta con otros términos de búsqueda</small>
       </div>
@@ -42,7 +42,7 @@
           :class="{ selected: selectedIcon === icon }"
           @click="selectIcon(icon)"
         >
-          <i :class="['mdi', icon]" class="icon-preview"></i>
+          <i :class="['fas fas', icon]" class="icon-preview"></i>
           <span class="icon-name">{{ getIconDisplayName(icon) }}</span>
         </div>
       </div>
@@ -50,13 +50,13 @@
 
     <div class="icon-selector-footer">
       <div class="selected-icon-preview" v-if="selectedIcon">
-        <i :class="['mdi', selectedIcon]" class="selected-preview"></i>
+        <i :class="['fas fas', selectedIcon]" class="selected-preview"></i>
         <span class="selected-name">{{ selectedIcon }}</span>
       </div>
       <div class="icon-count">
         Mostrando {{ currentlyLoaded }} de {{ filteredIcons.length }} iconos
         <span v-if="isLoadingMore" class="loading-more">
-          <i class="mdi mdi-loading mdi-spin"></i> Cargando más...
+          <i class="fas fa-spinner fa-spin"></i> Cargando más...
         </span>
       </div>
     </div>
@@ -64,7 +64,7 @@
 </template>
 
 <script>
-import { availableIcons } from '../../mdi-icons-generated.js'
+import { availableIcons } from '../utils/fontAwesomeIcons.js'
 
 export default {
   name: 'IconSelector',
@@ -120,7 +120,7 @@ export default {
       if (this.searchQuery.trim()) {
         const query = this.searchQuery.toLowerCase().trim()
         icons = icons.filter((icon) => {
-          const iconName = icon.replace('mdi-', '').replace(/-/g, ' ')
+          const iconName = icon.replace('fas fa-', '').replace(/-/g, ' ')
           const keywords = this.getIconKeywords(icon)
 
           // Búsqueda exacta tiene prioridad
@@ -137,8 +137,8 @@ export default {
 
         // Ordenar resultados por relevancia
         icons.sort((a, b) => {
-          const aName = a.replace('mdi-', '').replace(/-/g, ' ')
-          const bName = b.replace('mdi-', '').replace(/-/g, ' ')
+          const aName = a.replace('fas fa-', '').replace(/-/g, ' ')
+          const bName = b.replace('fas fa-', '').replace(/-/g, ' ')
 
           // Priorizar coincidencias exactas al inicio
           if (aName.startsWith(query) && !bName.startsWith(query)) return -1
@@ -234,12 +234,12 @@ export default {
     },
 
     getIconDisplayName(icon) {
-      return icon.replace('mdi-', '').replace(/-/g, ' ')
+      return icon.replace('fas fa-', '').replace(/-/g, ' ')
     },
 
     getIconKeywords(icon) {
       // Generar palabras clave basadas en el nombre del icono
-      const name = icon.replace('mdi-', '')
+      const name = icon.replace('fas fa-', '')
       const parts = name.split('-')
 
       // Agregar sinónimos y palabras relacionadas
@@ -262,8 +262,8 @@ export default {
         upload: ['subir', 'cargar'],
         email: ['correo', 'mail', 'mensaje'],
         phone: ['teléfono', 'llamar'],
-        heart: ['corazón', 'favorito', 'like'],
-        star: ['estrella', 'favorito'],
+        heart: ['corazón', 'fas favorito', 'like'],
+        star: ['estrella', 'fas favorito'],
         bell: ['campana', 'notificación'],
         lock: ['bloquear', 'seguridad'],
         key: ['llave', 'password', 'seguridad'],

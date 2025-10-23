@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="admin-content-layout">
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
@@ -10,7 +10,7 @@
           <div class="header-content">
             <div class="header-left">
               <div class="page-icon">
-                <i class="mdi mdi-file-document-multiple-outline"></i>
+                <i class="fas fa-cogs"></i>
               </div>
               <div class="header-text">
                 <h1 class="page-title">Administración de Contenidos</h1>
@@ -22,7 +22,7 @@
                 v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
                 color="primary"
                 variant="elevated"
-                prepend-icon="mdi-plus"
+                prepend-icon="fas fa-plus"
                 size="large"
                 class="create-btn"
                 @click="openCreateDialog"
@@ -38,7 +38,7 @@
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-icon">
-                <i class="mdi mdi-file-document"></i>
+                <i class="fas fa-file-alt"></i>
               </div>
               <div class="stat-content">
                 <div class="stat-value">{{ documents.length }}</div>
@@ -47,7 +47,7 @@
             </div>
             <div class="stat-card">
               <div class="stat-icon active">
-                <i class="mdi mdi-check-circle"></i>
+                <i class="fas fa-check-circle"></i>
               </div>
               <div class="stat-content">
                 <div class="stat-value">{{ activeCount }}</div>
@@ -56,7 +56,7 @@
             </div>
             <div class="stat-card">
               <div class="stat-icon inactive">
-                <i class="mdi mdi-pause-circle"></i>
+                <i class="fas fa-pause-circle"></i>
               </div>
               <div class="stat-content">
                 <div class="stat-value">{{ inactiveCount }}</div>
@@ -66,7 +66,7 @@
           </div>
         </div>
 
-            <!-- Alertas -->
+        <!-- Alertas -->
         <div v-if="error || success" class="alerts-section">
           <v-alert
             v-if="error"
@@ -77,10 +77,10 @@
             class="alert-item"
           >
             <template #prepend>
-              <i class="mdi mdi-alert-circle"></i>
+              <i class="fas fa-exclamation-circle"></i>
             </template>
-              {{ error }}
-            </v-alert>
+            {{ error }}
+          </v-alert>
 
           <v-alert
             v-if="success"
@@ -91,10 +91,10 @@
             class="alert-item"
           >
             <template #prepend>
-              <i class="mdi mdi-check-circle"></i>
+              <i class="fas fa-check-circle"></i>
             </template>
-              {{ success }}
-            </v-alert>
+            {{ success }}
+          </v-alert>
         </div>
 
         <!-- Content Management Section -->
@@ -103,7 +103,7 @@
           <div class="filters-section">
             <div class="search-container">
               <div class="search-input-wrapper">
-                <i class="mdi mdi-magnify search-icon"></i>
+                <i class="fas fa-search search-icon"></i>
                 <input
                   v-model="searchQuery"
                   type="text"
@@ -111,12 +111,8 @@
                   class="search-input"
                   @input="onSearchInput"
                 />
-                <button
-                  v-if="searchQuery"
-                  @click="clearSearch"
-                  class="clear-search-btn"
-                >
-                  <i class="mdi mdi-close"></i>
+                <button v-if="searchQuery" @click="clearSearch" class="clear-search-btn">
+                  <i class="fas fa-times"></i>
                 </button>
               </div>
             </div>
@@ -130,7 +126,7 @@
                   <option value="TYPE_URL">URL</option>
                   <option value="TYPE_PDF">PDF</option>
                 </select>
-                </div>
+              </div>
 
               <div class="filter-group">
                 <label class="filter-label">Estado:</label>
@@ -152,7 +148,7 @@
               </div>
 
               <button @click="clearAllFilters" class="clear-filters-btn">
-                <i class="mdi mdi-filter-remove"></i>
+                <i class="fas fa-filter"></i>
                 Limpiar Filtros
               </button>
             </div>
@@ -165,14 +161,14 @@
                 :class="['view-btn', { active: viewMode === 'table' }]"
                 @click="viewMode = 'table'"
               >
-                <i class="mdi mdi-view-list"></i>
+                <i class="fas fa-list"></i>
                 Tabla
               </button>
               <button
                 :class="['view-btn', { active: viewMode === 'grid' }]"
                 @click="viewMode = 'grid'"
               >
-                <i class="mdi mdi-view-grid"></i>
+                <i class="fas fa-th"></i>
                 Tarjetas
               </button>
             </div>
@@ -180,11 +176,11 @@
             <div class="bulk-actions" v-if="selectedItems.length > 0">
               <span class="selected-count">{{ selectedItems.length }} seleccionados</span>
               <button @click="bulkDelete" class="bulk-action-btn delete">
-                <i class="mdi mdi-delete"></i>
+                <i class="fas fa-trash-alt"></i>
                 Eliminar
               </button>
               <button @click="bulkArchive" class="bulk-action-btn archive">
-                <i class="mdi mdi-archive"></i>
+                <i class="fas fa-archive"></i>
                 Archivar
               </button>
             </div>
@@ -202,7 +198,7 @@
                 class="sort-order-btn"
                 :title="sortOrder === 'asc' ? 'Ordenar descendente' : 'Ordenar ascendente'"
               >
-                <i :class="sortOrder === 'asc' ? 'mdi mdi-sort-ascending' : 'mdi mdi-sort-descending'"></i>
+                <i :class="sortOrder === 'asc' ? 'fas fas fa-sort-up' : 'fas fas fa-sort-down'"></i>
               </button>
             </div>
           </div>
@@ -244,14 +240,12 @@
                     <tr v-else-if="filteredItems.length === 0" class="no-data-row">
                       <td colspan="8" class="no-data-cell">
                         <div class="no-data-content">
-                          <i class="mdi mdi-file-document-outline"></i>
+                          <i class="fas fa-file-alt"></i>
                           <h3>No se encontraron contenidos</h3>
                           <p v-if="hasActiveFilters">
                             Prueba ajustando los filtros o términos de búsqueda
                           </p>
-                          <p v-else>
-                            Comienza creando tu primer contenido
-                          </p>
+                          <p v-else>Comienza creando tu primer contenido</p>
                         </div>
                       </td>
                     </tr>
@@ -279,15 +273,16 @@
                           >
                             {{ item.name }}
                           </div>
-                          <div class="title-description" v-if="item.slug">
-                            📁 {{ item.slug }}
-                          </div>
+                          <div class="title-description" v-if="item.slug">📁 {{ item.slug }}</div>
                         </div>
                       </td>
                       <td class="type-column">
-                        <div class="type-chip" :class="`type-${(item.type || 'unknown').toLowerCase()}`">
+                        <div
+                          class="type-chip"
+                          :class="`type-${(item.type || 'unknown').toLowerCase()}`"
+                        >
                           <i :class="getTypeIcon(item.type)"></i>
-                  {{ item.type || 'Unknown' }}
+                          {{ item.type || 'Unknown' }}
                         </div>
                       </td>
                       <td class="status-column">
@@ -304,12 +299,12 @@
                       </td>
                       <td class="author-column">
                         <div class="author-info">
-                          <i class="mdi mdi-account author-icon"></i>
-                  {{ item.createdBy || 'Sin autor' }}
-                </div>
+                          <i class="fas fa-user author-icon"></i>
+                          {{ item.createdBy || 'Sin autor' }}
+                        </div>
                       </td>
                       <td class="date-column">
-                {{ formatDate(item.createdAt) }}
+                        {{ formatDate(item.createdAt) }}
                       </td>
                       <td class="date-column">
                         {{ formatDate(item.updatedAt || item.createdAt) }}
@@ -322,7 +317,7 @@
                             class="action-btn edit"
                             title="Editar"
                           >
-                            <i class="mdi mdi-pencil"></i>
+                            <i class="fas fa-edit"></i>
                           </button>
                           <button
                             v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
@@ -330,7 +325,7 @@
                             class="action-btn delete"
                             title="Eliminar"
                           >
-                            <i class="mdi mdi-delete"></i>
+                            <i class="fas fa-trash-alt"></i>
                           </button>
                         </div>
                       </td>
@@ -344,17 +339,13 @@
             <div v-else class="grid-container">
               <div v-if="loading" class="loading-grid">
                 <div v-for="i in 6" :key="i" class="skeleton-card"></div>
-                </div>
+              </div>
               <div v-else-if="filteredItems.length === 0" class="no-data-grid">
                 <div class="no-data-content">
-                  <i class="mdi mdi-file-document-outline"></i>
+                  <i class="fas fa-file-alt"></i>
                   <h3>No se encontraron contenidos</h3>
-                  <p v-if="hasActiveFilters">
-                    Prueba ajustando los filtros o términos de búsqueda
-                  </p>
-                  <p v-else>
-                    Comienza creando tu primer contenido
-                  </p>
+                  <p v-if="hasActiveFilters">Prueba ajustando los filtros o términos de búsqueda</p>
+                  <p v-else>Comienza creando tu primer contenido</p>
                 </div>
               </div>
               <div v-else class="content-grid">
@@ -378,7 +369,7 @@
                       {{ item.type }}
                     </div>
                     <div
-                    v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
+                      v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
                       @click="toggleDocumentStatus(item)"
                       class="card-status clickable"
                       :class="`status-${getDocumentStatus(item).toLowerCase()}`"
@@ -396,40 +387,38 @@
                     >
                       {{ item.name }}
                     </h3>
-                    <p class="card-description" v-if="item.slug">
-                      📁 {{ item.slug }}
-                    </p>
+                    <p class="card-description" v-if="item.slug">📁 {{ item.slug }}</p>
 
                     <div class="card-meta">
                       <div class="card-author">
-                        <i class="mdi mdi-account"></i>
+                        <i class="fas fa-user"></i>
                         {{ item.createdBy || 'Sin autor' }}
                       </div>
                       <div class="card-date">
-                        <i class="mdi mdi-calendar"></i>
-                {{ formatDate(item.createdAt) }}
+                        <i class="fas fa-calendar"></i>
+                        {{ formatDate(item.createdAt) }}
                       </div>
                     </div>
                   </div>
 
                   <div class="card-actions">
                     <button
-                    v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
-                    @click="openEditDialog(item)"
+                      v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
+                      @click="openEditDialog(item)"
                       class="card-action-btn edit"
                       title="Editar"
                     >
-                      <i class="mdi mdi-pencil"></i>
+                      <i class="fas fa-edit"></i>
                     </button>
                     <button
-                    v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
-                    @click="openDeleteDialog(item)"
+                      v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
+                      @click="openDeleteDialog(item)"
                       class="card-action-btn delete"
                       title="Eliminar"
                     >
-                      <i class="mdi mdi-delete"></i>
+                      <i class="fas fa-trash-alt"></i>
                     </button>
-                </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -446,7 +435,7 @@
                   class="pagination-btn"
                   title="Primera página"
                 >
-                  <i class="mdi mdi-chevron-double-left"></i>
+                  <i class="fas fa-angle-double-left"></i>
                 </button>
                 <button
                   @click="currentPage--"
@@ -454,7 +443,7 @@
                   class="pagination-btn"
                   title="Página anterior"
                 >
-                  <i class="mdi mdi-chevron-left"></i>
+                  <i class="fas fa-chevron-left"></i>
                 </button>
 
                 <div class="pagination-numbers">
@@ -474,7 +463,7 @@
                   class="pagination-btn"
                   title="Página siguiente"
                 >
-                  <i class="mdi mdi-chevron-right"></i>
+                  <i class="fas fa-chevron-right"></i>
                 </button>
                 <button
                   @click="currentPage = totalPages"
@@ -482,7 +471,7 @@
                   class="pagination-btn"
                   title="Última página"
                 >
-                  <i class="mdi mdi-chevron-double-right"></i>
+                  <i class="fas fa-angle-double-right"></i>
                 </button>
               </div>
               <div class="items-per-page">
@@ -505,11 +494,11 @@
       <div class="preview-modal" @click.stop>
         <div class="modal-header">
           <h2 class="modal-title">
-            <i class="mdi mdi-eye"></i>
+            <i class="fas fa-eye"></i>
             Vista Previa
           </h2>
           <button @click="closePreviewModal" class="modal-close-btn">
-            <i class="mdi mdi-close"></i>
+            <i class="fas fa-times"></i>
           </button>
         </div>
         <div class="modal-content">
@@ -522,11 +511,11 @@
                   {{ previewItem?.type }}
                 </div>
                 <div class="preview-author">
-                  <i class="mdi mdi-account"></i>
+                  <i class="fas fa-user"></i>
                   {{ previewItem?.author || 'Sin autor' }}
                 </div>
                 <div class="preview-date">
-                  <i class="mdi mdi-calendar"></i>
+                  <i class="fas fa-calendar"></i>
                   {{ formatDate(previewItem?.createdAt) }}
                 </div>
               </div>
@@ -543,7 +532,11 @@
               <!-- Vista previa del contenido según el tipo -->
               <div v-else-if="previewItem?.content" class="content-preview">
                 <!-- Contenido Markdown/TEXT -->
-                <div v-if="previewItem.type === 'TYPE_TEXT'" class="markdown-preview" v-html="renderedMarkdown"></div>
+                <div
+                  v-if="previewItem.type === 'TYPE_TEXT'"
+                  class="markdown-preview"
+                  v-html="renderedMarkdown"
+                ></div>
 
                 <!-- Contenido URL -->
                 <div v-else-if="previewItem.type === 'TYPE_URL'" class="url-preview">
@@ -552,8 +545,13 @@
                       <div class="url-title">{{ getUrlTitle(previewItem.content) }}</div>
                       <div class="url-domain">{{ getUrlDomain(previewItem.content) }}</div>
                     </div>
-                    <a :href="normalizeUrl(previewItem.content)" target="_blank" rel="noopener noreferrer" class="preview-link">
-                      <i class="mdi mdi-open-in-new"></i>
+                    <a
+                      :href="normalizeUrl(previewItem.content)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="preview-link"
+                    >
+                      <i class="fas fa-external-link-alt"></i>
                       Abrir enlace
                     </a>
                   </div>
@@ -586,34 +584,48 @@
                         @page-change="onPdfPageChange"
                       />
 
-
                       <!-- Mensaje de error si hay problema -->
                       <div v-if="pdfError" class="pdf-error-message">
-                        <i class="mdi mdi-alert-circle"></i>
+                        <i class="fas fa-exclamation-circle"></i>
                         <h4>Error al cargar el PDF</h4>
                         <p>{{ pdfError.message || 'No se pudo cargar el documento PDF' }}</p>
 
                         <!-- Botón especial para errores de autenticación -->
-                        <div v-if="pdfError.message && pdfError.message.includes('sesión')" class="auth-error-actions">
+                        <div
+                          v-if="pdfError.message && pdfError.message.includes('sesión')"
+                          class="auth-error-actions"
+                        >
                           <button @click="redirectToLogin" class="pdf-link auth-login">
-                            <i class="mdi mdi-login"></i>
+                            <i class="fas fa-sign-in-alt"></i>
                             Ir al Login
                           </button>
                         </div>
 
                         <!-- Mensaje especial para errores 422 -->
-                        <div v-else-if="pdfError.message && (pdfError.message.includes('no existe') || pdfError.message.includes('no se encuentra'))" class="document-error-actions">
+                        <div
+                          v-else-if="
+                            pdfError.message &&
+                            (pdfError.message.includes('no existe') ||
+                              pdfError.message.includes('no se encuentra'))
+                          "
+                          class="document-error-actions"
+                        >
                           <p class="error-suggestion">
-                            <i class="mdi mdi-information"></i>
-                            Este documento puede haber sido eliminado o no tener un archivo PDF asociado.
+                            <i class="fas fa-info-circle"></i>
+                            Este documento puede haber sido eliminado o no tener un archivo PDF
+                            asociado.
                           </p>
                           <div class="error-actions">
                             <button @click="retryPdfLoad" class="pdf-link refresh">
-                              <i class="mdi mdi-refresh"></i>
+                              <i class="fas fa-sync-alt"></i>
                               Reintentar
                             </button>
-                            <button @click="editFromPreview" class="pdf-link edit" v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']">
-                              <i class="mdi mdi-upload"></i>
+                            <button
+                              @click="editFromPreview"
+                              class="pdf-link edit"
+                              v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
+                            >
+                              <i class="fas fa-upload"></i>
                               Subir PDF
                             </button>
                           </div>
@@ -621,7 +633,7 @@
 
                         <!-- Botón de reintento para otros errores -->
                         <button v-else @click="retryPdfLoad" class="pdf-link refresh">
-                          <i class="mdi mdi-refresh"></i>
+                          <i class="fas fa-sync-alt"></i>
                           Reintentar
                         </button>
                       </div>
@@ -633,7 +645,7 @@
                           :disabled="currentPdfPage <= 1"
                           class="pdf-control-btn"
                         >
-                          <i class="mdi mdi-chevron-left"></i>
+                          <i class="fas fa-chevron-left"></i>
                           Anterior
                         </button>
 
@@ -647,21 +659,21 @@
                           class="pdf-control-btn"
                         >
                           Siguiente
-                          <i class="mdi mdi-chevron-right"></i>
+                          <i class="fas fa-chevron-right"></i>
                         </button>
                       </div> -->
 
                       <!-- <div class="pdf-actions">
                         <a :href="pdfBlobUrl" target="_blank" rel="noopener noreferrer" class="pdf-link">
-                          <i class="mdi mdi-open-in-new"></i>
+                          <i class="fas fa-external-link-alt"></i>
                           Abrir PDF en nueva pestaña
                         </a>
                         <a :href="pdfBlobUrl" download class="pdf-link">
-                          <i class="mdi mdi-download"></i>
+                          <i class="fas fa-download"></i>
                           Descargar PDF
                         </a>
                         <button @click="refreshPdfViewer" class="pdf-link refresh">
-                          <i class="mdi mdi-refresh"></i>
+                          <i class="fas fa-sync-alt"></i>
                           Actualizar vista
                         </button>
                       </div> -->
@@ -670,13 +682,17 @@
                     <!-- Mensaje de error si no hay ID válido -->
                     <div v-else class="pdf-error">
                       <div class="error-icon">
-                        <i class="mdi mdi-alert-circle"></i>
+                        <i class="fas fa-exclamation-circle"></i>
                       </div>
                       <div class="error-message">
                         <h4>No se puede mostrar el PDF</h4>
-                        <p v-if="!previewItem.id">El documento no tiene un ID válido para cargar el PDF.</p>
+                        <p v-if="!previewItem.id">
+                          El documento no tiene un ID válido para cargar el PDF.
+                        </p>
                         <p v-else>Error al cargar el PDF.</p>
-                        <p><strong>ID del documento:</strong> {{ previewItem.id || 'No disponible' }}</p>
+                        <p>
+                          <strong>ID del documento:</strong> {{ previewItem.id || 'No disponible' }}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -684,7 +700,7 @@
 
                 <!-- Tipo desconocido -->
                 <div v-else class="unknown-content">
-                  <i class="mdi mdi-file-question"></i>
+                  <i class="fas fa-question-circle"></i>
                   <p>Tipo de contenido no soportado: {{ previewItem.type }}</p>
                   <div class="raw-content">
                     <pre>{{ previewItem.content }}</pre>
@@ -694,7 +710,7 @@
 
               <!-- Sin contenido -->
               <div v-else class="preview-placeholder">
-                <i class="mdi mdi-file-document-outline"></i>
+                <i class="fas fa-file-alt"></i>
                 <p>No hay contenido disponible para mostrar</p>
               </div>
             </div>
@@ -702,7 +718,12 @@
         </div>
         <div class="modal-actions">
           <!-- Panel de navegación PDF compacto -->
-          <div v-if="!pdfLoading && pdfBlobUrl && totalPdfPages > 1 && previewItem?.type === 'TYPE_PDF'" class="pdf-nav-compact">
+          <div
+            v-if="
+              !pdfLoading && pdfBlobUrl && totalPdfPages > 1 && previewItem?.type === 'TYPE_PDF'
+            "
+            class="pdf-nav-compact"
+          >
             <div class="nav-compact-controls">
               <button
                 @click="previousPage"
@@ -710,7 +731,7 @@
                 class="nav-compact-btn prev-btn"
                 title="Página anterior"
               >
-                <i class="mdi mdi-chevron-left"></i>
+                <i class="fas fa-chevron-left"></i>
               </button>
 
               <div class="page-compact-info">
@@ -731,7 +752,7 @@
                 class="nav-compact-btn next-btn"
                 title="Página siguiente"
               >
-                <i class="mdi mdi-chevron-right"></i>
+                <i class="fas fa-chevron-right"></i>
               </button>
 
               <div class="nav-compact-shortcuts">
@@ -741,7 +762,7 @@
                   class="shortcut-compact-btn"
                   title="Primera página"
                 >
-                  <i class="mdi mdi-skip-previous"></i>
+                  <i class="fas fa-step-backward"></i>
                 </button>
 
                 <button
@@ -750,41 +771,31 @@
                   class="shortcut-compact-btn"
                   title="Última página"
                 >
-                  <i class="mdi mdi-skip-next"></i>
+                  <i class="fas fa-step-forward"></i>
                 </button>
 
                 <div class="zoom-compact-controls">
-                  <button
-                    @click="zoomOut"
-                    class="zoom-compact-btn"
-                    title="Alejar"
-                  >
-                    <i class="mdi mdi-magnify-minus"></i>
+                  <button @click="zoomOut" class="zoom-compact-btn" title="Alejar">
+                    <i class="fas fa-search-minus"></i>
                   </button>
 
                   <span class="zoom-compact-level">{{ Math.round(pdfZoom * 100) }}%</span>
 
-                  <button
-                    @click="zoomIn"
-                    class="zoom-compact-btn"
-                    title="Acercar"
-                  >
-                    <i class="mdi mdi-magnify-plus"></i>
+                  <button @click="zoomIn" class="zoom-compact-btn" title="Acercar">
+                    <i class="fas fa-search-plus"></i>
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <button @click="closePreviewModal" class="modal-btn secondary">
-            Cerrar
-          </button>
+          <button @click="closePreviewModal" class="modal-btn secondary">Cerrar</button>
           <button
             v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
             @click="editFromPreview"
             class="modal-btn primary"
           >
-            <i class="mdi mdi-pencil"></i>
+            <i class="fas fa-edit"></i>
             Editar
           </button>
         </div>
@@ -796,7 +807,7 @@
       <div class="delete-modal" @click.stop>
         <div class="modal-header">
           <div class="delete-icon">
-            <i class="mdi mdi-alert-circle"></i>
+            <i class="fas fa-exclamation-circle"></i>
           </div>
           <h2 class="modal-title">Confirmar Eliminación</h2>
         </div>
@@ -806,17 +817,15 @@
             <strong>"{{ selectedItem?.name }}"</strong>?
           </p>
           <p class="warning-text">
-            <i class="mdi mdi-alert"></i>
-          Esta acción no se puede deshacer.
+            <i class="fas fa-exclamation-triangle"></i>
+            Esta acción no se puede deshacer.
           </p>
         </div>
         <div class="modal-actions">
-          <button @click="closeDeleteDialog" class="modal-btn secondary">
-            Cancelar
-          </button>
+          <button @click="closeDeleteDialog" class="modal-btn secondary">Cancelar</button>
           <button @click="confirmDelete" :disabled="deleting" class="modal-btn danger">
             <i v-if="deleting" class="loading-spinner small"></i>
-            <i v-else class="mdi mdi-delete"></i>
+            <i v-else class="fas fa-trash-alt"></i>
             {{ deleting ? 'Eliminando...' : 'Eliminar' }}
           </button>
         </div>
@@ -828,7 +837,7 @@
       <div class="delete-modal" @click.stop>
         <div class="modal-header">
           <div class="delete-icon">
-            <i class="mdi mdi-alert-circle"></i>
+            <i class="fas fa-exclamation-circle"></i>
           </div>
           <h2 class="modal-title">Confirmar Eliminación Masiva</h2>
         </div>
@@ -838,17 +847,15 @@
             <strong>{{ selectedItems.length }} contenido(s)</strong>?
           </p>
           <p class="warning-text">
-            <i class="mdi mdi-alert"></i>
+            <i class="fas fa-exclamation-triangle"></i>
             Esta acción no se puede deshacer.
           </p>
         </div>
         <div class="modal-actions">
-          <button @click="closeBulkDeleteModal" class="modal-btn secondary">
-            Cancelar
-          </button>
+          <button @click="closeBulkDeleteModal" class="modal-btn secondary">Cancelar</button>
           <button @click="confirmBulkDelete" :disabled="bulkDeleting" class="modal-btn danger">
             <i v-if="bulkDeleting" class="loading-spinner small"></i>
-            <i v-else class="mdi mdi-delete"></i>
+            <i v-else class="fas fa-trash-alt"></i>
             {{ bulkDeleting ? 'Eliminando...' : 'Eliminar Todo' }}
           </button>
         </div>
@@ -880,7 +887,7 @@ import {
   handleProblematicPdf,
   isValidPdfUrl,
   isKnownPdfWarning,
-  buildPdfUrl
+  buildPdfUrl,
 } from '@/utils/pdfUtils'
 
 const authStore = useAuthStore()
@@ -979,35 +986,37 @@ const itemsPerPage = ref(25)
 const apiBaseUrl = 'http://practicas.teclab.edu.ar:8080'
 
 // Computed properties para estadísticas
-const activeCount = computed(() =>
-  documents.value.filter(item => {
-    const status = getDocumentStatus(item)
-    return status === 'Activo'
-  }).length
+const activeCount = computed(
+  () =>
+    documents.value.filter((item) => {
+      const status = getDocumentStatus(item)
+      return status === 'Activo'
+    }).length,
 )
 
-const inactiveCount = computed(() =>
-  documents.value.filter(item => {
-    const status = getDocumentStatus(item)
-    return status === 'Inactivo'
-  }).length
+const inactiveCount = computed(
+  () =>
+    documents.value.filter((item) => {
+      const status = getDocumentStatus(item)
+      return status === 'Inactivo'
+    }).length,
 )
 
-const textDocumentsCount = computed(() =>
-  documents.value.filter(item => item.type === 'TEXT').length
+const textDocumentsCount = computed(
+  () => documents.value.filter((item) => item.type === 'TEXT').length,
 )
 
-const urlDocumentsCount = computed(() =>
-  documents.value.filter(item => item.type === 'URL').length
+const urlDocumentsCount = computed(
+  () => documents.value.filter((item) => item.type === 'URL').length,
 )
 
-const pdfDocumentsCount = computed(() =>
-  documents.value.filter(item => item.type === 'PDF').length
+const pdfDocumentsCount = computed(
+  () => documents.value.filter((item) => item.type === 'PDF').length,
 )
 
 // Computed para autores únicos
 const uniqueAuthors = computed(() => {
-  const authors = [...new Set(documents.value.map(item => item.createdBy).filter(Boolean))]
+  const authors = [...new Set(documents.value.map((item) => item.createdBy).filter(Boolean))]
   return authors.sort()
 })
 
@@ -1018,25 +1027,26 @@ const filteredItems = computed(() => {
   // Aplicar búsqueda
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase().trim()
-    items = items.filter(item =>
-      item.name?.toLowerCase().includes(query) ||
-      item.slug?.toLowerCase().includes(query) ||
-      item.type?.toLowerCase().includes(query) ||
-      item.createdBy?.toLowerCase().includes(query)
+    items = items.filter(
+      (item) =>
+        item.name?.toLowerCase().includes(query) ||
+        item.slug?.toLowerCase().includes(query) ||
+        item.type?.toLowerCase().includes(query) ||
+        item.createdBy?.toLowerCase().includes(query),
     )
   }
 
   // Aplicar filtros
   if (filterType.value) {
-    items = items.filter(item => item.type === filterType.value)
+    items = items.filter((item) => item.type === filterType.value)
   }
 
   if (filterStatus.value) {
-    items = items.filter(item => getDocumentStatus(item) === filterStatus.value)
+    items = items.filter((item) => getDocumentStatus(item) === filterStatus.value)
   }
 
   if (filterAuthor.value) {
-    items = items.filter(item => item.createdBy === filterAuthor.value)
+    items = items.filter((item) => item.createdBy === filterAuthor.value)
   }
 
   // Aplicar ordenamiento
@@ -1094,13 +1104,14 @@ const visiblePages = computed(() => {
 })
 
 // Computed para estados
-const hasActiveFilters = computed(() =>
-  searchQuery.value.trim() || filterType.value || filterStatus.value || filterAuthor.value
+const hasActiveFilters = computed(
+  () => searchQuery.value.trim() || filterType.value || filterStatus.value || filterAuthor.value,
 )
 
-const allSelected = computed(() =>
-  paginatedItems.value.length > 0 &&
-  paginatedItems.value.every(item => selectedItems.value.includes(item.id))
+const allSelected = computed(
+  () =>
+    paginatedItems.value.length > 0 &&
+    paginatedItems.value.every((item) => selectedItems.value.includes(item.id)),
 )
 
 // Watchers
@@ -1129,7 +1140,6 @@ const loadDocuments = async () => {
     } else {
       documents.value = []
     }
-
   } catch (err) {
     error.value = err.message || 'Error al cargar los documentos'
     documents.value = []
@@ -1173,7 +1183,7 @@ const toggleItemSelection = (itemId) => {
 const toggleSelectAll = () => {
   if (allSelected.value) {
     // Deseleccionar todos los elementos de la página actual
-    paginatedItems.value.forEach(item => {
+    paginatedItems.value.forEach((item) => {
       const index = selectedItems.value.indexOf(item.id)
       if (index > -1) {
         selectedItems.value.splice(index, 1)
@@ -1181,7 +1191,7 @@ const toggleSelectAll = () => {
     })
   } else {
     // Seleccionar todos los elementos de la página actual
-    paginatedItems.value.forEach(item => {
+    paginatedItems.value.forEach((item) => {
       if (!selectedItems.value.includes(item.id)) {
         selectedItems.value.push(item.id)
       }
@@ -1299,7 +1309,7 @@ const toggleDocumentStatus = async (item) => {
     const newStatus = currentStatus === 'Activo' ? false : true
 
     // Limpiar roles para remover prefijo ROLE_ duplicado si existe
-    const cleanRoles = (item.roles || []).map(role => {
+    const cleanRoles = (item.roles || []).map((role) => {
       if (typeof role === 'string' && role.startsWith('ROLE_ROLE_')) {
         return role.substring(10) // Remover 'ROLE_ROLE_' (10 caracteres)
       } else if (typeof role === 'string' && role.startsWith('ROLE_')) {
@@ -1316,21 +1326,20 @@ const toggleDocumentStatus = async (item) => {
       status: newStatus,
       content: item.content,
       icon: item.icon,
-      roles: cleanRoles
+      roles: cleanRoles,
     }
 
     // Actualizar el documento en el backend
     const updatedDocument = await documentService.updateDocument(item.id, updateData)
 
     // Actualizar en la lista local
-    const index = documents.value.findIndex(doc => doc.id === item.id)
+    const index = documents.value.findIndex((doc) => doc.id === item.id)
     if (index > -1) {
       documents.value[index] = updatedDocument || { ...item, status: newStatus }
     }
 
     const statusText = newStatus ? 'activado' : 'desactivado'
     success.value = `Documento "${item.name}" ${statusText} correctamente`
-
   } catch (error) {
     error.value = 'Error al cambiar el estado del documento'
   }
@@ -1388,11 +1397,13 @@ const handleSaveDocument = async (documentData) => {
   try {
     // Si el documento ya tiene un ID, significa que fue creado exitosamente por ContentForm
     if (documentData.id) {
-      console.log('📄 [ADMIN CONTENT VIEW] Documento ya creado por ContentForm, actualizando lista local')
+      console.log(
+        '📄 [ADMIN CONTENT VIEW] Documento ya creado por ContentForm, actualizando lista local',
+      )
 
       // Solo actualizar la lista local, no crear/actualizar en el servidor
       if (isEditing.value) {
-        const index = documents.value.findIndex(item => item.id === documentData.id)
+        const index = documents.value.findIndex((item) => item.id === documentData.id)
         if (index > -1) {
           documents.value[index] = documentData
         }
@@ -1414,7 +1425,7 @@ const handleSaveDocument = async (documentData) => {
       }
 
       const updatedDocument = await documentService.updateDocument(documentData.id, documentData)
-      const index = documents.value.findIndex(item => item.id === documentData.id)
+      const index = documents.value.findIndex((item) => item.id === documentData.id)
       if (index > -1) {
         documents.value[index] = updatedDocument || documentData
       }
@@ -1429,27 +1440,38 @@ const handleSaveDocument = async (documentData) => {
 
     closeEditDialog()
   } catch (err) {
-
     // Manejar error específico de slug duplicado
-    if (err.response?.status === 422 && err.response?.data?.detail?.includes('slug') && err.response?.data?.detail?.includes('ya existe')) {
-
+    if (
+      err.response?.status === 422 &&
+      err.response?.data?.detail?.includes('slug') &&
+      err.response?.data?.detail?.includes('ya existe')
+    ) {
       // Generar slug único con timestamp más largo
       const timestamp = Date.now().toString()
-      const baseSlug = documentData.name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+      const baseSlug = documentData.name
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
       const newSlug = `${baseSlug}-${timestamp}`
-
 
       // Actualizar documentData con nuevo slug
       const newDocumentData = {
         ...documentData,
-        slug: newSlug
+        slug: newSlug,
       }
 
       try {
         // Intentar guardar nuevamente con el nuevo slug
         if (isEditing.value) {
-          const updatedDocument = await documentService.updateDocument(documentData.id, newDocumentData)
-          documents.value[documents.value.findIndex(item => item.id === documentData.id)] = updatedDocument
+          const updatedDocument = await documentService.updateDocument(
+            documentData.id,
+            newDocumentData,
+          )
+          documents.value[documents.value.findIndex((item) => item.id === documentData.id)] =
+            updatedDocument
           success.value = `Documento "${documentData.name}" actualizado correctamente`
         } else {
           const newDocument = await documentService.createDocument(newDocumentData)
@@ -1459,7 +1481,6 @@ const handleSaveDocument = async (documentData) => {
 
         closeEditDialog()
         return
-
       } catch (retryError) {
         // Continuar con el manejo de errores normal
       }
@@ -1469,7 +1490,7 @@ const handleSaveDocument = async (documentData) => {
 
     // Para desarrollo, simular guardado exitoso
     if (isEditing.value) {
-      const index = documents.value.findIndex(item => item.id === documentData.id)
+      const index = documents.value.findIndex((item) => item.id === documentData.id)
       if (index > -1) {
         documents.value[index] = documentData
       }
@@ -1513,7 +1534,7 @@ const confirmDelete = async () => {
     error.value = err.message || 'Error al eliminar el documento'
     // Para desarrollo, simular eliminación exitosa
     if (selectedItem.value) {
-      const index = documents.value.findIndex(item => item.id === selectedItem.value.id)
+      const index = documents.value.findIndex((item) => item.id === selectedItem.value.id)
       if (index > -1) {
         documents.value.splice(index, 1)
         success.value = `Documento "${selectedItem.value.name}" eliminado correctamente`
@@ -1536,8 +1557,8 @@ const bulkArchive = async () => {
 
   try {
     // En una aplicación real, esto se enviaría al backend
-    selectedItems.value.forEach(itemId => {
-      const item = documents.value.find(i => i.id === itemId)
+    selectedItems.value.forEach((itemId) => {
+      const item = documents.value.find((i) => i.id === itemId)
       if (item) {
         // Marcar como archivado agregando un campo temporal o usando roles
         item.archived = true
@@ -1575,8 +1596,8 @@ const confirmBulkDelete = async () => {
   } catch (err) {
     error.value = err.message || 'Error al eliminar los contenidos'
     // Para desarrollo, simular eliminación exitosa
-    selectedItems.value.forEach(itemId => {
-      const index = documents.value.findIndex(item => item.id === itemId)
+    selectedItems.value.forEach((itemId) => {
+      const index = documents.value.findIndex((item) => item.id === itemId)
       if (index > -1) {
         documents.value.splice(index, 1)
       }
@@ -1595,7 +1616,7 @@ const getDocumentStatus = (item) => {
   // Usar directamente el campo status del documento
   if (item.status === true || item.status === 'true' || item.status === 1) {
     return 'Activo'
-  } else if (item.status === false || item.status === 'false' || item.status === 0) {
+  } else if (item.status === false || item.status === 'fas false' || item.status === 0) {
     return 'Inactivo'
   }
 
@@ -1620,22 +1641,22 @@ const getDocumentStatus = (item) => {
 
 const getTypeIcon = (type) => {
   const icons = {
-    'TYPE_TEXT': 'mdi mdi-file-document',
-    'TYPE_URL': 'mdi mdi-link',
-    'TYPE_PDF': 'mdi mdi-file-pdf-box',
-    'TEXT': 'mdi mdi-file-document',
-    'URL': 'mdi mdi-link',
-    'PDF': 'mdi mdi-file-pdf-box',
+    TYPE_TEXT: 'fas fas fa-file-alt',
+    TYPE_URL: 'fas fas fa-link',
+    TYPE_PDF: 'fas fas fa-file-pdf',
+    TEXT: 'fas fas fa-file-alt',
+    URL: 'fas fas fa-link',
+    PDF: 'fas fas fa-file-pdf',
   }
-  return icons[type] || 'mdi mdi-file'
+  return icons[type] || 'fas fas fa-file'
 }
 
 const getStatusIcon = (status) => {
   const icons = {
-    'Activo': 'mdi mdi-check-circle',
-    'Inactivo': 'mdi mdi-close-circle',
+    Activo: 'fas fas fa-check-circle',
+    Inactivo: 'fas fas fa-times-circle',
   }
-  return icons[status] || 'mdi mdi-help-circle'
+  return icons[status] || 'fas fas fa-question-circle'
 }
 
 const formatDate = (dateString) => {
@@ -1662,7 +1683,7 @@ const renderedMarkdown = computed(() => {
       breaks: true,
       gfm: true,
       smartLists: true,
-      smartypants: true
+      smartypants: true,
     }
 
     const result = marked(previewItem.value.content, options)
@@ -1733,7 +1754,10 @@ const loadPdfFile = async (documentId) => {
     console.error('❌ Error cargando PDF:', error)
 
     // Manejar diferentes tipos de errores
-    if (error.message.includes('no autenticado') || error.message.includes('Token de acceso no disponible')) {
+    if (
+      error.message.includes('no autenticado') ||
+      error.message.includes('Token de acceso no disponible')
+    ) {
       throw new Error('Sesión expirada. Por favor, inicie sesión nuevamente.')
     } else if (error.response?.status === 401) {
       throw new Error('No tiene permisos para acceder a este documento.')
@@ -1744,7 +1768,9 @@ const loadPdfFile = async (documentId) => {
     } else if (error.response?.status === 422 || error.status === 422) {
       // Error 422: Documento no encontrado o no válido
       if (error.isFileNotFound) {
-        throw new Error('El archivo PDF no se encuentra en el servidor. Puede haber sido eliminado o nunca se subió correctamente.')
+        throw new Error(
+          'El archivo PDF no se encuentra en el servidor. Puede haber sido eliminado o nunca se subió correctamente.',
+        )
       } else if (error.details) {
         throw new Error(error.details.detail || 'El documento PDF no existe o no es válido.')
       } else if (error.rawContent) {
@@ -1854,7 +1880,7 @@ const onPdfError = (error) => {
   console.error('🔍 Detalles del error:', {
     message: error.message,
     stack: error.stack,
-    url: previewItem.value?.content
+    url: previewItem.value?.content,
   })
 }
 
@@ -1922,7 +1948,6 @@ const getPdfTitle = (content) => {
 
     // Si es otro tipo de contenido (probablemente metadatos del archivo)
     return content.length > 50 ? content.substring(0, 50) + '...' : content
-
   } catch (error) {
     return 'Documento PDF'
   }
@@ -2764,7 +2789,12 @@ onUnmounted(() => {
 
 .skeleton-card {
   height: 200px;
-  background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-hover) 50%, var(--bg-secondary) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--bg-secondary) 25%,
+    var(--bg-hover) 50%,
+    var(--bg-secondary) 75%
+  );
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: 16px;
@@ -3460,13 +3490,21 @@ onUnmounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Responsive Design */
@@ -3962,7 +4000,6 @@ onUnmounted(() => {
   text-align: center;
 }
 
-
 /* Estilos para indicador de carga */
 .pdf-loading {
   display: flex;
@@ -3985,8 +4022,12 @@ onUnmounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .pdf-loading p {
@@ -4198,7 +4239,11 @@ onUnmounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>

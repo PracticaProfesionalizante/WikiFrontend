@@ -1,13 +1,13 @@
-<template>
+﻿<template>
   <div v-if="modelValue" class="modal-overlay" @click="closeModal">
     <div class="editor-modal" @click.stop>
       <div class="modal-header">
         <h2 class="modal-title">
-          <i :class="isEditing ? 'mdi mdi-pencil' : 'mdi mdi-plus'"></i>
+          <i :class="isEditing ? 'fas fa-pencil' : 'fas fa-plus'"></i>
           {{ isEditing ? 'Editar Contenido' : 'Crear Contenido' }}
         </h2>
         <button @click="closeModal" class="modal-close-btn">
-          <i class="mdi mdi-close"></i>
+          <i class="fas fa-times"></i>
         </button>
       </div>
 
@@ -24,7 +24,7 @@
               }]"
             >
               <div class="step-number">
-                <i v-if="currentStep > index + 1" class="mdi mdi-check"></i>
+                <i v-if="currentStep > index + 1" class="fas fa-check"></i>
                 <span v-else>{{ index + 1 }}</span>
               </div>
               <span class="step-label">{{ step.label }}</span>
@@ -34,7 +34,7 @@
           <!-- Step 1: Basic Information -->
           <div v-show="currentStep === 1" class="form-step">
             <h3 class="step-title">
-              <i class="mdi mdi-information-outline"></i>
+              <i class="fas fa-info-circle"></i>
               Información Básica
             </h3>
 
@@ -50,7 +50,7 @@
                   @input="validateField('title')"
                 />
                 <div v-if="errors.title" class="field-error">
-                  <i class="mdi mdi-alert-circle"></i>
+                  <i class="fas fa-exclamation-circle"></i>
                   {{ errors.title }}
                 </div>
               </div>
@@ -70,7 +70,7 @@
                   <option value="Noticia">Noticia</option>
                 </select>
                 <div v-if="errors.type" class="field-error">
-                  <i class="mdi mdi-alert-circle"></i>
+                  <i class="fas fa-exclamation-circle"></i>
                   {{ errors.type }}
                 </div>
               </div>
@@ -126,7 +126,7 @@
           <!-- Step 2: Content Editor -->
           <div v-show="currentStep === 2" class="form-step">
             <h3 class="step-title">
-              <i class="mdi mdi-file-document-edit"></i>
+              <i class="fas fa-edit"></i>
               Editor de Contenido
             </h3>
 
@@ -139,7 +139,7 @@
                     :class="['toolbar-btn', { active: isFormatActive('bold') }]"
                     title="Negrita"
                   >
-                    <i class="mdi mdi-format-bold"></i>
+                    <i class="fas fa-bold"></i>
                   </button>
                   <button
                     type="button"
@@ -147,7 +147,7 @@
                     :class="['toolbar-btn', { active: isFormatActive('italic') }]"
                     title="Cursiva"
                   >
-                    <i class="mdi mdi-format-italic"></i>
+                    <i class="fas fa-italic"></i>
                   </button>
                   <button
                     type="button"
@@ -155,7 +155,7 @@
                     :class="['toolbar-btn', { active: isFormatActive('underline') }]"
                     title="Subrayado"
                   >
-                    <i class="mdi mdi-format-underline"></i>
+                    <i class="fas fa-underline"></i>
                   </button>
                 </div>
 
@@ -168,7 +168,7 @@
                     class="toolbar-btn"
                     title="Alinear izquierda"
                   >
-                    <i class="mdi mdi-format-align-left"></i>
+                    <i class="fas fa-align-left"></i>
                   </button>
                   <button
                     type="button"
@@ -176,7 +176,7 @@
                     class="toolbar-btn"
                     title="Centrar"
                   >
-                    <i class="mdi mdi-format-align-center"></i>
+                    <i class="fas fa-align-center"></i>
                   </button>
                   <button
                     type="button"
@@ -184,7 +184,7 @@
                     class="toolbar-btn"
                     title="Alinear derecha"
                   >
-                    <i class="mdi mdi-format-align-right"></i>
+                    <i class="fas fa-align-right"></i>
                   </button>
                 </div>
 
@@ -197,7 +197,7 @@
                     class="toolbar-btn"
                     title="Lista con viñetas"
                   >
-                    <i class="mdi mdi-format-list-bulleted"></i>
+                    <i class="fas fa-list-ul"></i>
                   </button>
                   <button
                     type="button"
@@ -205,7 +205,7 @@
                     class="toolbar-btn"
                     title="Lista numerada"
                   >
-                    <i class="mdi mdi-format-list-numbered"></i>
+                    <i class="fas fa-list-ol"></i>
                   </button>
                 </div>
 
@@ -218,7 +218,7 @@
                     class="toolbar-btn"
                     title="Insertar enlace"
                   >
-                    <i class="mdi mdi-link"></i>
+                    <i class="fas fa-link"></i>
                   </button>
                   <button
                     type="button"
@@ -226,7 +226,7 @@
                     class="toolbar-btn"
                     title="Insertar imagen"
                   >
-                    <i class="mdi mdi-image"></i>
+                    <i class="fas fa-image"></i>
                   </button>
                 </div>
               </div>
@@ -251,7 +251,7 @@
           <!-- Step 3: SEO and Metadata -->
           <div v-show="currentStep === 3" class="form-step">
             <h3 class="step-title">
-              <i class="mdi mdi-search-web"></i>
+              <i class="fas fa-search"></i>
               SEO y Metadatos
             </h3>
 
@@ -266,7 +266,7 @@
                   @input="validateSlug"
                 />
                 <div class="field-help">
-                  <i class="mdi mdi-information-outline"></i>
+                  <i class="fas fa-info-circle"></i>
                   La URL será: /contenido/{{ formData.slug || 'url-del-contenido' }}
                 </div>
               </div>
@@ -308,7 +308,7 @@
                   placeholder="palabra1, palabra2, palabra3..."
                 />
                 <div class="field-help">
-                  <i class="mdi mdi-information-outline"></i>
+                  <i class="fas fa-info-circle"></i>
                   Separa las palabras clave con comas
                 </div>
               </div>
@@ -326,7 +326,7 @@
                   <option value="tutoriales">Tutoriales</option>
                 </select>
                 <div class="field-help">
-                  <i class="mdi mdi-information-outline"></i>
+                  <i class="fas fa-info-circle"></i>
                   Mantén presionado Ctrl para seleccionar múltiples categorías
                 </div>
               </div>
@@ -336,7 +336,7 @@
           <!-- Step 4: Preview -->
           <div v-show="currentStep === 4" class="form-step">
             <h3 class="step-title">
-              <i class="mdi mdi-eye"></i>
+              <i class="fas fa-eye"></i>
               Vista Previa
             </h3>
 
@@ -349,7 +349,7 @@
                     {{ formData.type || 'Tipo' }}
                   </div>
                   <div class="preview-author">
-                    <i class="mdi mdi-account"></i>
+                    <i class="fas fa-user"></i>
                     {{ formData.author || 'Autor' }}
                   </div>
                   <div class="preview-status">
@@ -385,7 +385,7 @@
             @click="previousStep"
             class="modal-btn secondary"
           >
-            <i class="mdi mdi-chevron-left"></i>
+            <i class="fas fa-chevron-left"></i>
             Anterior
           </button>
         </div>
@@ -407,7 +407,7 @@
             class="modal-btn primary"
           >
             Siguiente
-            <i class="mdi mdi-chevron-right"></i>
+            <i class="fas fa-chevron-right"></i>
           </button>
 
           <button
@@ -418,7 +418,7 @@
             class="modal-btn primary"
           >
             <i v-if="saving" class="loading-spinner small"></i>
-            <i v-else :class="isEditing ? 'mdi mdi-content-save' : 'mdi mdi-plus'"></i>
+            <i v-else :class="isEditing ? 'fas fa-save' : 'fas fa-plus'"></i>
             {{ saving ? 'Guardando...' : (isEditing ? 'Guardar Cambios' : 'Crear Contenido') }}
           </button>
         </div>
@@ -685,21 +685,21 @@ const insertImage = () => {
 
 const getTypeIcon = (type) => {
   const icons = {
-    'Página': 'mdi mdi-file-document',
-    'Artículo': 'mdi mdi-newspaper',
-    'Categoría': 'mdi mdi-folder',
-    'Noticia': 'mdi mdi-bullhorn',
+    'Página': 'fas fa-file-alt',
+    'Artículo': 'fas fa-newspaper',
+    'Categoría': 'fas fa-folder',
+    'Noticia': 'fas fa-bullhorn',
   }
-  return icons[type] || 'mdi mdi-file'
+  return icons[type] || 'fas fa-file'
 }
 
 const getStatusIcon = (status) => {
   const icons = {
-    'Publicado': 'mdi mdi-check-circle',
-    'Borrador': 'mdi mdi-file-edit',
-    'Archivado': 'mdi mdi-archive',
+    'Publicado': 'fas fa-check-circle',
+    'Borrador': 'fas fa-edit',
+    'Archivado': 'fas fa-archive',
   }
-  return icons[status] || 'mdi mdi-help-circle'
+  return icons[status] || 'fas fa-help-circle'
 }
 
 onMounted(() => {

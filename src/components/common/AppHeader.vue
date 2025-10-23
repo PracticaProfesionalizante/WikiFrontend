@@ -1,8 +1,5 @@
 <template>
-  <header
-    class="app-header"
-    :class="{ 'sidebar-expanded': sidebarExpanded }"
-  >
+  <header class="app-header" :class="{ 'sidebar-expanded': sidebarExpanded }">
     <!-- Logo izquierdo -->
     <div class="header-left">
       <img
@@ -20,32 +17,32 @@
         class="theme-toggle-btn"
         :title="isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
       >
-        <i :class="isDarkMode ? 'mdi mdi-weather-sunny' : 'mdi mdi-weather-night'" class="theme-icon"></i>
+        <i :class="isDarkMode ? 'fas fas fa-sun' : 'fas fas fa-moon'" class="theme-icon"></i>
       </button>
 
       <div class="profile-menu" ref="profileMenu">
         <button
           class="profile-button"
           @click="toggleProfileDropdown"
-          :class="{ 'active': showDropdown }"
+          :class="{ active: showDropdown }"
         >
           <div class="profile-avatar">
-            <i class="mdi mdi-account"></i>
+            <i class="fas fa-user"></i>
           </div>
           <span class="profile-name">{{ user?.username || 'Usuario' }}</span>
-          <i class="mdi mdi-chevron-down dropdown-arrow" :class="{ 'rotated': showDropdown }"></i>
+          <i class="fas fa-chevron-down dropdown-arrow" :class="{ rotated: showDropdown }"></i>
         </button>
 
         <!-- Menú desplegable -->
         <transition name="dropdown">
           <div v-if="showDropdown" class="dropdown-menu">
             <div class="dropdown-item" @click="goToSettings">
-              <i class="mdi mdi-cog"></i>
+              <i class="fas fa-cog"></i>
               <span>Ajustes</span>
             </div>
             <div class="dropdown-divider"></div>
             <div class="dropdown-item logout" @click="handleLogout">
-              <i class="mdi mdi-logout"></i>
+              <i class="fas fa-sign-out-alt"></i>
               <span>Cerrar sesión</span>
             </div>
           </div>
@@ -65,8 +62,8 @@ import { useTheme } from '@/composables/useTheme'
 defineProps({
   sidebarExpanded: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 // Composables

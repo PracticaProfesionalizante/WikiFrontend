@@ -6,19 +6,23 @@
         <div class="wizard-header-content">
           <div class="wizard-title-section">
             <div class="wizard-icon">
-              <i :class="isEditing ? 'mdi mdi-pencil' : 'mdi mdi-plus'"></i>
+              <i :class="isEditing ? 'fas fas fa-edit' : 'fas fas fa-plus'"></i>
             </div>
             <div class="wizard-text">
               <h2 class="wizard-title">
                 {{ isEditing ? 'Editar Documento' : 'Crear Nuevo Documento' }}
               </h2>
               <p class="wizard-subtitle">
-                {{ isEditing ? 'Modifica la información del documento' : 'Completa los datos para crear un nuevo documento' }}
+                {{
+                  isEditing
+                    ? 'Modifica la información del documento'
+                    : 'Completa los datos para crear un nuevo documento'
+                }}
               </p>
             </div>
           </div>
           <button @click="handleClose" class="wizard-close-btn" :disabled="isSaving">
-            <i class="mdi mdi-close"></i>
+            <i class="fas fa-times"></i>
           </button>
         </div>
       </div>
@@ -36,13 +40,13 @@
           :key="step.id"
           class="wizard-step"
           :class="{
-            'active': currentWizardStep === index + 1,
-            'completed': currentWizardStep > index + 1,
-            'disabled': currentWizardStep < index + 1
+            active: currentWizardStep === index + 1,
+            completed: currentWizardStep > index + 1,
+            disabled: currentWizardStep < index + 1,
           }"
         >
           <div class="step-indicator">
-            <i v-if="currentWizardStep > index + 1" class="mdi mdi-check"></i>
+            <i v-if="currentWizardStep > index + 1" class="fas fa-check"></i>
             <span v-else>{{ index + 1 }}</span>
           </div>
           <div class="step-content">
@@ -65,7 +69,7 @@
             <div class="form-fields">
               <div class="form-field">
                 <label for="documentName" class="form-label">
-                  <i class="mdi mdi-file-document-outline"></i>
+                  <i class="fas fa-file-alt"></i>
                   Nombre del Documento
                   <span class="required">*</span>
                 </label>
@@ -81,14 +85,14 @@
                   :disabled="isSaving"
                 />
                 <div v-if="validationErrors.name" class="error-message">
-                  <i class="mdi mdi-alert-circle"></i>
+                  <i class="fas fa-exclamation-circle"></i>
                   {{ validationErrors.name }}
                 </div>
               </div>
 
               <div class="form-field">
                 <label for="documentType" class="form-label">
-                  <i class="mdi mdi-format-list-bulleted-type"></i>
+                  <i class="fas fa-list"></i>
                   Tipo de Documento
                   <span class="required">*</span>
                 </label>
@@ -107,14 +111,14 @@
                   <option value="TYPE_PDF">📋 Documento PDF</option>
                 </select>
                 <div v-if="validationErrors.type" class="error-message">
-                  <i class="mdi mdi-alert-circle"></i>
+                  <i class="fas fa-exclamation-circle"></i>
                   {{ validationErrors.type }}
                 </div>
               </div>
 
               <div class="form-field">
                 <label for="documentIcon" class="form-label">
-                  <i class="mdi mdi-palette"></i>
+                  <i class="fas fa-palette"></i>
                   Icono
                 </label>
                 <IconSelector
@@ -134,10 +138,15 @@
             <div class="step-header">
               <h3 class="step-title">Contenido del Documento</h3>
               <p class="step-description">
-                {{ form.type === 'TYPE_TEXT' ? 'Escribe el contenido en formato Markdown' :
-                   form.type === 'TYPE_URL' ? 'Ingresa la URL del contenido' :
-                   form.type === 'TYPE_PDF' ? 'Sube el archivo PDF del documento' :
-                   'Selecciona el tipo de documento primero' }}
+                {{
+                  form.type === 'TYPE_TEXT'
+                    ? 'Escribe el contenido en formato Markdown'
+                    : form.type === 'TYPE_URL'
+                      ? 'Ingresa la URL del contenido'
+                      : form.type === 'TYPE_PDF'
+                        ? 'Sube el archivo PDF del documento'
+                        : 'Selecciona el tipo de documento primero'
+                }}
               </p>
             </div>
 
@@ -145,11 +154,14 @@
               <!-- Mensaje cuando no hay tipo seleccionado -->
               <div v-if="!form.type" class="no-type-selected">
                 <div class="no-type-icon">
-                  <i class="mdi mdi-help-circle-outline"></i>
+                  <i class="fas fa-question-circle"></i>
                 </div>
                 <div class="no-type-text">
                   <h4>Selecciona un tipo de documento</h4>
-                  <p>Primero debes seleccionar el tipo de documento en el paso anterior para continuar.</p>
+                  <p>
+                    Primero debes seleccionar el tipo de documento en el paso anterior para
+                    continuar.
+                  </p>
                 </div>
               </div>
 
@@ -163,7 +175,7 @@
                       :class="{ active: activeTab === 'edit' }"
                       @click="activeTab = 'edit'"
                     >
-                      <i class="mdi mdi-pencil"></i>
+                      <i class="fas fa-pencil"></i>
                       Editar
                     </button>
                     <button
@@ -172,7 +184,7 @@
                       :class="{ active: activeTab === 'preview' }"
                       @click="activeTab = 'preview'"
                     >
-                      <i class="mdi mdi-eye"></i>
+                      <i class="fas fa-eye"></i>
                       Vista Previa
                     </button>
                   </div>
@@ -182,7 +194,7 @@
                     @click="toggleFullscreen"
                     :title="isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'"
                   >
-                    <i :class="isFullscreen ? 'mdi mdi-fullscreen-exit' : 'mdi mdi-fullscreen'"></i>
+                    <i :class="isFullscreen ? 'fas fas fa-compress' : 'fas fas fa-expand'"></i>
                   </button>
                 </div>
 
@@ -195,7 +207,7 @@
                       class="toolbar-btn"
                       title="Negrita"
                     >
-                      <i class="mdi mdi-format-bold"></i>
+                      <i class="fas fa-bold"></i>
                     </button>
                     <button
                       type="button"
@@ -203,7 +215,7 @@
                       class="toolbar-btn"
                       title="Cursiva"
                     >
-                      <i class="mdi mdi-format-italic"></i>
+                      <i class="fas fa-italic"></i>
                     </button>
                     <button
                       type="button"
@@ -211,7 +223,7 @@
                       class="toolbar-btn"
                       title="Tachado"
                     >
-                      <i class="mdi mdi-format-strikethrough"></i>
+                      <i class="fas fa-strikethrough"></i>
                     </button>
                   </div>
 
@@ -224,7 +236,7 @@
                       class="toolbar-btn"
                       title="Título 1"
                     >
-                      <i class="mdi mdi-format-header-1"></i>
+                      <i class="fas fa-heading"></i>
                     </button>
                     <button
                       type="button"
@@ -232,7 +244,7 @@
                       class="toolbar-btn"
                       title="Título 2"
                     >
-                      <i class="mdi mdi-format-header-2"></i>
+                      <i class="fas fa-heading"></i>
                     </button>
                     <button
                       type="button"
@@ -240,7 +252,7 @@
                       class="toolbar-btn"
                       title="Título 3"
                     >
-                      <i class="mdi mdi-format-header-3"></i>
+                      <i class="fas fa-heading"></i>
                     </button>
                   </div>
 
@@ -253,7 +265,7 @@
                       class="toolbar-btn"
                       title="Enlace"
                     >
-                      <i class="mdi mdi-link"></i>
+                      <i class="fas fa-link"></i>
                     </button>
                     <button
                       type="button"
@@ -261,7 +273,7 @@
                       class="toolbar-btn"
                       title="Imagen"
                     >
-                      <i class="mdi mdi-image"></i>
+                      <i class="fas fa-image"></i>
                     </button>
                     <button
                       type="button"
@@ -269,7 +281,7 @@
                       class="toolbar-btn"
                       title="Código"
                     >
-                      <i class="mdi mdi-code-tags"></i>
+                      <i class="fas fa-code"></i>
                     </button>
                   </div>
 
@@ -282,7 +294,7 @@
                       class="toolbar-btn"
                       title="Lista"
                     >
-                      <i class="mdi mdi-format-list-bulleted"></i>
+                      <i class="fas fa-list-ul"></i>
                     </button>
                     <button
                       type="button"
@@ -290,7 +302,7 @@
                       class="toolbar-btn"
                       title="Lista numerada"
                     >
-                      <i class="mdi mdi-format-list-numbered"></i>
+                      <i class="fas fa-list-ol"></i>
                     </button>
                     <button
                       type="button"
@@ -298,7 +310,7 @@
                       class="toolbar-btn"
                       title="Cita"
                     >
-                      <i class="mdi mdi-format-quote-close"></i>
+                      <i class="fas fa-quote-right"></i>
                     </button>
                   </div>
 
@@ -311,7 +323,7 @@
                       class="toolbar-btn"
                       title="Tabla"
                     >
-                      <i class="mdi mdi-table"></i>
+                      <i class="fas fa-table"></i>
                     </button>
                     <button
                       type="button"
@@ -319,7 +331,7 @@
                       class="toolbar-btn"
                       title="Línea horizontal"
                     >
-                      <i class="mdi mdi-minus"></i>
+                      <i class="fas fa-minus"></i>
                     </button>
                   </div>
                 </div>
@@ -336,15 +348,11 @@
                     :disabled="isSaving"
                     required
                   ></textarea>
-                  <div
-                    v-else
-                    class="markdown-preview"
-                    v-html="renderedMarkdown"
-                  ></div>
+                  <div v-else class="markdown-preview" v-html="renderedMarkdown"></div>
                 </div>
 
                 <div v-if="validationErrors.content" class="error-message">
-                  <i class="mdi mdi-alert-circle"></i>
+                  <i class="fas fa-exclamation-circle"></i>
                   {{ validationErrors.content }}
                 </div>
               </div>
@@ -353,7 +361,7 @@
               <div v-else-if="form.type === 'TYPE_URL'" class="content-url">
                 <div class="form-field">
                   <label for="documentUrl" class="form-label">
-                    <i class="mdi mdi-link"></i>
+                    <i class="fas fa-link"></i>
                     URL del Contenido
                     <span class="required">*</span>
                   </label>
@@ -369,11 +377,11 @@
                     required
                   />
                   <div class="form-help">
-                    <i class="mdi mdi-information"></i>
+                    <i class="fas fa-info-circle"></i>
                     Ingresa la URL completa del contenido que quieres enlazar
                   </div>
                   <div v-if="validationErrors.content" class="error-message">
-                    <i class="mdi mdi-alert-circle"></i>
+                    <i class="fas fa-exclamation-circle"></i>
                     {{ validationErrors.content }}
                   </div>
                 </div>
@@ -383,7 +391,7 @@
               <div v-else-if="form.type === 'TYPE_PDF'" class="content-pdf">
                 <div class="form-field">
                   <label for="pdfFile" class="form-label">
-                    <i class="mdi mdi-file-pdf-box"></i>
+                    <i class="fas fa-file-pdf"></i>
                     Archivo PDF
                     <span class="required">*</span>
                   </label>
@@ -399,12 +407,12 @@
                     />
                     <div class="upload-content">
                       <div v-if="!pdfFile" class="upload-placeholder">
-                        <i class="mdi mdi-cloud-upload"></i>
+                        <i class="fas fa-cloud-upload-alt"></i>
                         <p>Arrastra tu archivo PDF aquí o haz clic para seleccionar</p>
                         <span class="upload-hint">Solo archivos PDF (máximo 10MB)</span>
                       </div>
                       <div v-else class="upload-success">
-                        <i class="mdi mdi-file-pdf-box"></i>
+                        <i class="fas fa-file-pdf"></i>
                         <div class="file-info">
                           <p class="file-name">{{ pdfFile.name }}</p>
                           <p class="file-size">{{ formatFileSize(pdfFile.size) }}</p>
@@ -415,13 +423,13 @@
                           @click="removePdfFile"
                           :disabled="isSaving"
                         >
-                          <i class="mdi mdi-close"></i>
+                          <i class="fas fa-times"></i>
                         </button>
                       </div>
                     </div>
                   </div>
                   <div v-if="validationErrors.pdfFile" class="error-message">
-                    <i class="mdi mdi-alert-circle"></i>
+                    <i class="fas fa-exclamation-circle"></i>
                     {{ validationErrors.pdfFile }}
                   </div>
                 </div>
@@ -439,18 +447,16 @@
             <div class="form-fields">
               <div class="form-field">
                 <label class="form-label">
-                  <i class="mdi mdi-account-group"></i>
+                  <i class="fas fa-users"></i>
                   Roles con Acceso
                   <span class="required">*</span>
                 </label>
                 <fieldset class="roles-fieldset">
-                  <legend class="roles-legend">Selecciona los roles que pueden acceder a este documento</legend>
+                  <legend class="roles-legend">
+                    Selecciona los roles que pueden acceder a este documento
+                  </legend>
                   <div class="roles-grid">
-                    <div
-                      v-for="role in availableRoles"
-                      :key="role.value"
-                      class="role-option"
-                    >
+                    <div v-for="role in availableRoles" :key="role.value" class="role-option">
                       <input
                         :id="`role-${role.value}`"
                         v-model="form.roles"
@@ -460,7 +466,7 @@
                         :disabled="isSaving"
                       />
                       <label :for="`role-${role.value}`" class="role-label">
-                        <i :class="['mdi', role.icon]"></i>
+                        <i :class="['fas fas', role.icon]"></i>
                         <span class="role-name">{{ role.label }}</span>
                         <span class="role-description">{{ role.description }}</span>
                       </label>
@@ -471,7 +477,7 @@
                   Selecciona los roles que pueden acceder a este documento
                 </div>
                 <div v-if="validationErrors.roles" class="error-message">
-                  <i class="mdi mdi-alert-circle"></i>
+                  <i class="fas fa-exclamation-circle"></i>
                   {{ validationErrors.roles }}
                 </div>
               </div>
@@ -488,7 +494,7 @@
             <div class="summary-content">
               <div class="summary-section">
                 <h4 class="summary-title">
-                  <i class="mdi mdi-information-outline"></i>
+                  <i class="fas fa-info-circle-outline"></i>
                   Información Básica
                 </h4>
                 <div class="summary-item">
@@ -501,12 +507,14 @@
                 </div>
                 <div class="summary-item">
                   <span class="summary-label">Slug:</span>
-                  <span class="summary-value">{{ generateSlug(form.name) || 'Se generará automáticamente' }}</span>
+                  <span class="summary-value">{{
+                    generateSlug(form.name) || 'Se generará automáticamente'
+                  }}</span>
                 </div>
                 <div class="summary-item">
                   <span class="summary-label">Icono:</span>
                   <span class="summary-value">
-                    <i v-if="form.icon" :class="['mdi', form.icon]"></i>
+                    <i v-if="form.icon" :class="['fas fas', form.icon]"></i>
                     <span v-else>No especificado</span>
                   </span>
                 </div>
@@ -514,7 +522,7 @@
 
               <div class="summary-section">
                 <h4 class="summary-title">
-                  <i class="mdi mdi-content-save-outline"></i>
+                  <i class="fas fa-save"></i>
                   Contenido
                 </h4>
                 <div class="summary-item">
@@ -523,7 +531,9 @@
                 </div>
                 <div v-if="form.type === 'TYPE_TEXT'" class="summary-item">
                   <span class="summary-label">Contenido:</span>
-                  <span class="summary-value">{{ form.content ? 'Contenido en Markdown' : 'No especificado' }}</span>
+                  <span class="summary-value">{{
+                    form.content ? 'Contenido en Markdown' : 'No especificado'
+                  }}</span>
                 </div>
                 <div v-else-if="form.type === 'TYPE_URL'" class="summary-item">
                   <span class="summary-label">URL:</span>
@@ -531,13 +541,15 @@
                 </div>
                 <div v-else-if="form.type === 'TYPE_PDF'" class="summary-item">
                   <span class="summary-label">Archivo PDF:</span>
-                  <span class="summary-value">{{ pdfFile ? pdfFile.name : 'No especificado' }}</span>
+                  <span class="summary-value">{{
+                    pdfFile ? pdfFile.name : 'No especificado'
+                  }}</span>
                 </div>
               </div>
 
               <div class="summary-section">
                 <h4 class="summary-title">
-                  <i class="mdi mdi-account-group"></i>
+                  <i class="fas fa-users"></i>
                   Permisos
                 </h4>
                 <div class="summary-item">
@@ -571,7 +583,10 @@
 
         <div class="wizard-actions">
           <!-- Indicador de roles activos al editar -->
-          <div v-if="isEditing && form.roles && form.roles.length > 0" class="active-roles-indicator">
+          <div
+            v-if="isEditing && form.roles && form.roles.length > 0"
+            class="active-roles-indicator"
+          >
             <span class="indicator-label">Roles activos:</span>
             <div class="active-roles-list">
               <div
@@ -580,10 +595,10 @@
                 class="active-role-item"
                 :class="role.value"
               >
-                <i :class="['mdi', role.icon]"></i>
+                <i :class="['fas fas', role.icon]"></i>
                 <span>{{ role.label }}</span>
                 <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-badge">
-                  <i class="mdi mdi-crown"></i>
+                  <i class="fas fa-crown"></i>
                   Máximo
                 </span>
               </div>
@@ -596,7 +611,7 @@
             @click="previousStep"
             class="wizard-btn wizard-btn-secondary"
           >
-            <i class="mdi mdi-chevron-left"></i>
+            <i class="fas fa-chevron-left"></i>
             Anterior
           </button>
 
@@ -608,7 +623,7 @@
             :disabled="!canProceedToNextStep"
           >
             Siguiente
-            <i class="mdi mdi-chevron-right"></i>
+            <i class="fas fa-chevron-right"></i>
           </button>
 
           <button
@@ -617,17 +632,13 @@
             class="wizard-btn wizard-btn-success"
             :disabled="!isFormValid || isSaving"
           >
-            <i v-if="isSaving" class="mdi mdi-loading mdi-spin"></i>
-            <i v-else class="mdi mdi-check"></i>
-            {{ isSaving ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }} Documento
+            <i v-if="isSaving" class="fas fa-spinner fa-spin"></i>
+            <i v-else class="fas fa-check"></i>
+            {{ isSaving ? 'Guardando...' : isEditing ? 'Actualizar' : 'Crear' }} Documento
           </button>
 
-          <button
-            type="button"
-            @click="handleClose"
-            class="wizard-btn wizard-btn-cancel"
-          >
-            <i class="mdi mdi-close"></i>
+          <button type="button" @click="handleClose" class="wizard-btn wizard-btn-cancel">
+            <i class="fas fa-times"></i>
             Cancelar
           </button>
         </div>
@@ -646,16 +657,16 @@ import IconSelector from '@/components/IconSelector.vue'
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    default: false
+    default: false,
   },
   document: {
     type: Object,
-    default: null
+    default: null,
   },
   loading: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 // Emits
@@ -664,7 +675,7 @@ const emit = defineEmits(['update:modelValue', 'saved', 'close'])
 // Reactive data
 const dialog = computed({
   get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
+  set: (value) => emit('update:modelValue', value),
 })
 
 const form = ref({
@@ -673,7 +684,7 @@ const form = ref({
   slug: '',
   content: '',
   icon: '',
-  roles: []
+  roles: [],
 })
 
 const validationErrors = ref({})
@@ -690,23 +701,23 @@ const wizardSteps = ref([
   {
     id: 'basic',
     title: 'Información Básica',
-    description: 'Datos principales del documento'
+    description: 'Datos principales del documento',
   },
   {
     id: 'content',
     title: 'Contenido',
-    description: 'Contenido del documento'
+    description: 'Contenido del documento',
   },
   {
     id: 'permissions',
     title: 'Permisos',
-    description: 'Configuración de acceso'
+    description: 'Configuración de acceso',
   },
   {
     id: 'summary',
     title: 'Resumen',
-    description: 'Revisar información'
-  }
+    description: 'Revisar información',
+  },
 ])
 
 // PDF File Upload
@@ -727,7 +738,10 @@ const renderedMarkdown = computed(() => {
   }
 
   try {
-    console.log('📝 [MARKDOWN] Renderizando contenido:', form.value.content.substring(0, 100) + '...')
+    console.log(
+      '📝 [MARKDOWN] Renderizando contenido:',
+      form.value.content.substring(0, 100) + '...',
+    )
 
     // Configurar marked para renderizado seguro
     const options = {
@@ -736,7 +750,7 @@ const renderedMarkdown = computed(() => {
       smartLists: true,
       smartypants: true,
       sanitize: false,
-      silent: false
+      silent: false,
     }
 
     // Usar la API correcta de marked v16
@@ -748,15 +762,21 @@ const renderedMarkdown = computed(() => {
   } catch (error) {
     console.error('❌ [MARKDOWN] Error renderizando Markdown:', error)
     console.error('❌ [MARKDOWN] Contenido que causó el error:', form.value.content)
-    return '<div class="markdown-error"><p>❌ Error al renderizar el Markdown</p><pre>' + error.message + '</pre></div>'
+    return (
+      '<div class="markdown-error"><p>❌ Error al renderizar el Markdown</p><pre>' +
+      error.message +
+      '</pre></div>'
+    )
   }
 })
 
 const isFormValid = computed(() => {
-  return form.value.name &&
-         form.value.type &&
-         form.value.content &&
-         Object.keys(validationErrors.value).length === 0
+  return (
+    form.value.name &&
+    form.value.type &&
+    form.value.content &&
+    Object.keys(validationErrors.value).length === 0
+  )
 })
 
 // Wizard Computed Properties
@@ -764,10 +784,12 @@ const canProceedToNextStep = computed(() => {
   switch (currentWizardStep.value) {
     case 1:
       // Paso 1: Información Básica (sin slug, se genera automáticamente)
-      return form.value.name &&
-             form.value.type &&
-             !validationErrors.value.name &&
-             !validationErrors.value.type
+      return (
+        form.value.name &&
+        form.value.type &&
+        !validationErrors.value.name &&
+        !validationErrors.value.type
+      )
     case 2:
       // Paso 2: Contenido del Documento
       if (!form.value.type) return false
@@ -801,9 +823,9 @@ const previousStep = () => {
 
 const getTypeLabel = (type) => {
   const types = {
-    'TYPE_TEXT': '📄 Documento de Texto',
-    'TYPE_URL': '🔗 Enlace/URL',
-    'TYPE_PDF': '📋 Documento PDF'
+    TYPE_TEXT: '📄 Documento de Texto',
+    TYPE_URL: '🔗 Enlace/URL',
+    TYPE_PDF: '📋 Documento PDF',
   }
   return types[type] || 'No especificado'
 }
@@ -813,8 +835,8 @@ const getRolesText = () => {
     return 'Ninguno'
   }
 
-  const roleLabels = form.value.roles.map(roleValue => {
-    const role = availableRolesList.find(r => r.value === roleValue)
+  const roleLabels = form.value.roles.map((roleValue) => {
+    const role = availableRolesList.find((r) => r.value === roleValue)
     return role ? role.label : roleValue
   })
 
@@ -822,9 +844,11 @@ const getRolesText = () => {
 }
 
 const getSelectedRolesInfo = () => {
-  return form.value.roles.map(roleValue => {
-    return availableRolesList.find(role => role.value === roleValue)
-  }).filter(Boolean)
+  return form.value.roles
+    .map((roleValue) => {
+      return availableRolesList.find((role) => role.value === roleValue)
+    })
+    .filter(Boolean)
 }
 
 // Methods
@@ -856,7 +880,8 @@ const validateField = (field) => {
       } else if (value.length > 100) {
         validationErrors.value.slug = 'El slug no puede exceder 100 caracteres'
       } else if (!/^[a-z0-9-]+$/.test(value)) {
-        validationErrors.value.slug = 'El slug solo puede contener letras minúsculas, números y guiones'
+        validationErrors.value.slug =
+          'El slug solo puede contener letras minúsculas, números y guiones'
       } else if (value.startsWith('-') || value.endsWith('-')) {
         validationErrors.value.slug = 'El slug no puede empezar o terminar con guión'
       } else {
@@ -920,7 +945,9 @@ const generateSlug = (name, makeUnique = false) => {
   if (makeUnique) {
     // Usar timestamp completo + número aleatorio para mayor unicidad
     const timestamp = Date.now().toString()
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+    const random = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0')
     slug = `${slug}-${timestamp}-${random}`
   }
 
@@ -1187,10 +1214,10 @@ const uploadPdfFile = async (documentId, file) => {
     formData.append('type', 'TYPE_PDF')
     formData.append('slug', form.value.slug)
     formData.append('status', 'true')
-    formData.append('icon', form.value.icon || 'mdi-file-pdf-box')
+    formData.append('icon', form.value.icon || 'fas fa-file-pdf')
 
     // Enviar roles como array individual, no como JSON string
-    form.value.roles.forEach(role => {
+    form.value.roles.forEach((role) => {
       formData.append('roles', role)
     })
 
@@ -1207,19 +1234,19 @@ const availableRolesList = [
   {
     value: 'SUPER_USER',
     label: 'Super Usuario',
-    icon: 'mdi-account-star',
+    icon: 'fas fa-user-crown',
     description: 'Acceso completo al sistema',
   },
   {
     value: 'ADMIN',
     label: 'Administrador',
-    icon: 'mdi-account-key',
+    icon: 'fas fa-user-shield',
     description: 'Gestión de usuarios y configuración',
   },
   {
     value: 'COLLABORATOR',
     label: 'Colaborador',
-    icon: 'mdi-account-group',
+    icon: 'fas fa-users',
     description: 'Acceso a funciones básicas',
   },
 ]
@@ -1231,7 +1258,7 @@ const resetForm = () => {
     slug: '',
     content: '',
     icon: '',
-    roles: []
+    roles: [],
   }
   validationErrors.value = {}
   currentWizardStep.value = 1
@@ -1241,7 +1268,10 @@ const resetForm = () => {
 
 const loadDocumentData = () => {
   if (props.document) {
-    console.log('📄 [CONTENT FORM] Documento cargado para edición:', props.document?.name || 'Sin nombre')
+    console.log(
+      '📄 [CONTENT FORM] Documento cargado para edición:',
+      props.document?.name || 'Sin nombre',
+    )
     console.log('📄 [CONTENT FORM] Roles del documento:', props.document.roles)
 
     // Procesar roles para asegurar que sea un array y manejar diferentes formatos
@@ -1251,7 +1281,7 @@ const loadDocumentData = () => {
       if (typeof props.document.roles === 'string') {
         // Si roles es un string, convertir a array
         if (props.document.roles.includes(',')) {
-          cleanRoles = props.document.roles.split(',').map(role => role.trim())
+          cleanRoles = props.document.roles.split(',').map((role) => role.trim())
         } else {
           cleanRoles = [props.document.roles]
         }
@@ -1260,7 +1290,7 @@ const loadDocumentData = () => {
       }
 
       // Limpiar prefijos ROLE_ si existen
-      cleanRoles = cleanRoles.map(role => {
+      cleanRoles = cleanRoles.map((role) => {
         if (typeof role === 'string' && role.startsWith('ROLE_')) {
           return role.substring(5) // Remover 'ROLE_' (5 caracteres)
         }
@@ -1276,7 +1306,7 @@ const loadDocumentData = () => {
       slug: '', // Se genera automáticamente en edición
       content: props.document.content || '',
       icon: props.document.icon || '',
-      roles: cleanRoles
+      roles: cleanRoles,
     }
 
     // Resetear el paso del wizard a 1
@@ -1307,10 +1337,16 @@ const handleSubmit = async () => {
       slug: generateSlug(form.value.name, true) || '',
       status: true, // Campo requerido por el backend
       content: form.value.content.trim(),
-      icon: form.value.icon || (form.value.type === 'TYPE_TEXT' ? 'mdi-file-document' :
-                                form.value.type === 'TYPE_URL' ? 'mdi-link' :
-                                form.value.type === 'TYPE_PDF' ? 'mdi-file-pdf-box' : 'mdi-file'),
-      roles: form.value.roles.length > 0 ? form.value.roles : []
+      icon:
+        form.value.icon ||
+        (form.value.type === 'TYPE_TEXT'
+          ? 'fas fa-file-alt'
+          : form.value.type === 'TYPE_URL'
+            ? 'fas fa-link'
+            : form.value.type === 'TYPE_PDF'
+              ? 'fas fa-file-pdf'
+              : 'fas fa-file'),
+      roles: form.value.roles.length > 0 ? form.value.roles : [],
     }
 
     // Validaciones adicionales antes de enviar
@@ -1361,22 +1397,28 @@ const handleSubmit = async () => {
     console.log('📄 [CONTENT FORM] Es array:', Array.isArray(documentData.roles))
     console.log('📄 [CONTENT FORM] Longitud:', documentData.roles?.length)
     console.log('📄 [CONTENT FORM] Roles del formulario:', form.value.roles)
-    console.log('📄 [CONTENT FORM] Roles disponibles:', availableRolesList.map(r => r.value))
+    console.log(
+      '📄 [CONTENT FORM] Roles disponibles:',
+      availableRolesList.map((r) => r.value),
+    )
 
     // Verificar que no hay prefijos ROLE_ duplicados
-    const hasDuplicatePrefix = documentData.roles.some(role =>
-      typeof role === 'string' && role.startsWith('ROLE_ROLE_')
+    const hasDuplicatePrefix = documentData.roles.some(
+      (role) => typeof role === 'string' && role.startsWith('ROLE_ROLE_'),
     )
     console.log('📄 [CONTENT FORM] ¿Tiene prefijos duplicados?', hasDuplicatePrefix)
 
     if (hasDuplicatePrefix) {
-      console.warn('⚠️ [CONTENT FORM] Detectados roles con prefijo ROLE_ duplicado:', documentData.roles)
+      console.warn(
+        '⚠️ [CONTENT FORM] Detectados roles con prefijo ROLE_ duplicado:',
+        documentData.roles,
+      )
     }
 
     // Agregar el ID al documentData para el emit
     const documentDataWithId = {
       ...documentData,
-      id: isEditing.value ? props.document.id : undefined
+      id: isEditing.value ? props.document.id : undefined,
     }
 
     let createdDocumentId = null
@@ -1389,11 +1431,17 @@ const handleSubmit = async () => {
       // Para documentos PDF, usar el endpoint específico de creación con archivo
       console.log('🔍 [CONTENT FORM] Debug - Tipo:', documentData.type)
       console.log('🔍 [CONTENT FORM] Debug - pdfFile.value:', pdfFile.value)
-      console.log('🔍 [CONTENT FORM] Debug - Condición PDF:', documentData.type === 'TYPE_PDF' && pdfFile.value)
+      console.log(
+        '🔍 [CONTENT FORM] Debug - Condición PDF:',
+        documentData.type === 'TYPE_PDF' && pdfFile.value,
+      )
 
       if (documentData.type === 'TYPE_PDF' && pdfFile.value) {
         console.log('📄 [CONTENT FORM] Creando documento PDF con archivo...')
-        const createdDocument = await documentService.createDocumentWithFile(documentData, pdfFile.value)
+        const createdDocument = await documentService.createDocumentWithFile(
+          documentData,
+          pdfFile.value,
+        )
         console.log('✅ [CONTENT FORM] Documento PDF creado exitosamente')
         createdDocumentId = createdDocument.id
         documentDataWithId.id = createdDocumentId
@@ -1419,7 +1467,6 @@ const handleSubmit = async () => {
 
     emit('saved', documentDataWithId)
     handleClose()
-
   } catch (error) {
     console.error('❌ [CONTENT FORM] Error guardando documento:', error)
     console.error('❌ [CONTENT FORM] Status:', error.response?.status)
@@ -1432,7 +1479,11 @@ const handleSubmit = async () => {
     }
 
     // Manejar error específico de slug duplicado
-    if (error.response?.status === 422 && error.response?.data?.detail?.includes('slug') && error.response?.data?.detail?.includes('ya existe')) {
+    if (
+      error.response?.status === 422 &&
+      error.response?.data?.detail?.includes('slug') &&
+      error.response?.data?.detail?.includes('ya existe')
+    ) {
       console.log('🔄 [CONTENT FORM] Slug duplicado detectado, regenerando automáticamente...')
 
       // Regenerar slug único
@@ -1449,7 +1500,7 @@ const handleSubmit = async () => {
       try {
         const newDocumentData = {
           ...documentData,
-          slug: newSlug
+          slug: newSlug,
         }
 
         let createdDocumentId = null
@@ -1460,7 +1511,10 @@ const handleSubmit = async () => {
           // Para documentos PDF, usar el endpoint específico de creación con archivo
           if (newDocumentData.type === 'TYPE_PDF' && pdfFile.value) {
             console.log('📄 [CONTENT FORM] Reintentando creación de documento PDF con archivo...')
-            const createdDocument = await documentService.createDocumentWithFile(newDocumentData, pdfFile.value)
+            const createdDocument = await documentService.createDocumentWithFile(
+              newDocumentData,
+              pdfFile.value,
+            )
             createdDocumentId = createdDocument.id
           } else {
             const createdDocument = await documentService.createDocument(newDocumentData)
@@ -1473,16 +1527,18 @@ const handleSubmit = async () => {
         // Agregar el ID al newDocumentData para el emit
         const newDocumentDataWithId = {
           ...newDocumentData,
-          id: isEditing.value ? props.document.id : createdDocumentId
+          id: isEditing.value ? props.document.id : createdDocumentId,
         }
 
-        console.log('📄 [CONTENT FORM] Emitiendo evento saved con ID (slug único):', newDocumentDataWithId.id)
+        console.log(
+          '📄 [CONTENT FORM] Emitiendo evento saved con ID (slug único):',
+          newDocumentDataWithId.id,
+        )
         console.log('📄 [CONTENT FORM] Documento completo (slug único):', newDocumentDataWithId)
 
         emit('saved', newDocumentDataWithId)
         handleClose()
         return
-
       } catch (retryError) {
         console.error('❌ [CONTENT FORM] Error en reintento:', retryError)
         // Continuar con el manejo de errores normal
@@ -1508,7 +1564,6 @@ const handleSubmit = async () => {
       if (error.response?.data?.validation) {
         console.error('❌ [CONTENT FORM] Validación fallida:', error.response.data.validation)
       }
-
     } else if (error.response?.status === 400) {
       console.error('❌ [CONTENT FORM] Error 400: Solicitud incorrecta')
     } else if (error.response?.status === 401) {
@@ -1537,19 +1592,25 @@ const handleClose = () => {
 
 // Watchers
 watch(() => props.document, loadDocumentData, { immediate: true })
-watch(() => props.modelValue, (newValue) => {
-  if (newValue) {
-    loadDocumentData()
-  }
-})
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (newValue) {
+      loadDocumentData()
+    }
+  },
+)
 
 // Watcher para generar slug automáticamente cuando cambie el nombre
-watch(() => form.value.name, (newName) => {
-  if (newName && !form.value.slug) {
-    form.value.slug = generateSlug(newName)
-    validateField('slug')
-  }
-})
+watch(
+  () => form.value.name,
+  (newName) => {
+    if (newName && !form.value.slug) {
+      form.value.slug = generateSlug(newName)
+      validateField('slug')
+    }
+  },
+)
 
 // Función para regenerar slug manualmente
 const regenerateSlug = () => {
@@ -1624,8 +1685,12 @@ const selectSlugAlternative = (alternative) => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Modal Overlay */
@@ -2190,7 +2255,8 @@ const selectSlugAlternative = (alternative) => {
   color: var(--text-primary);
   border: none;
   outline: none;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 16px;
   line-height: 1.7;
   overflow-y: auto;
@@ -3590,7 +3656,7 @@ const selectSlugAlternative = (alternative) => {
 
 /* Wizard Header */
 .wizard-header {
-  background: #245FE7;
+  background: #245fe7;
   color: white;
   padding: 2rem;
   border-radius: 12px 12px 0 0;
@@ -3615,7 +3681,7 @@ const selectSlugAlternative = (alternative) => {
 }
 
 .dark-theme .wizard-header {
-  background: #245FE7;
+  background: #245fe7;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 

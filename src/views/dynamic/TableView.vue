@@ -1,32 +1,30 @@
-<template>
+﻿<template>
   <div class="table-view-layout">
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
-    
+
     <div class="main-content" :class="{ 'with-header': true }">
       <div class="table-container">
         <div class="table-header">
           <h1 class="table-title">
-            <i :class="menuIcon || 'mdi mdi-table'"></i>
+            <i :class="menuIcon || 'fas fas fa-table'"></i>
             {{ menuTitle || 'Tabla de Datos' }}
           </h1>
-          <p class="table-subtitle">
-            Gestiona y visualiza los datos en formato de tabla
-          </p>
+          <p class="table-subtitle">Gestiona y visualiza los datos en formato de tabla</p>
         </div>
 
         <div class="table-controls">
           <div class="controls-left">
             <div class="search-box">
-              <i class="mdi mdi-magnify"></i>
-              <input 
+              <i class="fas fa-magnify"></i>
+              <input
                 v-model="searchQuery"
                 type="text"
                 placeholder="Buscar en la tabla..."
                 class="search-input"
-              >
+              />
             </div>
-            
+
             <div class="filter-dropdown">
               <select v-model="statusFilter" class="filter-select">
                 <option value="">Todos los estados</option>
@@ -39,11 +37,11 @@
 
           <div class="controls-right">
             <button class="export-btn" @click="exportData">
-              <i class="mdi mdi-download"></i>
+              <i class="fas fa-download"></i>
               Exportar
             </button>
             <button class="add-btn" @click="openAddDialog">
-              <i class="mdi mdi-plus"></i>
+              <i class="fas fa-plus"></i>
               Agregar Nuevo
             </button>
           </div>
@@ -56,23 +54,23 @@
                 <tr>
                   <th class="sortable" @click="sortBy('id')">
                     ID
-                    <i class="mdi" :class="getSortIcon('id')"></i>
+                    <i class="fas" :class="getSortIcon('id')"></i>
                   </th>
                   <th class="sortable" @click="sortBy('name')">
                     Nombre
-                    <i class="mdi" :class="getSortIcon('name')"></i>
+                    <i class="fas" :class="getSortIcon('name')"></i>
                   </th>
                   <th class="sortable" @click="sortBy('email')">
                     Email
-                    <i class="mdi" :class="getSortIcon('email')"></i>
+                    <i class="fas" :class="getSortIcon('email')"></i>
                   </th>
                   <th class="sortable" @click="sortBy('status')">
                     Estado
-                    <i class="mdi" :class="getSortIcon('status')"></i>
+                    <i class="fas" :class="getSortIcon('status')"></i>
                   </th>
                   <th class="sortable" @click="sortBy('createdAt')">
                     Fecha Creación
-                    <i class="mdi" :class="getSortIcon('createdAt')"></i>
+                    <i class="fas" :class="getSortIcon('createdAt')"></i>
                   </th>
                   <th class="actions-header">Acciones</th>
                 </tr>
@@ -97,26 +95,22 @@
                   <td class="date-cell">{{ formatDate(item.createdAt) }}</td>
                   <td class="actions-cell">
                     <div class="action-buttons">
-                      <button 
+                      <button
                         class="action-btn view-btn"
                         @click="viewItem(item)"
                         title="Ver detalles"
                       >
-                        <i class="mdi mdi-eye"></i>
+                        <i class="fas fa-eye"></i>
                       </button>
-                      <button 
-                        class="action-btn edit-btn"
-                        @click="editItem(item)"
-                        title="Editar"
-                      >
-                        <i class="mdi mdi-pencil"></i>
+                      <button class="action-btn edit-btn" @click="editItem(item)" title="Editar">
+                        <i class="fas fa-pencil"></i>
                       </button>
-                      <button 
+                      <button
                         class="action-btn delete-btn"
                         @click="confirmDelete(item)"
                         title="Eliminar"
                       >
-                        <i class="mdi mdi-delete"></i>
+                        <i class="fas fa-delete"></i>
                       </button>
                     </div>
                   </td>
@@ -127,11 +121,17 @@
 
           <!-- Mensaje cuando no hay datos -->
           <div v-if="filteredData.length === 0" class="empty-state">
-            <i class="mdi mdi-database-off"></i>
+            <i class="fas fa-database-off"></i>
             <h3>No hay datos disponibles</h3>
-            <p>{{ searchQuery ? 'No se encontraron resultados para tu búsqueda' : 'Aún no hay elementos para mostrar' }}</p>
+            <p>
+              {{
+                searchQuery
+                  ? 'No se encontraron resultados para tu búsqueda'
+                  : 'Aún no hay elementos para mostrar'
+              }}
+            </p>
             <button class="add-first-btn" @click="openAddDialog">
-              <i class="mdi mdi-plus"></i>
+              <i class="fas fa-plus"></i>
               Agregar Primer Elemento
             </button>
           </div>
@@ -142,34 +142,34 @@
           <div class="pagination-info">
             Mostrando {{ startIndex + 1 }} - {{ endIndex }} de {{ filteredData.length }} elementos
           </div>
-          
+
           <div class="pagination-controls">
-            <button 
+            <button
               class="page-btn"
               :disabled="currentPage === 1"
               @click="goToPage(currentPage - 1)"
             >
-              <i class="mdi mdi-chevron-left"></i>
+              <i class="fas fa-chevron-left"></i>
             </button>
-            
+
             <span class="page-numbers">
-              <button 
-                v-for="page in visiblePages" 
+              <button
+                v-for="page in visiblePages"
                 :key="page"
                 class="page-number"
-                :class="{ 'active': page === currentPage }"
+                :class="{ active: page === currentPage }"
                 @click="goToPage(page)"
               >
                 {{ page }}
               </button>
             </span>
-            
-            <button 
+
+            <button
               class="page-btn"
               :disabled="currentPage === totalPages"
               @click="goToPage(currentPage + 1)"
             >
-              <i class="mdi mdi-chevron-right"></i>
+              <i class="fas fa-chevron-right"></i>
             </button>
           </div>
 
@@ -190,11 +190,11 @@
       <div class="dialog-content" @click.stop>
         <div class="dialog-header">
           <h2 class="dialog-title">
-            <i class="mdi mdi-account-plus"></i>
+            <i class="fas fa-account-plus"></i>
             {{ isEditing ? 'Editar Elemento' : 'Agregar Nuevo Elemento' }}
           </h2>
           <button class="close-btn" @click="closeDialog">
-            <i class="mdi mdi-close"></i>
+            <i class="fas fa-close"></i>
           </button>
         </div>
 
@@ -202,24 +202,24 @@
           <form @submit.prevent="saveItem" class="item-form">
             <div class="form-group">
               <label class="form-label">Nombre</label>
-              <input 
+              <input
                 v-model="itemForm.name"
-                type="text" 
+                type="text"
                 class="form-input"
                 placeholder="Ingresa el nombre"
                 required
-              >
+              />
             </div>
 
             <div class="form-group">
               <label class="form-label">Email</label>
-              <input 
+              <input
                 v-model="itemForm.email"
-                type="email" 
+                type="email"
                 class="form-input"
                 placeholder="Ingresa el email"
                 required
-              >
+              />
             </div>
 
             <div class="form-group">
@@ -233,9 +233,7 @@
             </div>
 
             <div class="dialog-footer">
-              <button type="button" class="cancel-btn" @click="closeDialog">
-                Cancelar
-              </button>
+              <button type="button" class="cancel-btn" @click="closeDialog">Cancelar</button>
               <button type="submit" class="save-btn">
                 {{ isEditing ? 'Guardar Cambios' : 'Agregar Elemento' }}
               </button>
@@ -249,20 +247,16 @@
     <div v-if="showDeleteDialog" class="dialog-overlay" @click="closeDeleteDialog">
       <div class="delete-dialog" @click.stop>
         <div class="delete-icon">
-          <i class="mdi mdi-alert-circle"></i>
+          <i class="fas fa-alert-circle"></i>
         </div>
         <h3>¿Eliminar elemento?</h3>
         <p>
-          Se eliminará el elemento "<strong>{{ itemToDelete?.name }}</strong>".
-          <br>Esta acción no se puede deshacer.
+          Se eliminará el elemento "<strong>{{ itemToDelete?.name }}</strong
+          >". <br />Esta acción no se puede deshacer.
         </p>
         <div class="delete-actions">
-          <button class="cancel-btn" @click="closeDeleteDialog">
-            Cancelar
-          </button>
-          <button class="confirm-delete-btn" @click="deleteItem">
-            Eliminar
-          </button>
+          <button class="cancel-btn" @click="closeDeleteDialog">Cancelar</button>
+          <button class="confirm-delete-btn" @click="deleteItem">Eliminar</button>
         </div>
       </div>
     </div>
@@ -303,7 +297,7 @@ const itemForm = ref({
   id: null,
   name: '',
   email: '',
-  status: ''
+  status: '',
 })
 
 // Datos de ejemplo (en una aplicación real vendrían del backend)
@@ -313,36 +307,36 @@ const tableData = ref([
     name: 'Juan Pérez',
     email: 'juan.perez@email.com',
     status: 'activo',
-    createdAt: '2024-01-15'
+    createdAt: '2024-01-15',
   },
   {
     id: 2,
     name: 'María García',
     email: 'maria.garcia@email.com',
     status: 'inactivo',
-    createdAt: '2024-01-20'
+    createdAt: '2024-01-20',
   },
   {
     id: 3,
     name: 'Carlos López',
     email: 'carlos.lopez@email.com',
     status: 'pendiente',
-    createdAt: '2024-01-25'
+    createdAt: '2024-01-25',
   },
   {
     id: 4,
     name: 'Ana Martínez',
     email: 'ana.martinez@email.com',
     status: 'activo',
-    createdAt: '2024-02-01'
+    createdAt: '2024-02-01',
   },
   {
     id: 5,
     name: 'Pedro Rodríguez',
     email: 'pedro.rodriguez@email.com',
     status: 'activo',
-    createdAt: '2024-02-05'
-  }
+    createdAt: '2024-02-05',
+  },
 ])
 
 // Computed properties
@@ -352,22 +346,21 @@ const filteredData = computed(() => {
   // Filtrar por búsqueda
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    data = data.filter(item => 
-      item.name.toLowerCase().includes(query) ||
-      item.email.toLowerCase().includes(query)
+    data = data.filter(
+      (item) => item.name.toLowerCase().includes(query) || item.email.toLowerCase().includes(query),
     )
   }
 
   // Filtrar por estado
   if (statusFilter.value) {
-    data = data.filter(item => item.status === statusFilter.value)
+    data = data.filter((item) => item.status === statusFilter.value)
   }
 
   // Ordenar
   data.sort((a, b) => {
     const aVal = a[sortField.value]
     const bVal = b[sortField.value]
-    
+
     if (sortDirection.value === 'asc') {
       return aVal > bVal ? 1 : -1
     } else {
@@ -398,11 +391,11 @@ const visiblePages = computed(() => {
   const pages = []
   const start = Math.max(1, currentPage.value - 2)
   const end = Math.min(totalPages.value, currentPage.value + 2)
-  
+
   for (let i = start; i <= end; i++) {
     pages.push(i)
   }
-  
+
   return pages
 })
 
@@ -421,8 +414,8 @@ const sortBy = (field) => {
 }
 
 const getSortIcon = (field) => {
-  if (sortField.value !== field) return 'mdi-sort'
-  return sortDirection.value === 'asc' ? 'mdi-sort-ascending' : 'mdi-sort-descending'
+  if (sortField.value !== field) return 'fas fa-sort'
+  return sortDirection.value === 'asc' ? 'fas fa-sort-ascending' : 'fas fa-sort-descending'
 }
 
 const goToPage = (page) => {
@@ -457,14 +450,14 @@ const resetForm = () => {
     id: null,
     name: '',
     email: '',
-    status: ''
+    status: '',
   }
 }
 
 const saveItem = () => {
   if (isEditing.value) {
     // Actualizar elemento existente
-    const index = tableData.value.findIndex(item => item.id === itemForm.value.id)
+    const index = tableData.value.findIndex((item) => item.id === itemForm.value.id)
     if (index !== -1) {
       tableData.value[index] = { ...itemForm.value }
     }
@@ -472,12 +465,12 @@ const saveItem = () => {
     // Agregar nuevo elemento
     const newItem = {
       ...itemForm.value,
-      id: Math.max(...tableData.value.map(item => item.id)) + 1,
-      createdAt: new Date().toISOString().split('T')[0]
+      id: Math.max(...tableData.value.map((item) => item.id)) + 1,
+      createdAt: new Date().toISOString().split('T')[0],
     }
     tableData.value.push(newItem)
   }
-  
+
   closeDialog()
 }
 
@@ -492,7 +485,7 @@ const closeDeleteDialog = () => {
 }
 
 const deleteItem = () => {
-  const index = tableData.value.findIndex(item => item.id === itemToDelete.value.id)
+  const index = tableData.value.findIndex((item) => item.id === itemToDelete.value.id)
   if (index !== -1) {
     tableData.value.splice(index, 1)
   }
@@ -503,15 +496,17 @@ const exportData = () => {
   // Simular exportación
   const csvContent = [
     ['ID', 'Nombre', 'Email', 'Estado', 'Fecha Creación'],
-    ...filteredData.value.map(item => [
+    ...filteredData.value.map((item) => [
       item.id,
       item.name,
       item.email,
       item.status,
-      item.createdAt
-    ])
-  ].map(row => row.join(',')).join('\n')
-  
+      item.createdAt,
+    ]),
+  ]
+    .map((row) => row.join(','))
+    .join('\n')
+
   const blob = new Blob([csvContent], { type: 'text/csv' })
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -526,15 +521,15 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('es-ES', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
 onMounted(() => {
   // Buscar información del menú actual
   const currentPath = route.path
-  const currentMenu = authStore.menus?.find(menu => menu.path === currentPath)
-  
+  const currentMenu = authStore.menus?.find((menu) => menu.path === currentPath)
+
   if (currentMenu) {
     menuTitle.value = currentMenu.name
     menuIcon.value = currentMenu.icon
@@ -644,7 +639,8 @@ onMounted(() => {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.filter-select, .per-page-select {
+.filter-select,
+.per-page-select {
   padding: 0.75rem 1rem;
   border: 2px solid var(--border-color);
   border-radius: 8px;
@@ -659,7 +655,8 @@ onMounted(() => {
   gap: 1rem;
 }
 
-.export-btn, .add-btn {
+.export-btn,
+.add-btn {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 8px;
@@ -1024,7 +1021,8 @@ onMounted(() => {
   font-size: 0.9rem;
 }
 
-.form-input, .form-select {
+.form-input,
+.form-select {
   width: 100%;
   padding: 0.75rem 1rem;
   border: 2px solid var(--border-color);
@@ -1035,7 +1033,8 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
-.form-input:focus, .form-select:focus {
+.form-input:focus,
+.form-select:focus {
   outline: none;
   border-color: var(--accent-color);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
@@ -1048,7 +1047,8 @@ onMounted(() => {
   margin-top: 2rem;
 }
 
-.cancel-btn, .save-btn {
+.cancel-btn,
+.save-btn {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 8px;
@@ -1140,11 +1140,11 @@ onMounted(() => {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .controls-left {
     flex-direction: column;
   }
-  
+
   .pagination {
     flex-direction: column;
     text-align: center;
@@ -1155,32 +1155,32 @@ onMounted(() => {
   .main-content {
     margin-left: 0;
   }
-  
+
   .table-container {
     padding: 1rem;
   }
-  
+
   .table-scroll {
     font-size: 0.9rem;
   }
-  
+
   .data-table th,
   .data-table td {
     padding: 0.75rem 0.5rem;
   }
-  
+
   .user-info {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .user-avatar {
     width: 32px;
     height: 32px;
     font-size: 0.8rem;
   }
-  
+
   .action-buttons {
     flex-direction: column;
     gap: 0.25rem;

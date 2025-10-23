@@ -1,13 +1,13 @@
-<template>
+﻿<template>
   <div v-if="show && menu" class="modal-overlay" @click="handleOverlayClick">
     <div class="modal-container" @click.stop>
       <div class="modal-header">
         <div class="modal-icon">
-          <i class="mdi mdi-delete-alert"></i>
+          <i class="fas fa-delete-alert"></i>
         </div>
         <h2>Eliminar Menú</h2>
         <button class="close-btn" @click="$emit('close')">
-          <i class="mdi mdi-close"></i>
+          <i class="fas fa-close"></i>
         </button>
       </div>
 
@@ -15,7 +15,7 @@
         <!-- Información del menú a eliminar -->
         <div class="menu-info">
           <div class="menu-item">
-            <i :class="['mdi', menu?.icon] || 'mdi mdi-menu'" class="menu-icon"></i>
+            <i :class="['fas fas', menu?.icon] || 'fas fas fa-menu'" class="menu-icon"></i>
             <div class="menu-details">
               <h3>{{ menu?.name || 'Sin nombre' }}</h3>
               <p class="menu-path">{{ menu?.path || 'Sin ruta' }}</p>
@@ -26,7 +26,7 @@
         <!-- Mostrar submenús si existen -->
         <div v-if="hasChildren" class="submenu-section">
           <div class="warning-message">
-            <i class="mdi mdi-alert-circle"></i>
+            <i class="fas fa-alert-circle"></i>
             <p>
               Este menú tiene <strong>{{ children.length }}</strong> submenú{{
                 children.length > 1 ? 's' : ''
@@ -51,7 +51,7 @@
                 />
               </div>
               <div class="submenu-info">
-                <i :class="['mdi', child.icon] || 'mdi mdi-menu'" class="submenu-icon"></i>
+                <i :class="['fas fas', child.icon] || 'fas fas fa-menu'" class="submenu-icon"></i>
                 <div class="submenu-details">
                   <span class="submenu-name">{{ child.name }}</span>
                   <span class="submenu-path">{{ child.path }}</span>
@@ -74,7 +74,7 @@
                 />
                 <div class="option-content">
                   <div class="option-header">
-                    <i class="mdi mdi-delete-sweep"></i>
+                    <i class="fas fa-delete-sweep"></i>
                     <span class="option-title">Eliminar todo</span>
                   </div>
                   <p class="option-description">
@@ -92,7 +92,7 @@
                 />
                 <div class="option-content">
                   <div class="option-header">
-                    <i class="mdi mdi-delete-variant"></i>
+                    <i class="fas fa-delete-variant"></i>
                     <span class="option-title">Eliminación selectiva</span>
                   </div>
                   <p class="option-description">
@@ -111,7 +111,7 @@
                 />
                 <div class="option-content">
                   <div class="option-header">
-                    <i class="mdi mdi-delete-outline"></i>
+                    <i class="fas fa-delete-outline"></i>
                     <span class="option-title">Solo eliminar menú principal</span>
                   </div>
                   <p class="option-description">
@@ -126,14 +126,14 @@
           <div class="mode-info">
             <div v-if="deletionMode === 'selective'" class="selective-info">
               <p>
-                <i class="mdi mdi-information"></i>
+                <i class="fas fa-information"></i>
                 Selecciona los submenús que deseas eliminar. El menú principal se mantendrá intacto.
                 Los submenús no seleccionados permanecerán como submenús del menú principal.
               </p>
             </div>
             <div v-else-if="deletionMode === 'keep-children'" class="keep-info">
               <p>
-                <i class="mdi mdi-information"></i>
+                <i class="fas fa-information"></i>
                 Todos los submenús se convertirán en menús principales y conservarán su estructura
                 interna.
               </p>
@@ -160,7 +160,7 @@
           @click="handleConfirm"
           :disabled="deletionMode === 'selective' && selectedChildren.length === 0"
         >
-          <i class="mdi mdi-delete"></i>
+          <i class="fas fa-delete"></i>
           {{ getConfirmButtonText() }}
         </button>
       </div>
