@@ -79,7 +79,7 @@
           <i class="fas fa-pencil"></i>
         </button>
         <button class="action-button delete" @click="emit('delete', menu)" title="Eliminar menú">
-          <i class="fas fa-delete"></i>
+          <i class="fas fa-trash-alt"></i>
         </button>
       </div>
     </div>

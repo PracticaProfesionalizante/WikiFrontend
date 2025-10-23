@@ -1167,6 +1167,7 @@ const previewMenu = ref(null)
 
 // Estado de carga y errores
 const isLoading = ref(false)
+const isSaving = ref(false)
 const isCreatingSubmenus = ref(false)
 const submenuProgress = ref({ current: 0, total: 0 })
 const error = ref(null)
@@ -1763,6 +1764,7 @@ const saveMenu = async () => {
   }
 
   isLoading.value = true
+  isSaving.value = true
   error.value = null
 
   // Mostrar modal de progreso para todas las operaciones
@@ -1998,6 +2000,7 @@ const saveMenu = async () => {
     progressModalAction.value = 'Error en el proceso'
   } finally {
     isLoading.value = false
+    isSaving.value = false
     // El modal se cerrará automáticamente cuando se cierre el diálogo
   }
 }
@@ -2078,6 +2081,16 @@ const validateFormDebounced = () => {
 const validateForm = () => {
   const errors = {}
 
+  // Debug: Log del estado del formulario
+  console.log('🔍 [DEBUG] Validando formulario:', {
+    name: menuForm.value.name,
+    path: menuForm.value.path,
+    icon: menuForm.value.icon,
+    template: menuForm.value.template,
+    roles: menuForm.value.roles,
+    parentId: menuForm.value.parentId,
+  })
+
   // Validar nombre con reglas más estrictas
   if (!menuForm.value.name.trim()) {
     errors.name = 'El nombre del menú es obligatorio'
@@ -2117,7 +2130,7 @@ const validateForm = () => {
   // Validar icono con más detalles
   if (!menuForm.value.icon) {
     errors.icon = 'Debe seleccionar un icono'
-  } else if (!menuForm.value.icon.startsWith('fas fas fa-')) {
+  } else if (!menuForm.value.icon.startsWith('fa-')) {
     errors.icon = 'El icono debe ser válido (formato MDI)'
   }
 
@@ -2236,6 +2249,24 @@ const validateForm = () => {
 
   if (currentErrorsString !== newErrorsString) {
     validationErrors.value = errors
+  }
+
+  // Debug: Log de errores encontrados
+  if (Object.keys(errors).length > 0) {
+    console.log('❌ [DEBUG] Errores de validación encontrados:')
+    Object.keys(errors).forEach((key) => {
+      console.log(`  - ${key}: ${errors[key]}`)
+    })
+    console.log('📋 [DEBUG] Estado del formulario:', {
+      name: menuForm.value.name,
+      path: menuForm.value.path,
+      icon: menuForm.value.icon,
+      template: menuForm.value.template,
+      roles: menuForm.value.roles,
+      parentId: menuForm.value.parentId,
+    })
+  } else {
+    console.log('✅ [DEBUG] Formulario válido')
   }
 
   return Object.keys(errors).length === 0

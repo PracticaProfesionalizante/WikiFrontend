@@ -120,7 +120,7 @@ export default {
       if (this.searchQuery.trim()) {
         const query = this.searchQuery.toLowerCase().trim()
         icons = icons.filter((icon) => {
-          const iconName = icon.replace('fas fa-', '').replace(/-/g, ' ')
+          const iconName = icon.replace('fa-', '').replace(/-/g, ' ')
           const keywords = this.getIconKeywords(icon)
 
           // Búsqueda exacta tiene prioridad
@@ -137,8 +137,8 @@ export default {
 
         // Ordenar resultados por relevancia
         icons.sort((a, b) => {
-          const aName = a.replace('fas fa-', '').replace(/-/g, ' ')
-          const bName = b.replace('fas fa-', '').replace(/-/g, ' ')
+          const aName = a.replace('fa-', '').replace(/-/g, ' ')
+          const bName = b.replace('fa-', '').replace(/-/g, ' ')
 
           // Priorizar coincidencias exactas al inicio
           if (aName.startsWith(query) && !bName.startsWith(query)) return -1
@@ -234,12 +234,12 @@ export default {
     },
 
     getIconDisplayName(icon) {
-      return icon.replace('fas fa-', '').replace(/-/g, ' ')
+      return icon.replace('fa-', '').replace(/-/g, ' ')
     },
 
     getIconKeywords(icon) {
       // Generar palabras clave basadas en el nombre del icono
-      const name = icon.replace('fas fa-', '')
+      const name = icon.replace('fa-', '')
       const parts = name.split('-')
 
       // Agregar sinónimos y palabras relacionadas
