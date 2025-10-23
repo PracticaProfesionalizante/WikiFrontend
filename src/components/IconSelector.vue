@@ -35,6 +35,19 @@
       </div>
 
       <div v-else class="icon-grid">
+        <!-- Opción "Sin icono" -->
+        <div
+          class="icon-item no-icon-option"
+          :class="{ selected: selectedIcon === '' }"
+          @click="selectIcon('')"
+        >
+          <div class="no-icon-preview">
+            <i class="fas fa-ban"></i>
+          </div>
+          <span class="icon-name">Sin icono</span>
+        </div>
+
+        <!-- Iconos normales -->
         <div
           v-for="icon in visibleIcons"
           :key="icon"
@@ -49,9 +62,12 @@
     </div>
 
     <div class="icon-selector-footer">
-      <div class="selected-icon-preview" v-if="selectedIcon">
-        <i :class="['fas fas', selectedIcon]" class="selected-preview"></i>
-        <span class="selected-name">{{ selectedIcon }}</span>
+      <div class="selected-icon-preview" v-if="selectedIcon !== null">
+        <i v-if="selectedIcon" :class="['fas fas', selectedIcon]" class="selected-preview"></i>
+        <div v-else class="no-icon-selected">
+          <i class="fas fa-ban"></i>
+        </div>
+        <span class="selected-name">{{ selectedIcon || 'Sin icono' }}</span>
       </div>
       <div class="icon-count">
         Mostrando {{ currentlyLoaded }} de {{ filteredIcons.length }} iconos
@@ -676,9 +692,110 @@ export default {
   font-weight: 500;
 }
 
+/* Estilos para la opción "Sin icono" */
+.no-icon-option {
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+  border: 2px dashed var(--border-color);
+}
+
+.no-icon-option:hover {
+  background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+  border-color: var(--accent-color);
+  border-style: solid;
+}
+
+.no-icon-option.selected {
+  background: linear-gradient(135deg, var(--accent-bg), var(--bg-secondary));
+  border-color: var(--accent-color);
+  border-style: solid;
+}
+
+.no-icon-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--bg-tertiary);
+  border-radius: 50%;
+  margin-bottom: 4px;
+  transition: all 0.3s ease;
+}
+
+.no-icon-preview i {
+  font-size: 16px;
+  color: var(--text-muted);
+  transition: all 0.3s ease;
+}
+
+.no-icon-option:hover .no-icon-preview i {
+  color: var(--accent-color);
+  transform: scale(1.1);
+}
+
+.no-icon-option.selected .no-icon-preview i {
+  color: var(--accent-color);
+}
+
+.no-icon-selected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--bg-tertiary);
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.no-icon-selected i {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
 /* Mejoras para modo oscuro */
 .dark-theme .icon-name {
   color: var(--text-secondary);
+}
+
+/* Estilos para modo oscuro - opción "Sin icono" */
+.dark-theme .no-icon-option {
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+  border: 2px dashed var(--border-primary);
+}
+
+.dark-theme .no-icon-option:hover {
+  background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+  border-color: var(--accent-color);
+}
+
+.dark-theme .no-icon-option.selected {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), var(--bg-secondary));
+  border-color: var(--accent-color);
+}
+
+.dark-theme .no-icon-preview {
+  background: var(--bg-tertiary);
+}
+
+.dark-theme .no-icon-preview i {
+  color: var(--text-muted);
+}
+
+.dark-theme .no-icon-option:hover .no-icon-preview i {
+  color: var(--accent-color);
+}
+
+.dark-theme .no-icon-option.selected .no-icon-preview i {
+  color: var(--accent-color);
+}
+
+.dark-theme .no-icon-selected {
+  background: var(--bg-tertiary);
+}
+
+.dark-theme .no-icon-selected i {
+  color: var(--text-muted);
 }
 
 .dark-theme .icon-item:hover .icon-name {

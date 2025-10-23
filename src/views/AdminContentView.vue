@@ -574,15 +574,17 @@
                       </div>
 
                       <!-- Visor de PDF -->
-                      <VuePdfEmbed
-                        v-show="!pdfLoading && pdfBlobUrl"
-                        :source="pdfBlobUrl"
-                        :page="currentPdfPage"
-                        class="pdf-viewer"
-                        @loaded="onPdfLoaded"
-                        @error="onPdfError"
-                        @page-change="onPdfPageChange"
-                      />
+                      <div class="pdf-viewer-wrapper" :style="{ transform: `scale(${pdfZoom})` }">
+                        <VuePdfEmbed
+                          v-show="!pdfLoading && pdfBlobUrl"
+                          :source="pdfBlobUrl"
+                          :page="currentPdfPage"
+                          class="pdf-viewer"
+                          @loaded="onPdfLoaded"
+                          @error="onPdfError"
+                          @page-change="onPdfPageChange"
+                        />
+                      </div>
 
                       <!-- Mensaje de error si hay problema -->
                       <div v-if="pdfError" class="pdf-error-message">
@@ -784,6 +786,19 @@
                   <button @click="zoomIn" class="zoom-compact-btn" title="Acercar">
                     <i class="fas fa-search-plus"></i>
                   </button>
+
+                  <button @click="resetZoom" class="zoom-compact-btn reset-btn" title="Zoom original (100%)">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                  </button>
+                </div>
+
+                <div class="pdf-actions-compact">
+                  <a :href="pdfBlobUrl" target="_blank" rel="noopener noreferrer" class="pdf-action-btn" title="Abrir PDF en nueva pestaña">
+                    <i class="fas fa-external-link-alt"></i>
+                  </a>
+                  <a :href="pdfBlobUrl" download class="pdf-action-btn" title="Descargar PDF">
+                    <i class="fas fa-download"></i>
+                  </a>
                 </div>
               </div>
             </div>
@@ -1911,17 +1926,20 @@ const goToLastPage = () => {
 const zoomIn = () => {
   if (pdfZoom.value < 3.0) {
     pdfZoom.value = Math.min(pdfZoom.value + 0.25, 3.0)
+    console.log(`🔍 Zoom aumentado a: ${Math.round(pdfZoom.value * 100)}%`)
   }
 }
 
 const zoomOut = () => {
   if (pdfZoom.value > 0.5) {
     pdfZoom.value = Math.max(pdfZoom.value - 0.25, 0.5)
+    console.log(`🔍 Zoom reducido a: ${Math.round(pdfZoom.value * 100)}%`)
   }
 }
 
 const resetZoom = () => {
   pdfZoom.value = 1.0
+  console.log(`🔍 Zoom reseteado a: 100%`)
 }
 
 const redirectToLogin = () => {
@@ -3102,7 +3120,7 @@ onUnmounted(() => {
 .preview-modal {
   background: var(--bg-card);
   border-radius: 20px;
-  max-width: 800px;
+  max-width: 1200px;
   width: 100%;
   max-height: 90vh;
   display: flex;
@@ -3167,10 +3185,11 @@ onUnmounted(() => {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
+  align-items: center;
 }
 
 .modal-btn {
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
@@ -3179,6 +3198,9 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.5rem;
   border: none;
+  min-width: 120px;
+  justify-content: center;
+  font-size: 0.9rem;
 }
 
 .modal-btn.secondary {
@@ -3215,24 +3237,27 @@ onUnmounted(() => {
   margin-right: 1rem;
   background: var(--bg-secondary);
   border-radius: 0.5rem;
-  padding: 0.75rem;
+  padding: 1rem;
   border: 1px solid var(--border-color);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-height: 60px;
 }
 
 .nav-compact-controls {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  gap: 1rem;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .nav-compact-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 2.25rem;
+  height: 2.25rem;
   background: var(--primary-color);
   color: white;
   border: none;
@@ -3240,6 +3265,7 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  font-size: 0.9rem;
 }
 
 .nav-compact-btn:hover:not(:disabled) {
@@ -3261,21 +3287,26 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
-  min-width: 80px;
+  min-width: 100px;
+  flex: 1;
+  max-width: 150px;
 }
 
 .page-compact-counter {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
+  text-align: center;
+  min-width: 60px;
 }
 
 .page-compact-progress {
-  width: 60px;
-  height: 3px;
+  width: 100%;
+  height: 4px;
   background: var(--border-color);
   border-radius: 2px;
   overflow: hidden;
+  max-width: 120px;
 }
 
 .progress-compact-bar {
@@ -3294,14 +3325,15 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2rem;
+  height: 2rem;
   background: var(--bg-hover);
   color: var(--text-secondary);
   border: 1px solid var(--border-color);
   border-radius: 0.25rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: 0.8rem;
 }
 
 .shortcut-compact-btn:hover:not(:disabled) {
@@ -3318,7 +3350,7 @@ onUnmounted(() => {
 .zoom-compact-controls {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
   margin-left: 0.5rem;
   padding-left: 0.5rem;
   border-left: 1px solid var(--border-color);
@@ -3328,14 +3360,15 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2rem;
+  height: 2rem;
   background: var(--success-color);
   color: white;
   border: none;
   border-radius: 0.25rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: 0.8rem;
 }
 
 .zoom-compact-btn:hover {
@@ -3343,16 +3376,59 @@ onUnmounted(() => {
   transform: translateY(-1px);
 }
 
+.zoom-compact-btn.reset-btn {
+  background: var(--warning-color);
+}
+
+.zoom-compact-btn.reset-btn:hover {
+  background: var(--warning-hover);
+}
+
 .zoom-compact-level {
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-secondary);
-  min-width: 2.5rem;
+  min-width: 3rem;
   text-align: center;
   background: var(--bg-hover);
-  padding: 0.25rem 0.5rem;
+  padding: 0.375rem 0.625rem;
   border-radius: 0.25rem;
   border: 1px solid var(--border-color);
+}
+
+.pdf-actions-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 0.5rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid var(--border-color);
+}
+
+.pdf-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--primary-color);
+  color: white;
+  border: 1px solid var(--primary-color);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+
+.pdf-action-btn:hover {
+  background: var(--success-hover);
+  transform: translateY(-1px);
+}
+
+.pdf-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Responsive para panel compacto */
@@ -3381,6 +3457,15 @@ onUnmounted(() => {
   }
 
   .zoom-compact-controls {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .pdf-actions-compact {
     margin-left: 0;
     padding-left: 0;
     border-left: none;
@@ -3940,7 +4025,7 @@ onUnmounted(() => {
 /* Estilos para el visor de PDF mejorado */
 .pdf-viewer-container {
   width: 100%;
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
@@ -3948,6 +4033,14 @@ onUnmounted(() => {
   background: var(--bg-primary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   max-height: 70vh;
+  position: relative;
+}
+
+.pdf-viewer-wrapper {
+  transform-origin: top center;
+  transition: transform 0.2s ease;
+  display: flex;
+  justify-content: center;
 }
 
 .pdf-viewer {

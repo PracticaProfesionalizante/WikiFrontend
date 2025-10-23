@@ -151,6 +151,31 @@
           </p>
           <p class="warning-text">Esta acción no se puede deshacer.</p>
         </div>
+
+        <!-- Verificación de confirmación -->
+        <div class="confirmation-section">
+          <div class="confirmation-info">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Para confirmar la eliminación, escribe <strong>"Eliminar"</strong> en el campo de abajo:</span>
+          </div>
+          <div class="confirmation-input">
+            <input
+              v-model="confirmationText"
+              type="text"
+              placeholder="Escribe 'Eliminar' para confirmar"
+              class="confirmation-field"
+              :class="{ 'valid': isConfirmationValid, 'invalid': confirmationText && !isConfirmationValid }"
+            />
+            <div v-if="confirmationText && !isConfirmationValid" class="confirmation-error">
+              <i class="fas fa-times-circle"></i>
+              <span>Debes escribir exactamente "Eliminar"</span>
+            </div>
+            <div v-if="isConfirmationValid" class="confirmation-success">
+              <i class="fas fa-check-circle"></i>
+              <span>Confirmación válida</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="modal-footer">
@@ -158,7 +183,7 @@
         <button
           class="delete-btn"
           @click="handleConfirm"
-          :disabled="deletionMode === 'selective' && selectedChildren.length === 0"
+          :disabled="!isConfirmationValid || (deletionMode === 'selective' && selectedChildren.length === 0)"
         >
           <i class="fas fa-delete"></i>
           {{ getConfirmButtonText() }}
@@ -193,9 +218,11 @@ const emit = defineEmits(['close', 'confirm'])
 // Estado reactivo
 const deletionMode = ref('delete-all')
 const selectedChildren = ref([])
+const confirmationText = ref('')
 
 // Computed
 const hasChildren = computed(() => props.children && props.children.length > 0)
+const isConfirmationValid = computed(() => confirmationText.value === 'Eliminar')
 
 // Watchers
 watch(
@@ -205,6 +232,7 @@ watch(
       // Resetear estado cuando se abre el modal
       deletionMode.value = hasChildren.value ? 'delete-all' : 'delete-all'
       selectedChildren.value = []
+      confirmationText.value = '' // Resetear campo de confirmación
     }
   },
 )
@@ -244,6 +272,11 @@ const getConfirmButtonText = () => {
 
 const handleConfirm = () => {
   if (!props.menu) return // Salir si no hay menú
+
+  // Verificar que se haya escrito correctamente "Eliminar"
+  if (!isConfirmationValid.value) {
+    return // No proceder si la confirmación no es válida
+  }
 
   if (deletionMode.value === 'selective' && selectedChildren.value.length === 0) {
     return // No hacer nada si no hay selección en modo selectivo
@@ -648,5 +681,112 @@ const handleConfirm = () => {
   border-color: var(--bg-disabled, #d1d5db);
   color: var(--text-disabled, #9ca3af);
   cursor: not-allowed;
+}
+
+/* Estilos para la sección de confirmación */
+.confirmation-section {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--bg-secondary, #f9fafb);
+  border: 2px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  border-left: 4px solid var(--warning-color, #f59e0b);
+}
+
+.confirmation-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: var(--text-primary, #111827);
+  font-weight: 500;
+}
+
+.confirmation-info i {
+  color: var(--warning-color, #f59e0b);
+  font-size: 16px;
+}
+
+.confirmation-input {
+  position: relative;
+}
+
+.confirmation-field {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: var(--bg-primary, white);
+  color: var(--text-primary, #111827);
+}
+
+.confirmation-field:focus {
+  outline: none;
+  border-color: var(--accent-color, #3b82f6);
+  box-shadow: 0 0 0 3px var(--focus-shadow, rgba(59, 130, 246, 0.1));
+}
+
+.confirmation-field.valid {
+  border-color: var(--success-color, #10b981);
+  background: var(--success-bg, #f0fdf4);
+}
+
+.confirmation-field.invalid {
+  border-color: var(--error-color, #ef4444);
+  background: var(--error-bg, #fef2f2);
+}
+
+.confirmation-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--error-color, #ef4444);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.confirmation-success {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--success-color, #10b981);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .confirmation-section {
+  background: var(--bg-secondary, #1f2937);
+  border: 2px solid var(--border-primary, #374151);
+  border-left: 4px solid var(--warning-color, #f59e0b);
+}
+
+.dark-theme .confirmation-info {
+  color: var(--text-primary, #f9fafb);
+}
+
+.dark-theme .confirmation-field {
+  border: 2px solid var(--border-primary, #374151);
+  background: var(--bg-primary, #111827);
+  color: var(--text-primary, #f9fafb);
+}
+
+.dark-theme .confirmation-field:focus {
+  border-color: var(--accent-color, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.dark-theme .confirmation-field.valid {
+  border-color: var(--success-color, #10b981);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.dark-theme .confirmation-field.invalid {
+  border-color: var(--error-color, #ef4444);
+  background: rgba(239, 68, 68, 0.1);
 }
 </style>

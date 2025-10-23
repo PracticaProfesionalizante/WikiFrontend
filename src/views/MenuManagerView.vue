@@ -725,6 +725,27 @@
                         >
                       </div>
 
+                      <!-- Rol Super Usuario siempre presente -->
+                      <div class="super-user-always-present">
+                        <div class="role-option super-user-option">
+                          <label class="checkbox-label disabled">
+                            <input
+                              type="checkbox"
+                              class="form-checkbox"
+                              checked
+                              disabled
+                            />
+                            <span class="checkbox-text">
+                              <i class="fas fa-user-star"></i>
+                              <span class="role-label">
+                                <strong>Super Usuario</strong>
+                                <small>Acceso completo al sistema (siempre incluido)</small>
+                              </span>
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+
                       <div class="roles-selector">
                         <div
                           v-for="role in availableRolesList"
@@ -1283,13 +1304,8 @@ const viewTemplates = [
 ]
 
 // Roles disponibles (definidos como array de objetos para mejor UX)
+// SUPER_USER se asigna automáticamente a todos los menús, no es seleccionable
 const availableRolesList = [
-  {
-    value: 'ROLE_SUPER_USER',
-    label: 'Super Usuario',
-    icon: 'fas fas fa-user-star',
-    description: 'Acceso completo al sistema',
-  },
   {
     value: 'ROLE_ADMIN',
     label: 'Administrador',
@@ -1416,7 +1432,7 @@ const canProceedToNextStep = computed(() => {
         !validationErrors.value.path
       )
     case 2: // Apariencia
-      return menuForm.value.template && !validationErrors.value.template
+      return menuForm.value.template && !validationErrors.value.template && !validationErrors.value.icon
     case 3: // Configuración
       return (
         menuForm.value.roles && menuForm.value.roles.length > 0 && !validationErrors.value.roles
@@ -1446,6 +1462,10 @@ const updateCurrentStep = () => {
 // Métodos
 const openDialog = () => {
   resetForm()
+  // Asegurar que SUPER_USER siempre esté incluido
+  if (!menuForm.value.roles.includes('ROLE_SUPER_USER')) {
+    menuForm.value.roles.push('ROLE_SUPER_USER')
+  }
   currentStep.value = 1
   currentWizardStep.value = 1
   showDialog.value = true
@@ -1494,33 +1514,43 @@ const getRolesText = () => {
 
 // Funciones para manejo inteligente de roles
 const isRoleDisabled = (roleValue) => {
-  // Si Super Usuario está seleccionado, deshabilitar otros roles
-  if (menuForm.value.roles.includes('ROLE_SUPER_USER') && roleValue !== 'ROLE_SUPER_USER') {
+  // SUPER_USER no es seleccionable (se asigna automáticamente)
+  if (roleValue === 'ROLE_SUPER_USER') {
     return true
   }
   return false
 }
 
 const handleRoleChange = (roleValue) => {
-  if (roleValue === 'ROLE_SUPER_USER') {
-    // Si se selecciona Super Usuario, limpiar otros roles
-    if (menuForm.value.roles.includes('ROLE_SUPER_USER')) {
-      menuForm.value.roles = ['ROLE_SUPER_USER']
-    }
-  } else {
-    // Si se selecciona otro rol y Super Usuario está activo, remover Super Usuario
-    if (menuForm.value.roles.includes('ROLE_SUPER_USER')) {
-      menuForm.value.roles = menuForm.value.roles.filter((role) => role !== 'ROLE_SUPER_USER')
-    }
+  // SUPER_USER no es seleccionable, solo manejar otros roles
+  // Asegurar que SUPER_USER siempre esté presente
+  if (!menuForm.value.roles.includes('ROLE_SUPER_USER')) {
+    menuForm.value.roles.push('ROLE_SUPER_USER')
   }
 }
 
 const getSelectedRolesInfo = () => {
-  return menuForm.value.roles
+  const rolesInfo = []
+
+  // Agregar SUPER_USER siempre si está presente
+  if (menuForm.value.roles.includes('ROLE_SUPER_USER')) {
+    rolesInfo.push({
+      value: 'ROLE_SUPER_USER',
+      label: 'Super Usuario',
+      icon: 'fas fa-user-star',
+      description: 'Acceso completo al sistema',
+    })
+  }
+
+  // Agregar otros roles de la lista disponible
+  const otherRoles = menuForm.value.roles
+    .filter(role => role !== 'ROLE_SUPER_USER')
     .map((roleValue) => {
       return availableRolesList.find((role) => role.value === roleValue)
     })
     .filter(Boolean)
+
+  return [...rolesInfo, ...otherRoles]
 }
 
 const getRoleHierarchyLevel = (roleValue) => {
@@ -1584,6 +1614,11 @@ const editMenu = (menu) => {
       }
       return role
     })
+  }
+
+  // Asegurar que SUPER_USER siempre esté presente
+  if (!processedRoles.includes('ROLE_SUPER_USER')) {
+    processedRoles.push('ROLE_SUPER_USER')
   }
 
   console.log('📝 [MENU MANAGER] Roles procesados:', processedRoles)
@@ -2025,7 +2060,7 @@ const resetForm = () => {
     template: 'basic',
     order: 1,
     parentId: null,
-    roles: [],
+    roles: ['ROLE_SUPER_USER'], // SUPER_USER se asigna automáticamente a todos los menús
     isActive: true,
     createSubmenus: false,
     submenus: [],
@@ -2128,10 +2163,8 @@ const validateForm = () => {
   }
 
   // Validar icono con más detalles
-  if (!menuForm.value.icon) {
-    errors.icon = 'Debe seleccionar un icono'
-  } else if (!menuForm.value.icon.startsWith('fa-')) {
-    errors.icon = 'El icono debe ser válido (formato MDI)'
+  if (menuForm.value.icon && !menuForm.value.icon.startsWith('fa-')) {
+    errors.icon = 'El icono debe ser válido (formato FontAwesome)'
   }
 
   // Validar plantilla
@@ -7155,6 +7188,70 @@ button:disabled {
 }
 
 .dark-theme .summary-value {
+  color: var(--text-secondary);
+}
+
+/* Estilos para SUPER_USER siempre presente */
+.super-user-always-present {
+  margin-bottom: 16px;
+}
+
+.super-user-option {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
+  border: 2px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  position: relative;
+}
+
+.super-user-option::before {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--success-color);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.super-user-option .checkbox-text {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.super-user-option .role-label strong {
+  color: var(--success-color);
+}
+
+.super-user-option .role-label small {
+  color: var(--text-secondary);
+  font-size: 11px;
+  display: block;
+  margin-top: 2px;
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .super-user-option {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.08));
+  border: 2px solid rgba(34, 197, 94, 0.4);
+}
+
+.dark-theme .super-user-option .checkbox-text {
+  color: var(--text-primary);
+}
+
+.dark-theme .super-user-option .role-label strong {
+  color: var(--success-color);
+}
+
+.dark-theme .super-user-option .role-label small {
   color: var(--text-secondary);
 }
 </style>

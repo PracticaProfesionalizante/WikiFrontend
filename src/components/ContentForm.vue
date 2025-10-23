@@ -455,8 +455,30 @@
                   <legend class="roles-legend">
                     Selecciona los roles que pueden acceder a este documento
                   </legend>
+
+                  <!-- Rol Super Usuario siempre presente -->
+                  <div class="super-user-always-present">
+                    <div class="role-option super-user-option">
+                      <label class="checkbox-label disabled">
+                        <input
+                          type="checkbox"
+                          class="role-checkbox"
+                          checked
+                          disabled
+                        />
+                        <span class="role-label">
+                          <i class="fas fa-user-crown"></i>
+                          <span class="role-name">
+                            <strong>Super Usuario</strong>
+                            <small>Acceso completo al sistema (siempre incluido)</small>
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
                   <div class="roles-grid">
-                    <div v-for="role in availableRoles" :key="role.value" class="role-option">
+                    <div v-for="role in availableRolesList" :key="role.value" class="role-option">
                       <input
                         :id="`role-${role.value}`"
                         v-model="form.roles"
@@ -628,9 +650,10 @@
 
           <button
             v-if="currentWizardStep === wizardSteps.length"
-            type="submit"
+            type="button"
             class="wizard-btn wizard-btn-success"
             :disabled="!isFormValid || isSaving"
+            @click="handleButtonClick"
           >
             <i v-if="isSaving" class="fas fa-spinner fa-spin"></i>
             <i v-else class="fas fa-check"></i>
@@ -723,6 +746,7 @@ const wizardSteps = ref([
 // PDF File Upload
 const pdfFile = ref(null)
 const fileInput = ref(null)
+const pdfFileInput = ref(null)
 const pdfPreviewUrl = ref(null)
 
 // Computed
@@ -771,12 +795,25 @@ const renderedMarkdown = computed(() => {
 })
 
 const isFormValid = computed(() => {
-  return (
+  const isValid = (
     form.value.name &&
     form.value.type &&
     form.value.content &&
+    form.value.roles &&
+    form.value.roles.length > 0 &&
     Object.keys(validationErrors.value).length === 0
   )
+
+  console.log('📄 [CONTENT FORM] isFormValid:', {
+    name: !!form.value.name,
+    type: !!form.value.type,
+    content: !!form.value.content,
+    roles: form.value.roles?.length > 0,
+    validationErrors: Object.keys(validationErrors.value).length === 0,
+    isValid
+  })
+
+  return isValid
 })
 
 // Wizard Computed Properties
@@ -844,11 +881,27 @@ const getRolesText = () => {
 }
 
 const getSelectedRolesInfo = () => {
-  return form.value.roles
+  const rolesInfo = []
+
+  // Agregar SUPER_USER siempre si está presente
+  if (form.value.roles.includes('SUPER_USER')) {
+    rolesInfo.push({
+      value: 'SUPER_USER',
+      label: 'Super Usuario',
+      icon: 'fas fa-user-crown',
+      description: 'Acceso completo al sistema',
+    })
+  }
+
+  // Agregar otros roles de la lista disponible
+  const otherRoles = form.value.roles
+    .filter(role => role !== 'SUPER_USER')
     .map((roleValue) => {
       return availableRolesList.find((role) => role.value === roleValue)
     })
     .filter(Boolean)
+
+  return [...rolesInfo, ...otherRoles]
 }
 
 // Methods
@@ -1137,11 +1190,28 @@ const handleFileSelect = (event) => {
 }
 
 const validatePdfFile = (file) => {
+  console.log('📄 [PDF UPLOAD] validatePdfFile llamado con archivo:', file)
+
   // Limpiar errores previos
   validationErrors.value.content = null
 
+  // Validar que el archivo existe
+  if (!file) {
+    console.log('❌ [PDF UPLOAD] No se proporcionó archivo')
+    validationErrors.value.content = 'No se seleccionó ningún archivo'
+    return false
+  }
+
+  console.log('📄 [PDF UPLOAD] Archivo info:', {
+    name: file.name,
+    type: file.type,
+    size: file.size,
+    lastModified: file.lastModified
+  })
+
   // Validar tipo de archivo
   if (file.type !== 'application/pdf') {
+    console.log('❌ [PDF UPLOAD] Tipo de archivo inválido:', file.type)
     validationErrors.value.content = 'Solo se permiten archivos PDF'
     return false
   }
@@ -1149,6 +1219,7 @@ const validatePdfFile = (file) => {
   // Validar tamaño (10MB máximo)
   const maxSize = 10 * 1024 * 1024 // 10MB
   if (file.size > maxSize) {
+    console.log('❌ [PDF UPLOAD] Archivo muy grande:', formatFileSize(file.size))
     validationErrors.value.content = 'El archivo PDF no puede ser mayor a 10MB'
     return false
   }
@@ -1156,6 +1227,9 @@ const validatePdfFile = (file) => {
   // Archivo válido
   pdfFile.value = file
   form.value.content = file.name // Usar el nombre del archivo como contenido
+
+  console.log('📄 [PDF UPLOAD] Archivo asignado - pdfFile.value:', pdfFile.value)
+  console.log('📄 [PDF UPLOAD] Contenido del formulario:', form.value.content)
 
   // Validar el campo content después de asignar el archivo
   validateField('content')
@@ -1182,6 +1256,34 @@ const removeFile = () => {
   if (fileInput.value) {
     fileInput.value.value = ''
   }
+}
+
+// Funciones específicas para PDF
+const handlePdfFileChange = (event) => {
+  console.log('📄 [PDF UPLOAD] handlePdfFileChange llamado')
+  const file = event.target.files[0]
+  console.log('📄 [PDF UPLOAD] Archivo seleccionado:', file)
+  if (file) {
+    validatePdfFile(file)
+  } else {
+    console.log('📄 [PDF UPLOAD] No se seleccionó ningún archivo')
+  }
+}
+
+const removePdfFile = () => {
+  console.log('📄 [PDF UPLOAD] removePdfFile llamado')
+  pdfFile.value = null
+  form.value.content = ''
+  if (pdfPreviewUrl.value) {
+    URL.revokeObjectURL(pdfPreviewUrl.value)
+    pdfPreviewUrl.value = null
+  }
+  if (pdfFileInput.value) {
+    pdfFileInput.value.value = ''
+  }
+  // Limpiar errores de validación
+  validationErrors.value.content = null
+  console.log('📄 [PDF UPLOAD] Archivo PDF removido exitosamente')
 }
 
 const openFileDialog = () => {
@@ -1230,13 +1332,9 @@ const uploadPdfFile = async (documentId, file) => {
 }
 
 // Roles disponibles (mismos que en MenuManagerView)
+// Roles disponibles (mismos que en MenuManagerView)
+// SUPER_USER se asigna automáticamente a todos los documentos, no es seleccionable
 const availableRolesList = [
-  {
-    value: 'SUPER_USER',
-    label: 'Super Usuario',
-    icon: 'fas fa-user-crown',
-    description: 'Acceso completo al sistema',
-  },
   {
     value: 'ADMIN',
     label: 'Administrador',
@@ -1258,7 +1356,7 @@ const resetForm = () => {
     slug: '',
     content: '',
     icon: '',
-    roles: [],
+    roles: ['SUPER_USER'], // SUPER_USER se asigna automáticamente a todos los documentos
   }
   validationErrors.value = {}
   currentWizardStep.value = 1
@@ -1316,8 +1414,31 @@ const loadDocumentData = () => {
   }
 }
 
+const handleButtonClick = () => {
+  console.log('📄 [CONTENT FORM] Botón clickeado')
+  console.log('📄 [CONTENT FORM] isFormValid:', isFormValid.value)
+  console.log('📄 [CONTENT FORM] isSaving:', isSaving.value)
+  console.log('📄 [CONTENT FORM] currentWizardStep:', currentWizardStep.value)
+  console.log('📄 [CONTENT FORM] wizardSteps.length:', wizardSteps.value.length)
+
+  // Si el formulario es válido y no se está guardando, proceder con el envío
+  if (isFormValid.value && !isSaving.value) {
+    console.log('📄 [CONTENT FORM] Ejecutando handleSubmit directamente')
+    handleSubmit()
+  } else {
+    console.log('📄 [CONTENT FORM] No se puede proceder - Formulario inválido o guardando')
+  }
+}
+
 const handleSubmit = async () => {
-  console.log('📄 [CONTENT FORM] Enviando formulario...')
+  console.log('📄 [CONTENT FORM] handleSubmit llamado')
+  console.log('📄 [CONTENT FORM] Estado del formulario:', {
+    name: form.value.name,
+    type: form.value.type,
+    content: form.value.content,
+    roles: form.value.roles,
+    isFormValid: isFormValid.value
+  })
 
   validateForm()
 
@@ -4657,5 +4778,69 @@ const selectSlugAlternative = (alternative) => {
     text-align: left;
     justify-content: flex-start;
   }
+}
+
+/* Estilos para SUPER_USER siempre presente */
+.super-user-always-present {
+  margin-bottom: 16px;
+}
+
+.super-user-option {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
+  border: 2px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  position: relative;
+}
+
+.super-user-option::before {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--success-color);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.super-user-option .role-label {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.super-user-option .role-name strong {
+  color: var(--success-color);
+}
+
+.super-user-option .role-name small {
+  color: var(--text-secondary);
+  font-size: 11px;
+  display: block;
+  margin-top: 2px;
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .super-user-option {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.08));
+  border: 2px solid rgba(34, 197, 94, 0.4);
+}
+
+.dark-theme .super-user-option .role-label {
+  color: var(--text-primary);
+}
+
+.dark-theme .super-user-option .role-name strong {
+  color: var(--success-color);
+}
+
+.dark-theme .super-user-option .role-name small {
+  color: var(--text-secondary);
 }
 </style>

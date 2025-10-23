@@ -61,16 +61,30 @@ const menuService = {
       const backendData = {
         name: menuData.name,
         path: menuData.path,
-        icon: menuData.icon,
         order: menuData.order || 1,
         parentId: menuData.parentId,
         children: null,
         roles: menuData.roles?.map((role) => role.replace('ROLE_', '')) || [],
       }
 
+      // Manejar icono - usar valor específico para "sin icono"
+      if (menuData.icon && menuData.icon.trim() !== '') {
+        backendData.icon = menuData.icon
+        console.log('✅ [MENU SERVICE] Icono agregado:', menuData.icon)
+      } else {
+        backendData.icon = 'none' // Valor específico para sin icono
+        console.log('ℹ️ [MENU SERVICE] Sin icono - usando valor "none"')
+      }
+
+      console.log('📤 [MENU SERVICE] Datos finales a enviar:', backendData)
       const response = await api.post('/menu', backendData)
       return response.data
     } catch (error) {
+      console.error('❌ [MENU SERVICE] Error al crear menú:', error)
+      console.error('❌ [MENU SERVICE] Status:', error.response?.status)
+      console.error('❌ [MENU SERVICE] Response data:', error.response?.data)
+      console.error('❌ [MENU SERVICE] Request data:', backendData)
+
       if (error.response?.status === 400) {
         throw new Error(
           `Datos del menú inválidos: ${error.response?.data?.message || 'Error de validación'}`,
@@ -80,12 +94,21 @@ const menuService = {
           `Ya existe un menú con esa ruta: ${error.response?.data?.message || 'Conflicto'}`,
         )
       } else if (error.response?.status === 422) {
+        console.error('❌ [MENU SERVICE] Error 422 - Detalles completos:', {
+          message: error.response?.data?.message,
+          detail: error.response?.data?.detail,
+          title: error.response?.data?.title,
+          errors: error.response?.data?.errors,
+          fullResponse: error.response?.data
+        })
+
         const errorMessage =
           error.response?.data?.message ||
           error.response?.data?.detail ||
           error.response?.data?.title ||
+          JSON.stringify(error.response?.data?.errors) ||
           'Datos no válidos'
-        throw new Error(`Error de validación: ${errorMessage}`)
+        throw new Error(`Error de validación (422): ${errorMessage}`)
       } else if (error.response?.status === 500) {
         throw new Error(
           `Error interno del servidor: ${error.response?.data?.message || 'Error del backend'}`,
@@ -150,11 +173,19 @@ const menuService = {
         backendData = {
           name: menuData.name,
           path: menuData.path,
-          icon: menuData.icon,
           order: menuData.order || 0,
           parentId: menuData.parentId,
           children: null,
           roles: rolesArray.map((role) => role.replace('ROLE_', '')) || [],
+        }
+
+        // Manejar icono - usar valor específico para "sin icono"
+        if (menuData.icon && menuData.icon.trim() !== '') {
+          backendData.icon = menuData.icon
+          console.log('✅ [MENU SERVICE] Icono agregado en actualización:', menuData.icon)
+        } else {
+          backendData.icon = 'none' // Valor específico para sin icono
+          console.log('ℹ️ [MENU SERVICE] Sin icono en actualización - usando valor "none"')
         }
       }
 
