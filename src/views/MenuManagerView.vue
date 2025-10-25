@@ -120,7 +120,12 @@
                       Padre: {{ getParentMenuName(menu.parentId) }}
                     </span>
                     <div class="menu-roles">
-                      <span v-for="role in menu.roles" :key="role" class="role-badge">
+                      <span
+                        v-for="role in menu.roles"
+                        :key="role"
+                        class="role-badge"
+                        :class="`role-${role.toLowerCase().replace('role_', '')}`"
+                      >
                         {{ getRoleLabel(role) }}
                       </span>
                     </div>
@@ -438,7 +443,7 @@
                 <div v-show="currentWizardStep === 1" class="wizard-step-content">
                   <div class="step-header">
                     <h3 class="step-title">
-                      <i class="fas fa-info-circle-outline"></i>
+                      <i class="fas fa-info-circle"></i>
                       Información Básica
                     </h3>
                     <p class="step-description">Define el nombre, ruta y tipo de menú</p>
@@ -447,7 +452,7 @@
                   <div class="step-fields">
                     <div class="form-group">
                       <label for="menuName" class="form-label">
-                        <i class="fa-format-title"></i>
+                        <i class="fas fa-tag"></i>
                         Nombre del Menú *
                       </label>
                       <input
@@ -477,7 +482,7 @@
 
                     <div class="form-group">
                       <label for="menuPath" class="form-label">
-                        <i class="fas fa-link-variant"></i>
+                        <i class="fas fa-link"></i>
                         Ruta de Acceso *
                       </label>
 
@@ -527,7 +532,7 @@
 
                     <div class="form-group">
                       <label class="form-label">
-                        <i class="fas fa-list-ul-type"></i>
+                        <i class="fas fa-list"></i>
                         Tipo de Menú
                       </label>
                       <div class="menu-type-selector">
@@ -539,7 +544,7 @@
                           :aria-checked="menuForm.parentId === null"
                           tabindex="0"
                         >
-                          <i class="fas fa-home-outline"></i>
+                          <i class="fas fa-home"></i>
                           <div class="option-content">
                             <span class="option-title">Menú Principal</span>
                             <span class="option-description"
@@ -555,7 +560,7 @@
                           :aria-checked="menuForm.parentId !== null"
                           tabindex="0"
                         >
-                          <i class="fas fa-arrow-right"></i>
+                          <i class="fas fa-folder"></i>
                           <div class="option-content">
                             <span class="option-title">Submenú</span>
                             <span class="option-description"
@@ -590,7 +595,7 @@
                 <div v-show="currentWizardStep === 2" class="wizard-step-content">
                   <div class="step-header">
                     <h3 class="step-title">
-                      <i class="fa-palette"></i>
+                      <i class="fas fa-palette"></i>
                       Apariencia
                     </h3>
                     <p class="step-description">Selecciona el icono y tipo de vista para tu menú</p>
@@ -599,7 +604,7 @@
                   <div class="step-fields">
                     <div class="form-group">
                       <label class="form-label">
-                        <i class="fa-emoticon-outline"></i>
+                        <i class="fas fa-palette"></i>
                         Icono del Menú
                       </label>
                       <div class="icon-selector-wrapper">
@@ -613,7 +618,7 @@
 
                     <div class="form-group">
                       <label class="form-label">
-                        <i class="fa-view-dashboard-outline"></i>
+                        <i class="fas fa-desktop"></i>
                         Tipo de Vista *
                       </label>
                       <div class="template-selector">
@@ -679,7 +684,7 @@
                 <div v-show="currentWizardStep === 3" class="wizard-step-content">
                   <div class="step-header">
                     <h3 class="step-title">
-                      <i class="fas fa-cog-outline"></i>
+                      <i class="fas fa-cog"></i>
                       Configuración
                     </h3>
                     <p class="step-description">Define permisos, posición y estado del menú</p>
@@ -688,7 +693,7 @@
                   <div class="step-fields">
                     <div class="form-group">
                       <label for="menuOrder" class="form-label">
-                        <i class="fas fa-sort-numeric-ascending"></i>
+                        <i class="fas fa-sort-numeric-up"></i>
                         Posición en el menú
                       </label>
                       <select id="menuOrder" v-model.number="menuForm.order" class="form-input">
@@ -712,7 +717,7 @@
 
                     <div class="form-group">
                       <label class="form-label">
-                        <i class="fas fa-user-key"></i>
+                        <i class="fas fa-users"></i>
                         Roles de Acceso *
                       </label>
 
@@ -3243,7 +3248,7 @@ onMounted(() => {
   font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 6px 20px var(--focus-shadow);
   position: relative;
   overflow: hidden;
 }
@@ -3255,13 +3260,13 @@ onMounted(() => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, var(--bg-overlay-light, rgba(255, 255, 255, 0.2)), transparent);
   transition: left 0.6s ease;
 }
 
 .create-menu-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 8px 25px var(--focus-shadow);
   background: linear-gradient(135deg, var(--primary-color), var(--button-primary-hover));
 }
 
@@ -3316,11 +3321,11 @@ onMounted(() => {
   background: var(--bg-hover);
   border-color: var(--accent-primary);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px var(--shadow-primary);
 }
 
 .action-btn.migration {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: linear-gradient(135deg, var(--warning-color), var(--warning-hover));
   color: white;
   border: 2px solid transparent;
   padding: 0.875rem 1.5rem;
@@ -3332,20 +3337,20 @@ onMounted(() => {
 }
 
 .action-btn.migration:hover:not(:disabled) {
-  background: linear-gradient(135deg, #d97706, #b45309);
+  background: linear-gradient(135deg, var(--warning-hover), var(--warning-color));
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
 }
 
 .action-btn.migration:disabled {
-  background: #9ca3af;
-  color: #6b7280;
+  background: var(--bg-disabled);
+  color: var(--text-disabled);
   box-shadow: none;
   cursor: not-allowed;
 }
 
 .action-btn.diagnostic {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: linear-gradient(135deg, var(--info-color), var(--primary-color));
   color: white;
   border: 2px solid transparent;
   padding: 0.875rem 1.5rem;
@@ -3357,14 +3362,14 @@ onMounted(() => {
 }
 
 .action-btn.diagnostic:hover:not(:disabled) {
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  background: linear-gradient(135deg, var(--primary-color), var(--info-color));
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
 }
 
 .action-btn.diagnostic:disabled {
-  background: #9ca3af;
-  color: #6b7280;
+  background: var(--bg-disabled);
+  color: var(--text-disabled);
   box-shadow: none;
   cursor: not-allowed;
 }
@@ -3580,7 +3585,7 @@ onMounted(() => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, var(--bg-overlay-light, rgba(255, 255, 255, 0.2)), transparent);
   transition: left 0.5s ease;
 }
 
@@ -3737,12 +3742,17 @@ onMounted(() => {
 }
 
 .role-badge {
-  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
-  background: var(--accent-primary);
-  color: white;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
 }
 
 .menu-actions {
@@ -3777,7 +3787,7 @@ onMounted(() => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, var(--bg-overlay-light, rgba(255, 255, 255, 0.2)), transparent);
   transition: left 0.3s ease;
 }
 
@@ -3808,12 +3818,12 @@ onMounted(() => {
 }
 
 .delete-btn {
-  background: rgba(220, 38, 38, 0.1);
+  background: var(--error-bg);
   color: var(--error-color);
 }
 
 .delete-btn:hover {
-  background: rgba(220, 38, 38, 0.2);
+  background: var(--error-light);
 }
 
 /* Clase para elementos ocultos visualmente pero accesibles para lectores de pantalla */
@@ -3837,7 +3847,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--bg-overlay, rgba(0, 0, 0, 0.6));
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -3920,7 +3930,7 @@ onMounted(() => {
 }
 
 .close-btn {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-overlay-light, rgba(255, 255, 255, 0.1));
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
   font-size: 1.25rem;
@@ -3934,12 +3944,12 @@ onMounted(() => {
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-overlay-medium, rgba(255, 255, 255, 0.2));
   transform: scale(1.05);
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-overlay-light, rgba(255, 255, 255, 0.1));
 }
 
 .dialog-body {
@@ -4085,7 +4095,7 @@ onMounted(() => {
 .form-input.error,
 .form-select.error {
   border-color: var(--accent-danger);
-  background: rgba(239, 68, 68, 0.05);
+  background: var(--error-bg);
   animation: shake 0.5s ease-in-out;
 }
 
@@ -4150,7 +4160,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #dc2626 !important;
+  color: var(--error-color) !important;
   font-size: 0.875rem;
   margin-top: 0.5rem;
   padding: 0.5rem;
@@ -4605,18 +4615,18 @@ onMounted(() => {
 }
 
 .status-item.validating {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background: var(--bg-hover);
+  color: var(--primary-color);
 }
 
 .status-item.success {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  background: var(--success-bg);
+  color: var(--success-color);
 }
 
 .status-item.error {
   background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  color: var(--error-color);
 }
 
 .action-buttons {
@@ -4871,7 +4881,7 @@ onMounted(() => {
 
 /* Errores mejorados */
 .enhanced-error {
-  background: rgba(239, 68, 68, 0.05);
+  background: var(--error-bg);
   border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 6px;
   padding: 0.75rem 1rem;
@@ -4891,7 +4901,7 @@ onMounted(() => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, var(--bg-overlay-light, rgba(255, 255, 255, 0.2)), transparent);
   transition: left 0.6s ease;
 }
 
@@ -4927,7 +4937,7 @@ onMounted(() => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, var(--bg-overlay-light, rgba(255, 255, 255, 0.2)), transparent);
   transition: left 0.5s ease;
 }
 
@@ -5148,7 +5158,7 @@ onMounted(() => {
   border: 1px solid rgba(220, 38, 38, 0.2) !important;
   border-radius: 8px;
   margin-bottom: 2rem;
-  color: #dc2626 !important;
+  color: var(--error-color) !important;
 }
 
 .error-message i {
@@ -5158,7 +5168,7 @@ onMounted(() => {
 .retry-btn {
   margin-left: auto;
   padding: 0.5rem 1rem;
-  background: #dc2626 !important;
+  background: var(--error-color) !important;
   color: white !important;
   border: none;
   border-radius: 6px;
@@ -5724,7 +5734,7 @@ button:disabled {
 
 .hierarchy-item.child {
   background: rgba(34, 197, 94, 0.1);
-  border-color: #22c55e;
+  border-color: var(--success-color);
 }
 
 .hierarchy-item i {
@@ -5732,7 +5742,7 @@ button:disabled {
 }
 
 .hierarchy-item.child i {
-  color: #22c55e;
+  color: var(--success-color);
 }
 
 .hierarchy-connector {
@@ -5742,13 +5752,13 @@ button:disabled {
 
 /* Estilos para visualización mejorada de submenús */
 .menu-card.is-submenu {
-  border-left: 4px solid #22c55e;
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, transparent 100%);
+  border-left: 4px solid var(--success-color);
+  background: linear-gradient(135deg, var(--success-bg) 0%, transparent 100%);
 }
 
 .menu-card.has-children {
   border-left: 4px solid var(--primary-color);
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, transparent 100%);
+  background: linear-gradient(135deg, var(--bg-hover) 0%, transparent 100%);
 }
 
 .menu-title-row {
@@ -5780,7 +5790,7 @@ button:disabled {
 
 .submenu-badge {
   background: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
+  color: var(--success-color);
   border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
@@ -5797,7 +5807,7 @@ button:disabled {
 
 .add-submenu-btn {
   background: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
+  color: var(--success-color);
   border: 1px solid rgba(34, 197, 94, 0.2);
   padding: 0.5rem;
   border-radius: 6px;
@@ -5857,7 +5867,7 @@ button:disabled {
 }
 
 .child-node:hover {
-  border-color: #22c55e;
+  border-color: var(--success-color);
   background: rgba(34, 197, 94, 0.1);
 }
 
@@ -5905,7 +5915,7 @@ button:disabled {
 }
 
 .child-connector {
-  color: #22c55e;
+  color: var(--success-color);
   font-size: 1.25rem;
   width: 24px;
   height: 24px;
@@ -5927,7 +5937,7 @@ button:disabled {
 }
 
 .child-node .node-icon {
-  color: #22c55e;
+  color: var(--success-color);
   background: rgba(34, 197, 94, 0.1);
 }
 
@@ -5987,7 +5997,7 @@ button:disabled {
 
 .submenu-indicator {
   background: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
+  color: var(--success-color);
 }
 
 .node-actions {
@@ -6159,7 +6169,7 @@ button:disabled {
 }
 
 .add-submenu-btn:hover {
-  background: #059669;
+  background: var(--success-hover);
   transform: translateY(-1px);
 }
 
@@ -6229,7 +6239,7 @@ button:disabled {
 
 /* Header del wizard */
 .wizard-header {
-  background: #245fe7;
+  background: var(--primary-color);
   color: white;
   padding: 2rem;
   border-radius: 12px 12px 0 0;
@@ -6242,7 +6252,7 @@ button:disabled {
 
 /* Mejoras para modo oscuro */
 .dark-theme .wizard-header {
-  background: #245fe7;
+  background: var(--primary-color);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
@@ -6281,7 +6291,7 @@ button:disabled {
 .wizard-icon {
   width: 3rem;
   height: 3rem;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-overlay-medium, rgba(255, 255, 255, 0.2));
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -6316,7 +6326,7 @@ button:disabled {
 }
 
 .wizard-close-btn {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-overlay-medium, rgba(255, 255, 255, 0.2));
   border: none;
   color: var(--text-inverse);
   width: 2.5rem;
@@ -6772,7 +6782,7 @@ button:disabled {
 
 /* Información de jerarquía de roles */
 .role-hierarchy-info {
-  background: rgba(59, 130, 246, 0.1);
+  background: var(--bg-hover);
   border: 1px solid rgba(59, 130, 246, 0.2);
   border-radius: 8px;
   padding: 0.75rem 1rem;
@@ -6780,12 +6790,12 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #3b82f6;
+  color: var(--primary-color);
   font-size: 0.9rem;
 }
 
 .role-hierarchy-info i {
-  color: #3b82f6;
+  color: var(--primary-color);
 }
 
 /* Opciones de roles mejoradas */
@@ -6811,21 +6821,55 @@ button:disabled {
   color: var(--text-secondary);
 }
 
-/* Badge de rol */
-.role-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-left: 0.5rem;
-}
+/* Badge de rol - estilos específicos se definen más abajo */
 
 .role-badge.super-user {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: white;
+  background: var(--error-bg);
+  color: var(--error-color);
+  border: 1px solid var(--error-light);
+}
+
+.role-badge.admin {
+  background: var(--warning-bg, #fff3e0);
+  color: var(--warning-color);
+  border: 1px solid var(--warning-light, #ffcc80);
+}
+
+.role-badge.collaborator {
+  background: var(--success-bg);
+  color: var(--success-color);
+  border: 1px solid var(--success-light);
+}
+
+.role-badge.user {
+  background: var(--bg-hover);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+/* Estilos específicos para roles individuales (igual que en vista de árbol) */
+.role-super_user {
+  background: var(--error-bg);
+  color: var(--error-color);
+  border: 1px solid var(--error-light);
+}
+
+.role-admin {
+  background: var(--warning-bg, #fff3e0);
+  color: var(--warning-color);
+  border: 1px solid var(--warning-light, #ffcc80);
+}
+
+.role-collaborator {
+  background: var(--success-bg);
+  color: var(--success-color);
+  border: 1px solid var(--success-light);
+}
+
+.role-user {
+  background: var(--bg-hover);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
 }
 
 .role-badge i {
@@ -6834,7 +6878,7 @@ button:disabled {
 
 /* Advertencia de rol */
 .role-warning {
-  background: rgba(16, 185, 129, 0.1);
+  background: var(--success-bg);
   border: 1px solid rgba(16, 185, 129, 0.2);
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
@@ -6842,12 +6886,12 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #10b981;
+  color: var(--success-color);
   font-size: 0.8rem;
 }
 
 .role-warning i {
-  color: #10b981;
+  color: var(--success-color);
 }
 
 /* Resumen de roles seleccionados */
@@ -6887,21 +6931,21 @@ button:disabled {
 }
 
 .selected-role-item.ROLE_SUPER_USER {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
-  border-color: rgba(245, 158, 11, 0.3);
-  color: #f59e0b;
+  background: var(--warning-bg, linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1)));
+  border-color: var(--warning-color);
+  color: var(--warning-color);
 }
 
 .selected-role-item.ROLE_ADMIN {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: #3b82f6;
+  background: var(--bg-hover);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .selected-role-item.ROLE_COLLABORATOR {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: #10b981;
+  background: var(--success-bg);
+  border-color: var(--success-color);
+  color: var(--success-color);
 }
 
 .role-indicator {
@@ -6910,7 +6954,7 @@ button:disabled {
   gap: 0.25rem;
   padding: 0.25rem 0.5rem;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-overlay-medium, rgba(255, 255, 255, 0.2));
   font-size: 0.7rem;
   font-weight: 600;
 }
@@ -6956,31 +7000,24 @@ button:disabled {
 }
 
 .active-role-item.ROLE_SUPER_USER {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
-  border-color: rgba(245, 158, 11, 0.4);
-  color: #f59e0b;
+  background: var(--warning-light, linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2)));
+  border-color: var(--warning-hover);
+  color: var(--warning-color);
 }
 
 .active-role-item.ROLE_ADMIN {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.4);
-  color: #3b82f6;
+  background: var(--bg-active);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .active-role-item.ROLE_COLLABORATOR {
-  background: rgba(16, 185, 129, 0.2);
-  border-color: rgba(16, 185, 129, 0.4);
-  color: #10b981;
+  background: var(--success-light);
+  border-color: var(--success-hover);
+  color: var(--success-color);
 }
 
-.role-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: #f59e0b;
-}
+/* Estilos específicos de roles se definen arriba */
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
@@ -7067,21 +7104,21 @@ button:disabled {
 }
 
 .role-summary-item.ROLE_SUPER_USER {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
-  border-color: rgba(245, 158, 11, 0.3);
-  color: #f59e0b;
+  background: var(--warning-bg, linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1)));
+  border-color: var(--warning-color);
+  color: var(--warning-color);
 }
 
 .role-summary-item.ROLE_ADMIN {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: #3b82f6;
+  background: var(--bg-hover);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .role-summary-item.ROLE_COLLABORATOR {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: #10b981;
+  background: var(--success-bg);
+  border-color: var(--success-color);
+  color: var(--success-color);
 }
 
 /* Responsive para roles */

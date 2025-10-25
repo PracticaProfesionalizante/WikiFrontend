@@ -502,31 +502,41 @@ const handleCreateSubmenu = () => {
 }
 
 .role-badge {
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
   border-radius: 12px;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
 }
 
 .role-super_user {
-  background: #ffebee;
-  color: #c62828;
+  background: var(--error-bg);
+  color: var(--error-color);
+  border: 1px solid var(--error-light);
 }
 
 .role-admin {
-  background: #fff3e0;
-  color: #ef6c00;
+  background: var(--warning-bg, #fff3e0);
+  color: var(--warning-color);
+  border: 1px solid var(--warning-light, #ffcc80);
 }
 
 .role-collaborator {
-  background: #e8f5e8;
-  color: #2e7d32;
+  background: var(--success-bg);
+  color: var(--success-color);
+  border: 1px solid var(--success-light);
 }
 
 .role-user {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--bg-hover);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
 }
 
 .menu-actions {

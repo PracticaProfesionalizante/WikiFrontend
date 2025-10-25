@@ -877,6 +877,72 @@
       </div>
     </div>
 
+    <!-- Status Change Confirmation Modal -->
+    <div v-if="showStatusConfirmModal" class="modal-overlay" @click="cancelStatusChange">
+      <div class="status-confirm-modal" @click.stop>
+        <div class="modal-header">
+          <div class="status-icon">
+            <i :class="statusConfirmAction === 'activate' ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+          </div>
+          <h2 class="modal-title">
+            {{ statusConfirmAction === 'activate' ? 'Activar Documento' : 'Desactivar Documento' }}
+          </h2>
+        </div>
+
+        <div class="modal-content">
+          <div class="confirmation-info">
+            <p>
+              ¿Estás seguro de que deseas
+              <strong>{{ statusConfirmAction === 'activate' ? 'activar' : 'desactivar' }}</strong>
+              el documento:
+            </p>
+            <div class="document-info">
+              <h3>{{ statusConfirmItem?.name }}</h3>
+              <p class="document-meta">
+                <span class="document-type">{{ statusConfirmItem?.type }}</span>
+                <span class="document-slug" v-if="statusConfirmItem?.slug">📁 {{ statusConfirmItem.slug }}</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="status-change-details">
+            <div class="status-comparison">
+              <div class="status-item current">
+                <div class="status-icon-small">
+                  <i :class="getStatusIcon(getDocumentStatus(statusConfirmItem))"></i>
+                </div>
+                <div class="status-text">
+                  <span class="status-label">Estado actual</span>
+                  <span class="status-value">{{ getDocumentStatus(statusConfirmItem) }}</span>
+                </div>
+              </div>
+
+              <div class="status-item new" :class="{ deactivate: statusConfirmAction === 'deactivate' }">
+                <div class="status-icon-small">
+                  <i :class="statusConfirmAction === 'activate' ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                </div>
+                <div class="status-text">
+                  <span class="status-label">Nuevo estado</span>
+                  <span class="status-value">{{ statusConfirmAction === 'activate' ? 'Activo' : 'Inactivo' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button @click="cancelStatusChange" class="modal-btn cancel-btn">
+            <i class="fas fa-times"></i>
+            Cancelar
+          </button>
+          <button @click="confirmStatusChange" class="modal-btn confirm-btn">
+            <i :class="statusConfirmAction === 'activate' ? 'fas fa-check' : 'fas fa-ban'"></i>
+            {{ statusConfirmAction === 'activate' ? 'Activar' : 'Desactivar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Content Form Modal -->
     <ContentForm
       v-model="editDialog"
@@ -919,13 +985,16 @@ const deleteDialog = ref(false)
 const editDialog = ref(false)
 const showPreviewModal = ref(false)
 const showBulkDeleteModal = ref(false)
+const showStatusConfirmModal = ref(false)
 const selectedItem = ref(null)
 const previewItem = ref(null)
+const statusConfirmItem = ref(null)
 const previewLoading = ref(false)
 const editLoading = ref(false)
 const isEditing = ref(false)
 const deleting = ref(false)
 const bulkDeleting = ref(false)
+const statusConfirmAction = ref('') // 'activate' o 'deactivate'
 
 // Estado para PDF
 const currentPdfPage = ref(1)
@@ -1314,14 +1383,28 @@ const duplicateContent = async (item) => {
   }
 }
 
-const toggleDocumentStatus = async (item) => {
+const toggleDocumentStatus = (item) => {
   if (!item || !item.id) {
     return
   }
 
+  const currentStatus = getDocumentStatus(item)
+  const action = currentStatus === 'Activo' ? 'deactivate' : 'activate'
+
+  // Configurar datos para el modal de confirmación
+  statusConfirmItem.value = item
+  statusConfirmAction.value = action
+  showStatusConfirmModal.value = true
+}
+
+const confirmStatusChange = async () => {
+  if (!statusConfirmItem.value || !statusConfirmItem.value.id) {
+    return
+  }
+
   try {
-    const currentStatus = getDocumentStatus(item)
-    const newStatus = currentStatus === 'Activo' ? false : true
+    const item = statusConfirmItem.value
+    const newStatus = statusConfirmAction.value === 'activate'
 
     // Limpiar roles para remover prefijo ROLE_ duplicado si existe
     const cleanRoles = (item.roles || []).map((role) => {
@@ -1355,9 +1438,20 @@ const toggleDocumentStatus = async (item) => {
 
     const statusText = newStatus ? 'activado' : 'desactivado'
     success.value = `Documento "${item.name}" ${statusText} correctamente`
+
+    // Cerrar modal
+    showStatusConfirmModal.value = false
+    statusConfirmItem.value = null
+    statusConfirmAction.value = ''
   } catch (error) {
     error.value = 'Error al cambiar el estado del documento'
   }
+}
+
+const cancelStatusChange = () => {
+  showStatusConfirmModal.value = false
+  statusConfirmItem.value = null
+  statusConfirmAction.value = ''
 }
 
 // Función para refrescar datos
@@ -3135,6 +3229,212 @@ onUnmounted(() => {
   max-width: 500px;
   width: 100%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.status-confirm-modal {
+  background: var(--bg-card);
+  border-radius: 20px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.status-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  font-size: 1.5rem;
+}
+
+.status-icon i.fa-check-circle {
+  color: var(--success-color);
+  background: var(--success-bg);
+}
+
+.status-icon i.fa-times-circle {
+  color: var(--error-color);
+  background: var(--error-bg);
+}
+
+.confirmation-info {
+  margin-bottom: 1.5rem;
+}
+
+.document-info {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.document-info h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.document-meta {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.document-type {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.document-slug {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-family: 'Courier New', monospace;
+}
+
+.status-change-details {
+  margin-top: 1.5rem;
+}
+
+.status-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.status-item.current {
+  background: var(--bg-hover);
+  border: 1px solid var(--primary-color);
+}
+
+.status-item.new {
+  background: var(--success-bg);
+  border: 1px solid var(--success-color);
+}
+
+.status-item.new.deactivate {
+  background: var(--error-bg);
+  border: 1px solid var(--error-color);
+}
+
+.status-icon-small {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.status-item.current .status-icon-small {
+  background: var(--bg-active);
+  color: var(--primary-color);
+}
+
+.status-item.new .status-icon-small {
+  background: var(--success-light);
+  color: var(--success-color);
+}
+
+.status-item.new.deactivate .status-icon-small {
+  background: var(--error-light);
+  color: var(--error-color);
+}
+
+.status-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.status-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.text-success {
+  color: var(--success-color) !important;
+}
+
+.text-danger {
+  color: var(--danger-color) !important;
+}
+
+.confirm-btn {
+  background: var(--success-color);
+  color: white;
+}
+
+.confirm-btn:hover {
+  background: var(--success-hover);
+}
+
+.cancel-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.cancel-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+}
+
+/* Los colores se adaptan automáticamente usando las variables CSS del tema */
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .status-comparison {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .status-item {
+    padding: 0.75rem;
+  }
+
+  .status-icon-small {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+
+  .status-value {
+    font-size: 0.9rem;
+  }
 }
 
 .modal-header {

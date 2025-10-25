@@ -1,7 +1,7 @@
 <template>
   <div class="modal-overlay" v-if="dialog" @click="handleClose">
     <div class="modal-container" @click.stop>
-      <!-- Wizard Header -->
+      <!-- Header del Wizard -->
       <div class="wizard-header">
         <div class="wizard-header-content">
           <div class="wizard-title-section">
@@ -15,7 +15,7 @@
               <p class="wizard-subtitle">
                 {{
                   isEditing
-                    ? 'Modifica la información del documento'
+                    ? 'Modifica la configuración del documento existente'
                     : 'Completa los datos para crear un nuevo documento'
                 }}
               </p>
@@ -62,14 +62,17 @@
           <!-- Paso 1: Información Básica -->
           <div v-show="currentWizardStep === 1" class="wizard-step-content">
             <div class="step-header">
-              <h3 class="step-title">Información Básica</h3>
-              <p class="step-description">Datos principales del documento</p>
+              <h3 class="step-title">
+                <i class="fas fa-info-circle"></i>
+                Información Básica
+              </h3>
+              <p class="step-description">Define el nombre, tipo y contenido del documento</p>
             </div>
 
             <div class="form-fields">
               <div class="form-field">
                 <label for="documentName" class="form-label">
-                  <i class="fas fa-file-alt"></i>
+                  <i class="fas fa-tag"></i>
                   Nombre del Documento
                   <span class="required">*</span>
                 </label>
@@ -136,7 +139,10 @@
           <!-- Paso 2: Contenido del Documento -->
           <div v-show="currentWizardStep === 2" class="wizard-step-content">
             <div class="step-header">
-              <h3 class="step-title">Contenido del Documento</h3>
+              <h3 class="step-title">
+                <i class="fas fa-file-text"></i>
+                Contenido del Documento
+              </h3>
               <p class="step-description">
                 {{
                   form.type === 'TYPE_TEXT'
@@ -440,7 +446,10 @@
           <!-- Paso 3: Configuración y Permisos -->
           <div v-show="currentWizardStep === 3" class="wizard-step-content">
             <div class="step-header">
-              <h3 class="step-title">Configuración y Permisos</h3>
+              <h3 class="step-title">
+                <i class="fas fa-cog"></i>
+                Configuración y Permisos
+              </h3>
               <p class="step-description">Define quién puede acceder a este documento</p>
             </div>
 
@@ -509,7 +518,10 @@
           <!-- Paso 4: Resumen -->
           <div v-show="currentWizardStep === 4" class="wizard-step-content">
             <div class="step-header">
-              <h3 class="step-title">Resumen del Documento</h3>
+              <h3 class="step-title">
+                <i class="fas fa-eye"></i>
+                Resumen del Documento
+              </h3>
               <p class="step-description">Revisa la información antes de crear el documento</p>
             </div>
 
@@ -4624,30 +4636,36 @@ const selectSlugAlternative = (alternative) => {
 }
 
 .active-role-item.ROLE_SUPER_USER {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
-  border-color: rgba(245, 158, 11, 0.4);
-  color: #f59e0b;
+  background: var(--warning-bg, linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2)));
+  border-color: var(--warning-color);
+  color: var(--warning-color);
 }
 
 .active-role-item.ROLE_ADMIN {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.4);
-  color: #3b82f6;
+  background: var(--bg-hover);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .active-role-item.ROLE_COLLABORATOR {
-  background: rgba(16, 185, 129, 0.2);
-  border-color: rgba(16, 185, 129, 0.4);
-  color: #10b981;
+  background: var(--success-bg);
+  border-color: var(--success-color);
+  color: var(--success-color);
 }
 
 .role-badge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.65rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #f59e0b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  color: var(--warning-color);
 }
 
 /* Responsive Adjustments */
@@ -4830,6 +4848,215 @@ const selectSlugAlternative = (alternative) => {
 .dark-theme .super-user-option {
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.08));
   border: 2px solid rgba(34, 197, 94, 0.4);
+}
+
+/* Estilos del Wizard - Idénticos a MenuManagerView.vue */
+.wizard-header {
+  background: var(--primary-color);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px 12px 0 0;
+  position: relative;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Mejoras para modo oscuro */
+.dark-theme .wizard-header {
+  background: var(--primary-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.wizard-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark-theme .wizard-header::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+}
+
+.wizard-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.wizard-title-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.wizard-icon {
+  width: 3rem;
+  height: 3rem;
+  background: var(--bg-overlay-medium, rgba(255, 255, 255, 0.2));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--text-inverse);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.wizard-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wizard-text h2,
+.wizard-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-inverse);
+  line-height: 1.2;
+}
+
+.wizard-subtitle {
+  font-size: 1rem;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.wizard-close-btn {
+  background: var(--bg-overlay-medium, rgba(255, 255, 255, 0.2));
+  border: none;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-inverse);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.wizard-close-btn:hover:not(:disabled) {
+  background: var(--bg-overlay-light, rgba(255, 255, 255, 0.3));
+  transform: scale(1.05);
+}
+
+.wizard-close-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.step-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.step-header .step-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.step-header .step-description {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+/* Estilos específicos para iconos - Idénticos a MenuManagerView.vue */
+.step-header .step-title i {
+  color: var(--accent-primary);
+  font-size: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.form-label i {
+  color: var(--accent-primary);
+  font-size: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+/* Responsive para el wizard */
+@media (max-width: 768px) {
+  .wizard-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .wizard-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .wizard-title-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .wizard-close-btn {
+    align-self: flex-end;
+    margin-top: 0;
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+
+  .wizard-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+
+  .wizard-title {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+
+  .wizard-subtitle {
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+}
+
+/* Mejoras adicionales para modo oscuro */
+.dark-theme .wizard-header {
+  position: relative;
+}
+
+.dark-theme .wizard-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse at center, rgba(96, 165, 250, 0.1) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .dark-theme .super-user-option .role-label {
