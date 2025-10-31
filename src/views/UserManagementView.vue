@@ -549,10 +549,10 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import userService from '@/services/userService'
-import EditUserModal from '@/components/EditUserModal.vue'
-import DeleteUserModal from '@/components/DeleteUserModal.vue'
-import StatusChangeModal from '@/components/StatusChangeModal.vue'
-import CreateUserModal from '@/components/CreateUserModal.vue'
+import EditUserModal from '@/components/modals/EditUserModal.vue'
+import DeleteUserModal from '@/components/modals/DeleteUserModal.vue'
+import StatusChangeModal from '@/components/modals/StatusChangeModal.vue'
+import CreateUserModal from '@/components/modals/CreateUserModal.vue'
 import SidebarMenu from '@/components/common/SidebarMenu.vue'
 import AppHeader from '@/components/common/AppHeader.vue'
 

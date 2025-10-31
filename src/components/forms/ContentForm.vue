@@ -566,7 +566,7 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { marked } from 'marked'
 import documentService from '@/services/documentService'
-import IconSelector from '@/components/IconSelector.vue'
+import IconSelector from '@/components/common/IconSelector.vue'
 
 // Props
 const props = defineProps({

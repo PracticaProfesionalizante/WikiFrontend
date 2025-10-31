@@ -836,7 +836,7 @@ import { useAuthStore } from '@/stores/auth'
 import documentService from '@/services/documentService'
 import SidebarMenu from '@/components/common/SidebarMenu.vue'
 import AppHeader from '@/components/common/AppHeader.vue'
-import ContentForm from '@/components/ContentForm.vue'
+import ContentForm from '@/components/forms/ContentForm.vue'
 import { marked } from 'marked'
 import VuePdfEmbed from 'vue-pdf-embed'
 import {
