@@ -5,7 +5,13 @@
  */
 
 export async function loadFonts() {
-  const webFontLoader = await import(/* webpackChunkName: "webfontloader" */ 'webfontloader')
+  const module = await import('webfontloader')
+  const webFontLoader = module?.default || module
+
+  if (!webFontLoader || typeof webFontLoader.load !== 'function') {
+    console.warn('[webfontloader] No se pudo inicializar')
+    return
+  }
 
   webFontLoader.load({
     google: {
