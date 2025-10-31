@@ -1,23 +1,33 @@
 <template>
-  <div class="dashboard-layout">
+  <div class="flex min-h-screen bg-slate-100 dark:bg-slate-950">
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
+
     <main
-      class="main-content"
+      class="relative flex-1 pt-20 transition-all duration-300"
       :class="[
-        'with-header',
-        sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed',
+        sidebarExpanded ? 'ml-0 md:ml-[280px]' : 'ml-0 md:ml-20',
       ]"
     >
-      <div class="welcome-container">
-        <div class="welcome-content">
-          <h1 class="welcome-title">¡Hola, {{ user?.username || 'Usuario' }}!</h1>
-          <p class="welcome-message">
-            Para realizar alguna gestión dirígete al menú lateral. Ahí encontrarás todas las
-            opciones disponibles.
-          </p>
-        </div>
-      </div>
+      <div
+        class="absolute inset-0 bg-cover bg-center"
+        :style="{ backgroundImage: `url(${dashboardBackground})` }"
+        aria-hidden="true"
+      ></div>
+      <div class="absolute inset-0 bg-slate-950/75"></div>
+
+      <section class="relative flex min-h-[calc(100vh-5rem)] items-center justify-center px-4 py-10 sm:px-6 lg:px-10">
+        <article class="w-full max-w-2xl rounded-3xl border border-white/20 bg-white/90 p-8 text-center shadow-2xl backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-900/85 sm:p-12">
+          <div class="space-y-6">
+            <h1 class="bg-gradient-to-r from-cyan-300 via-sky-400 to-blue-500 bg-clip-text text-3xl font-black tracking-tight text-transparent sm:text-4xl">
+              ¡Hola, {{ user?.username || 'Usuario' }}!
+            </h1>
+            <p class="text-base font-medium leading-relaxed text-slate-700 dark:text-slate-300 sm:text-lg">
+              Para gestionar el contenido de la plataforma utiliza el menú lateral. Encontrarás todas las secciones disponibles y podrás acceder rápidamente a tus tareas habituales.
+            </p>
+          </div>
+        </article>
+      </section>
     </main>
   </div>
 </template>
@@ -27,6 +37,7 @@ import SidebarMenu from '@/components/common/SidebarMenu.vue'
 import AppHeader from '@/components/common/AppHeader.vue'
 import { useAuthStore } from '@/stores/auth'
 import { ref, onMounted } from 'vue'
+import dashboardBackground from '@/assets/images/backgrounds/fondo_dash.webp'
 
 const authStore = useAuthStore()
 const { user } = authStore
@@ -51,149 +62,3 @@ onMounted(async () => {
   }
 })
 </script>
-
-<style scoped>
-.dashboard-layout {
-  display: flex;
-  min-height: 100vh;
-  background: var(--bg-primary);
-}
-
-.main-content {
-  flex: 1;
-  margin-left: 0;
-  transition: margin-left 0.3s ease;
-  height: 100vh;
-  overflow: hidden;
-  background-image: url('/src/assets/images/backgrounds/fondo_dash.webp');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  position: relative;
-}
-
-.main-content.sidebar-collapsed {
-  margin-left: 80px;
-}
-
-.main-content.sidebar-expanded {
-  margin-left: 280px;
-}
-
-.main-content.with-header {
-  padding-top: 60px;
-}
-
-.main-content::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 20, 40, 0.7);
-  z-index: 1;
-}
-
-.welcome-container {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: calc(100vh - 70px);
-  padding: 2rem;
-}
-
-.welcome-content {
-  text-align: center;
-  background: var(--bg-primary);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  padding: 3rem 2.5rem;
-  box-shadow: 0 20px 60px var(--shadow-color);
-  border: 1px solid var(--border-color);
-  max-width: 600px;
-  width: 100%;
-  animation: fadeInUp 0.8s ease-out;
-}
-
-.welcome-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 1.5rem;
-  text-shadow: 0 2px 4px var(--shadow-color);
-  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.welcome-message {
-  font-size: 1.2rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin: 0;
-  font-weight: 500;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0;
-    height: 100vh;
-  }
-
-  .main-content.with-header {
-    padding-top: 60px;
-  }
-
-  .welcome-container {
-    padding: 1rem;
-    height: calc(100vh - 60px);
-  }
-
-  .welcome-content {
-    padding: 2rem 1.5rem;
-  }
-
-  .welcome-title {
-    font-size: 2rem;
-  }
-
-  .welcome-message {
-    font-size: 1.1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .welcome-container {
-    padding: 0.5rem;
-    height: calc(100vh - 70px);
-  }
-
-  .welcome-content {
-    padding: 1.5rem 1rem;
-  }
-
-  .welcome-title {
-    font-size: 1.8rem;
-  }
-
-  .welcome-message {
-    font-size: 1rem;
-  }
-}
-</style>
