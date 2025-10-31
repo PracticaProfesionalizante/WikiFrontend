@@ -315,12 +315,16 @@ class DocumentService {
 
     if (!authStore.isAuthenticated) {
       console.error('❌ [DOCUMENT SERVICE] Usuario no autenticado')
-      throw new Error('Usuario no autenticado. Por favor, inicie sesión.')
+      const error = new Error('Usuario no autenticado. Por favor, inicie sesión.')
+      error.status = 401
+      throw error
     }
 
     if (!authStore.accessToken) {
       console.error('❌ [DOCUMENT SERVICE] No hay access token disponible')
-      throw new Error('Token de acceso no disponible. Por favor, inicie sesión nuevamente.')
+      const error = new Error('Token de acceso no disponible. Por favor, inicie sesión nuevamente.')
+      error.status = 401
+      throw error
     }
 
     console.log('✅ [DOCUMENT SERVICE] Usuario autenticado correctamente')

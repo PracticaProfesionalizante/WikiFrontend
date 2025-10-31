@@ -687,8 +687,8 @@
                           :page="currentPdfPage"
                           @loaded="onPdfLoaded"
                           @loading-failed="onPdfError"
-                          class="w-full pointer-events-none"
-                          style="user-select: none;"
+                          class="w-full rounded-lg border border-slate-200 shadow dark:border-slate-700"
+                          style="user-select: text;"
                         />
                       </div>
                     </div>
@@ -835,6 +835,8 @@
           v-model="editDialog"
           :document="selectedItem"
           :loading="editLoading"
+          :is-editing="isEditing"
+          :start-step="isEditing ? 2 : 1"
           @saved="handleSaveDocument"
           @close="closeEditDialog"
         />
@@ -1923,18 +1925,13 @@ const loadPdfFile = async (documentId) => {
   try {
     console.log('?? Cargando PDF autenticado para documento:', documentId)
 
-    // Limpiar URL anterior si existe
     if (pdfBlobUrl.value) {
       URL.revokeObjectURL(pdfBlobUrl.value)
       pdfBlobUrl.value = null
     }
 
-    // Obtener el archivo PDF usando el servicio autenticado
     const blobUrl = await documentService.getDocumentFileUrl(documentId)
     pdfBlobUrl.value = blobUrl
-
-    // Establecer loading en false después de obtener la URL
-    // El evento @loaded se usará para obtener el número de páginas
     pdfLoading.value = false
 
     console.log('? PDF cargado exitosamente como blob URL:', blobUrl)
@@ -1943,34 +1940,22 @@ const loadPdfFile = async (documentId) => {
   } catch (error) {
     console.error('? Error cargando PDF:', error)
 
-    // Manejar diferentes tipos de errores
-    if (
-      error.message.includes('no autenticado') ||
-      error.message.includes('Token de acceso no disponible')
-    ) {
-      throw new Error('Sesión expirada. Por favor, inicie sesión nuevamente.')
-    } else if (error.response?.status === 401) {
-      throw new Error('No tiene permisos para acceder a este documento.')
-    } else if (error.response?.status === 404) {
-      throw new Error('El documento PDF no fue encontrado.')
-    } else if (error.response?.status === 403) {
-      throw new Error('Acceso denegado a este documento.')
-    } else if (error.response?.status === 422 || error.status === 422) {
-      // Error 422: Documento no encontrado o no válido
-      if (error.isFileNotFound) {
-        throw new Error(
-          'El archivo PDF no se encuentra en el servidor. Puede haber sido eliminado o nunca se subió correctamente.',
-        )
-      } else if (error.details) {
-        throw new Error(error.details.detail || 'El documento PDF no existe o no es válido.')
-      } else if (error.rawContent) {
-        throw new Error(`Error del servidor: ${error.rawContent}`)
-      } else {
-        throw new Error('El documento PDF no existe o no es válido.')
-      }
+    if (error.status === 401 || /autenticad/.test(error.message)) {
+      pdfError.value = new Error('Tu sesión expiró. Inicia sesión nuevamente para ver el PDF.')
+    } else if (error.status === 422 || /no existe/.test(error.message)) {
+      pdfError.value = new Error('El archivo PDF no está disponible. Puede haber sido eliminado o nunca se subió correctamente.')
     } else {
-      throw new Error(`Error cargando PDF: ${error.message}`)
+      pdfError.value = new Error(error.message || 'No se pudo cargar el documento PDF.')
     }
+
+    if (pdfBlobUrl.value) {
+      URL.revokeObjectURL(pdfBlobUrl.value)
+      pdfBlobUrl.value = null
+    }
+
+    pdfLoading.value = false
+
+    throw error
   }
 }
 

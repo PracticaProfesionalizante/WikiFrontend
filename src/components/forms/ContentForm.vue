@@ -35,11 +35,26 @@
           <div
             v-for="(step, index) in wizardSteps"
             :key="step.id"
-            class="flex items-center gap-3"
-            :class="{
-              'opacity-100': currentWizardStep === index + 1 || currentWizardStep > index + 1,
-              'opacity-50': currentWizardStep < index + 1
-            }"
+            :class="[
+              'flex items-center gap-3 rounded-lg px-2 py-1 transition',
+              (
+                isEditing ||
+                index + 1 <= currentWizardStep ||
+                (index === currentWizardStep && canProceedToNextStep)
+              )
+                ? 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/60'
+                : 'cursor-default',
+              {
+                'opacity-100': currentWizardStep === index + 1 || currentWizardStep > index + 1,
+                'opacity-50': currentWizardStep < index + 1
+              }
+            ]"
+            :aria-current="currentWizardStep === index + 1 ? 'step' : undefined"
+            role="button"
+            tabindex="0"
+            @click="goToStep(index + 1)"
+            @keydown.enter.prevent="goToStep(index + 1)"
+            @keydown.space.prevent="goToStep(index + 1)"
           >
             <div
               class="grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-bold transition-all"
@@ -289,13 +304,53 @@
 
               <!-- Contenido TYPE_PDF -->
               <div v-else-if="form.type === 'TYPE_PDF'" class="space-y-4">
-                <div>
+                <div v-if="hasOriginalPdf" class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-200">
+                  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center gap-3">
+                      <i class="fas fa-file-pdf text-2xl"></i>
+                      <div>
+                        <p class="m-0 text-base font-semibold">{{ currentPdfName || 'No especificado' }}</p>
+                        <p class="m-0 text-xs opacity-80">Archivo PDF actualmente asociado al documento</p>
+                      </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        class="inline-flex items-center gap-2 rounded-lg border border-emerald-400 bg-white px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:-translate-y-0.5 hover:bg-emerald-100 disabled:opacity-60 dark:bg-emerald-800 dark:text-emerald-100"
+                        @click="openOriginalPdf"
+                        :disabled="pdfPreviewLoading || isSaving"
+                      >
+                        <i v-if="!pdfPreviewLoading" class="fas fa-eye"></i>
+                        <i v-else class="fas fa-spinner fa-spin"></i>
+                        Ver PDF
+                      </button>
+                      <button
+                        type="button"
+                        class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white shadow transition hover:-translate-y-0.5 disabled:opacity-60"
+                        @click="startPdfReplacement"
+                        :disabled="isSaving"
+                      >
+                        <i class="fas fa-sync"></i>
+                        Reemplazar PDF
+                      </button>
+                    </div>
+                    <div v-if="pdfPreviewError" class="mt-2 flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600 dark:bg-red-900/20 dark:text-red-300">
+                      <i class="fas fa-exclamation-circle"></i>
+                      {{ pdfPreviewError }}
+                    </div>
+                  </div>
+                </div>
+
+                <div v-if="!hasOriginalPdf || isReplacingPdf">
                   <label for="pdfFile" class="mb-2 flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-slate-100">
                     <i class="fas fa-file-pdf text-blue-500"></i>
-                    Archivo PDF
+                    Selecciona un nuevo archivo PDF
                     <span class="text-red-600">*</span>
                   </label>
-                  <div class="relative rounded-lg border-2 border-dashed transition" :class="pdfFile ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : 'border-slate-300 dark:border-slate-700'">
+                  <div
+                    class="relative rounded-lg border-2 border-dashed transition"
+                    :class="pdfFile ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : 'border-slate-300 dark:border-slate-700'"
+                  >
                     <input
                       id="pdfFile"
                       ref="pdfFileInput"
@@ -308,10 +363,18 @@
                     <div class="p-6 text-center">
                       <div v-if="!pdfFile" class="space-y-2">
                         <i class="fas fa-cloud-upload-alt text-4xl text-slate-400"></i>
-                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300">Arrastra tu archivo PDF aquí o haz clic para seleccionar</p>
-                        <span class="text-xs text-slate-500 dark:text-slate-400">Solo archivos PDF (máximo 10MB)</span>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          Arrastra tu archivo PDF aquí o haz clic para seleccionar
+                        </p>
+                        <span class="block text-xs text-slate-500 dark:text-slate-400">Solo archivos PDF (máximo 10MB)</span>
+                        <span v-if="isReplacingPdf" class="block text-xs text-amber-600 dark:text-amber-400">
+                          Este archivo reemplazará al PDF actual
+                        </span>
                       </div>
-                      <div v-else class="flex items-center justify-between gap-4 rounded-lg border-2 border-emerald-500 bg-emerald-50 p-4 dark:bg-emerald-900/20">
+                      <div
+                        v-else
+                        class="flex items-center justify-between gap-4 rounded-lg border-2 border-emerald-500 bg-emerald-50 p-4 dark:bg-emerald-900/20"
+                      >
                         <div class="flex items-center gap-3">
                           <i class="fas fa-file-pdf text-2xl text-emerald-600 dark:text-emerald-400"></i>
                           <div>
@@ -319,21 +382,23 @@
                             <p class="m-0 text-xs text-slate-600 dark:text-slate-300">{{ formatFileSize(pdfFile.size) }}</p>
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white transition hover:bg-red-700 disabled:opacity-50"
-                          @click="removeFile"
-                          :disabled="isSaving"
-                        >
-                          <i class="fas fa-times"></i>
-                        </button>
+                        <div class="flex gap-2">
+                          <button
+                            type="button"
+                            class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white transition hover:bg-red-700 disabled:opacity-50"
+                            @click="removeFile"
+                            :disabled="isSaving"
+                          >
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div v-if="validationErrors.pdfFile" class="mt-2 flex items-center gap-2 text-xs font-medium text-red-600">
-                    <i class="fas fa-exclamation-circle"></i>
-                    {{ validationErrors.pdfFile }}
-                  </div>
+                </div>
+                <div v-if="validationErrors.pdfFile" class="mt-2 flex items-center gap-2 text-xs font-medium text-red-600">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ validationErrors.pdfFile }}
                 </div>
               </div>
             </div>
@@ -452,7 +517,7 @@
                   </div>
                   <div v-else-if="form.type === 'TYPE_PDF'" class="flex justify-between">
                     <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Archivo PDF:</span>
-                    <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ pdfFile ? pdfFile.name : 'No especificado' }}</span>
+                    <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ currentPdfName || 'No especificado' }}</span>
                   </div>
                 </div>
               </div>
@@ -581,6 +646,14 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  isEditing: {
+    type: Boolean,
+    default: false
+  },
+  startStep: {
+    type: Number,
+    default: 1
   }
 })
 
@@ -635,10 +708,30 @@ const wizardSteps = ref([
   }
 ])
 
+const desiredStartStep = computed(() => {
+  const step = Number.isFinite(props.startStep) ? props.startStep : 1
+  return Math.min(Math.max(step, 1), wizardSteps.value.length)
+})
+
 // PDF File Upload
 const pdfFile = ref(null)
 const fileInput = ref(null)
 const pdfPreviewUrl = ref(null)
+const originalPdfUrl = ref('')
+const originalPdfName = ref('')
+const isReplacingPdf = ref(false)
+const hasOriginalPdf = computed(() => !!originalPdfUrl.value && !isReplacingPdf.value)
+const currentPdfName = computed(() => {
+  if (pdfFile.value) {
+    return pdfFile.value.name
+  }
+  if (!isReplacingPdf.value && originalPdfName.value) {
+    return originalPdfName.value
+  }
+  return ''
+})
+const pdfPreviewLoading = ref(false)
+const pdfPreviewError = ref('')
 
 // Roles disponibles (mismos que en MenuManagerView)
 const availableRolesList = [
@@ -663,7 +756,7 @@ const availableRolesList = [
 ]
 
 // Computed
-const isEditing = computed(() => !!props.document)
+const isEditing = computed(() => props.isEditing || !!props.document)
 
 // Roles disponibles para el template
 const availableRoles = computed(() => availableRolesList)
@@ -727,8 +820,8 @@ const canProceedToNextStep = computed(() => {
       // Paso 2: Contenido del Documento
       if (!form.value.type) return false
       if (form.value.type === 'TYPE_PDF') {
-        const step2Valid = !!pdfFile.value && !validationErrors.value.pdfFile
-        console.log('📄 [CONTENT FORM] Validación paso 2 PDF:', step2Valid, 'pdfFile:', !!pdfFile.value)
+        const step2Valid = (pdfFile.value || (!isReplacingPdf.value && originalPdfUrl.value)) && !validationErrors.value.pdfFile
+        console.log('📄 [CONTENT FORM] Validación paso 2 PDF:', step2Valid, 'pdfFile:', !!pdfFile.value, 'originalPdfUrl:', !!originalPdfUrl.value, 'isReplacingPdf:', isReplacingPdf.value)
         return step2Valid
       }
       const step2ContentValid = form.value.content && !validationErrors.value.content
@@ -908,6 +1001,15 @@ const handleTypeChange = () => {
   // Limpiar contenido cuando cambia el tipo
   form.value.content = ''
   validateField('content')
+
+  if (form.value.type !== 'TYPE_PDF') {
+    pdfFile.value = null
+    pdfPreviewUrl.value = null
+    originalPdfUrl.value = ''
+    originalPdfName.value = ''
+    isReplacingPdf.value = false
+    pdfPreviewError.value = ''
+  }
 }
 
 // Funciones del editor de Markdown
@@ -1072,8 +1174,13 @@ const handlePdfError = () => {
 // PDF File Upload Functions
 const handleFileSelect = (event) => {
   const file = event.target.files[0]
-  if (file) {
-    validatePdfFile(file)
+  if (file && validatePdfFile(file)) {
+    isReplacingPdf.value = true
+    pdfPreviewError.value = ''
+    if (pdfPreviewUrl.value) {
+      URL.revokeObjectURL(pdfPreviewUrl.value)
+    }
+    pdfPreviewUrl.value = URL.createObjectURL(file)
   }
 }
 
@@ -1096,7 +1203,7 @@ const validatePdfFile = (file) => {
 
   // Archivo válido
   pdfFile.value = file
-  form.value.content = file.name // Usar el nombre del archivo como contenido
+  form.value.content = file.name // Usar el nombre del archivo como referencia temporal
 
   // Validar el campo content después de asignar el archivo
   validateField('content')
@@ -1115,7 +1222,7 @@ const formatFileSize = (bytes) => {
 
 const removeFile = () => {
   pdfFile.value = null
-  form.value.content = ''
+  pdfPreviewError.value = ''
   if (pdfPreviewUrl.value) {
     URL.revokeObjectURL(pdfPreviewUrl.value)
     pdfPreviewUrl.value = null
@@ -1183,6 +1290,10 @@ const resetForm = () => {
   validationErrors.value = {}
   currentWizardStep.value = 1
   pdfFile.value = null
+  pdfPreviewUrl.value = null
+  originalPdfUrl.value = ''
+  originalPdfName.value = ''
+  isReplacingPdf.value = false
   activeTab.value = 'edit'
   console.log('✅ [CONTENT FORM] Formulario reseteado')
 }
@@ -1192,6 +1303,24 @@ const loadDocumentData = () => {
   if (props.document) {
     console.log('📄 [CONTENT FORM] Documento cargado para edición:', props.document?.name || 'Sin nombre')
     console.log('📄 [CONTENT FORM] Roles del documento:', props.document.roles)
+
+    const currentContent = props.document.content || ''
+
+    if (props.document.type === 'TYPE_PDF') {
+      originalPdfUrl.value = currentContent
+      originalPdfName.value =
+        props.document.originalFileName ||
+        props.document.fileName ||
+        getPdfTitle(currentContent) ||
+        'Documento PDF'
+      isReplacingPdf.value = false
+      pdfFile.value = null
+    } else {
+      originalPdfUrl.value = ''
+      originalPdfName.value = ''
+      isReplacingPdf.value = false
+      pdfFile.value = null
+    }
 
     // Procesar roles para asegurar que sea un array y manejar diferentes formatos
     let cleanRoles = []
@@ -1223,13 +1352,15 @@ const loadDocumentData = () => {
       name: props.document.name || '',
       type: props.document.type || '',
       slug: '', // Se genera automáticamente en edición
-      content: props.document.content || '',
+      content: currentContent,
       icon: props.document.icon || '',
       roles: cleanRoles
     }
 
-    // Resetear el paso del wizard a 1
-    currentWizardStep.value = 1
+    pdfPreviewUrl.value = null
+
+    // Resetear el paso del wizard
+    currentWizardStep.value = isEditing.value ? desiredStartStep.value : 1
   } else {
     resetForm()
   }
@@ -1292,15 +1423,19 @@ const handleSubmit = async () => {
     // Validación adicional para PDFs
     if (documentData.type === 'TYPE_PDF') {
       console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.value:', pdfFile.value)
-      console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.name:', pdfFile.value?.name)
-      console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.size:', pdfFile.value?.size)
+      console.log('🔍 [CONTENT FORM] Validación PDF - originalPdfUrl:', originalPdfUrl.value)
 
-      if (!pdfFile.value) {
-        throw new Error('No se ha seleccionado ningún archivo PDF')
-      }
+      if (pdfFile.value) {
+        console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.name:', pdfFile.value?.name)
+        console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.size:', pdfFile.value?.size)
 
-      if (!pdfFile.value.name) {
-        throw new Error('El archivo PDF seleccionado no es válido')
+        if (!pdfFile.value.name) {
+          throw new Error('El archivo PDF seleccionado no es válido')
+        }
+      } else if (!hasOriginalPdf.value) {
+        throw new Error('Debe seleccionar un archivo PDF válido')
+      } else {
+        documentData.content = originalPdfUrl.value
       }
     }
 
@@ -1491,6 +1626,9 @@ watch(() => props.modelValue, (newValue) => {
   if (newValue) {
     console.log('📄 [CONTENT FORM] Cargando datos del documento...')
     loadDocumentData()
+    currentWizardStep.value = isEditing.value ? desiredStartStep.value : 1
+  } else {
+    resetForm()
   }
 })
 
@@ -1541,4 +1679,92 @@ const selectSlugAlternative = (alternative) => {
   validateField('slug')
   slugAlternatives.value = [] // Limpiar opciones después de seleccionar
 }
+
+const goToStep = (step) => {
+  if (step < 1 || step > wizardSteps.value.length) {
+    return
+  }
+
+  if (isEditing.value) {
+    currentWizardStep.value = step
+    return
+  }
+
+  if (step <= currentWizardStep.value) {
+    currentWizardStep.value = step
+    return
+  }
+
+  if (step === currentWizardStep.value + 1 && canProceedToNextStep.value) {
+    currentWizardStep.value = step
+  }
+}
+
+const startPdfReplacement = () => {
+  isReplacingPdf.value = true
+  pdfPreviewError.value = ''
+  pdfFile.value = null
+  if (pdfPreviewUrl.value) {
+    URL.revokeObjectURL(pdfPreviewUrl.value)
+    pdfPreviewUrl.value = null
+  }
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+  form.value.content = ''
+}
+
+const ensureAbsoluteUrl = (url) => {
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url)) return url
+  if (url.startsWith('/')) {
+    return `${window.location.origin}${url}`
+  }
+  return `${window.location.origin}/${url}`
+}
+
+const openOriginalPdf = async () => {
+  if (!originalPdfUrl.value) {
+    return
+  }
+
+  pdfPreviewError.value = ''
+  pdfPreviewLoading.value = true
+
+  try {
+    let blobUrl = originalPdfUrl.value
+
+    if (props.document?.id) {
+      blobUrl = await documentService.getDocumentFileUrl(props.document.id)
+    } else {
+      blobUrl = ensureAbsoluteUrl(originalPdfUrl.value)
+    }
+
+    const newWindow = window.open(blobUrl, '_blank', 'noopener,noreferrer')
+
+    if (!newWindow) {
+      console.warn('El navegador bloqueó la ventana emergente para el PDF. Debe habilitarla manualmente si desea abrirlo en una nueva pestaña.')
+      pdfPreviewError.value = ''
+      return
+    }
+
+    newWindow.opener = null
+    pdfPreviewError.value = ''
+
+    if (blobUrl.startsWith('blob:')) {
+      setTimeout(() => {
+        try {
+          URL.revokeObjectURL(blobUrl)
+        } catch {
+          /* noop */
+        }
+      }, 60000)
+    }
+  } catch (error) {
+    pdfPreviewError.value = error.message || 'No se pudo abrir el PDF.'
+  } finally {
+    pdfPreviewLoading.value = false
+  }
+}
+
 </script>
