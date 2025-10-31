@@ -152,6 +152,93 @@ export const availableIcons = {
     'fa-gamepad', 'fa-chess', 'fa-dice', 'fa-puzzle-piece', 'fa-magic',
     'fa-mask', 'fa-theater-masks', 'fa-music', 'fa-microphone', 'fa-headphones',
     'fa-tv', 'fa-video', 'fa-film', 'fa-camera', 'fa-palette'
+  ],
+
+  // Iconos de naturaleza y medio ambiente
+  'Naturaleza': [
+    'fa-tree', 'fa-leaf', 'fa-seedling', 'fa-water', 'fa-droplet', 'fa-droplet-slash',
+    'fa-cloud-sun', 'fa-cloud-sun-rain', 'fa-cloud-moon', 'fa-cloud-showers-heavy',
+    'fa-fire', 'fa-mountain', 'fa-icicles', 'fa-earth-americas', 'fa-campground'
+  ],
+
+  // Iconos de viajes y turismo
+  'Viajes y Turismo': [
+    'fa-suitcase', 'fa-suitcase-rolling', 'fa-passport', 'fa-plane', 'fa-plane-departure',
+    'fa-plane-arrival', 'fa-hotel', 'fa-bed', 'fa-umbrella-beach', 'fa-route',
+    'fa-map', 'fa-map-pin', 'fa-location-dot', 'fa-hiking', 'fa-luggage-cart'
+  ],
+
+  // Iconos de profesiones y oficios
+  'Profesiones': [
+    'fa-user-tie', 'fa-user-graduate', 'fa-user-nurse', 'fa-user-md', 'fa-user-astronaut',
+    'fa-user-secret', 'fa-user-ninja', 'fa-user-shield', 'fa-user-cog', 'fa-hard-hat',
+    'fa-helmet-safety', 'fa-briefcase', 'fa-briefcase-medical', 'fa-gavel', 'fa-chalkboard-teacher'
+  ],
+
+  // Iconos de finanzas y negocios
+  'Finanzas': [
+    'fa-piggy-bank', 'fa-landmark', 'fa-money-check', 'fa-money-check-alt', 'fa-file-invoice',
+    'fa-file-invoice-dollar', 'fa-donate', 'fa-hand-holding-usd', 'fa-sack-dollar', 'fa-money-bill-wave',
+    'fa-chart-area', 'fa-chart-line', 'fa-chart-pie', 'fa-scale-balanced', 'fa-wallet'
+  ],
+
+  // Iconos de ciencia y laboratorio
+  'Ciencia y Laboratorio': [
+    'fa-atom', 'fa-microscope', 'fa-vials', 'fa-vial', 'fa-dna', 'fa-brain',
+    'fa-flask', 'fa-notes-medical', 'fa-virus', 'fa-virus-slash', 'fa-lungs',
+    'fa-lungs-virus', 'fa-syringe', 'fa-biohazard', 'fa-radiation'
+  ],
+
+  // Iconos de ciberseguridad y tecnología avanzada
+  'Ciberseguridad': [
+    'fa-shield-alt', 'fa-shield-halved', 'fa-user-shield', 'fa-lock', 'fa-unlock-alt',
+    'fa-key', 'fa-fingerprint', 'fa-bug', 'fa-spider', 'fa-robot',
+    'fa-microchip', 'fa-network-wired', 'fa-laptop-code', 'fa-database', 'fa-fire-extinguisher'
+  ],
+
+  // Iconos de productividad y gestión
+  'Productividad': [
+    'fa-clipboard', 'fa-clipboard-list', 'fa-clipboard-check', 'fa-tasks', 'fa-project-diagram',
+    'fa-timeline', 'fa-sitemap', 'fa-hourglass-half', 'fa-stopwatch', 'fa-bullseye',
+    'fa-crosshairs', 'fa-lightbulb', 'fa-list-check', 'fa-diagram-project', 'fa-brain-circuit'
+  ],
+
+  // Iconos de emociones y expresiones
+  'Emociones': [
+    'fa-smile', 'fa-laugh', 'fa-grin-beam', 'fa-grin-hearts', 'fa-grin-stars', 'fa-meh',
+    'fa-frown', 'fa-angry', 'fa-sad-tear', 'fa-tired', 'fa-surprise', 'fa-kiss-wink-heart',
+    'fa-grimace', 'fa-dizzy', 'fa-flushed'
+  ],
+
+  // Iconos de redes sociales y plataformas digitales
+  'Redes Sociales Extendidas': [
+    'fab fa-facebook', 'fab fa-facebook-f', 'fab fa-facebook-square', 'fab fa-x-twitter', 'fab fa-twitter',
+    'fab fa-linkedin', 'fab fa-linkedin-in', 'fab fa-instagram', 'fab fa-youtube', 'fab fa-tiktok',
+    'fab fa-snapchat', 'fab fa-snapchat-ghost', 'fab fa-pinterest', 'fab fa-pinterest-p', 'fab fa-telegram',
+    'fab fa-whatsapp', 'fab fa-discord', 'fab fa-slack', 'fab fa-slack-hash', 'fab fa-reddit',
+    'fab fa-reddit-alien', 'fab fa-dribbble', 'fab fa-behance', 'fab fa-behance-square', 'fab fa-medium',
+    'fab fa-medium-m', 'fab fa-github', 'fab fa-github-alt', 'fab fa-github-square', 'fab fa-gitlab',
+    'fab fa-stack-overflow', 'fab fa-stack-exchange', 'fab fa-tumblr', 'fab fa-tumblr-square', 'fab fa-vk',
+    'fab fa-vimeo', 'fab fa-vimeo-square', 'fab fa-twitch', 'fab fa-spotify', 'fab fa-soundcloud',
+    'fab fa-qq', 'fab fa-weixin', 'fab fa-weibo', 'fab fa-line', 'fab fa-kickstarter-k'
+  ],
+
+  // Iconos para documentación, reportes y conocimiento
+  'Documentación y Contenido': [
+    'fa-file-lines', 'fa-file-pen', 'fa-file-circle-question', 'fa-book-open', 'fa-book-open-reader',
+    'fa-book-bookmark', 'fa-book-atlas', 'fa-scroll', 'fa-newspaper', 'fa-table-list',
+    'fa-file-circle-exclamation', 'fa-file-archive', 'fa-envelope-open-text', 'fa-chalkboard',
+    'fa-chalkboard-user', 'fa-folder-tree', 'fa-clipboard', 'fa-clipboard-list', 'fa-copy', 'fa-paste'
+  ],
+
+  // Iconos para ayuda, soporte y comunicación con usuarios
+  'Ayuda y Soporte': [
+    'fa-circle-info', 'fa-circle-question', 'fa-circle-exclamation', 'fa-question', 'fa-life-ring',
+    'fa-headset', 'fa-headphones', 'fa-comments', 'fa-comment-dots', 'fa-comment-medical',
+    'fa-handshake', 'fa-handshake-angle', 'fa-hand-holding-heart', 'fa-lightbulb', 'fa-message',
+    'fa-envelope-open', 'fa-phone-volume', 'fa-phone', 'fa-square-phone', 'fa-bullhorn',
+    'fa-triangle-exclamation', 'fa-user-check', 'fa-flag-checkered', 'fa-bell', 'fa-notes-medical',
+    'fa-clipboard-check'
   ]
 }
 
@@ -162,7 +249,8 @@ export function getCategoryDisplayName(category) {
 
 // Función para obtener el nombre de visualización de un icono
 export function getIconDisplayName(icon) {
-  return icon.replace('fa-', '').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  const base = icon.split(' ').pop() || icon
+  return base.replace('fa-', '').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
 // Función para obtener palabras clave de un icono
@@ -368,9 +456,52 @@ export function getIconKeywords(icon) {
     'fa-cloud-moon': ['luna y nube', 'noche', 'clima'],
     'fa-thermometer-empty': ['termómetro vacío', 'frío', 'temperatura'],
     'fa-thermometer-full': ['termómetro lleno', 'calor', 'temperatura'],
-    'fa-thermometer-half': ['termómetro medio', 'temperatura', 'clima']
+    'fa-thermometer-half': ['termómetro medio', 'temperatura', 'clima'],
+    'fa-file-lines': ['documento', 'archivo', 'contenido', 'texto'],
+    'fa-file-pen': ['editar documento', 'actualizar archivo', 'contenido'],
+    'fa-file-circle-question': ['documento ayuda', 'faq', 'consulta'],
+    'fa-book-bookmark': ['manual', 'referencia', 'documentación'],
+    'fa-book-open-reader': ['lectura', 'manual', 'contenido'],
+    'fa-scroll': ['pergamino', 'historial', 'documento'],
+    'fa-table-list': ['tabla', 'listado', 'registro'],
+    'fa-envelope-open-text': ['correo abierto', 'mensaje', 'notificación'],
+    'fa-folder-tree': ['estructura', 'carpetas', 'jerarquía'],
+    'fa-copy': ['copiar', 'duplicar', 'documento'],
+    'fa-paste': ['pegar', 'portapapeles', 'insertar'],
+    'fa-circle-info': ['información', 'ayuda', 'detalle'],
+    'fa-circle-question': ['pregunta', 'ayuda', 'duda'],
+    'fa-circle-exclamation': ['alerta', 'importante', 'atención'],
+    'fa-question': ['ayuda', 'consultar', 'faq'],
+    'fa-life-ring': ['soporte', 'ayuda', 'emergencia'],
+    'fa-headset': ['soporte', 'call center', 'audio'],
+    'fa-headphones': ['auriculares', 'soporte', 'audio'],
+    'fa-comment-dots': ['mensajes', 'chat', 'comentario'],
+    'fa-comment-medical': ['consulta médica', 'soporte salud'],
+    'fa-handshake': ['acuerdo', 'alianza', 'colaboración'],
+    'fa-handshake-angle': ['asistencia', 'ayuda', 'colaboración'],
+    'fa-hand-holding-heart': ['apoyo', 'cuidado', 'solidaridad'],
+    'fa-lightbulb': ['idea', 'inspiración', 'solución'],
+    'fa-message': ['mensaje', 'chat', 'comunicación'],
+    'fa-envelope-open': ['correo', 'mensaje', 'notificación'],
+    'fa-phone-volume': ['llamar', 'soporte', 'contacto'],
+    'fa-square-phone': ['teléfono', 'contacto', 'soporte'],
+    'fa-bullhorn': ['anuncio', 'comunicar', 'alerta'],
+    'fa-user-check': ['usuario aprobado', 'verificado', 'validado'],
+    'fa-flag-checkered': ['finalizado', 'objetivo', 'meta'],
+    'fa-bell': ['notificación', 'alerta', 'recordatorio'],
+    'fa-notes-medical': ['nota médica', 'historial', 'salud'],
+    'fa-clipboard-check': ['verificado', 'lista', 'completado']
   }
 
-  return keywords[icon] || [icon.replace('fa-', '').replace(/-/g, ' ')]
+  if (keywords[icon]) {
+    return keywords[icon]
+  }
+
+  const base = icon.split(' ').pop() || icon
+  if (keywords[base]) {
+    return keywords[base]
+  }
+
+  return [base.replace('fa-', '').replace(/-/g, ' ')]
 }
 

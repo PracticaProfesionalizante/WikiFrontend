@@ -55,7 +55,7 @@
           :class="{ selected: selectedIcon === icon }"
           @click="selectIcon(icon)"
         >
-          <i :class="['fas fas', icon]" class="icon-preview"></i>
+          <i :class="getIconClassList(icon)" class="icon-preview"></i>
           <span class="icon-name">{{ getIconDisplayName(icon) }}</span>
         </div>
       </div>
@@ -63,7 +63,7 @@
 
     <div class="icon-selector-footer">
       <div class="selected-icon-preview" v-if="selectedIcon !== null">
-        <i v-if="selectedIcon" :class="['fas fas', selectedIcon]" class="selected-preview"></i>
+        <i v-if="selectedIcon" :class="getIconClassList(selectedIcon)" class="selected-preview"></i>
         <div v-else class="no-icon-selected">
           <i class="fas fa-ban"></i>
         </div>
@@ -106,9 +106,9 @@ export default {
       scrollTop: 0,
 
       // Progressive loading con scroll infinito
-      initialLoadSize: 90, // Cargar 90 iconos inicialmente
-      loadMoreSize: 60, // Cargar 60 iconos más cada vez
-      currentlyLoaded: 90, // Cantidad actualmente cargada
+      initialLoadSize: 120, // Cargar 120 iconos inicialmente
+      loadMoreSize: 90, // Cargar 90 iconos más cada vez
+      currentlyLoaded: 120, // Cantidad actualmente cargada
       isLoadingMore: false,
 
       // Debounce para búsqueda y scroll
@@ -136,19 +136,26 @@ export default {
       if (this.searchQuery.trim()) {
         const query = this.searchQuery.toLowerCase().trim()
         icons = icons.filter((icon) => {
-          const iconName = icon.replace('fa-', '').replace(/-/g, ' ')
+          const iconName = this.getIconName(icon)
+          const normalizedName = iconName.replace('fa-', '').replace(/-/g, ' ')
+          const iconClass = icon.toLowerCase()
           const keywords = this.getIconKeywords(icon)
 
-          // Búsqueda exacta tiene prioridad
-          if (iconName.includes(query) || icon.includes(query)) {
+          if (
+            normalizedName.includes(query) ||
+            iconClass.includes(query) ||
+            iconName.toLowerCase().includes(query)
+          ) {
             return true
           }
 
-          // Búsqueda por palabras clave y sinónimos
-          return keywords.some(
-            (keyword) =>
-              keyword.toLowerCase().includes(query) || query.includes(keyword.toLowerCase()),
-          )
+          return keywords.some((keyword) => {
+            const normalizedKeyword = keyword.toLowerCase()
+            return (
+              normalizedKeyword.includes(query) ||
+              query.includes(normalizedKeyword)
+            )
+          })
         })
 
         // Ordenar resultados por relevancia
@@ -250,12 +257,16 @@ export default {
     },
 
     getIconDisplayName(icon) {
-      return icon.replace('fa-', '').replace(/-/g, ' ')
+      return this.getIconName(icon).replace(/-/g, ' ')
+    },
+
+    getIconName(icon) {
+      return (icon.split(' ').pop() || icon).replace('fa-', '')
     },
 
     getIconKeywords(icon) {
       // Generar palabras clave basadas en el nombre del icono
-      const name = icon.replace('fa-', '')
+      const name = this.getIconName(icon)
       const parts = name.split('-')
 
       // Agregar sinónimos y palabras relacionadas
@@ -372,6 +383,26 @@ export default {
 
     onSearchInput() {
       this.handleSearch()
+    },
+
+    getIconClassList(icon) {
+      if (!icon) {
+        return ['fas', 'fa-question']
+      }
+
+      const parts = icon.split(' ').filter(Boolean)
+      if (parts.length === 1) {
+        return ['fas', parts[0]]
+      }
+
+      const iconParts = parts.filter(part => part.startsWith('fa-'))
+      const prefixParts = parts.filter(part => !part.startsWith('fa-'))
+
+      if (!prefixParts.length) {
+        prefixParts.push('fas')
+      }
+
+      return [...new Set([...prefixParts, ...iconParts])]
     },
   },
 
