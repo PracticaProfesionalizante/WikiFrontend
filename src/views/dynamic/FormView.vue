@@ -1,18 +1,22 @@
-<template>
+﻿<template>
   <div class="form-view-layout">
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
-    
-    <div class="main-content" :class="{ 'with-header': true }">
+
+    <div
+      class="main-content"
+      :class="[
+        'with-header',
+        sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed',
+      ]"
+    >
       <div class="form-container">
         <div class="form-header">
           <h1 class="form-title">
-            <i :class="menuIcon || 'mdi mdi-form-select'"></i>
+            <i :class="menuIcon || 'fas fas fa-form-select'"></i>
             {{ menuTitle || 'Formulario Dinámico' }}
           </h1>
-          <p class="form-subtitle">
-            Completa la información requerida en el formulario
-          </p>
+          <p class="form-subtitle">Completa la información requerida en el formulario</p>
         </div>
 
         <div class="form-content">
@@ -21,31 +25,31 @@
               <!-- Sección de información básica -->
               <div class="form-section">
                 <h3 class="section-title">
-                  <i class="mdi mdi-information-outline"></i>
+                  <i class="fas fa-information-outline"></i>
                   Información Básica
                 </h3>
-                
+
                 <div class="form-grid">
                   <div class="form-group">
                     <label class="form-label">
-                      <i class="mdi mdi-format-title"></i>
+                      <i class="fas fa-format-title"></i>
                       Título
                     </label>
-                    <input 
+                    <input
                       v-model="formData.title"
-                      type="text" 
+                      type="text"
                       class="form-input"
                       placeholder="Ingresa el título"
                       required
-                    >
+                    />
                   </div>
 
                   <div class="form-group">
                     <label class="form-label">
-                      <i class="mdi mdi-text"></i>
+                      <i class="fas fa-text"></i>
                       Descripción
                     </label>
-                    <textarea 
+                    <textarea
                       v-model="formData.description"
                       class="form-textarea"
                       placeholder="Ingresa una descripción"
@@ -58,26 +62,22 @@
               <!-- Sección de detalles -->
               <div class="form-section">
                 <h3 class="section-title">
-                  <i class="mdi mdi-details"></i>
+                  <i class="fas fa-details"></i>
                   Detalles Adicionales
                 </h3>
-                
+
                 <div class="form-grid">
                   <div class="form-group">
                     <label class="form-label">
-                      <i class="mdi mdi-calendar"></i>
+                      <i class="fas fa-calendar"></i>
                       Fecha
                     </label>
-                    <input 
-                      v-model="formData.date"
-                      type="date" 
-                      class="form-input"
-                    >
+                    <input v-model="formData.date" type="date" class="form-input" />
                   </div>
 
                   <div class="form-group">
                     <label class="form-label">
-                      <i class="mdi mdi-format-list-bulleted"></i>
+                      <i class="fas fa-format-list-bulleted"></i>
                       Categoría
                     </label>
                     <select v-model="formData.category" class="form-select">
@@ -90,27 +90,27 @@
 
                   <div class="form-group">
                     <label class="form-label">
-                      <i class="mdi mdi-toggle-switch"></i>
+                      <i class="fas fa-toggle-switch"></i>
                       Estado
                     </label>
                     <div class="toggle-group">
                       <label class="toggle-option">
-                        <input 
-                          type="radio" 
-                          v-model="formData.status" 
+                        <input
+                          type="radio"
+                          v-model="formData.status"
                           value="activo"
                           name="status"
-                        >
+                        />
                         <span class="radio-mark"></span>
                         Activo
                       </label>
                       <label class="toggle-option">
-                        <input 
-                          type="radio" 
-                          v-model="formData.status" 
+                        <input
+                          type="radio"
+                          v-model="formData.status"
                           value="inactivo"
                           name="status"
-                        >
+                        />
                         <span class="radio-mark"></span>
                         Inactivo
                       </label>
@@ -119,10 +119,7 @@
 
                   <div class="form-group full-width">
                     <label class="checkbox-option">
-                      <input 
-                        type="checkbox" 
-                        v-model="formData.notifications"
-                      >
+                      <input type="checkbox" v-model="formData.notifications" />
                       <span class="checkmark"></span>
                       <div class="checkbox-info">
                         <strong>Recibir notificaciones</strong>
@@ -137,11 +134,11 @@
             <!-- Botones de acción -->
             <div class="form-actions">
               <button type="button" class="cancel-btn" @click="resetForm">
-                <i class="mdi mdi-close"></i>
+                <i class="fas fa-close"></i>
                 Cancelar
               </button>
               <button type="submit" class="submit-btn" :disabled="!isFormValid">
-                <i class="mdi mdi-check"></i>
+                <i class="fas fa-check"></i>
                 Guardar
               </button>
             </div>
@@ -150,10 +147,10 @@
           <!-- Panel de vista previa -->
           <div class="preview-panel">
             <h3 class="preview-title">
-              <i class="mdi mdi-eye"></i>
+              <i class="fas fa-eye"></i>
               Vista Previa
             </h3>
-            
+
             <div class="preview-content">
               <div class="preview-item" v-if="formData.title">
                 <strong>Título:</strong> {{ formData.title }}
@@ -165,13 +162,13 @@
                 <strong>Fecha:</strong> {{ formatDate(formData.date) }}
               </div>
               <div class="preview-item" v-if="formData.category">
-                <strong>Categoría:</strong> 
+                <strong>Categoría:</strong>
                 <span class="category-badge" :class="formData.category">
                   {{ formData.category }}
                 </span>
               </div>
               <div class="preview-item" v-if="formData.status">
-                <strong>Estado:</strong> 
+                <strong>Estado:</strong>
                 <span class="status-badge" :class="formData.status">
                   {{ formData.status }}
                 </span>
@@ -209,7 +206,7 @@ const formData = ref({
   date: '',
   category: '',
   status: 'activo',
-  notifications: false
+  notifications: false,
 })
 
 // Computed
@@ -225,7 +222,7 @@ const handleSidebarToggle = (expanded) => {
 const handleSubmit = async () => {
   try {
     // Aquí iría la lógica para enviar los datos al backend
-    
+
     // Simular envío exitoso
     alert('Formulario enviado correctamente')
     resetForm()
@@ -241,7 +238,7 @@ const resetForm = () => {
     date: '',
     category: '',
     status: 'activo',
-    notifications: false
+    notifications: false,
   }
 }
 
@@ -251,15 +248,15 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('es-ES', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
 onMounted(() => {
   // Buscar información del menú actual
   const currentPath = route.path
-  const currentMenu = authStore.menus?.find(menu => menu.path === currentPath)
-  
+  const currentMenu = authStore.menus?.find((menu) => menu.path === currentPath)
+
   if (currentMenu) {
     menuTitle.value = currentMenu.name
     menuIcon.value = currentMenu.icon
@@ -276,9 +273,17 @@ onMounted(() => {
 
 .main-content {
   flex: 1;
-  margin-left: 60px;
+  margin-left: 0;
   transition: margin-left 0.3s ease;
   min-height: 100vh;
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 80px;
+}
+
+.main-content.sidebar-expanded {
+  margin-left: 280px;
 }
 
 .main-content.with-header {
@@ -386,7 +391,9 @@ onMounted(() => {
   font-size: 0.9rem;
 }
 
-.form-input, .form-textarea, .form-select {
+.form-input,
+.form-textarea,
+.form-select {
   padding: 0.75rem 1rem;
   border: 2px solid var(--border-color);
   border-radius: 8px;
@@ -396,7 +403,9 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
-.form-input:focus, .form-textarea:focus, .form-select:focus {
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
   outline: none;
   border-color: var(--accent-color);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
@@ -420,7 +429,7 @@ onMounted(() => {
   color: var(--text-primary);
 }
 
-.toggle-option input[type="radio"] {
+.toggle-option input[type='radio'] {
   display: none;
 }
 
@@ -433,12 +442,12 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
-.toggle-option input[type="radio"]:checked + .radio-mark {
+.toggle-option input[type='radio']:checked + .radio-mark {
   border-color: var(--accent-color);
   background: var(--accent-color);
 }
 
-.toggle-option input[type="radio"]:checked + .radio-mark::after {
+.toggle-option input[type='radio']:checked + .radio-mark::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -466,7 +475,7 @@ onMounted(() => {
   background: var(--bg-hover);
 }
 
-.checkbox-option input[type="checkbox"] {
+.checkbox-option input[type='checkbox'] {
   display: none;
 }
 
@@ -479,12 +488,12 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
-.checkbox-option input[type="checkbox"]:checked + .checkmark {
+.checkbox-option input[type='checkbox']:checked + .checkmark {
   background: var(--accent-color);
   border-color: var(--accent-color);
 }
 
-.checkbox-option input[type="checkbox"]:checked + .checkmark::after {
+.checkbox-option input[type='checkbox']:checked + .checkmark::after {
   content: '✓';
   position: absolute;
   top: 50%;
@@ -516,7 +525,8 @@ onMounted(() => {
   background: var(--bg-primary);
 }
 
-.cancel-btn, .submit-btn {
+.cancel-btn,
+.submit-btn {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 8px;
@@ -597,7 +607,8 @@ onMounted(() => {
   margin-bottom: 0.25rem;
 }
 
-.category-badge, .status-badge {
+.category-badge,
+.status-badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
@@ -636,7 +647,7 @@ onMounted(() => {
   .form-content {
     grid-template-columns: 1fr;
   }
-  
+
   .preview-panel {
     position: static;
   }
@@ -646,15 +657,15 @@ onMounted(() => {
   .main-content {
     margin-left: 0;
   }
-  
+
   .form-container {
     padding: 1rem;
   }
-  
+
   .form-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .toggle-group {
     flex-direction: column;
     gap: 0.75rem;

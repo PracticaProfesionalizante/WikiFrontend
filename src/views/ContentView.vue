@@ -1,9 +1,9 @@
-<template>
+﻿<template>
   <div class="content-view-container">
     <!-- Loading State -->
     <div v-if="isLoading" class="loading-container">
       <div class="loading-spinner">
-        <i class="mdi mdi-loading mdi-spin"></i>
+        <i class="fas fa-spinner fa-spin"></i>
       </div>
       <div class="loading-text">
         <h3>Cargando documento...</h3>
@@ -14,18 +14,18 @@
     <!-- Error State - Access Denied -->
     <div v-else-if="error && error.status === 403" class="error-container access-denied">
       <div class="error-icon">
-        <i class="mdi mdi-shield-alert"></i>
+        <i class="fas fa-shield-exclamation"></i>
       </div>
       <div class="error-content">
         <h2>Acceso Denegado</h2>
         <p>No tienes permisos para ver este documento.</p>
         <div class="error-actions">
           <button class="btn btn-primary" @click="goBack">
-            <i class="mdi mdi-arrow-left"></i>
+            <i class="fas fa-arrow-left"></i>
             Volver
           </button>
           <button class="btn btn-secondary" @click="goHome">
-            <i class="mdi mdi-home"></i>
+            <i class="fas fa-home"></i>
             Ir al Inicio
           </button>
         </div>
@@ -35,18 +35,18 @@
     <!-- Error State - General Error -->
     <div v-else-if="error" class="error-container general-error">
       <div class="error-icon">
-        <i class="mdi mdi-alert-circle"></i>
+        <i class="fas fa-exclamation-circle"></i>
       </div>
       <div class="error-content">
         <h2>Error al Cargar</h2>
         <p>{{ error.message || 'Ocurrió un error inesperado al cargar el documento.' }}</p>
         <div class="error-actions">
           <button class="btn btn-primary" @click="retryLoad">
-            <i class="mdi mdi-refresh"></i>
+            <i class="fas fa-refresh"></i>
             Reintentar
           </button>
           <button class="btn btn-secondary" @click="goBack">
-            <i class="mdi mdi-arrow-left"></i>
+            <i class="fas fa-arrow-left"></i>
             Volver
           </button>
         </div>
@@ -65,26 +65,26 @@
           <h1 class="document-title">{{ document.name }}</h1>
           <div class="document-meta">
             <div class="meta-item" v-if="document.folder">
-              <i class="mdi mdi-folder-outline"></i>
+              <i class="fas fa-folder"></i>
               <span>{{ document.folder }}</span>
             </div>
             <div class="meta-item" v-if="document.createdAt">
-              <i class="mdi mdi-calendar"></i>
+              <i class="fas fa-calendar"></i>
               <span>{{ formatDate(document.createdAt) }}</span>
             </div>
             <div class="meta-item" v-if="document.updatedAt">
-              <i class="mdi mdi-update"></i>
+              <i class="fas fa-clock"></i>
               <span>Actualizado {{ formatDate(document.updatedAt) }}</span>
             </div>
           </div>
         </div>
         <div class="document-actions">
           <button class="action-btn" @click="refreshDocument" :disabled="isLoading">
-            <i class="mdi mdi-refresh"></i>
+            <i class="fas fa-refresh"></i>
             Actualizar
           </button>
           <button class="action-btn" @click="goBack">
-            <i class="mdi mdi-arrow-left"></i>
+            <i class="fas fa-arrow-left"></i>
             Volver
           </button>
         </div>
@@ -122,11 +122,11 @@
                   rel="noopener noreferrer"
                   class="btn btn-primary"
                 >
-                  <i class="mdi mdi-open-in-new"></i>
+                  <i class="fas fa-external-link-alt"></i>
                   Abrir en Nueva Pestaña
                 </a>
                 <button class="btn btn-secondary" @click="copyUrl">
-                  <i class="mdi mdi-content-copy"></i>
+                  <i class="fas fa-copy"></i>
                   Copiar Enlace
                 </button>
               </div>
@@ -158,11 +158,11 @@
                 rel="noopener noreferrer"
                 class="btn btn-primary"
               >
-                <i class="mdi mdi-download"></i>
+                <i class="fas fa-download"></i>
                 Descargar PDF
               </a>
               <button class="btn btn-secondary" @click="copyUrl">
-                <i class="mdi mdi-content-copy"></i>
+                <i class="fas fa-copy"></i>
                 Copiar Enlace
               </button>
             </div>
@@ -172,7 +172,7 @@
         <!-- Unknown Type -->
         <div v-else class="unknown-content">
           <div class="unknown-icon">
-            <i class="mdi mdi-file-question"></i>
+            <i class="fas fa-file-question"></i>
           </div>
           <h3>Tipo de Contenido No Soportado</h3>
           <p>Este tipo de documento no puede ser visualizado en este momento.</p>
@@ -183,7 +183,7 @@
               rel="noopener noreferrer"
               class="btn btn-primary"
             >
-              <i class="mdi mdi-open-in-new"></i>
+              <i class="fas fa-external-link-alt"></i>
               Abrir Enlace
             </a>
           </div>
@@ -194,13 +194,13 @@
     <!-- Empty State -->
     <div v-else class="empty-container">
       <div class="empty-icon">
-        <i class="mdi mdi-file-document-outline"></i>
+        <i class="fas fa-file-alt"></i>
       </div>
       <h3>Documento No Encontrado</h3>
       <p>El documento solicitado no existe o ha sido eliminado.</p>
       <div class="empty-actions">
         <button class="btn btn-primary" @click="goHome">
-          <i class="mdi mdi-home"></i>
+          <i class="fas fa-home"></i>
           Ir al Inicio
         </button>
       </div>
@@ -229,7 +229,7 @@ const md = new MarkdownIt({
   html: true,
   linkify: true,
   typographer: true,
-  breaks: true
+  breaks: true,
 })
 
 // Computed
@@ -267,13 +267,12 @@ const loadDocument = async () => {
 
     // Actualizar título de la página
     document.title = `${result.name} - WikiFrontend`
-
   } catch (err) {
     console.error('❌ [CONTENT VIEW] Error cargando documento:', err)
 
     error.value = {
       status: err.response?.status,
-      message: err.response?.data?.message || err.message
+      message: err.response?.data?.message || err.message,
     }
 
     document.value = null
@@ -307,7 +306,6 @@ const copyUrl = async () => {
 
     // Mostrar notificación de éxito (opcional)
     // Puedes implementar un sistema de notificaciones aquí
-
   } catch (err) {
     console.error('❌ [CONTENT VIEW] Error copiando URL:', err)
   }
@@ -315,18 +313,18 @@ const copyUrl = async () => {
 
 const getTypeIcon = (type) => {
   const icons = {
-    'TEXT': 'mdi mdi-file-document-outline',
-    'URL': 'mdi mdi-link',
-    'PDF': 'mdi mdi-file-pdf-box'
+    TEXT: 'fas fas fa-file-alt',
+    URL: 'fas fas fa-link',
+    PDF: 'fas fas fa-file-pdf',
   }
-  return icons[type] || 'mdi mdi-file-question'
+  return icons[type] || 'fas fas fa-file-question'
 }
 
 const getTypeLabel = (type) => {
   const labels = {
-    'TEXT': 'Documento de Texto',
-    'URL': 'Enlace Externo',
-    'PDF': 'Documento PDF'
+    TEXT: 'Documento de Texto',
+    URL: 'Enlace Externo',
+    PDF: 'Documento PDF',
   }
   return labels[type] || 'Tipo Desconocido'
 }
@@ -341,7 +339,7 @@ const formatDate = (dateString) => {
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })
   } catch (err) {
     return dateString
@@ -359,9 +357,12 @@ const onIframeError = () => {
 }
 
 // Watchers
-watch(() => route.params.id, () => {
-  loadDocument()
-})
+watch(
+  () => route.params.id,
+  () => {
+    loadDocument()
+  },
+)
 
 // Lifecycle
 onMounted(() => {

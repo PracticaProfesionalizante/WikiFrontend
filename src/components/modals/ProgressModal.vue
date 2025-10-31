@@ -1,9 +1,9 @@
-<template>
+﻿<template>
   <div v-if="isVisible" class="progress-modal-overlay" @click.self="closeModal">
     <div class="progress-modal">
       <div class="modal-header">
         <h3 class="modal-title">
-          <i class="mdi mdi-cog-sync-outline spinning-icon"></i>
+          <i class="fas fa-cog-sync-outline spinning-icon"></i>
           {{ title }}
         </h3>
       </div>
@@ -46,7 +46,7 @@
             <p class="current-action">{{ currentAction }}</p>
             <div v-if="errors.length > 0" class="error-summary">
               <p class="error-count">
-                <i class="mdi mdi-alert-circle"></i>
+                <i class="fas fa-alert-circle"></i>
                 {{ errors.length }} error(es) encontrado(s)
               </p>
             </div>
@@ -56,13 +56,13 @@
         <!-- Lista de errores (expandible) -->
         <div v-if="errors.length > 0" class="error-section">
           <button @click="showErrors = !showErrors" class="toggle-errors-btn">
-            <i :class="showErrors ? 'mdi mdi-chevron-up' : 'mdi mdi-chevron-down'"></i>
+            <i :class="showErrors ? 'fas fas fa-chevron-up' : 'fas fas fa-chevron-down'"></i>
             {{ showErrors ? 'Ocultar errores' : 'Ver errores' }}
           </button>
 
           <div v-if="showErrors" class="error-list">
             <div v-for="(error, index) in errors" :key="index" class="error-item">
-              <i class="mdi mdi-alert-circle error-icon"></i>
+              <i class="fas fa-alert-circle error-icon"></i>
               <span class="error-text">{{ error }}</span>
             </div>
           </div>
@@ -71,11 +71,11 @@
 
       <div class="modal-footer">
         <button v-if="isCompleted" @click="closeModal" class="btn btn-primary">
-          <i class="mdi mdi-check"></i>
+          <i class="fas fa-check"></i>
           Cerrar
         </button>
         <button v-else-if="allowCancel" @click="cancelOperation" class="btn btn-secondary">
-          <i class="mdi mdi-close"></i>
+          <i class="fas fa-close"></i>
           Cancelar
         </button>
       </div>

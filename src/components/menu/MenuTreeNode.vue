@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="menu-tree-node">
     <!-- Zona de drop superior -->
     <div
@@ -37,7 +37,7 @@
         :title="expanded ? 'Contraer submenús' : 'Expandir submenús'"
       >
         <i
-          :class="expanded ? 'mdi mdi-chevron-down' : 'mdi mdi-chevron-right'"
+          :class="expanded ? 'fas fas fa-chevron-down' : 'fas fas fa-chevron-right'"
           class="expand-icon"
         ></i>
       </button>
@@ -46,7 +46,7 @@
       <!-- Información del menú -->
       <div class="menu-info">
         <div class="menu-header">
-          <i :class="['mdi', menu.icon] || 'fas fa-link'" class="menu-icon"></i>
+          <i :class="['fas fas', menu.icon] || 'fas fas fa-link'" class="menu-icon"></i>
           <span class="menu-name" v-html="highlightSearchTerm(menu.name)"></span>
           <span class="menu-order">#{{ menu.order }}</span>
         </div>
@@ -73,13 +73,13 @@
           @click="emit('create-submenu', menu)"
           title="Agregar submenú"
         >
-          <i class="mdi mdi-plus"></i>
+          <i class="fas fa-plus"></i>
         </button>
         <button class="action-button edit" @click="emit('edit', menu)" title="Editar menú">
-          <i class="mdi mdi-pencil"></i>
+          <i class="fas fa-pencil"></i>
         </button>
         <button class="action-button delete" @click="emit('delete', menu)" title="Eliminar menú">
-          <i class="mdi mdi-delete"></i>
+          <i class="fas fa-trash-alt"></i>
         </button>
       </div>
     </div>
@@ -402,6 +402,48 @@ const handleCreateSubmenu = () => {
 </script>
 
 <style scoped>
+:global(:root) {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-hover: #f1f5f9;
+  --border-color: #e2e8f0;
+  --text-primary: #1f2937;
+  --text-secondary: #64748b;
+  --accent-primary: #2563eb;
+  --accent-bg: rgba(37, 99, 235, 0.12);
+  --success-color: #16a34a;
+  --success-bg: rgba(22, 163, 74, 0.12);
+  --success-light: rgba(22, 163, 74, 0.35);
+  --error-color: #dc2626;
+  --error-bg: rgba(220, 38, 38, 0.12);
+  --error-light: rgba(220, 38, 38, 0.35);
+  --warning-color: #d97706;
+  --warning-bg: rgba(217, 119, 6, 0.15);
+  --warning-light: rgba(217, 119, 6, 0.35);
+  --primary-color: #2563eb;
+}
+
+:global(.dark) {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-hover: #1e293b;
+  --border-color: #334155;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --accent-primary: #60a5fa;
+  --accent-bg: rgba(96, 165, 250, 0.16);
+  --success-color: #4ade80;
+  --success-bg: rgba(74, 222, 128, 0.15);
+  --success-light: rgba(74, 222, 128, 0.4);
+  --error-color: #f87171;
+  --error-bg: rgba(248, 113, 113, 0.15);
+  --error-light: rgba(248, 113, 113, 0.4);
+  --warning-color: #fbbf24;
+  --warning-bg: rgba(251, 191, 36, 0.15);
+  --warning-light: rgba(251, 191, 36, 0.4);
+  --primary-color: #60a5fa;
+}
+
 .menu-tree-node {
   margin-bottom: 4px;
 }
@@ -502,31 +544,41 @@ const handleCreateSubmenu = () => {
 }
 
 .role-badge {
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
   border-radius: 12px;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
 }
 
 .role-super_user {
-  background: #ffebee;
-  color: #c62828;
+  background: var(--error-bg);
+  color: var(--error-color);
+  border: 1px solid var(--error-light);
 }
 
 .role-admin {
-  background: #fff3e0;
-  color: #ef6c00;
+  background: var(--warning-bg, #fff3e0);
+  color: var(--warning-color);
+  border: 1px solid var(--warning-light, #ffcc80);
 }
 
 .role-collaborator {
-  background: #e8f5e8;
-  color: #2e7d32;
+  background: var(--success-bg);
+  color: var(--success-color);
+  border: 1px solid var(--success-light);
 }
 
 .role-user {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--bg-hover);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
 }
 
 .menu-actions {
@@ -602,6 +654,65 @@ const handleCreateSubmenu = () => {
   border-left: 2px dashed var(--border-color, #e0e0e0);
 }
 
+@media (max-width: 640px) {
+  .menu-node {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .expand-button,
+  .expand-spacer {
+    margin-right: 4px;
+  }
+
+  .menu-info {
+    width: 100%;
+  }
+
+  .menu-header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .menu-order {
+    font-size: 11px;
+  }
+
+  .menu-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .menu-path {
+    width: 100%;
+  }
+
+  .menu-roles {
+    width: 100%;
+  }
+
+  .menu-actions {
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .action-button {
+    flex: 1 1 96px;
+    min-width: 0;
+  }
+
+  .menu-children {
+    margin-left: 20px;
+    padding-left: 12px;
+  }
+}
+
 /* Drag & Drop states */
 .menu-node[draggable='true']:hover {
   cursor: move;
@@ -643,7 +754,11 @@ const handleCreateSubmenu = () => {
 /* Estados de drag & drop mejorados y optimizados */
 .menu-node.drop-inside {
   border-color: var(--success-color, #4caf50);
-  background: linear-gradient(135deg, var(--success-bg, #f1f8e9) 0%, var(--success-light, #e8f5e8) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--success-bg, #f1f8e9) 0%,
+    var(--success-light, #e8f5e8) 100%
+  );
   box-shadow: inset 0 0 0 2px rgba(76, 175, 80, 0.3);
   transform: scale(1.02);
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);

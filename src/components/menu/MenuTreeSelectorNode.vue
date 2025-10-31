@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="tree-node" :class="{ excluded: isExcluded }">
     <div
       class="node-content"
@@ -13,13 +13,13 @@
     >
       <!-- Botón de expansión -->
       <button v-if="hasChildren" class="expand-button" @click.stop="handleToggle">
-        <i class="mdi" :class="isExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"></i>
+        <i class="fas" :class="isExpanded ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
       </button>
       <div v-else class="expand-spacer"></div>
 
       <!-- Icono del menú -->
       <div class="menu-icon">
-        <i :class="['mdi', menu.icon] || 'mdi mdi-circle-outline'"></i>
+        <i :class="['fas fas', menu.icon] || 'fas fas fa-circle-outline'"></i>
       </div>
 
       <!-- Información del menú -->
@@ -37,10 +37,10 @@
       <!-- Indicadores -->
       <div class="node-indicators">
         <span v-if="isSelected" class="selected-indicator">
-          <i class="mdi mdi-check-circle"></i>
+          <i class="fas fa-check-circle"></i>
         </span>
         <span v-if="isExcluded" class="excluded-indicator">
-          <i class="mdi mdi-block-helper"></i>
+          <i class="fas fa-block-helper"></i>
         </span>
       </div>
     </div>

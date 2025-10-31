@@ -9,7 +9,7 @@
           class="icon-search"
           @input="onSearchInput"
         />
-        <i class="mdi mdi-magnify search-icon"></i>
+        <i class="fas fa-search search-icon"></i>
       </div>
 
       <div class="category-filter">
@@ -24,17 +24,30 @@
 
     <div class="icon-grid-container" ref="gridContainer">
       <div v-if="isLoading" class="loading-state">
-        <i class="mdi mdi-loading mdi-spin"></i>
+        <i class="fas fa-spinner fa-spin"></i>
         <span>Cargando iconos...</span>
       </div>
 
       <div v-else-if="filteredIcons.length === 0" class="empty-state">
-        <i class="mdi mdi-emoticon-sad-outline"></i>
+        <i class="fas fa-frown"></i>
         <p>No se encontraron iconos</p>
         <small>Intenta con otros términos de búsqueda</small>
       </div>
 
       <div v-else class="icon-grid">
+        <!-- Opción "Sin icono" -->
+        <div
+          class="icon-item no-icon-option"
+          :class="{ selected: selectedIcon === '' }"
+          @click="selectIcon('')"
+        >
+          <div class="no-icon-preview">
+            <i class="fas fa-ban"></i>
+          </div>
+          <span class="icon-name">Sin icono</span>
+        </div>
+
+        <!-- Iconos normales -->
         <div
           v-for="icon in visibleIcons"
           :key="icon"
@@ -42,21 +55,24 @@
           :class="{ selected: selectedIcon === icon }"
           @click="selectIcon(icon)"
         >
-          <i :class="['mdi', icon]" class="icon-preview"></i>
+          <i :class="getIconClassList(icon)" class="icon-preview"></i>
           <span class="icon-name">{{ getIconDisplayName(icon) }}</span>
         </div>
       </div>
     </div>
 
     <div class="icon-selector-footer">
-      <div class="selected-icon-preview" v-if="selectedIcon">
-        <i :class="['mdi', selectedIcon]" class="selected-preview"></i>
-        <span class="selected-name">{{ selectedIcon }}</span>
+      <div class="selected-icon-preview" v-if="selectedIcon !== null">
+        <i v-if="selectedIcon" :class="getIconClassList(selectedIcon)" class="selected-preview"></i>
+        <div v-else class="no-icon-selected">
+          <i class="fas fa-ban"></i>
+        </div>
+        <span class="selected-name">{{ selectedIcon || 'Sin icono' }}</span>
       </div>
       <div class="icon-count">
         Mostrando {{ currentlyLoaded }} de {{ filteredIcons.length }} iconos
         <span v-if="isLoadingMore" class="loading-more">
-          <i class="mdi mdi-loading mdi-spin"></i> Cargando más...
+          <i class="fas fa-spinner fa-spin"></i> Cargando más...
         </span>
       </div>
     </div>
@@ -64,7 +80,7 @@
 </template>
 
 <script>
-import { availableIcons } from '../../mdi-icons-generated.js'
+import { availableIcons } from '@/utils/fontAwesomeIcons.js'
 
 export default {
   name: 'IconSelector',
@@ -90,9 +106,9 @@ export default {
       scrollTop: 0,
 
       // Progressive loading con scroll infinito
-      initialLoadSize: 90, // Cargar 90 iconos inicialmente
-      loadMoreSize: 60, // Cargar 60 iconos más cada vez
-      currentlyLoaded: 90, // Cantidad actualmente cargada
+      initialLoadSize: 120, // Cargar 120 iconos inicialmente
+      loadMoreSize: 90, // Cargar 90 iconos más cada vez
+      currentlyLoaded: 120, // Cantidad actualmente cargada
       isLoadingMore: false,
 
       // Debounce para búsqueda y scroll
@@ -120,25 +136,32 @@ export default {
       if (this.searchQuery.trim()) {
         const query = this.searchQuery.toLowerCase().trim()
         icons = icons.filter((icon) => {
-          const iconName = icon.replace('mdi-', '').replace(/-/g, ' ')
+          const iconName = this.getIconName(icon)
+          const normalizedName = iconName.replace('fa-', '').replace(/-/g, ' ')
+          const iconClass = icon.toLowerCase()
           const keywords = this.getIconKeywords(icon)
 
-          // Búsqueda exacta tiene prioridad
-          if (iconName.includes(query) || icon.includes(query)) {
+          if (
+            normalizedName.includes(query) ||
+            iconClass.includes(query) ||
+            iconName.toLowerCase().includes(query)
+          ) {
             return true
           }
 
-          // Búsqueda por palabras clave y sinónimos
-          return keywords.some(
-            (keyword) =>
-              keyword.toLowerCase().includes(query) || query.includes(keyword.toLowerCase()),
-          )
+          return keywords.some((keyword) => {
+            const normalizedKeyword = keyword.toLowerCase()
+            return (
+              normalizedKeyword.includes(query) ||
+              query.includes(normalizedKeyword)
+            )
+          })
         })
 
         // Ordenar resultados por relevancia
         icons.sort((a, b) => {
-          const aName = a.replace('mdi-', '').replace(/-/g, ' ')
-          const bName = b.replace('mdi-', '').replace(/-/g, ' ')
+          const aName = a.replace('fa-', '').replace(/-/g, ' ')
+          const bName = b.replace('fa-', '').replace(/-/g, ' ')
 
           // Priorizar coincidencias exactas al inicio
           if (aName.startsWith(query) && !bName.startsWith(query)) return -1
@@ -234,12 +257,16 @@ export default {
     },
 
     getIconDisplayName(icon) {
-      return icon.replace('mdi-', '').replace(/-/g, ' ')
+      return this.getIconName(icon).replace(/-/g, ' ')
+    },
+
+    getIconName(icon) {
+      return (icon.split(' ').pop() || icon).replace('fa-', '')
     },
 
     getIconKeywords(icon) {
       // Generar palabras clave basadas en el nombre del icono
-      const name = icon.replace('mdi-', '')
+      const name = this.getIconName(icon)
       const parts = name.split('-')
 
       // Agregar sinónimos y palabras relacionadas
@@ -262,8 +289,8 @@ export default {
         upload: ['subir', 'cargar'],
         email: ['correo', 'mail', 'mensaje'],
         phone: ['teléfono', 'llamar'],
-        heart: ['corazón', 'favorito', 'like'],
-        star: ['estrella', 'favorito'],
+        heart: ['corazón', 'fas favorito', 'like'],
+        star: ['estrella', 'fas favorito'],
         bell: ['campana', 'notificación'],
         lock: ['bloquear', 'seguridad'],
         key: ['llave', 'password', 'seguridad'],
@@ -356,6 +383,26 @@ export default {
 
     onSearchInput() {
       this.handleSearch()
+    },
+
+    getIconClassList(icon) {
+      if (!icon) {
+        return ['fas', 'fa-question']
+      }
+
+      const parts = icon.split(' ').filter(Boolean)
+      if (parts.length === 1) {
+        return ['fas', parts[0]]
+      }
+
+      const iconParts = parts.filter(part => part.startsWith('fa-'))
+      const prefixParts = parts.filter(part => !part.startsWith('fa-'))
+
+      if (!prefixParts.length) {
+        prefixParts.push('fas')
+      }
+
+      return [...new Set([...prefixParts, ...iconParts])]
     },
   },
 
@@ -676,9 +723,110 @@ export default {
   font-weight: 500;
 }
 
+/* Estilos para la opción "Sin icono" */
+.no-icon-option {
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+  border: 2px dashed var(--border-color);
+}
+
+.no-icon-option:hover {
+  background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+  border-color: var(--accent-color);
+  border-style: solid;
+}
+
+.no-icon-option.selected {
+  background: linear-gradient(135deg, var(--accent-bg), var(--bg-secondary));
+  border-color: var(--accent-color);
+  border-style: solid;
+}
+
+.no-icon-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--bg-tertiary);
+  border-radius: 50%;
+  margin-bottom: 4px;
+  transition: all 0.3s ease;
+}
+
+.no-icon-preview i {
+  font-size: 16px;
+  color: var(--text-muted);
+  transition: all 0.3s ease;
+}
+
+.no-icon-option:hover .no-icon-preview i {
+  color: var(--accent-color);
+  transform: scale(1.1);
+}
+
+.no-icon-option.selected .no-icon-preview i {
+  color: var(--accent-color);
+}
+
+.no-icon-selected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--bg-tertiary);
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.no-icon-selected i {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
 /* Mejoras para modo oscuro */
 .dark-theme .icon-name {
   color: var(--text-secondary);
+}
+
+/* Estilos para modo oscuro - opción "Sin icono" */
+.dark-theme .no-icon-option {
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+  border: 2px dashed var(--border-primary);
+}
+
+.dark-theme .no-icon-option:hover {
+  background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+  border-color: var(--accent-color);
+}
+
+.dark-theme .no-icon-option.selected {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), var(--bg-secondary));
+  border-color: var(--accent-color);
+}
+
+.dark-theme .no-icon-preview {
+  background: var(--bg-tertiary);
+}
+
+.dark-theme .no-icon-preview i {
+  color: var(--text-muted);
+}
+
+.dark-theme .no-icon-option:hover .no-icon-preview i {
+  color: var(--accent-color);
+}
+
+.dark-theme .no-icon-option.selected .no-icon-preview i {
+  color: var(--accent-color);
+}
+
+.dark-theme .no-icon-selected {
+  background: var(--bg-tertiary);
+}
+
+.dark-theme .no-icon-selected i {
+  color: var(--text-muted);
 }
 
 .dark-theme .icon-item:hover .icon-name {

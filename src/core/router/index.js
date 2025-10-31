@@ -84,6 +84,17 @@ const routes = [
     },
   },
   {
+    path: '/gestion-usuarios',
+    name: 'UserManagement',
+    component: () => import('@/views/UserManagementView.vue'), // Lazy loading
+    beforeEnter: requireAuth,
+    meta: {
+      title: 'Gestión de Usuarios',
+      requiresAuth: true,
+      roles: ['ROLE_SUPER_USER'], // Solo usuarios con rol ROLE_SUPER_USER
+    },
+  },
+  {
     path: '/document/:id',
     name: 'ContentView',
     component: () => import('@/views/ContentView.vue'), // Lazy loading

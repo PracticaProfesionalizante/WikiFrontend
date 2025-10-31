@@ -2,10 +2,11 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './core/router'
-import vuetify from './core/plugins/vuetify'
+// import vuetify from './core/plugins/vuetify'
 import './core/plugins/webfontloader'
-import './styles/themes.css'
-import '@mdi/font/css/materialdesignicons.css'
+// import './styles/themes.css'
+import './styles/tailwind.css'
+import '@fortawesome/fontawesome-free/css/all.css'
 
 // Importar el store de autenticación
 import { useAuthStore } from './stores/auth'
@@ -22,7 +23,7 @@ const app = createApp(App)
 // Registrar plugins en orden correcto
 app.use(pinia) // Pinia PRIMERO (para que los stores estén disponibles)
 app.use(router) // Router SEGUNDO
-app.use(vuetify) // Vuetify TERCERO
+// app.use(vuetify) // Vuetify eliminado
 
 // Registrar directivas globales
 app.directive('can', vCan)
