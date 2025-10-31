@@ -80,7 +80,7 @@
 </template>
 
 <script>
-import { availableIcons } from '../utils/fontAwesomeIcons.js'
+import { availableIcons } from '@/utils/fontAwesomeIcons.js'
 
 export default {
   name: 'IconSelector',
