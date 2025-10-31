@@ -3,7 +3,7 @@
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
 
-    <main :class="['pt-20 transition-all duration-300 min-h-screen', sidebarExpanded ? 'ml-[280px]' : 'ml-20']">
+    <main :class="['pt-20 transition-all duration-300 min-h-screen', sidebarExpanded ? 'ml-0 md:ml-[280px]' : 'ml-0 md:ml-20']">
       <!-- Fondo superpuesto opcional -->
       <div class="relative z-[1] px-6 py-8">
         <div class="mx-auto max-w-[1200px]">
@@ -37,14 +37,14 @@
                       class="rounded-lg border bg-slate-50 px-3 py-2 text-sm outline-none transition placeholder:text-slate-500 dark:bg-slate-800"
                       :class="errors.username ? 'border-red-500 ring-2 ring-red-100' : 'border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'" />
                     <span v-if="errors.username" class="text-xs font-medium text-red-600">{{ errors.username }}</span>
-                  </div>
+                    </div>
                   <div class="flex flex-col gap-2">
                     <label class="text-sm font-semibold text-slate-900 dark:text-slate-100">Correo Electrónico</label>
                     <input v-model="profileData.email" type="email" placeholder="tu@email.com"
                       class="rounded-lg border bg-slate-50 px-3 py-2 text-sm outline-none transition placeholder:text-slate-500 dark:bg-slate-800"
                       :class="errors.email ? 'border-red-500 ring-2 ring-red-100' : 'border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'" />
                     <span v-if="errors.email" class="text-xs font-medium text-red-600">{{ errors.email }}</span>
-                  </div>
+                    </div>
                   <div class="flex flex-col gap-2">
                     <label class="text-sm font-semibold text-slate-900 dark:text-slate-100">Nombre Completo</label>
                     <input v-model="profileData.fullName" type="text" placeholder="Tu nombre completo"
@@ -95,7 +95,7 @@
                       <button type="button" @click="showNewPassword = !showNewPassword" class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"><i :class="showNewPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i></button>
                     </div>
                     <span v-if="errors.newPassword" class="text-xs font-medium text-red-600">{{ errors.newPassword }}</span>
-                  </div>
+                      </div>
                   <div class="flex flex-col gap-2">
                     <label class="text-sm font-semibold text-slate-900 dark:text-slate-100">Confirmar Contraseña</label>
                     <div class="relative">
@@ -166,15 +166,15 @@
         </div>
       </div>
 
-      <!-- Success/Error Messages -->
+    <!-- Success/Error Messages -->
       <div v-if="successMessage" class="fixed bottom-6 right-6 z-[1001] inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 shadow dark:border-emerald-900/40 dark:bg-emerald-900/30 dark:text-emerald-200">
-        <i class="fas fa-check-circle"></i>
-        {{ successMessage }}
-      </div>
+      <i class="fas fa-check-circle"></i>
+      {{ successMessage }}
+    </div>
       <div v-if="errorMessage" class="fixed bottom-6 right-6 z-[1001] inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 shadow dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200">
-        <i class="fas fa-exclamation-circle"></i>
-        {{ errorMessage }}
-      </div>
+      <i class="fas fa-exclamation-circle"></i>
+      {{ errorMessage }}
+    </div>
     </main>
   </div>
 </template>

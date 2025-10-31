@@ -1,9 +1,9 @@
 <template>
-  <div v-if="dialog" class="fixed inset-0 z-[1000] grid place-items-center bg-black/60 p-4" @click="handleClose">
-    <div class="w-full max-w-[900px] max-h-[90vh] flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" @click.stop>
+  <div v-if="dialog" class="fixed inset-0 z-[1000] grid place-items-center bg-black/60 p-4 sm:p-6" @click="handleClose">
+    <div class="w-full max-w-full sm:max-w-[900px] max-h-[90vh] flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" @click.stop>
       <!-- Wizard Header -->
-      <div class="border-b border-slate-200 bg-blue-600 text-white dark:border-slate-700 px-6 py-4">
-        <div class="flex items-center justify-between gap-4">
+      <div class="border-b border-slate-200 bg-blue-600 text-white dark:border-slate-700 px-4 py-4 sm:px-6">
+        <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex items-center gap-4">
             <div class="grid h-12 w-12 place-items-center rounded-xl bg-white/20 text-2xl text-white">
               <i :class="isEditing ? 'fas fa-edit' : 'fas fa-plus'"></i>
@@ -17,7 +17,7 @@
               </p>
             </div>
           </div>
-          <button @click="handleClose" class="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-white ring-1 ring-white/30 backdrop-blur hover:bg-white/30 disabled:opacity-50" :disabled="isSaving">
+          <button @click="handleClose" class="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-white ring-1 ring-white/30 backdrop-blur hover:bg-white/30 disabled:opacity-50 self-end sm:self-auto" :disabled="isSaving">
             <i class="fas fa-times"></i>
           </button>
         </div>
@@ -30,7 +30,7 @@
       </div>
 
       <!-- Wizard Steps Indicator -->
-      <div v-else class="border-b border-slate-200 bg-slate-50 px-6 py-4 dark:border-slate-700 dark:bg-slate-800">
+      <div v-else class="border-b border-slate-200 bg-slate-50 px-4 py-4 dark:border-slate-700 dark:bg-slate-800 sm:px-6">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
           <div
             v-for="(step, index) in wizardSteps"
@@ -537,7 +537,8 @@
 
             <button
               v-if="currentWizardStep === wizardSteps.length"
-              type="submit"
+              type="button"
+              @click="handleSubmit"
               class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 disabled:opacity-50"
               :disabled="!isFormValid || isSaving"
             >
@@ -639,8 +640,33 @@ const pdfFile = ref(null)
 const fileInput = ref(null)
 const pdfPreviewUrl = ref(null)
 
+// Roles disponibles (mismos que en MenuManagerView)
+const availableRolesList = [
+  {
+    value: 'SUPER_USER',
+    label: 'Super Usuario',
+    icon: 'fa-star',
+    description: 'Acceso completo al sistema'
+  },
+  {
+    value: 'ADMIN',
+    label: 'Administrador',
+    icon: 'fa-shield-alt',
+    description: 'Gestión de usuarios y configuración'
+  },
+  {
+    value: 'COLLABORATOR',
+    label: 'Colaborador',
+    icon: 'fa-user-friends',
+    description: 'Acceso a funciones básicas'
+  }
+]
+
 // Computed
 const isEditing = computed(() => !!props.document)
+
+// Roles disponibles para el template
+const availableRoles = computed(() => availableRolesList)
 
 // Renderizar Markdown
 const renderedMarkdown = computed(() => {
@@ -678,10 +704,12 @@ const renderedMarkdown = computed(() => {
 })
 
 const isFormValid = computed(() => {
-  return form.value.name &&
+  const valid = form.value.name &&
          form.value.type &&
          form.value.content &&
          Object.keys(validationErrors.value).length === 0
+  console.log('📄 [CONTENT FORM] isFormValid:', valid, 'name:', form.value.name, 'type:', form.value.type, 'content:', form.value.content, 'errors:', Object.keys(validationErrors.value).length)
+  return valid
 })
 
 // Wizard Computed Properties
@@ -689,20 +717,28 @@ const canProceedToNextStep = computed(() => {
   switch (currentWizardStep.value) {
     case 1:
       // Paso 1: Información Básica (sin slug, se genera automáticamente)
-      return form.value.name &&
+      const step1Valid = form.value.name &&
              form.value.type &&
              !validationErrors.value.name &&
              !validationErrors.value.type
+      console.log('📄 [CONTENT FORM] Validación paso 1:', step1Valid, 'name:', form.value.name, 'type:', form.value.type)
+      return step1Valid
     case 2:
       // Paso 2: Contenido del Documento
       if (!form.value.type) return false
       if (form.value.type === 'TYPE_PDF') {
-        return !!pdfFile.value && !validationErrors.value.pdfFile
+        const step2Valid = !!pdfFile.value && !validationErrors.value.pdfFile
+        console.log('📄 [CONTENT FORM] Validación paso 2 PDF:', step2Valid, 'pdfFile:', !!pdfFile.value)
+        return step2Valid
       }
-      return form.value.content && !validationErrors.value.content
+      const step2ContentValid = form.value.content && !validationErrors.value.content
+      console.log('📄 [CONTENT FORM] Validación paso 2 contenido:', step2ContentValid)
+      return step2ContentValid
     case 3:
       // Paso 3: Permisos
-      return form.value.roles && form.value.roles.length > 0 && !validationErrors.value.roles
+      const step3Valid = form.value.roles && form.value.roles.length > 0 && !validationErrors.value.roles
+      console.log('📄 [CONTENT FORM] Validación paso 3:', step3Valid, 'roles:', form.value.roles)
+      return step3Valid
     case 4:
       // Paso 4: Resumen (siempre puede proceder)
       return true
@@ -713,8 +749,15 @@ const canProceedToNextStep = computed(() => {
 
 // Wizard Methods
 const nextStep = () => {
+  console.log('📄 [CONTENT FORM] Intentando avanzar al siguiente paso')
+  console.log('📄 [CONTENT FORM] Paso actual:', currentWizardStep.value)
+  console.log('📄 [CONTENT FORM] Total de pasos:', wizardSteps.value.length)
+  console.log('📄 [CONTENT FORM] Puede proceder:', canProceedToNextStep.value)
   if (currentWizardStep.value < wizardSteps.value.length && canProceedToNextStep.value) {
     currentWizardStep.value++
+    console.log('✅ [CONTENT FORM] Avanzando al paso:', currentWizardStep.value)
+  } else {
+    console.log('❌ [CONTENT FORM] No puede avanzar')
   }
 }
 
@@ -1127,29 +1170,8 @@ const uploadPdfFile = async (documentId, file) => {
   }
 }
 
-// Roles disponibles (mismos que en MenuManagerView)
-const availableRolesList = [
-  {
-    value: 'SUPER_USER',
-    label: 'Super Usuario',
-    icon: 'mdi-account-star',
-    description: 'Acceso completo al sistema',
-  },
-  {
-    value: 'ADMIN',
-    label: 'Administrador',
-    icon: 'mdi-account-key',
-    description: 'Gestión de usuarios y configuración',
-  },
-  {
-    value: 'COLLABORATOR',
-    label: 'Colaborador',
-    icon: 'mdi-account-group',
-    description: 'Acceso a funciones básicas',
-  },
-]
-
 const resetForm = () => {
+  console.log('📄 [CONTENT FORM] Reseteando formulario...')
   form.value = {
     name: '',
     type: '',
@@ -1162,9 +1184,11 @@ const resetForm = () => {
   currentWizardStep.value = 1
   pdfFile.value = null
   activeTab.value = 'edit'
+  console.log('✅ [CONTENT FORM] Formulario reseteado')
 }
 
 const loadDocumentData = () => {
+  console.log('📄 [CONTENT FORM] loadDocumentData ejecutado, props.document:', props.document)
   if (props.document) {
     console.log('📄 [CONTENT FORM] Documento cargado para edición:', props.document?.name || 'Sin nombre')
     console.log('📄 [CONTENT FORM] Roles del documento:', props.document.roles)
@@ -1463,7 +1487,9 @@ const handleClose = () => {
 // Watchers
 watch(() => props.document, loadDocumentData, { immediate: true })
 watch(() => props.modelValue, (newValue) => {
+  console.log('📄 [CONTENT FORM] props.modelValue cambió a:', newValue)
   if (newValue) {
+    console.log('📄 [CONTENT FORM] Cargando datos del documento...')
     loadDocumentData()
   }
 })

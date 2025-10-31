@@ -1,9 +1,9 @@
 <template>
-  <div v-if="show && user" class="fixed inset-0 z-[1000] grid place-items-center bg-black/60 p-4" @click="handleClose">
-    <div class="w-full max-w-[600px] max-h-[90vh] overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" @click.stop>
+  <div v-if="show && user" class="fixed inset-0 z-[1000] grid place-items-center bg-black/60 p-4 sm:p-6" @click="handleClose">
+    <div class="w-full max-w-full sm:max-w-[600px] max-h-[90vh] overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" @click.stop>
       <!-- Modal Header -->
-      <div :class="['relative rounded-t-2xl px-8 py-6 text-white', user.enabled ? 'bg-amber-500' : 'bg-emerald-600']">
-        <div class="relative z-10 flex items-start justify-between gap-4">
+      <div :class="['relative rounded-t-2xl px-5 py-5 text-white sm:px-8 sm:py-6', user.enabled ? 'bg-amber-500' : 'bg-emerald-600']">
+        <div class="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div class="flex items-center gap-4">
             <div class="grid h-12 w-12 place-items-center rounded-full bg-white/20 text-xl text-white ring-1 ring-white/30 backdrop-blur">
               <i :class="user.enabled ? 'fas fa-user-times' : 'fas fa-user-check'"></i>
@@ -13,14 +13,14 @@
               <p class="m-0 text-sm/6 text-white/90">{{ user.enabled ? 'El usuario no podrá iniciar sesión' : 'El usuario podrá iniciar sesión' }}</p>
             </div>
           </div>
-          <button @click="handleClose" class="grid h-10 w-10 place-items-center rounded-full bg-white/20 text-white ring-1 ring-white/30 backdrop-blur transition hover:scale-105 disabled:opacity-50" :disabled="isChanging">
+          <button @click="handleClose" class="grid h-10 w-10 place-items-center rounded-full bg-white/20 text-white ring-1 ring-white/30 backdrop-blur transition hover:scale-105 disabled:opacity-50 self-end sm:self-auto" :disabled="isChanging">
             <i class="fas fa-times"></i>
           </button>
         </div>
       </div>
 
       <!-- Modal Body -->
-      <div class="max-h-[65vh] overflow-y-auto px-8 py-6">
+      <div class="max-h-[65vh] overflow-y-auto px-5 py-6 sm:px-8">
         <div class="flex flex-col gap-6">
           <!-- User Info -->
           <div class="flex items-center gap-4 rounded-xl border border-slate-200 bg-slate-100 p-6 dark:border-slate-700 dark:bg-slate-800">

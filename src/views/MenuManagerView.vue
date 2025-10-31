@@ -3,7 +3,7 @@
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
 
-    <main :class="['pt-20 flex-1 transition-all duration-300', sidebarExpanded ? 'ml-[280px]' : 'ml-20']">
+    <main :class="['pt-20 flex-1 transition-all duration-300', sidebarExpanded ? 'ml-0 md:ml-[280px]' : 'ml-0 md:ml-20']">
       <div class="p-8 max-w-[1400px] mx-auto">
         <!-- Header -->
         <div class="text-center mb-12">

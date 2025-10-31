@@ -2,7 +2,13 @@
   <div class="dashboard-layout">
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
-    <main class="main-content" :class="{ 'with-sidebar': true, 'with-header': true }">
+    <main
+      class="main-content"
+      :class="[
+        'with-header',
+        sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed',
+      ]"
+    >
       <div class="welcome-container">
         <div class="welcome-content">
           <h1 class="welcome-title">¡Hola, {{ user?.username || 'Usuario' }}!</h1>
@@ -55,7 +61,7 @@ onMounted(async () => {
 
 .main-content {
   flex: 1;
-  margin-left: 60px;
+  margin-left: 0;
   transition: margin-left 0.3s ease;
   height: 100vh;
   overflow: hidden;
@@ -64,6 +70,14 @@ onMounted(async () => {
   background-position: center;
   background-repeat: no-repeat;
   position: relative;
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 80px;
+}
+
+.main-content.sidebar-expanded {
+  margin-left: 280px;
 }
 
 .main-content.with-header {

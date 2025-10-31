@@ -1,18 +1,18 @@
 <template>
   <div class="min-h-screen bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-100">
-    <!-- Loading global -->
+      <!-- Loading global -->
     <div
-      v-if="authStore.loading && !authStore.isAuthenticated"
+        v-if="authStore.loading && !authStore.isAuthenticated"
       class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40"
-    >
+      >
       <div class="h-16 w-16 animate-spin rounded-full border-4 border-slate-300 border-t-blue-500"></div>
-      <div class="mt-4 text-center">
-        <p>Verificando autenticación...</p>
-      </div>
+        <div class="mt-4 text-center">
+          <p>Verificando autenticación...</p>
+        </div>
     </div>
 
-    <!-- Router view para las páginas -->
-    <router-view />
+      <!-- Router view para las páginas -->
+      <router-view />
   </div>
 </template>
 

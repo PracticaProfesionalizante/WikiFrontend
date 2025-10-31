@@ -3,7 +3,13 @@
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
 
-    <div class="main-content" :class="{ 'with-header': true }">
+    <div
+      class="main-content"
+      :class="[
+        'with-header',
+        sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed',
+      ]"
+    >
       <div class="dynamic-container">
         <div class="view-header">
           <h1 class="view-title">
@@ -110,9 +116,17 @@ onMounted(() => {
 
 .main-content {
   flex: 1;
-  margin-left: 60px;
+  margin-left: 0;
   transition: margin-left 0.3s ease;
   min-height: 100vh;
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 80px;
+}
+
+.main-content.sidebar-expanded {
+  margin-left: 280px;
 }
 
 .main-content.with-header {

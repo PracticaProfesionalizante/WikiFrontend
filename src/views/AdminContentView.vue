@@ -6,24 +6,24 @@
     <main
       :class="[
         'pt-20 flex-1 transition-all duration-300',
-        sidebarExpanded ? 'ml-[280px]' : 'ml-20',
+        sidebarExpanded ? 'ml-0 md:ml-[280px]' : 'ml-0 md:ml-20',
       ]"
     >
-      <div class="p-6">
+      <div class="w-full max-w-[1800px] mx-auto p-4 sm:p-6">
         <!-- Header Section -->
         <div class="mb-6">
           <div
-            class="flex items-center justify-between gap-6 rounded-2xl border bg-slate-100 p-6 shadow dark:border-slate-700 dark:bg-slate-800"
+            class="flex flex-col gap-5 rounded-2xl border bg-slate-100 p-6 shadow dark:border-slate-700 dark:bg-slate-800 lg:flex-row lg:items-center lg:justify-between"
           >
-            <div class="flex items-center gap-4">
+            <div class="flex items-start gap-4 md:items-center">
               <div
-                class="grid h-14 w-14 place-items-center rounded-xl text-white text-xl shadow"
+                class="grid h-12 w-12 place-items-center rounded-xl text-lg text-white shadow md:h-14 md:w-14 md:text-xl"
                 style="background: linear-gradient(135deg, #2563eb, #60a5fa)"
               >
                 <i class="fas fa-cogs"></i>
               </div>
               <div>
-                <h1 class="m-0 text-2xl font-bold text-slate-900 dark:text-slate-100">
+                <h1 class="m-0 text-xl font-bold text-slate-900 dark:text-slate-100 md:text-2xl">
                   Administración de Contenidos
                 </h1>
                 <p class="m-0 text-sm text-slate-500 dark:text-slate-300">
@@ -31,11 +31,11 @@
                 </p>
               </div>
             </div>
-            <div>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
               <button
                 v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
                 @click="openCreateDialog"
-                class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 disabled:opacity-50"
+                class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 disabled:opacity-50 sm:w-auto"
                 title="Crear Documento"
               >
                 <i class="fas fa-plus"></i>
@@ -72,7 +72,7 @@
           <div class="flex flex-col gap-4 border-b border-slate-200 p-4 dark:border-slate-700">
             <div class="flex flex-col gap-2">
               <div
-                class="relative flex items-center rounded-xl border-2 border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-900"
+                class="relative flex items-center rounded-xl border-2 border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-900 w-full"
               >
                 <i class="fas fa-search mx-3 text-slate-500"></i>
                 <input
@@ -93,62 +93,75 @@
               </div>
               <div
                 v-if="searchQuery"
-                class="inline-block rounded border border-slate-200 bg-slate-200/60 px-3 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-700/60 dark:text-slate-300"
+                class="inline-flex items-center gap-2 rounded border border-slate-200 bg-slate-200/60 px-3 py-2 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-700/60 dark:text-slate-300"
               >
-                {{ documents?.length || 0 }} resultado(s) encontrados
+                <i class="fas fa-filter"></i>
+                {{ filteredItems.length }} resultado(s) encontrados
               </div>
             </div>
 
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <div class="flex items-center gap-2">
-                <!-- Vista -->
+            <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  <i class="fas fa-eye text-blue-500 text-xs"></i>
+                  Vista:
+                </span>
                 <div
-                  class="inline-flex rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900"
+                  class="inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm dark:border-slate-700 dark:bg-slate-900"
                 >
                   <button
-                    @click="viewMode = 'table'"
+                    @click="setViewMode('table')"
                     :class="[
-                      'px-3 py-2 rounded-md text-sm font-medium',
+                      'px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wide transition',
                       viewMode === 'table'
-                        ? 'bg-blue-600 text-white'
-                        : 'text-slate-700 dark:text-slate-100',
+                        ? 'bg-blue-600 text-white shadow'
+                        : 'text-slate-700 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800',
                     ]"
                   >
-                    <i class="fas fa-table"></i>
+                    <i class="fas fa-table mr-1"></i>
+                    Tabla
                   </button>
                   <button
-                    @click="viewMode = 'grid'"
+                    @click="setViewMode('grid')"
                     :class="[
-                      'px-3 py-2 rounded-md text-sm font-medium',
+                      'px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wide transition',
                       viewMode === 'grid'
-                        ? 'bg-blue-600 text-white'
-                        : 'text-slate-700 dark:text-slate-100',
+                        ? 'bg-blue-600 text-white shadow'
+                        : 'text-slate-700 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800',
                     ]"
                   >
-                    <i class="fas fa-th-large"></i>
+                    <i class="fas fa-th-large mr-1"></i>
+                    Tarjetas
                   </button>
                 </div>
-                <!-- Filtro por estado -->
-                <select
-                  v-model="filterStatus"
-                  class="rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-                >
-                  <option value="">Todos</option>
-                  <option value="Activo">Activos</option>
-                  <option value="Inactivo">Inactivos</option>
-                </select>
+
+                <div class="flex items-center gap-2">
+                  <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Estado:</label>
+                  <select
+                    v-model="filterStatus"
+                    class="w-full min-w-[160px] rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:w-auto"
+                  >
+                    <option value="">Todos</option>
+                    <option value="Activo">Activos</option>
+                    <option value="Inactivo">Inactivos</option>
+                  </select>
+                </div>
               </div>
-              <div class="flex items-center gap-2">
-                <select
-                  v-model="sortBy"
-                  class="rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-                >
-                  <option value="createdAt">Fecha de creación</option>
-                  <option value="name">Título</option>
-                  <option value="type">Tipo</option>
-                  <option value="createdBy">Autor</option>
-                  <option value="status">Estado</option>
-                </select>
+
+              <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-2">
+                  <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Ordenar por:</label>
+                  <select
+                    v-model="sortBy"
+                    class="w-full min-w-[180px] rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:w-auto"
+                  >
+                    <option value="createdAt">Fecha de creación</option>
+                    <option value="name">Título</option>
+                    <option value="type">Tipo</option>
+                    <option value="createdBy">Autor</option>
+                    <option value="status">Estado</option>
+                  </select>
+                </div>
                 <button
                   @click="toggleSortOrder"
                   class="grid h-10 w-10 place-items-center rounded-xl border-2 border-slate-200 bg-white text-slate-900 transition hover:scale-105 hover:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
@@ -178,127 +191,217 @@
 
             <!-- Tabla -->
             <div v-else>
-              <div v-if="viewMode === 'table'" class="overflow-x-auto">
-                <table class="w-full min-w-[1100px] border-collapse">
-                  <thead>
-                    <tr>
-                      <th
-                        class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
+              <div v-if="viewMode === 'table'" class="space-y-4 p-4 pt-0">
+                <div class="hidden overflow-x-auto md:block">
+                  <table class="w-full min-w-[1100px] border-collapse">
+                    <thead>
+                      <tr>
+                        <th
+                          class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
+                        >
+                          Título
+                        </th>
+                        <th
+                          class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
+                        >
+                          Tipo
+                        </th>
+                        <th
+                          class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
+                        >
+                          Autor
+                        </th>
+                        <th
+                          class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
+                        >
+                          Estado
+                        </th>
+                        <th
+                          class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
+                        >
+                          Creado
+                        </th>
+                        <th
+                          class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
+                        >
+                          Acciones
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="doc in paginatedItems"
+                        :key="doc.id"
+                        class="hover:bg-slate-200/60 dark:hover:bg-slate-700/40"
+                        @dblclick="previewContent(doc)"
                       >
-                        Título
-                      </th>
-                      <th
-                        class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
-                      >
-                        Tipo
-                      </th>
-                      <th
-                        class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
-                      >
-                        Autor
-                      </th>
-                      <th
-                        class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
-                      >
-                        Estado
-                      </th>
-                      <th
-                        class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
-                      >
-                        Creado
-                      </th>
-                      <th
-                        class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
-                      >
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="doc in documents"
-                      :key="doc.id"
-                      class="hover:bg-slate-200/60 dark:hover:bg-slate-700/40"
-                      @dblclick="previewContent(doc)"
-                    >
-                      <td class="p-3 align-middle">
-                        <div class="flex items-center gap-3">
-                          <i class="fas fa-file-alt text-blue-500"></i>
+                        <td class="p-3 align-middle">
+                          <div class="flex flex-wrap items-center gap-3">
+                            <i class="fas fa-file-alt text-blue-500"></i>
+                            <button
+                              type="button"
+                              class="inline-flex items-center gap-2 text-left font-medium text-slate-900 underline-offset-2 hover:text-blue-600 hover:underline focus:underline focus:outline-none dark:text-slate-100"
+                              @click="previewContent(doc)"
+                              @keyup.enter="previewContent(doc)"
+                              title="Ver contenido"
+                            >
+                              {{ doc.title || doc.name || 'Sin título' }}
+                            </button>
+                          </div>
+                        </td>
+                        <td class="p-3 align-middle">
+                          <span :class="['inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold', getTypeColors(doc.type).bg, getTypeColors(doc.type).text, getTypeColors(doc.type).border]">
+                            <i :class="[getTypeIcon(doc.type), getTypeColors(doc.type).icon]"></i>
+                            {{ getTypeDisplay(doc.type || doc.category) }}
+                          </span>
+                        </td>
+                        <td class="p-3 align-middle text-slate-700 dark:text-slate-200">
+                          {{ doc.author || doc.createdBy || 'Sin autor' }}
+                        </td>
+                        <td class="p-3 align-middle">
                           <button
                             type="button"
-                            class="inline-flex items-center gap-2 text-left font-medium text-slate-900 hover:text-blue-600 underline-offset-2 hover:underline focus:underline focus:outline-none dark:text-slate-100"
-                            @click="previewContent(doc)"
-                            @keyup.enter="previewContent(doc)"
-                            title="Ver contenido"
+                            @click="toggleDocumentStatus(doc)"
+                            :class="[
+                              'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold uppercase tracking-wide transition shadow-sm hover:scale-105 hover:shadow-md',
+                              getDocumentStatus(doc) === 'Activo'
+                                ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/30 dark:text-emerald-200'
+                                : 'border-red-200 bg-red-50 text-red-600 dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200',
+                            ]"
                           >
-                            {{ doc.title || doc.name || 'Sin título' }}
+                            <i
+                              :class="
+                                getDocumentStatus(doc) === 'Activo'
+                                  ? 'fas fa-check-circle'
+                                  : 'fas fa-times-circle'
+                              "
+                            ></i>
+                            {{ getDocumentStatus(doc) === 'Activo' ? 'Activo' : 'Inactivo' }}
                           </button>
+                        </td>
+                        <td class="p-3 align-middle text-slate-700 dark:text-slate-200">
+                          {{ new Date(doc.createdAt || doc.created_at).toLocaleDateString('es-ES') }}
+                        </td>
+                        <td class="p-3 align-middle">
+                          <div class="flex items-center gap-2">
+                            <button
+                              @click="previewContent(doc)"
+                              class="grid h-8 w-8 place-items-center rounded bg-slate-300 text-slate-800 transition hover:-translate-y-0.5 dark:bg-slate-700 dark:text-slate-100"
+                              title="Ver"
+                            >
+                              <i class="fas fa-eye"></i>
+                            </button>
+                            <button
+                              @click="openEditDialog(doc)"
+                              class="grid h-8 w-8 place-items-center rounded bg-blue-600 text-white transition hover:-translate-y-0.5"
+                              title="Editar"
+                            >
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <button
+                              @click="openDeleteDialog(doc)"
+                              class="grid h-8 w-8 place-items-center rounded bg-red-600 text-white transition hover:-translate-y-0.5"
+                              title="Eliminar"
+                            >
+                              <i class="fas fa-trash"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="space-y-4 md:hidden">
+                  <div
+                    v-for="doc in paginatedItems"
+                    :key="`table-card-${doc.id}`"
+                    class="rounded-xl border border-slate-200 bg-white p-4 shadow dark:border-slate-700 dark:bg-slate-900"
+                  >
+                    <div class="flex flex-col gap-3">
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="flex flex-1 items-start gap-3">
+                          <div
+                            class="grid h-10 w-10 place-items-center rounded-full text-white"
+                            :class="getDocumentStatus(doc) === 'Activo'
+                              ? 'bg-emerald-500'
+                              : 'bg-red-500'"
+                          >
+                            <i class="fas fa-file-alt"></i>
+                          </div>
+                          <div class="flex flex-col">
+                            <button
+                              class="text-left text-base font-semibold text-slate-900 underline-offset-2 hover:text-blue-600 hover:underline focus:underline focus:outline-none dark:text-slate-100"
+                              type="button"
+                              @click="previewContent(doc)"
+                            >
+                              {{ doc.title || doc.name || 'Sin título' }}
+                            </button>
+                            <span class="text-xs text-slate-500">{{ getTypeDisplay(doc.type || doc.category) }}</span>
+                          </div>
                         </div>
-                      </td>
-                      <td class="p-3 align-middle text-slate-700 dark:text-slate-200">
-                        {{ getTypeDisplay(doc.type || doc.category) || '�' }}
-                      </td>
-                      <td class="p-3 align-middle text-slate-700 dark:text-slate-200">
-                        {{ doc.author || doc.createdBy || '�' }}
-                      </td>
-                      <td class="p-3 align-middle">
                         <button
                           type="button"
                           @click="toggleDocumentStatus(doc)"
-                          :class="[
-                            'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold uppercase tracking-wide transition shadow-sm hover:scale-105 hover:shadow-md',
-                            doc.enabled !== false
-                              ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/30 dark:text-emerald-200'
-                              : 'border-red-200 bg-red-50 text-red-600 dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200',
-                          ]"
+                          class="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-wide transition shadow-sm hover:scale-105"
+                          :class="getDocumentStatus(doc) === 'Activo'
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/30 dark:text-emerald-200'
+                            : 'border-red-200 bg-red-50 text-red-600 dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200'"
                         >
-                          <i
-                            :class="
-                              doc.enabled !== false ? 'fas fa-check-circle' : 'fas fa-times-circle'
-                            "
-                          ></i>
-                          {{ doc.enabled !== false ? 'Activo' : 'Inactivo' }}
+                          <i :class="getDocumentStatus(doc) === 'Activo' ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                          {{ getDocumentStatus(doc) === 'Activo' ? 'Activo' : 'Inactivo' }}
                         </button>
-                      </td>
-                      <td class="p-3 align-middle text-slate-700 dark:text-slate-200">
-                        {{ new Date(doc.createdAt || doc.created_at).toLocaleDateString('es-ES') }}
-                      </td>
-                      <td class="p-3 align-middle">
+                      </div>
+
+                      <div class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                         <div class="flex items-center gap-2">
-                          <button
-                            @click="previewContent(doc)"
-                            class="grid h-8 w-8 place-items-center rounded bg-slate-300 text-slate-800 hover:-translate-y-0.5 dark:bg-slate-700 dark:text-slate-100"
-                            title="Ver"
-                          >
-                            <i class="fas fa-eye"></i>
-                          </button>
-                          <button
-                            @click="openEditDialog(doc)"
-                            class="grid h-8 w-8 place-items-center rounded bg-blue-600 text-white hover:-translate-y-0.5"
-                            title="Editar"
-                          >
-                            <i class="fas fa-edit"></i>
-                          </button>
-                          <button
-                            @click="openDeleteDialog(doc)"
-                            class="grid h-8 w-8 place-items-center rounded bg-red-600 text-white hover:-translate-y-0.5"
-                            title="Eliminar"
-                          >
-                            <i class="fas fa-trash"></i>
-                          </button>
+                          <strong>Tipo:</strong>
+                          <span :class="['inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold', getTypeColors(doc.type).bg, getTypeColors(doc.type).text, getTypeColors(doc.type).border]">
+                            <i :class="[getTypeIcon(doc.type), getTypeColors(doc.type).icon]"></i>
+                            {{ getTypeDisplay(doc.type || doc.category) }}
+                          </span>
                         </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                        <div><strong>Autor:</strong> {{ doc.author || doc.createdBy || 'Sin autor' }}</div>
+                        <div>
+                          <strong>Creado:</strong>
+                          {{ new Date(doc.createdAt || doc.created_at).toLocaleDateString('es-ES') }}
+                        </div>
+                      </div>
+
+                      <div class="flex flex-wrap gap-2">
+                        <button
+                          @click="previewContent(doc)"
+                          class="inline-flex items-center gap-2 rounded bg-slate-300 px-3 py-1.5 text-sm font-medium text-slate-800 transition hover:-translate-y-0.5 dark:bg-slate-700 dark:text-slate-100"
+                        >
+                          <i class="fas fa-eye"></i>
+                          Ver
+                        </button>
+                        <button
+                          @click="openEditDialog(doc)"
+                          class="inline-flex items-center gap-2 rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition hover:-translate-y-0.5"
+                        >
+                          <i class="fas fa-edit"></i>
+                          Editar
+                        </button>
+                        <button
+                          @click="openDeleteDialog(doc)"
+                          class="inline-flex items-center gap-2 rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition hover:-translate-y-0.5"
+                        >
+                          <i class="fas fa-trash"></i>
+                          Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- Grid -->
-              <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 p-4">
+              <div v-else class="grid grid-cols-1 gap-4 p-4 pt-0 sm:grid-cols-2 xl:grid-cols-3">
                 <div
-                  v-for="doc in documents"
+                  v-for="doc in paginatedItems"
                   :key="doc.id"
-                  class="rounded-xl border bg-white p-4 shadow dark:border-slate-700 dark:bg-slate-900"
+                  class="rounded-xl border bg-white p-4 shadow transition dark:border-slate-700 dark:bg-slate-900"
                 >
                   <div class="mb-2 flex items-center justify-between">
                     <div class="flex items-center gap-2">
@@ -315,22 +418,30 @@
                       @click="toggleDocumentStatus(doc)"
                       :class="[
                         'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide transition shadow-sm hover:scale-105',
-                        doc.enabled !== false
+                        getDocumentStatus(doc) === 'Activo'
                           ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/30 dark:text-emerald-200'
                           : 'border-red-200 bg-red-50 text-red-600 dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200',
                       ]"
                     >
                       <i
                         :class="
-                          doc.enabled !== false ? 'fas fa-check-circle' : 'fas fa-times-circle'
+                          getDocumentStatus(doc) === 'Activo'
+                            ? 'fas fa-check-circle'
+                            : 'fas fa-times-circle'
                         "
                       ></i>
-                      {{ doc.enabled !== false ? 'Activo' : 'Inactivo' }}
+                      {{ getDocumentStatus(doc) === 'Activo' ? 'Activo' : 'Inactivo' }}
                     </button>
                   </div>
                   <div class="mb-3 text-sm text-slate-600 dark:text-slate-300">
-                    <div><strong>Tipo:</strong> {{ getTypeDisplay(doc.type || doc.category) || '�' }}</div>
-                    <div><strong>Autor:</strong> {{ doc.author || doc.createdBy || '�' }}</div>
+                    <div class="flex items-center gap-2">
+                      <strong>Tipo:</strong>
+                      <span :class="['inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold', getTypeColors(doc.type).bg, getTypeColors(doc.type).text, getTypeColors(doc.type).border]">
+                        <i :class="[getTypeIcon(doc.type), getTypeColors(doc.type).icon]"></i>
+                        {{ getTypeDisplay(doc.type || doc.category) }}
+                      </span>
+                    </div>
+                    <div><strong>Autor:</strong> {{ doc.author || doc.createdBy || 'Sin autor' }}</div>
                     <div>
                       <strong>Creado:</strong>
                       {{ new Date(doc.createdAt || doc.created_at).toLocaleDateString('es-ES') }}
@@ -361,7 +472,7 @@
 
               <!-- Empty State -->
               <div
-                v-if="documents && documents.length === 0"
+                v-if="paginatedItems.length === 0 && filteredItems.length === 0"
                 class="p-12 text-center text-slate-500"
               >
                 <div class="mb-4 text-5xl text-slate-400"><i class="fas fa-folder-open"></i></div>
@@ -516,21 +627,58 @@
                       >
                         <i class="fas fa-redo text-xs"></i>
                       </button>
+                      <button
+                        @click="openPdfInNewTab"
+                        class="grid h-8 w-8 place-items-center rounded bg-blue-600 text-white transition hover:-translate-y-0.5"
+                        title="Abrir PDF en nueva pestaña"
+                      >
+                        <i class="fas fa-external-link-alt text-xs"></i>
+                      </button>
+                      <button
+                        @click="downloadPdf"
+                        class="grid h-8 w-8 place-items-center rounded bg-purple-600 text-white transition hover:-translate-y-0.5"
+                        title="Descargar PDF"
+                      >
+                        <i class="fas fa-download text-xs"></i>
+                      </button>
                     </div>
                   </div>
 
                   <!-- PDF Embed -->
                   <div
-                    class="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700"
+                    class="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 relative"
+                    style="max-height: 70vh;"
+                    @contextmenu.prevent="handleRightClick"
+                    @mousedown="handleMouseDown"
+                    @mousemove="handleMouseMove"
+                    @mouseup="handleMouseUp"
+                    @mouseleave="handleMouseUp"
+                    :style="{ cursor: isDragging ? 'grabbing' : pdfZoom > 1 ? 'grab' : 'default' }"
                   >
-                    <VuePdfEmbed
-                      :source="pdfBlobUrl"
-                      :page="currentPdfPage"
-                      :scale="pdfZoom"
-                      @loaded="onPdfLoaded"
-                      @loading-failed="onPdfError"
-                      class="min-h-[500px] w-full"
-                    />
+                    <div
+                      class="overflow-auto"
+                      style="height: 100%; max-height: 70vh;"
+                    >
+                      <div
+                        :style="{
+                          transform: `scale(${pdfZoom}) translate(${pdfPanX}px, ${pdfPanY}px)`,
+                          transformOrigin: 'top left',
+                          width: `${100 / pdfZoom}%`,
+                          transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+                        }"
+                        class="min-h-[500px]"
+                      >
+                        <VuePdfEmbed
+                          :key="`pdf-${previewItem?.id}-${currentPdfPage}`"
+                          :source="pdfBlobUrl"
+                          :page="currentPdfPage"
+                          @loaded="onPdfLoaded"
+                          @loading-failed="onPdfError"
+                          class="w-full pointer-events-none"
+                          style="user-select: none;"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -731,6 +879,13 @@ const pdfLoading = ref(false)
 const pdfError = ref(null)
 const pdfBlobUrl = ref(null) // URL del blob del PDF
 const pdfZoom = ref(1.0) // Nivel de zoom del PDF
+const pdfPanX = ref(0) // Posición X del pan/arrastre
+const pdfPanY = ref(0) // Posición Y del pan/arrastre
+const isDragging = ref(false) // Si se está arrastrando el PDF
+const dragStartX = ref(0) // Posición inicial X del mouse al empezar a arrastrar
+const dragStartY = ref(0) // Posición inicial Y del mouse al empezar a arrastrar
+const dragStartPanX = ref(0) // Posición inicial X del pan al empezar a arrastrar
+const dragStartPanY = ref(0) // Posición inicial Y del pan al empezar a arrastrar
 
 // Inicializar supresión de advertencias de PDF.js
 setupPdfWarningSuppression()
@@ -788,6 +943,26 @@ const filterAuthor = ref('')
 const sortBy = ref('createdAt')
 const sortOrder = ref('desc')
 const viewMode = ref('table')
+const hasManualViewSelection = ref(false)
+
+const setViewMode = (mode) => {
+  viewMode.value = mode
+  hasManualViewSelection.value = true
+}
+
+const handleResponsiveViewMode = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  if (window.innerWidth < 768) {
+    if (!hasManualViewSelection.value) {
+      viewMode.value = 'grid'
+    }
+  } else if (!hasManualViewSelection.value) {
+    viewMode.value = 'table'
+  }
+}
 
 // Estados de selección y paginación
 const selectedItems = ref([])
@@ -1085,6 +1260,8 @@ const closePreviewModal = () => {
   pdfError.value = null
   currentPdfPage.value = 1
   totalPdfPages.value = 0
+  pdfZoom.value = 1.0
+  resetPan()
 }
 
 const editFromPreview = () => {
@@ -1189,9 +1366,15 @@ const refreshData = () => {
 
 // Funciones de diálogos
 const openCreateDialog = () => {
+  console.log('🔔 [ADMIN CONTENT] Abriendo diálogo de creación')
   selectedItem.value = null
   isEditing.value = false
+  editLoading.value = false
   editDialog.value = true
+  console.log('✅ [ADMIN CONTENT] Estado de editDialog:', editDialog.value)
+  console.log('✅ [ADMIN CONTENT] Estado de selectedItem:', selectedItem.value)
+  console.log('✅ [ADMIN CONTENT] Estado de isEditing:', isEditing.value)
+  console.log('✅ [ADMIN CONTENT] Estado de editLoading:', editLoading.value)
 }
 
 const openEditDialog = async (item) => {
@@ -1490,14 +1673,14 @@ const getTypeDisplay = (type) => {
 
 const getTypeIcon = (type) => {
   const icons = {
-    TYPE_TEXT: 'fas fas fa-file-alt',
-    TYPE_URL: 'fas fas fa-link',
-    TYPE_PDF: 'fas fas fa-file-pdf',
-    TEXT: 'fas fas fa-file-alt',
-    URL: 'fas fas fa-link',
-    PDF: 'fas fas fa-file-pdf',
+    TYPE_TEXT: 'fas fa-file-alt',
+    TYPE_URL: 'fas fa-link',
+    TYPE_PDF: 'fas fa-file-pdf',
+    TEXT: 'fas fa-file-alt',
+    URL: 'fas fa-link',
+    PDF: 'fas fa-file-pdf',
   }
-  return icons[type] || 'fas fas fa-file'
+  return icons[type] || 'fas fa-file'
 }
 
 const getTypeColors = (type) => {
@@ -1644,7 +1827,12 @@ const loadPdfFile = async (documentId) => {
     const blobUrl = await documentService.getDocumentFileUrl(documentId)
     pdfBlobUrl.value = blobUrl
 
-    console.log('? PDF cargado exitosamente como blob URL')
+    // Establecer loading en false después de obtener la URL
+    // El evento @loaded se usará para obtener el número de páginas
+    pdfLoading.value = false
+
+    console.log('? PDF cargado exitosamente como blob URL:', blobUrl)
+    console.log('? Estado después de cargar - pdfLoading:', pdfLoading.value, 'pdfBlobUrl:', !!pdfBlobUrl.value)
     return blobUrl
   } catch (error) {
     console.error('? Error cargando PDF:', error)
@@ -1787,21 +1975,30 @@ const onPdfPageChange = (page) => {
 const previousPage = () => {
   if (currentPdfPage.value > 1) {
     currentPdfPage.value--
+    resetPan()
   }
 }
 
 const nextPage = () => {
   if (currentPdfPage.value < totalPdfPages.value) {
     currentPdfPage.value++
+    resetPan()
   }
 }
 
 const goToFirstPage = () => {
   currentPdfPage.value = 1
+  resetPan()
 }
 
 const goToLastPage = () => {
   currentPdfPage.value = totalPdfPages.value
+  resetPan()
+}
+
+const resetPan = () => {
+  pdfPanX.value = 0
+  pdfPanY.value = 0
 }
 
 const zoomIn = () => {
@@ -1815,12 +2012,114 @@ const zoomOut = () => {
   if (pdfZoom.value > 0.5) {
     pdfZoom.value = Math.max(pdfZoom.value - 0.25, 0.5)
     console.log(`?? Zoom reducido a: ${Math.round(pdfZoom.value * 100)}%`)
+    // Si el zoom vuelve a 1.0 o menos, resetear el pan
+    if (pdfZoom.value <= 1.0) {
+      resetPan()
+    }
   }
 }
 
 const resetZoom = () => {
   pdfZoom.value = 1.0
+  resetPan()
   console.log(`?? Zoom reseteado a: 100%`)
+}
+
+// Funciones para arrastrar el PDF con zoom
+const handleRightClick = (event) => {
+  // Solo permitir arrastre con clic derecho si hay zoom
+  if (pdfZoom.value > 1.0) {
+    event.preventDefault()
+    startDrag(event)
+  }
+}
+
+const handleMouseDown = (event) => {
+  // Arrastrar con clic derecho (button 2) o con clic izquierdo si hay zoom
+  if ((event.button === 2 && pdfZoom.value > 1.0) ||
+      (event.button === 0 && pdfZoom.value > 1.0 && event.ctrlKey)) {
+    event.preventDefault()
+    startDrag(event)
+  }
+}
+
+const startDrag = (event) => {
+  if (pdfZoom.value <= 1.0) return
+
+  isDragging.value = true
+  dragStartX.value = event.clientX
+  dragStartY.value = event.clientY
+  dragStartPanX.value = pdfPanX.value
+  dragStartPanY.value = pdfPanY.value
+
+  // Prevenir selección de texto mientras se arrastra
+  document.body.style.userSelect = 'none'
+  document.body.style.cursor = 'grabbing'
+}
+
+const handleMouseMove = (event) => {
+  if (!isDragging.value || pdfZoom.value <= 1.0) return
+
+  const deltaX = event.clientX - dragStartX.value
+  const deltaY = event.clientY - dragStartY.value
+
+  // Actualizar posición del pan
+  pdfPanX.value = dragStartPanX.value + deltaX
+  pdfPanY.value = dragStartPanY.value + deltaY
+
+  // Limitar el pan para que no se vaya demasiado lejos (opcional)
+  const maxPan = 500
+  pdfPanX.value = Math.max(-maxPan, Math.min(maxPan, pdfPanX.value))
+  pdfPanY.value = Math.max(-maxPan, Math.min(maxPan, pdfPanY.value))
+}
+
+const handleMouseUp = () => {
+  if (isDragging.value) {
+    isDragging.value = false
+    document.body.style.userSelect = ''
+    document.body.style.cursor = ''
+  }
+}
+
+const openPdfInNewTab = () => {
+  if (pdfBlobUrl.value) {
+    window.open(pdfBlobUrl.value, '_blank')
+    console.log('📄 [PDF VIEWER] PDF abierto en nueva pestaña')
+  } else {
+    console.warn('⚠️ [PDF VIEWER] No hay URL de PDF disponible para abrir')
+  }
+}
+
+const downloadPdf = async () => {
+  if (!pdfBlobUrl.value || !previewItem.value) {
+    console.warn('⚠️ [PDF VIEWER] No hay PDF disponible para descargar')
+    return
+  }
+
+  try {
+    console.log('📥 [PDF VIEWER] Iniciando descarga de PDF...')
+
+    // Obtener el nombre del documento o usar un nombre por defecto
+    const fileName = previewItem.value.name
+      ? `${previewItem.value.name.replace(/[^a-z0-9]/gi, '_')}.pdf`
+      : `documento_${previewItem.value.id || 'pdf'}.pdf`
+
+    // Crear un enlace temporal para descargar
+    const link = document.createElement('a')
+    link.href = pdfBlobUrl.value
+    link.download = fileName
+    link.target = '_blank'
+
+    // Agregar al DOM, hacer clic y remover
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    console.log('✅ [PDF VIEWER] PDF descargado exitosamente:', fileName)
+  } catch (err) {
+    console.error('❌ [PDF VIEWER] Error descargando PDF:', err)
+    pdfError.value = new Error('Error al descargar el PDF')
+  }
 }
 
 const redirectToLogin = () => {
@@ -1858,14 +2157,21 @@ const handlePdfError = (event) => {
 
 // Cargar contenidos al montar el componente
 onMounted(() => {
+  handleResponsiveViewMode()
   loadDocuments()
-  // Agregar listener para navegación con teclado
+  // Agregar listeners
   document.addEventListener('keydown', handleKeydown)
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', handleResponsiveViewMode)
+  }
 })
 
 // Limpiar listeners al desmontar
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', handleResponsiveViewMode)
+  }
   // Limpiar URL del blob si existe
   if (pdfBlobUrl.value) {
     URL.revokeObjectURL(pdfBlobUrl.value)

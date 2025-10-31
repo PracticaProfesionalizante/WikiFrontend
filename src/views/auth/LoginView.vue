@@ -1,56 +1,69 @@
 ﻿<template>
-  <div class="login-container">
-    <!-- Background Elements -->
-    <div class="background-image"></div>
-    <div class="student-image-overlay"></div>
-
-    <!-- Main Content Layout -->
-    <div class="content-layout">
-      <!-- Welcome Section -->
-      <div class="welcome-section animate-slide-in-left">
-        <div class="greeting-content">
-          <h1 class="greeting-title animate-slide-up">Bienvenido a nuestra Wiki</h1>
-          <p class="greeting-subtitle animate-slide-up-delay">
+  <div class="min-h-screen flex flex-col bg-slate-900 lg:flex-row">
+    <!-- Visual / Welcome Section -->
+    <div class="relative flex w-full min-h-[40vh] overflow-hidden lg:w-1/2 lg:min-h-screen">
+      <div
+        class="absolute inset-0 bg-cover bg-center"
+        :style="{ backgroundImage: `url(${userStudyingImage})` }"
+      ></div>
+      <div class="absolute inset-0 bg-slate-900/60"></div>
+      <div class="relative z-10 flex min-h-full w-full flex-col items-center justify-center gap-6 px-8 py-16 text-center text-white lg:items-start lg:px-16 lg:text-left">
+        <div class="max-w-3xl">
+          <h1
+            class="text-4xl font-black tracking-tight sm:text-5xl lg:text-[4.5rem] text-[#40DEFF] leading-tight transition-transform duration-300 hover:-translate-y-1"
+            style="text-shadow: 0 8px 16px rgba(0, 0, 0, 0.8), 0 4px 8px rgba(64, 222, 255, 0.6), 0 2px 4px rgba(0, 0, 0, 0.9); -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.3);"
+          >
+            Bienvenido a nuestra Wiki
+          </h1>
+          <p
+            class="mt-6 text-lg font-medium text-white/95 sm:text-xl lg:text-2xl"
+            style="text-shadow: 0 4px 8px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.9); -webkit-text-stroke: 0.3px rgba(0, 0, 0, 0.4);"
+          >
             Tu plataforma de conocimiento y aprendizaje colaborativo
           </p>
         </div>
       </div>
+    </div>
 
-      <!-- Form Section -->
-      <div class="form-section">
-        <div class="login-form-wrapper animate-slide-in-right">
+    <!-- Form Section -->
+    <div class="flex w-full items-center justify-center bg-white px-6 py-12 shadow-2xl lg:w-1/2 lg:min-h-screen lg:px-12">
+      <div class="w-full max-w-[420px] opacity-0 animate-slideInRight">
           <!-- Logo Header -->
-          <div class="form-logo-section">
+          <div class="flex justify-center items-center mb-10 py-6 rounded-2xl border border-[#40DEFF]/10 relative overflow-hidden"
+               style="background: linear-gradient(135deg, rgba(64, 222, 255, 0.05) 0%, rgba(64, 222, 255, 0.02) 50%, transparent 100%);">
+            <div class="absolute inset-0 z-[-1] opacity-60 animate-logoGlow"
+                 style="background: radial-gradient(ellipse at center, rgba(64, 222, 255, 0.08) 0%, rgba(64, 222, 255, 0.03) 40%, transparent 70%);"></div>
             <img
               src="@/assets/images/logos/LOGOSOCIALLEARNING.png"
               alt="Social Learning Logo"
-              class="form-logo animate-fade-in"
+              class="h-24 w-auto transition-all duration-300 hover:-translate-y-1 hover:scale-105"
+              style="filter: drop-shadow(0 6px 20px rgba(64, 222, 255, 0.4)) brightness(1.1) contrast(1.15);"
             />
           </div>
 
           <!-- Form Container -->
-          <div class="form-container">
+          <div class="w-full max-w-[400px] mx-auto">
             <form
               @submit.prevent="showForgotPassword ? handleSendResetEmail() : handleLogin()"
-              class="login-form"
+              class="flex flex-col gap-5"
               novalidate
             >
               <!-- Form Transition -->
               <transition name="form-slide" mode="out-in">
                 <!-- Login Form -->
-                <div v-if="!showForgotPassword" key="login-form" class="form-content">
+                <div v-if="!showForgotPassword" key="login-form" class="flex flex-col gap-6">
                   <!-- Email Field -->
-                  <div class="form-field">
-                    <div class="floating-input">
+                  <div class="flex flex-col gap-2">
+                    <div class="relative">
                       <input
                         v-model="credentials.email"
                         type="email"
                         id="email"
-                        class="form-input"
+                        class="w-full px-4 pt-4 pb-2 border rounded-xl text-base font-normal transition-all duration-300 box-border bg-white text-gray-800 focus:outline-none focus:border-[#245FE7] focus:shadow-[0_0_0_4px_rgba(36,95,231,0.15),0_4px_12px_rgba(36,95,231,0.1)] focus:-translate-y-0.5 hover:border-gray-400 hover:-translate-y-0.5 hover:shadow-[0_2px_8px_rgba(0,0,0,0.05)] pr-12"
                         :class="{
-                          error: emailError,
-                          success: !emailError && credentials.email && credentials.email.length > 0,
-                          'has-value': credentials.email || emailFocused,
+                          'border-red-500 shadow-[0_0_0_2px_rgba(239,68,68,0.1)]': emailError,
+                          'border-green-500 shadow-[0_0_0_2px_rgba(16,185,129,0.1)]': !emailError && credentials.email && credentials.email.length > 0,
+                          'border-gray-300': !emailError && (!credentials.email || credentials.email.length === 0),
                         }"
                         @focus="emailFocused = true"
                         @blur="
@@ -64,38 +77,44 @@
                         autocomplete="email"
                         required
                       />
-                      <label for="email" class="floating-label">Email</label>
-                      <div class="input-feedback">
+                      <label
+                        for="email"
+                        class="absolute left-4 font-medium text-gray-500 pointer-events-none transition-all duration-300 origin-left bg-transparent p-0 z-[2]"
+                        :class="{
+                          'top-[-0.6rem] left-3 text-xs font-semibold text-[#40DEFF] bg-white px-2 rounded-md backdrop-blur-sm shadow-[0_2px_8px_rgba(0,0,0,0.1)]': credentials.email || emailFocused,
+                          'top-3': !credentials.email && !emailFocused,
+                        }"
+                      >
+                        Email
+                      </label>
+                      <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center z-10">
                         <i
                           v-if="!emailError && credentials.email && credentials.email.length > 0"
-                          class="fas fa-check-circle success-icon"
+                          class="fas fa-check-circle text-green-500 text-xl animate-bounceIn"
                         ></i>
                         <i
                           v-if="emailError && credentials.email"
-                          class="fas fa-alert-circle error-icon"
+                          class="fas fa-alert-circle text-red-500 text-xl animate-shake"
                         ></i>
                       </div>
                     </div>
-                    <div v-if="emailError && credentials.email" class="field-error-message">
+                    <div v-if="emailError && credentials.email" class="text-xs text-red-500 mt-2 ml-3 flex items-center gap-1 animate-slideUp">
                       Por favor ingresa un email válido
                     </div>
                   </div>
 
                   <!-- Password Field with Forgot Link -->
-                  <div class="form-field">
-                    <div class="floating-input password-wrapper">
+                  <div class="flex flex-col gap-2">
+                    <div class="relative mt-2">
                       <input
                         v-model="credentials.password"
                         :type="showPassword ? 'text' : 'password'"
                         id="password"
-                        class="form-input password-input"
+                        class="w-full px-4 pt-4 pb-2 pr-20 border rounded-xl text-base font-normal transition-all duration-300 box-border bg-white text-gray-800 focus:outline-none focus:border-[#245FE7] focus:shadow-[0_0_0_4px_rgba(36,95,231,0.15),0_4px_12px_rgba(36,95,231,0.1)] focus:-translate-y-0.5 hover:border-gray-400 hover:-translate-y-0.5 hover:shadow-[0_2px_8px_rgba(0,0,0,0.05)]"
                         :class="{
-                          error: passwordError,
-                          success:
-                            !passwordError &&
-                            credentials.password &&
-                            credentials.password.length >= 6,
-                          'has-value': credentials.password || passwordFocused,
+                          'border-red-500 shadow-[0_0_0_2px_rgba(239,68,68,0.1)]': passwordError,
+                          'border-green-500 shadow-[0_0_0_2px_rgba(16,185,129,0.1)]': !passwordError && credentials.password && credentials.password.length >= 6,
+                          'border-gray-300': !passwordError && (!credentials.password || credentials.password.length < 6),
                         }"
                         @focus="passwordFocused = true"
                         @blur="
@@ -109,61 +128,76 @@
                         autocomplete="current-password"
                         required
                       />
-                      <label for="password" class="floating-label">Contraseña</label>
-                      <div class="password-controls">
+                      <label
+                        for="password"
+                        class="absolute left-4 font-medium text-gray-500 pointer-events-none transition-all duration-300 origin-left bg-transparent p-0 z-[2]"
+                        :class="{
+                          'top-[-0.6rem] left-3 text-xs font-semibold text-[#40DEFF] bg-white px-2 rounded-md backdrop-blur-sm shadow-[0_2px_8px_rgba(0,0,0,0.1)]': credentials.password || passwordFocused,
+                          'top-3': !credentials.password && !passwordFocused,
+                        }"
+                      >
+                        Contraseña
+                      </label>
+                      <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-10">
                         <button
                           type="button"
                           @click="showPassword = !showPassword"
-                          class="password-toggle"
+                          class="bg-transparent border-none text-gray-500 cursor-pointer p-0 flex items-center justify-center transition-all duration-200 rounded-full w-8 h-8 hover:text-[#40DEFF] hover:bg-[#40DEFF]/10 hover:scale-110"
                           :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
                         >
                           <i v-if="showPassword" class="fas fa-eye"></i>
                           <i v-else class="fas fa-eye-off"></i>
                         </button>
-                        <div class="input-feedback">
+                        <div class="flex items-center">
                           <i
                             v-if="
                               !passwordError &&
                               credentials.password &&
                               credentials.password.length >= 6
                             "
-                            class="fas fa-check-circle success-icon"
+                            class="fas fa-check-circle text-green-500 text-xl animate-bounceIn"
                           ></i>
                           <i
                             v-if="passwordError && credentials.password"
-                            class="fas fa-alert-circle error-icon"
+                            class="fas fa-alert-circle text-red-500 text-xl animate-shake"
                           ></i>
                         </div>
                       </div>
                     </div>
-                    <div v-if="passwordError && credentials.password" class="field-error-message">
+                    <div v-if="passwordError && credentials.password" class="text-xs text-red-500 mt-2 ml-3 flex items-center gap-1 animate-slideUp">
                       La contraseña debe tener al menos 6 caracteres
                     </div>
 
-                    <!-- Forgot Password Link - Pegado al campo de contraseña -->
-                    <div class="forgot-password-section">
-                      <button type="button" @click="handleForgotPassword" class="forgot-password-link">
+                    <!-- Forgot Password Link -->
+                    <div class="flex justify-end mt-1">
+                      <button
+                        type="button"
+                        @click="handleForgotPassword"
+                        class="bg-transparent border-none text-gray-800 text-sm cursor-pointer no-underline transition-all duration-200 py-1 px-2 rounded hover:text-gray-600 hover:underline hover:bg-gray-100 hover:-translate-y-0.5"
+                      >
                         ¿Olvidaste tu contraseña?
                       </button>
                     </div>
                   </div>
 
                   <!-- Form Actions -->
-                  <div class="form-actions">
-
+                  <div class="flex flex-col gap-3 mt-4">
                     <!-- Submit Button -->
-                    <div class="submit-section">
+                    <div class="flex justify-center">
                       <button
                         type="submit"
                         :disabled="!isFormValid || isLoading"
-                        class="next-button"
-                        :class="{ disabled: !isFormValid || isLoading, loading: isLoading }"
+                        class="px-8 py-3 rounded-full font-medium transition-all duration-300 relative overflow-hidden min-w-[120px] min-h-[44px] flex items-center justify-center"
+                        :class="{
+                          'bg-gray-300 text-gray-500 cursor-not-allowed': !isFormValid || isLoading,
+                          'bg-[#245FE7] text-white cursor-pointer shadow-[0_4px_15px_rgba(36,95,231,0.3)] hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(36,95,231,0.4)] hover:bg-[#1E4ED8] active:translate-y-0 active:shadow-[0_2px_10px_rgba(36,95,231,0.3)]': isFormValid && !isLoading,
+                        }"
                         :aria-label="isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'"
                       >
-                        <span v-if="!isLoading" class="button-text">Iniciar Sesión</span>
-                        <div v-else class="loading-spinner">
-                          <div class="spinner"></div>
-                          <span class="loading-text">{{
+                        <span v-if="!isLoading" class="transition-opacity duration-200">Iniciar Sesión</span>
+                        <div v-else class="flex items-center gap-2">
+                          <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          <span class="text-sm font-medium">{{
                             successMessage ? 'Redirigiendo...' : 'Ingresando...'
                           }}</span>
                         </div>
@@ -173,64 +207,76 @@
               </div>
 
                 <!-- Forgot Password Form -->
-                <div v-else key="forgot-form" class="form-content">
+                <div v-else key="forgot-form" class="flex flex-col gap-6">
                   <!-- Forgot Password Content -->
                   <div v-if="!forgotPasswordSuccess">
-                    <div class="forgot-password-header">
-                      <p class="forgot-subtitle">Ingresa tu email para recibir instrucciones</p>
+                    <div class="text-center mb-6">
+                      <p class="text-sm text-gray-600 m-0">Ingresa tu email para recibir instrucciones</p>
                     </div>
 
                     <!-- Email Field for Password Recovery -->
-                    <div class="form-field">
-                      <div class="floating-input">
+                    <div class="flex flex-col gap-2">
+                      <div class="relative">
                         <input
                           v-model="forgotPasswordEmail"
                           type="email"
                           id="forgot-email"
-                          class="form-input"
-                          :class="{ 'has-value': forgotPasswordEmail }"
+                          class="w-full px-4 pt-4 pb-2 border border-gray-300 rounded-xl text-base font-normal transition-all duration-300 box-border bg-white text-gray-800 focus:outline-none focus:border-[#245FE7] focus:shadow-[0_0_0_4px_rgba(36,95,231,0.15),0_4px_12px_rgba(36,95,231,0.1)] focus:-translate-y-0.5 hover:border-gray-400 hover:-translate-y-0.5 hover:shadow-[0_2px_8px_rgba(0,0,0,0.05)]"
                           placeholder=" "
                           autocomplete="email"
                           required
                         />
-                        <label for="forgot-email" class="floating-label">Email para recuperación</label>
+                        <label
+                          for="forgot-email"
+                          class="absolute left-4 font-medium text-gray-500 pointer-events-none transition-all duration-300 origin-left bg-transparent p-0 z-[2]"
+                          :class="{
+                            'top-[-0.6rem] left-3 text-xs font-semibold text-[#40DEFF] bg-white px-2 rounded-md backdrop-blur-sm shadow-[0_2px_8px_rgba(0,0,0,0.1)]': forgotPasswordEmail,
+                            'top-3': !forgotPasswordEmail,
+                          }"
+                        >
+                          Email para recuperación
+                        </label>
                       </div>
                     </div>
 
                     <!-- Recovery Form Actions -->
-                    <div class="form-actions">
-                      <div class="recovery-actions">
-                        <button type="button" @click="handleBackToLogin" class="back-to-login-btn">
+                    <div class="flex flex-col gap-3 mt-4">
+                      <div class="flex justify-between items-center gap-4">
+                        <button
+                          type="button"
+                          @click="handleBackToLogin"
+                          class="bg-transparent border-none text-gray-800 text-sm cursor-pointer py-2 px-2 rounded-lg transition-all duration-200 flex items-center gap-1 hover:text-gray-600 hover:bg-gray-100"
+                        >
                           ← Volver al login
                         </button>
 
                         <button
                           type="submit"
                           :disabled="!forgotPasswordEmail || forgotPasswordLoading"
-                          class="next-button"
+                          class="px-8 py-3 rounded-full font-medium transition-all duration-300 relative overflow-hidden min-w-[120px] min-h-[44px] flex items-center justify-center"
                           :class="{
-                            disabled: !forgotPasswordEmail || forgotPasswordLoading,
-                            loading: forgotPasswordLoading,
+                            'bg-gray-300 text-gray-500 cursor-not-allowed': !forgotPasswordEmail || forgotPasswordLoading,
+                            'bg-[#245FE7] text-white cursor-pointer shadow-[0_4px_15px_rgba(36,95,231,0.3)] hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(36,95,231,0.4)] hover:bg-[#1E4ED8] active:translate-y-0 active:shadow-[0_2px_10px_rgba(36,95,231,0.3)]': forgotPasswordEmail && !forgotPasswordLoading,
                           }"
                           :aria-label="forgotPasswordLoading ? 'Enviando...' : 'Enviar instrucciones'"
                         >
-                          <span v-if="!forgotPasswordLoading" class="button-text">Enviar</span>
-                          <div v-else class="loading-spinner">
-                            <div class="spinner"></div>
-                            <span class="loading-text">Enviando...</span>
+                          <span v-if="!forgotPasswordLoading" class="transition-opacity duration-200">Enviar</span>
+                          <div v-else class="flex items-center gap-2">
+                            <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            <span class="text-sm font-medium">Enviando...</span>
                           </div>
                         </button>
                       </div>
                     </div>
-                </div>
+                  </div>
 
                   <!-- Success Message -->
-                  <div v-else class="forgot-success">
-                    <div class="success-icon-large">
-                      <i class="fas fa-email-check-outline"></i>
+                  <div v-else class="text-center py-6">
+                    <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-successPulse">
+                      <i class="fas fa-check text-4xl text-white"></i>
                     </div>
-                    <h3 class="success-title">¡Email enviado!</h3>
-                    <p class="success-text">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-3">¡Email enviado!</h3>
+                    <p class="text-sm text-gray-600 mb-8 leading-relaxed">
                       Revisa tu bandeja de entrada y sigue las instrucciones para recuperar tu
                       contraseña.
                     </p>
@@ -238,7 +284,7 @@
                     <button
                       type="button"
                       @click="handleBackToLogin"
-                      class="back-to-login-btn-success"
+                      class="bg-[#245FE7] text-white border-none px-8 py-3 rounded-full font-medium cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(36,95,231,0.3)] hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(36,95,231,0.4)] hover:bg-[#1E4ED8]"
                     >
                       Volver al login
                     </button>
@@ -249,25 +295,25 @@
           </div>
 
           <!-- Error Messages -->
-          <div v-if="error || authStore.error" class="error-message animate-shake">
-            <i class="fas fa-alert-circle"></i>
+          <div v-if="error || authStore.error" class="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 text-red-600 py-3 px-4 rounded-xl text-sm mt-4 flex items-center gap-2 shadow-[0_4px_12px_rgba(239,68,68,0.15)] animate-shake">
+            <i class="fas fa-alert-circle text-base"></i>
             {{ error || authStore.error }}
           </div>
 
           <!-- Success Messages -->
-          <div v-if="successMessage" class="success-message animate-fade-in">
-            <i class="fas fa-check-circle"></i>
+          <div v-if="successMessage" class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 text-green-700 py-3 px-4 rounded-xl text-sm mt-4 flex items-center gap-2 shadow-[0_4px_12px_rgba(16,185,129,0.15)] opacity-0 animate-fadeIn">
+            <i class="fas fa-check-circle text-base"></i>
             {{ successMessage }}
           </div>
         </div>
       </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import userStudyingImage from '@/assets/images/illustrations/user_studying.webp'
 
 // Composables
 const authStore = useAuthStore()
@@ -430,18 +476,7 @@ if (authStore.error) {
 </script>
 
 <style scoped>
-/* Animaciones y Keyframes */
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
+/* Animaciones personalizadas para Tailwind */
 @keyframes slideInRight {
   from {
     opacity: 0;
@@ -450,17 +485,6 @@ if (authStore.error) {
   to {
     opacity: 1;
     transform: translateX(0);
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -473,22 +497,14 @@ if (authStore.error) {
   }
 }
 
-@keyframes spin {
+@keyframes slideUp {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
+    transform: translateY(30px);
   }
   to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -541,114 +557,16 @@ if (authStore.error) {
   }
 }
 
-/* Clases de animación */
-.animate-slide-in-left {
-  animation: slideInLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
-  opacity: 0;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
-  opacity: 0;
-}
-
-.animate-slide-up-delay {
-  animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s forwards;
-  opacity: 0;
-}
-
-.animate-slide-up-delay-2 {
-  animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.7s forwards;
-  opacity: 0;
-}
-
-.animate-fade-in {
-  animation: fadeIn 1s ease-out 0.1s forwards;
-  opacity: 0;
-}
-
-.animate-fade-in-delay {
-  animation: fadeIn 0.8s ease-out 0.4s forwards;
-  opacity: 0;
-}
-
-.animate-shake {
-  animation: shake 0.5s ease-in-out;
-}
-
-.animate-bounce-in {
-  animation: bounceIn 0.6s ease-out;
-}
-
-/* Mejora global: Optimización de renderizado de imágenes */
-* {
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-}
-
-img {
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  image-rendering: pixelated;
-}
-
-.login-container {
-  min-height: 100vh;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  /* Forzar modo claro siempre */
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --text-muted: #9ca3af;
-  --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
-  --bg-sidebar: #ffffff;
-  --border-primary: #d1d5db;
-  --border-color: #e5e7eb;
-  --accent-color: #40DEFF;
-  --primary-color: #2563eb;
-  --accent-secondary: #10b981;
-  --accent-danger: #ef4444;
-  --button-primary-hover: #1d4ed8;
-}
-
-
-.background-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* Optimización: Lazy loading y fallback */
-  background-image: url('/src/assets/images/backgrounds/teclab_fondo_login.webp');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: 1;
-
-  /* Mejora: Loading placeholder mientras carga la imagen */
-  background-color: var(--bg-sidebar);
-
-  /* Optimización: Compresión y renderizado eficiente */
-  image-rendering: optimizeSpeed;
-  transform: translateZ(0);
-  will-change: auto;
-
-  /* Transición suave cuando carga */
-  opacity: 0;
-  animation: fadeInBackground 1s ease-out 0.3s forwards;
-}
-
-@keyframes fadeInBackground {
-  from {
+@keyframes successPulse {
+  0% {
+    transform: scale(0.8);
     opacity: 0;
   }
-  to {
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
     opacity: 1;
   }
 }
@@ -660,555 +578,6 @@ img {
   to {
     opacity: 0.95;
   }
-}
-
-.student-image-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 52%;
-  height: 100%;
-  background-image: url('@/assets/images/illustrations/user_studying.webp');
-  background-size: cover;
-  background-position: -350px center;
-  background-repeat: no-repeat;
-  z-index: 1;
-  pointer-events: none;
-
-  /* Mejora: Loading placeholder mientras carga la imagen */
-  background-color: var(--bg-sidebar);
-
-  /* Optimización: Compresión y renderizado eficiente */
-  image-rendering: optimizeSpeed;
-  transform: translateZ(0);
-  will-change: auto;
-
-  /* Transición suave cuando carga */
-  opacity: 0;
-  animation: fadeInStudentImage 1s ease-out 0.5s forwards;
-
-  /* Mejora: Filtros optimizados para mejor calidad */
-  filter: brightness(0.8) saturate(1.05) contrast(1.05);
-}
-
-.content-layout {
-  position: relative;
-  z-index: 2;
-  min-height: 100vh;
-  display: flex;
-  align-items: stretch;
-  padding: 0;
-  gap: 0;
-  max-width: none;
-  margin: 0;
-}
-
-/* Welcome Section - Left Side */
-.welcome-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  color: white;
-  padding: 4rem 3rem;
-  /* Mejora: Fondo semi-transparente para mejor contraste del texto */
-  background: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.4) 0%,
-    rgba(0, 0, 0, 0.2) 50%,
-    rgba(0, 0, 0, 0.3) 100%
-  );
-  backdrop-filter: blur(4px);
-  /* Mejora: Centrado vertical para mejor distribución */
-  justify-content: center;
-  align-items: flex-start;
-}
-
-.greeting-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 2rem;
-  margin-top: 0;
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.greeting-title {
-  font-size: 5rem;
-  font-weight: 900;
-  color: #40DEFF;
-  margin: 0;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  /* Mejora: Sombras más intensas para mejor visibilidad */
-  text-shadow:
-    0 8px 16px rgba(0, 0, 0, 0.8),
-    0 4px 8px rgba(64, 222, 255, 0.6),
-    0 2px 4px rgba(0, 0, 0, 0.9);
-  transition: all 0.3s ease;
-  /* Mejora: Contorno sutil para mayor definición */
-  -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.3);
-}
-
-.greeting-title:hover {
-  transform: translateY(-2px);
-  text-shadow:
-    0 10px 20px rgba(0, 0, 0, 0.9),
-    0 5px 10px rgba(64, 222, 255, 0.7),
-    0 3px 6px rgba(0, 0, 0, 0.9);
-}
-
-.greeting-subtitle {
-  color: rgba(255, 255, 255, 0.95);
-  margin: 0;
-  font-size: 1.8rem;
-  font-weight: 600;
-  line-height: 1.4;
-  text-align: center;
-  max-width: 500px;
-  /* Mejora: Sombras más intensas para mejor legibilidad */
-  text-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.8),
-    0 2px 4px rgba(0, 0, 0, 0.6),
-    0 1px 2px rgba(0, 0, 0, 0.9);
-  /* Mejora: Contorno sutil para mayor definición */
-  -webkit-text-stroke: 0.3px rgba(0, 0, 0, 0.4);
-}
-
-/* Animaciones */
-
-/* Form Section - Right Side */
-.form-section {
-  flex: 0 0 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: white;
-  padding: 4rem 3rem;
-}
-
-.login-form-wrapper {
-  width: 100%;
-  max-width: 450px;
-  background: transparent;
-  padding: 0;
-}
-
-/* Logo del formulario */
-.form-logo-section {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 2.5rem;
-  padding: 1.5rem 0;
-  background: linear-gradient(
-    135deg,
-    rgba(64, 222, 255, 0.05) 0%,
-    rgba(64, 222, 255, 0.02) 50%,
-    transparent 100%
-  );
-  border-radius: 16px;
-  border: 1px solid rgba(64, 222, 255, 0.1);
-  position: relative;
-  overflow: hidden;
-}
-
-/* Form Container */
-.form-container {
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-/* Form Content */
-.form-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-/* Form Field */
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-/* Form Actions */
-.form-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-/* Submit Section */
-.submit-section {
-  display: flex;
-  justify-content: center;
-}
-
-/* Recovery Actions */
-.recovery-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-
-.form-logo-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(64, 222, 255, 0.08) 0%,
-    rgba(64, 222, 255, 0.03) 40%,
-    transparent 70%
-  );
-  z-index: -1;
-  opacity: 0.6;
-  animation: logoGlow 3s ease-in-out infinite alternate;
-}
-
-.form-logo {
-  height: 6rem;
-  width: auto;
-  filter: drop-shadow(0 6px 20px rgba(64, 222, 255, 0.4)) brightness(1.1) contrast(1.15);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-}
-
-.form-logo:hover {
-  transform: translateY(-3px) scale(1.05);
-  filter: drop-shadow(0 8px 24px rgba(64, 222, 255, 0.5)) brightness(1.15) contrast(1.2);
-}
-
-
-
-/* Form */
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.input-group {
-  position: relative;
-  margin-bottom: 1.5rem;
-}
-
-.floating-input {
-  position: relative;
-}
-
-.form-input {
-  width: 100%;
-  padding: 1rem 1rem 0.5rem 1rem;
-  border: 1px solid #d1d5db;
-  /* Mejora: Bordes más redondeados y modernos */
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 400;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-sizing: border-box;
-  background: #ffffff;
-  /* Forzar modo claro siempre */
-  color: #1f2937 !important;
-}
-
-
-/* Estilos específicos para autocompletado del navegador */
-.form-input:-webkit-autofill,
-.form-input:-webkit-autofill:hover,
-.form-input:-webkit-autofill:focus,
-.form-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
-  -webkit-text-fill-color: #1f2937 !important;
-  color: #1f2937 !important;
-  background-color: #ffffff !important;
-}
-
-
-.form-input:focus {
-  outline: none;
-  border-color: #245FE7;
-  /* Mejora: Glow effect más elegante */
-  box-shadow:
-    0 0 0 4px rgba(36, 95, 231, 0.15),
-    0 4px 12px rgba(36, 95, 231, 0.1);
-  transform: translateY(-2px);
-}
-
-.form-input:hover:not(:focus) {
-  border-color: #9ca3af;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.form-input.error {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
-}
-
-.form-input.success {
-  border-color: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
-}
-
-.floating-label {
-  position: absolute;
-  left: 1rem;
-  top: 0.75rem;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #6b7280 !important;
-  pointer-events: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-origin: left top;
-  background: transparent;
-  padding: 0;
-  z-index: 2;
-}
-
-.form-input:focus + .floating-label,
-.form-input.has-value + .floating-label {
-  top: -0.6rem;
-  left: 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #40DEFF !important;
-  transform: scale(1);
-  background: #ffffff;
-  padding: 0 0.5rem;
-  border-radius: 6px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-
-.form-input.error + .floating-label {
-  color: #ef4444 !important;
-  background: #ffffff;
-  padding: 0 0.5rem;
-  border-radius: 6px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
-}
-
-.form-input.success + .floating-label {
-  color: #10b981 !important;
-  background: #ffffff;
-  padding: 0 0.5rem;
-  border-radius: 6px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
-}
-
-.password-wrapper {
-  position: relative;
-  margin-top: 0.5rem;
-}
-
-.input-feedback {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  z-index: 10;
-}
-
-.success-icon {
-  color: #10b981;
-  font-size: 1.2rem;
-  animation: bounceIn 0.6s ease-out;
-}
-
-.error-icon {
-  color: #ef4444;
-  font-size: 1.2rem;
-  animation: shake 0.5s ease-in-out;
-}
-
-.password-controls {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.password-controls .input-feedback {
-  position: static;
-  transform: none;
-}
-
-.field-error-message {
-  font-size: 0.75rem;
-  color: var(--accent-danger);
-  margin-top: 0.5rem;
-  margin-left: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  animation: slideUp 0.3s ease-out;
-}
-
-.password-input {
-  padding-right: 4.5rem;
-}
-
-.password-toggle {
-  background: none;
-  border: none;
-  color: #6b7280 !important;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  border-radius: 50%;
-  width: 2rem;
-  height: 2rem;
-}
-
-.password-toggle:hover {
-  color: #40DEFF !important;
-  background-color: rgba(64, 222, 255, 0.1);
-  transform: scale(1.1);
-}
-
-/* Forgot Password */
-.forgot-password-section {
-  display: flex;
-  justify-content: flex-end;
-  margin: 0.25rem 0 0 0;
-}
-
-.forgot-password-link {
-  background: none;
-  border: none;
-  color: #1f2937;
-  font-size: 0.875rem;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-}
-
-.forgot-password-link:hover {
-  color: #374151;
-  text-decoration: underline;
-  background-color: rgba(31, 41, 55, 0.1);
-  transform: translateY(-1px);
-}
-
-/* Bottom Row */
-.bottom-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 1.5rem;
-}
-
-.advisor-section {
-  display: flex;
-  align-items: center;
-}
-
-.advisor-checkbox {
-  height: 1rem;
-  width: 1rem;
-  color: var(--accent-color);
-  border: 1px solid var(--border-primary);
-  border-radius: 0.25rem;
-  margin-right: 0.5rem;
-}
-
-.advisor-checkbox:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-}
-
-.advisor-label {
-  font-size: 0.875rem;
-  color: var(--text-primary);
-  cursor: pointer;
-}
-
-.next-button {
-  padding: 0.75rem 2rem;
-  background-color: #d1d5db;
-  color: #6b7280;
-  border: none;
-  border-radius: 9999px;
-  font-weight: 500;
-  cursor: not-allowed;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  min-width: 120px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.next-button:not(.disabled):not(.loading) {
-  background: #245FE7;
-  color: white;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(36, 95, 231, 0.3);
-}
-
-
-.next-button:not(.disabled):not(.loading):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(36, 95, 231, 0.4);
-  background: #1E4ED8;
-}
-
-.next-button:not(.disabled):not(.loading):active {
-  transform: translateY(0);
-  box-shadow: 0 2px 10px rgba(36, 95, 231, 0.3);
-}
-
-.next-button.loading {
-  background: #245FE7;
-  color: white;
-  cursor: not-allowed;
-}
-
-.button-text {
-  transition: opacity 0.2s ease;
-}
-
-.loading-spinner {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top: 2px solid white;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
 }
 
 /* Animaciones de transición para formularios */
@@ -1227,281 +596,14 @@ img {
   transform: translateX(-30px);
 }
 
-/* Estilos para recuperación de contraseña */
-.forgot-password-header {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.forgot-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.forgot-subtitle {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-.forgot-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 1.25rem;
-}
-
-.back-to-login-btn {
-  background: none;
-  border: none;
-  color: #1f2937;
-  font-size: 0.875rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.back-to-login-btn:hover {
-  color: #374151;
-  background-color: rgba(31, 41, 55, 0.1);
-}
-
-/* Estilos para mensaje de éxito */
-.forgot-success {
-  text-align: center;
-  padding: 1.5rem 0;
-}
-
-.success-icon-large {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, #10b981, #059669);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
-  animation: successPulse 0.6s ease-out;
-}
-
-.success-icon-large i {
-  font-size: 2.5rem;
-  color: white;
-}
-
-.success-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.75rem;
-}
-
-.success-text {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin-bottom: 2rem;
-  line-height: 1.5;
-}
-
-.back-to-login-btn-success {
-  background: #245FE7;
-  color: white;
-  border: none;
-  padding: 0.75rem 2rem;
-  border-radius: 9999px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(36, 95, 231, 0.3);
-}
-
-.back-to-login-btn-success:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(36, 95, 231, 0.4);
-  background: #1E4ED8;
-}
-
-@keyframes successPulse {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* Responsive para móviles */
-@media (max-width: 640px) {
-  .forgot-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .back-to-login-btn {
-    text-align: center;
-    justify-content: center;
-  }
-
-  .forgot-password-header {
-    margin-bottom: 1.5rem;
-  }
-
-  .forgot-title {
-    font-size: 1.25rem;
-  }
-
-  .success-icon-large {
-    width: 60px;
-    height: 60px;
-  }
-
-  .success-icon-large i {
-    font-size: 2rem;
-  }
-}
-
-.loading-text {
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-/* Error and Success Messages */
-.error-message {
-  background: linear-gradient(135deg, #fef2f2, #fee2e2);
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
-  margin-top: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
-}
-
-.success-message {
-  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-  border: 1px solid #bbf7d0;
-  color: #059669;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
-  margin-top: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
-}
-
-
-.error-message i,
-.success-message i {
-  font-size: 1rem;
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-  .content-layout {
-    flex-direction: column;
-  }
-
-  .welcome-section {
-    flex: none;
-    padding: 3rem 2rem;
-    text-align: center;
-    align-items: center;
-  }
-
-  .form-section {
-    flex: none;
-    padding: 3rem 2rem;
-  }
-
-  .greeting-title {
-    font-size: 3.5rem;
-  }
-
-  .greeting-subtitle {
-    font-size: 1.4rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .welcome-section {
-    padding: 2rem 1.5rem;
-  }
-
-  .form-section {
-    padding: 2rem 1.5rem;
-  }
-
-  .login-form-wrapper {
-    padding: 0;
-  }
-
-  .greeting-title {
-    font-size: 2.8rem;
-  }
-
-  .greeting-subtitle {
-    font-size: 1.2rem;
-  }
-
-  .form-logo {
-    height: 5rem;
-  }
-
-  .bottom-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-
-  .advisor-section {
-    justify-content: center;
-  }
-
-  .next-button {
-    width: 100%;
-  }
-}
-
-@media (max-width: 640px) {
-  .welcome-section {
-    padding: 1.5rem 1rem;
-  }
-
-  .form-section {
-    padding: 1.5rem 1rem;
-  }
-
-  .login-form-wrapper {
-    padding: 0;
-  }
-
-  .greeting-title {
-    font-size: 2.2rem;
-  }
-
-  .greeting-subtitle {
-    font-size: 1rem;
-  }
-
-  .form-logo {
-    height: 4rem;
-  }
+/* Estilos específicos para autocompletado del navegador */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+  -webkit-text-fill-color: #1f2937 !important;
+  color: #1f2937 !important;
+  background-color: #ffffff !important;
 }
 </style>
