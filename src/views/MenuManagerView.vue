@@ -157,11 +157,15 @@
 
         <!-- Vista de árbol jerárquico -->
         <transition name="fade-slide" mode="out-in">
-          <div class="rounded-xl border bg-white p-6 shadow dark:border-slate-700 dark:bg-slate-800" v-if="!isLoading && viewMode === 'tree'" key="tree">
+          <div
+            class="rounded-xl border bg-white p-4 sm:p-6 shadow dark:border-slate-700 dark:bg-slate-800 space-y-6"
+            v-if="!isLoading && viewMode === 'tree'"
+            key="tree"
+          >
             <!-- Sección de ayuda y buscador -->
-            <div class="mb-6">
+            <div class="space-y-6">
               <!-- Sección de ayuda -->
-              <div class="mb-6">
+              <div class="space-y-4">
                 <button
                   class="flex w-full items-center justify-between rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-left text-slate-900 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/20 dark:text-slate-100 dark:hover:bg-blue-900/30"
                   @click="showHelp = !showHelp"
@@ -304,7 +308,7 @@
               </div>
 
               <!-- Buscador -->
-              <div class="mb-6">
+              <div class="space-y-2">
                 <div class="relative">
                   <div class="relative">
                     <i class="fas fa-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
@@ -337,30 +341,34 @@
             </div>
 
             <!-- Contenedor del árbol -->
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-900/50">
-              <div v-if="filteredHierarchicalMenus.length === 0 && searchQuery" class="flex flex-col items-center justify-center py-12 text-center">
-                <i class="fas fa-search mb-4 text-4xl text-slate-400"></i>
-                <h3 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">No se encontraron menús</h3>
-                <p class="mb-4 text-slate-600 dark:text-slate-400">No hay menús que coincidan con "{{ searchQuery }}"</p>
-                <button @click="clearSearch" class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
-                  <i class="fas fa-sync-alt"></i>
-                  Mostrar todos los menús
-                </button>
-              </div>
+            <div class="rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/50 overflow-x-auto">
+              <div class="min-w-[320px] space-y-3 p-4 sm:p-6">
+                <div v-if="filteredHierarchicalMenus.length === 0 && searchQuery" class="flex flex-col items-center justify-center py-12 text-center">
+                  <i class="fas fa-search mb-4 text-4xl text-slate-400"></i>
+                  <h3 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">No se encontraron menús</h3>
+                  <p class="mb-4 text-slate-600 dark:text-slate-400">No hay menús que coincidan con "{{ searchQuery }}"</p>
+                  <button @click="clearSearch" class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
+                    <i class="fas fa-sync-alt"></i>
+                    Mostrar todos los menús
+                  </button>
+                </div>
 
-              <MenuTreeNode
-                v-for="rootMenu in filteredHierarchicalMenus"
-                :key="rootMenu.id"
-                :menu="rootMenu"
-                :level="0"
-                :all-menus="menus"
-                :available-roles="availableRolesList"
-                :search-query="searchQuery"
-                @edit="editMenu"
-                @delete="deleteMenu"
-                @move="moveMenu"
-                @create-submenu="createSubmenu"
-              />
+                <template v-else>
+                  <MenuTreeNode
+                    v-for="rootMenu in filteredHierarchicalMenus"
+                    :key="rootMenu.id"
+                    :menu="rootMenu"
+                    :level="0"
+                    :all-menus="menus"
+                    :available-roles="availableRolesList"
+                    :search-query="searchQuery"
+                    @edit="editMenu"
+                    @delete="deleteMenu"
+                    @move="moveMenu"
+                    @create-submenu="createSubmenu"
+                  />
+                </template>
+              </div>
             </div>
           </div>
         </transition>
@@ -386,7 +394,7 @@
           aria-labelledby="modal-title"
           aria-describedby="modal-description"
         >
-      <div class="w-full max-w-5xl" @click.stop tabindex="-1" ref="modalContent">
+      <div class="w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-xl flex flex-col" @click.stop tabindex="-1" ref="modalContent">
             <!-- Header del Wizard -->
           <div class="rounded-t-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
             <div class="flex items-start justify-between">
@@ -445,7 +453,7 @@
             </div>
 
             <!-- Contenido del Wizard -->
-          <div class="rounded-b-xl border border-t-0 border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
+          <div class="flex-1 overflow-y-auto border border-t-0 border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
               <p id="modal-description" class="sr-only">
                 Formulario para {{ isEditing ? 'editar' : 'crear' }} un elemento del menú. Complete
                 los campos requeridos y presione guardar.

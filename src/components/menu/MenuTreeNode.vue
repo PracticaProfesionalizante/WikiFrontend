@@ -402,6 +402,48 @@ const handleCreateSubmenu = () => {
 </script>
 
 <style scoped>
+:global(:root) {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-hover: #f1f5f9;
+  --border-color: #e2e8f0;
+  --text-primary: #1f2937;
+  --text-secondary: #64748b;
+  --accent-primary: #2563eb;
+  --accent-bg: rgba(37, 99, 235, 0.12);
+  --success-color: #16a34a;
+  --success-bg: rgba(22, 163, 74, 0.12);
+  --success-light: rgba(22, 163, 74, 0.35);
+  --error-color: #dc2626;
+  --error-bg: rgba(220, 38, 38, 0.12);
+  --error-light: rgba(220, 38, 38, 0.35);
+  --warning-color: #d97706;
+  --warning-bg: rgba(217, 119, 6, 0.15);
+  --warning-light: rgba(217, 119, 6, 0.35);
+  --primary-color: #2563eb;
+}
+
+:global(.dark) {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-hover: #1e293b;
+  --border-color: #334155;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --accent-primary: #60a5fa;
+  --accent-bg: rgba(96, 165, 250, 0.16);
+  --success-color: #4ade80;
+  --success-bg: rgba(74, 222, 128, 0.15);
+  --success-light: rgba(74, 222, 128, 0.4);
+  --error-color: #f87171;
+  --error-bg: rgba(248, 113, 113, 0.15);
+  --error-light: rgba(248, 113, 113, 0.4);
+  --warning-color: #fbbf24;
+  --warning-bg: rgba(251, 191, 36, 0.15);
+  --warning-light: rgba(251, 191, 36, 0.4);
+  --primary-color: #60a5fa;
+}
+
 .menu-tree-node {
   margin-bottom: 4px;
 }
@@ -610,6 +652,65 @@ const handleCreateSubmenu = () => {
   margin-top: 8px;
   padding-left: 16px;
   border-left: 2px dashed var(--border-color, #e0e0e0);
+}
+
+@media (max-width: 640px) {
+  .menu-node {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .expand-button,
+  .expand-spacer {
+    margin-right: 4px;
+  }
+
+  .menu-info {
+    width: 100%;
+  }
+
+  .menu-header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .menu-order {
+    font-size: 11px;
+  }
+
+  .menu-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .menu-path {
+    width: 100%;
+  }
+
+  .menu-roles {
+    width: 100%;
+  }
+
+  .menu-actions {
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .action-button {
+    flex: 1 1 96px;
+    min-width: 0;
+  }
+
+  .menu-children {
+    margin-left: 20px;
+    padding-left: 12px;
+  }
 }
 
 /* Drag & Drop states */
