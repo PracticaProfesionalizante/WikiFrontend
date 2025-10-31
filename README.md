@@ -10,14 +10,19 @@ Bienvenido/a 👋. Este repositorio contiene el frontend de la Wiki instituciona
 2. [Primeros pasos rápidos](#primeros-pasos-rápidos)
 3. [¿Cómo ejecuto el proyecto?](#cómo-ejecuto-el-proyecto)
 4. [¿Dónde está cada cosa?](#dónde-está-cada-cosa)
-5. [Flujo de trabajo recomendado](#flujo-de-trabajo-recomendado)
-6. [Modificar componentes y vistas](#modificar-componentes-y-vistas)
-7. [Estilos con Tailwind](#estilos-con-tailwind)
-8. [Uso de servicios y APIs](#uso-de-servicios-y-apis)
-9. [Scripts útiles](#scripts-útiles)
-10. [Preguntas frecuentes y problemas comunes](#preguntas-frecuentes-y-problemas-comunes)
-11. [Glosario](#glosario)
-12. [Recursos extra](#recursos-extra)
+5. **¿Prefieres GUI para Git? Usa SourceTree**
+    - Descarga: [https://www.sourcetreeapp.com/](https://www.sourcetreeapp.com/)
+    - Abre SourceTree y elige “Clone” → pega la URL del repositorio → selecciona carpeta destino.
+    - Los comandos `git checkout`, `commit`, `pull` y `push` se realizan con botones. Asegúrate de escribir mensajes claros y revisar los archivos staged antes de confirmar.
+    - Si tu rama aún no existe, crea una nueva desde “Branch”. Usa el mismo nombre que usarías en terminal.
+6. [Flujo de trabajo recomendado](#flujo-de-trabajo-recomendado)
+7. [Modificar componentes y vistas](#modificar-componentes-y-vistas)
+8. [Estilos con Tailwind](#estilos-con-tailwind)
+9. [Uso de servicios y APIs](#uso-de-servicios-y-apis)
+10. [Scripts útiles](#scripts-útiles)
+11. [Preguntas frecuentes y problemas comunes](#preguntas-frecuentes-y-problemas-comunes)
+12. [Glosario](#glosario)
+13. [Recursos extra](#recursos-extra)
 
 ---
 
