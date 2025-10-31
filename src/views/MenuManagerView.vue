@@ -98,28 +98,28 @@
                 <div class="mb-4 flex items-start gap-4">
                   <div class="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white">
                     <i :class="['fas', menu.icon || 'fa-circle']"></i>
-                  </div>
+                </div>
                   <div class="flex-1">
                     <div class="mb-2 flex items-start justify-between">
                       <h3 class="m-0 text-lg font-bold text-slate-900 dark:text-slate-100">{{ menu.name }}</h3>
                       <div class="ml-2 flex gap-1">
                         <span v-if="menu.parentId" class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
-                          <i class="fas fa-arrow-right"></i>
-                          Submenú
-                        </span>
+                        <i class="fas fa-arrow-right"></i>
+                        Submenú
+                      </span>
                         <span v-if="getMenuChildren(menu.id).length > 0" class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">
-                          <i class="fas fa-folder"></i>
-                          {{ getMenuChildren(menu.id).length }} hijos
-                        </span>
-                      </div>
+                        <i class="fas fa-folder"></i>
+                        {{ getMenuChildren(menu.id).length }} hijos
+                      </span>
                     </div>
+                  </div>
                     <p class="m-0 text-sm text-slate-600 dark:text-slate-400">{{ menu.path }}</p>
                     <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
                       <span>Orden: {{ menu.order }}</span>
                       <span v-if="menu.parentId" class="inline-flex items-center gap-1">
-                        <i class="fas fa-arrow-up"></i>
-                        Padre: {{ getParentMenuName(menu.parentId) }}
-                      </span>
+                      <i class="fas fa-arrow-up"></i>
+                      Padre: {{ getParentMenuName(menu.parentId) }}
+                    </span>
                     </div>
                     <div class="mt-2 flex flex-wrap gap-1">
                       <span
@@ -367,59 +367,59 @@
       </div>
     </main>
 
-    <!-- Modal de eliminación avanzada -->
-    <DeleteMenuModal
-      :show="showDeleteModal"
-      :menu="menuToDelete"
-      :children="menuToDeleteChildren"
-      @close="closeDeleteModal"
-      @confirm="handleDeleteConfirm"
-    />
+        <!-- Modal de eliminación avanzada -->
+        <DeleteMenuModal
+          :show="showDeleteModal"
+          :menu="menuToDelete"
+          :children="menuToDeleteChildren"
+          @close="closeDeleteModal"
+          @confirm="handleDeleteConfirm"
+        />
 
-    <!-- Modal de creación/edición mejorado -->
-    <div
-      v-if="showDialog"
+        <!-- Modal de creación/edición mejorado -->
+        <div
+          v-if="showDialog"
       class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4"
-      @click="closeDialog"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
-      aria-describedby="modal-description"
-    >
+          @click="closeDialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+          aria-describedby="modal-description"
+        >
       <div class="w-full max-w-5xl" @click.stop tabindex="-1" ref="modalContent">
-          <!-- Header del Wizard -->
+            <!-- Header del Wizard -->
           <div class="rounded-t-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
             <div class="flex items-start justify-between">
               <div class="flex items-start gap-4">
                 <div class="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white">
                   <i :class="isEditing ? 'fas fa-edit' : 'fas fa-plus'"></i>
-                </div>
+                  </div>
                 <div>
                   <h2 class="m-0 mb-1 text-2xl font-bold text-slate-900 dark:text-slate-100">
-                    {{ isEditing ? 'Editar Menú' : 'Crear Nuevo Menú' }}
-                  </h2>
+                      {{ isEditing ? 'Editar Menú' : 'Crear Nuevo Menú' }}
+                    </h2>
                   <p class="m-0 text-sm text-slate-600 dark:text-slate-400">
-                    {{
-                      isEditing
-                        ? 'Modifica la configuración del menú existente'
-                        : 'Completa los datos para crear un nuevo menú'
-                    }}
-                  </p>
+                      {{
+                        isEditing
+                          ? 'Modifica la configuración del menú existente'
+                          : 'Completa los datos para crear un nuevo menú'
+                      }}
+                    </p>
+                  </div>
                 </div>
-              </div>
               <button @click="closeDialog" class="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed dark:hover:bg-slate-700 dark:hover:text-slate-100" :disabled="isSaving">
-                <i class="fas fa-times"></i>
-              </button>
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
             </div>
-          </div>
 
-          <!-- Indicador de Pasos -->
+            <!-- Indicador de Pasos -->
           <div class="flex border-b border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-            <div
-              v-for="(step, index) in wizardSteps"
-              :key="step.id"
+              <div
+                v-for="(step, index) in wizardSteps"
+                :key="step.id"
               class="flex-1 border-l border-slate-200 first:border-l-0 bg-white p-4 transition dark:border-slate-700 dark:bg-slate-800"
-              :class="{
+                :class="{
                 'bg-blue-50 border-blue-500 dark:bg-blue-900/30 dark:border-blue-400': currentWizardStep === index + 1,
                 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400': currentWizardStep > index + 1,
                 'text-slate-400 dark:text-slate-500': currentWizardStep < index + 1,
@@ -440,16 +440,16 @@
                   <h4 class="font-semibold">{{ step.title }}</h4>
                   <p class="text-sm opacity-75">{{ step.description }}</p>
                 </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Contenido del Wizard -->
+            <!-- Contenido del Wizard -->
           <div class="rounded-b-xl border border-t-0 border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
-            <p id="modal-description" class="sr-only">
-              Formulario para {{ isEditing ? 'editar' : 'crear' }} un elemento del menú. Complete
-              los campos requeridos y presione guardar.
-            </p>
+              <p id="modal-description" class="sr-only">
+                Formulario para {{ isEditing ? 'editar' : 'crear' }} un elemento del menú. Complete
+                los campos requeridos y presione guardar.
+              </p>
 
             <form @submit.prevent="saveMenu" role="form" id="menu-form" class="space-y-6">
                 <!-- Paso 1: Información Básica -->
@@ -651,7 +651,7 @@
                         >
                           <div class="mb-3 text-center">
                             <i :class="['fas', template.icon, 'mb-2 text-3xl', menuForm.template === template.value ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500']"></i>
-                          </div>
+                                </div>
                           <div>
                             <h4 class="mb-1 text-center font-semibold text-slate-900 dark:text-slate-100">{{ template.name }}</h4>
                             <p class="mb-2 text-center text-xs text-slate-600 dark:text-slate-400">{{ template.description }}</p>
@@ -768,25 +768,25 @@
                               <div class="flex items-center gap-2">
                                 <i :class="['fas', role.icon]"></i>
                                 <span class="font-semibold text-slate-900 dark:text-slate-100">{{ role.label }}</span>
-                                <span
-                                  v-if="role.value === 'ROLE_SUPER_USER'"
+                              <span
+                                v-if="role.value === 'ROLE_SUPER_USER'"
                                   class="rounded-full bg-green-600 px-2 py-0.5 text-xs font-semibold text-white"
-                                >
-                                  Máximo Privilegio
-                                </span>
+                              >
+                                Máximo Privilegio
+                              </span>
                               </div>
                               <p class="mt-1 text-xs text-slate-600 dark:text-slate-400">{{ role.description }}</p>
-                              <div
-                                v-if="
-                                  role.value === 'ROLE_SUPER_USER' &&
-                                  menuForm.roles.includes('ROLE_SUPER_USER')
-                                "
+                            <div
+                              v-if="
+                                role.value === 'ROLE_SUPER_USER' &&
+                                menuForm.roles.includes('ROLE_SUPER_USER')
+                              "
                                 class="mt-2 flex items-center gap-2 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-amber-800 dark:border-amber-600 dark:bg-amber-900/20 dark:text-amber-200"
-                              >
+                            >
                                 <i class="fas fa-shield-halved"></i>
-                                Super Usuario tiene acceso completo, otros roles son redundantes
-                              </div>
+                              Super Usuario tiene acceso completo, otros roles son redundantes
                             </div>
+                          </div>
                           </label>
                         </div>
                       </div>
@@ -829,14 +829,14 @@
                         />
                         <div>
                           <div class="flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-100">
-                            <i class="fas fa-check-circle"></i>
-                            Menú activo
+                          <i class="fas fa-check-circle"></i>
+                          Menú activo
                           </div>
                           <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                            <i class="fas fa-info-circle"></i>
-                            Los menús inactivos no aparecerán en la navegación
+                        <i class="fas fa-info-circle"></i>
+                        Los menús inactivos no aparecerán en la navegación
                           </p>
-                        </div>
+                      </div>
                       </label>
                     </div>
                   </div>
@@ -862,16 +862,16 @@
                         <div class="flex justify-between border-b border-slate-200 pb-2 dark:border-slate-700">
                           <span class="font-medium text-slate-700 dark:text-slate-300">Nombre:</span>
                           <span class="text-slate-900 dark:text-slate-100">{{ menuForm.name || 'No especificado' }}</span>
-                        </div>
+                      </div>
                         <div class="flex justify-between border-b border-slate-200 pb-2 dark:border-slate-700">
                           <span class="font-medium text-slate-700 dark:text-slate-300">Ruta:</span>
                           <span class="text-slate-900 dark:text-slate-100">{{ menuForm.path || 'No especificada' }}</span>
-                        </div>
+                      </div>
                         <div class="flex justify-between">
                           <span class="font-medium text-slate-700 dark:text-slate-300">Tipo:</span>
                           <span class="text-slate-900 dark:text-slate-100">{{
-                            menuForm.parentId ? 'Submenú' : 'Menú Principal'
-                          }}</span>
+                          menuForm.parentId ? 'Submenú' : 'Menú Principal'
+                        }}</span>
                         </div>
                       </div>
                     </div>
@@ -886,9 +886,9 @@
                           <span class="font-medium text-slate-700 dark:text-slate-300">Icono:</span>
                           <span class="text-slate-900 dark:text-slate-100">
                             <i v-if="menuForm.icon" :class="['fas', menuForm.icon]"></i>
-                            {{ menuForm.icon || 'No seleccionado' }}
-                          </span>
-                        </div>
+                          {{ menuForm.icon || 'No seleccionado' }}
+                        </span>
+                      </div>
                         <div class="flex justify-between">
                           <span class="font-medium text-slate-700 dark:text-slate-300">Vista:</span>
                           <span class="text-slate-900 dark:text-slate-100">{{ getTemplateName(menuForm.template) }}</span>
@@ -905,13 +905,13 @@
                         <div class="flex justify-between border-b border-slate-200 pb-2 dark:border-slate-700">
                           <span class="font-medium text-slate-700 dark:text-slate-300">Posición:</span>
                           <span class="text-slate-900 dark:text-slate-100">{{ getPositionLabel(menuForm.order) }}</span>
-                        </div>
+                      </div>
                         <div class="flex flex-col gap-2 border-b border-slate-200 pb-2 dark:border-slate-700">
                           <span class="font-medium text-slate-700 dark:text-slate-300">Roles:</span>
                           <div class="flex flex-wrap gap-1">
                             <span
-                              v-for="role in getSelectedRolesInfo()"
-                              :key="role.value"
+                            v-for="role in getSelectedRolesInfo()"
+                            :key="role.value"
                               class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-800 dark:bg-blue-900/40 dark:text-blue-200"
                             >
                               <i :class="['fas', role.icon]"></i>
@@ -922,50 +922,50 @@
                         <div class="flex justify-between">
                           <span class="font-medium text-slate-700 dark:text-slate-300">Estado:</span>
                           <span :class="menuForm.isActive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">{{
-                            menuForm.isActive ? 'Activo' : 'Inactivo'
-                          }}</span>
+                          menuForm.isActive ? 'Activo' : 'Inactivo'
+                        }}</span>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </form>
-          </div>
+            </div>
 
-          <!-- Footer del Wizard -->
+            <!-- Footer del Wizard -->
           <div class="rounded-b-xl border border-t-0 border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-800">
-            <!-- Indicador de progreso -->
+              <!-- Indicador de progreso -->
             <div class="mb-4">
               <div class="mb-2 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                <div
+                  <div
                   class="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-500 transition-all duration-300"
-                  :style="{ width: `${(currentWizardStep / wizardSteps.length) * 100}%` }"
-                ></div>
-              </div>
+                    :style="{ width: `${(currentWizardStep / wizardSteps.length) * 100}%` }"
+                  ></div>
+                </div>
               <div class="text-center text-sm font-medium text-slate-600 dark:text-slate-400">
                 Paso {{ currentWizardStep }} de {{ wizardSteps.length }}
               </div>
-            </div>
+              </div>
 
-            <!-- Botones de navegación -->
+              <!-- Botones de navegación -->
             <div class="flex flex-wrap items-center justify-between gap-3">
-              <!-- Indicador de roles activos al editar -->
-              <div
-                v-if="isEditing && menuForm.roles && menuForm.roles.length > 0"
+                <!-- Indicador de roles activos al editar -->
+                <div
+                  v-if="isEditing && menuForm.roles && menuForm.roles.length > 0"
                 class="order-first w-full sm:order-none sm:w-auto"
-              >
+                >
                 <span class="text-xs font-medium text-slate-600 dark:text-slate-400">Roles activos:</span>
                 <div class="mt-1 flex flex-wrap gap-1">
-                  <div
-                    v-for="role in getSelectedRolesInfo()"
-                    :key="role.value"
+                    <div
+                      v-for="role in getSelectedRolesInfo()"
+                      :key="role.value"
                     class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-800 dark:bg-blue-900/40 dark:text-blue-200"
-                  >
+                    >
                     <i :class="['fas', role.icon]"></i>
-                    <span>{{ role.label }}</span>
+                      <span>{{ role.label }}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
               <div class="flex items-center gap-2">
                 <button
@@ -1004,9 +1004,9 @@
                   <i class="fas fa-times"></i>
                   Cancelar
                 </button>
-              </div>
             </div>
           </div>
+        </div>
       </div>
     </div>
 

@@ -36,18 +36,21 @@
       <div class="flex-1 overflow-y-auto py-2">
         <!-- Vista principal del menú -->
         <template v-if="currentView === 'main'">
-          <div v-for="item in menuItems" :key="item.id" class="px-2">
+          <div v-for="item in menuItems" :key="item.id" class="px-0">
             <div
-              class="relative mx-2 my-1 flex h-12 cursor-pointer items-center rounded-lg px-4 text-slate-500 transition hover:-translate-y-0.5 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800"
+              class="relative my-1 flex h-12 cursor-pointer items-center rounded-lg px-4 text-slate-500 transition hover:-translate-y-0.5 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800"
               :class="{
                 'bg-gradient-to-tr from-blue-600 to-blue-700 text-white shadow': activeMenuId === item.id && !item.submenu,
               }"
               @click="selectItem(item)"
             >
-              <div class="grid min-w-7 place-items-center text-[1.25rem]">
+              <div class="grid min-w-12 place-items-center text-[1.25rem]">
                 <i :class="['fas fas', item.icon]"></i>
               </div>
-              <span class="ml-4 flex-1 truncate font-medium transition" v-show="isExpanded">{{ item.text }}</span>
+              <span
+              :class="['flex-1 truncate font-medium transition', isExpanded ? 'ml-2' : 'ml-0']"
+              v-show="isExpanded"
+            >{{ item.text }}</span>
               <div class="flex items-center gap-1 transition" v-show="isExpanded">
                 <i v-if="item.submenu && item.submenu.length > 0" class="fas fa-chevron-right text-sm"></i>
                 <i v-else-if="item.children && item.children.length > 0" class="fas fa-chevron-right text-sm"></i>
@@ -58,16 +61,16 @@
 
         <!-- Vista de submenús -->
         <template v-else-if="currentView === 'submenu'">
-          <div v-for="submenu in currentSubmenus" :key="submenu.id" class="px-2">
+          <div v-for="submenu in currentSubmenus" :key="submenu.id" class="px-0">
             <div
-              class="relative mx-2 my-1 flex h-12 cursor-pointer items-center rounded-lg px-4 text-slate-500 transition hover:-translate-y-0.5 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800"
+              class="relative my-1 flex h-12 cursor-pointer items-center rounded-lg px-4 text-slate-500 transition hover:-translate-y-0.5 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800"
               :class="{ 'bg-gradient-to-tr from-blue-600 to-blue-700 text-white shadow': activeSubmenuId === submenu.id && !submenu.submenu }"
               @click="selectSubmenu(submenu)"
             >
-              <div class="grid min-w-7 place-items-center text-[1.25rem]">
+              <div class="grid min-w-12 place-items-center text-[1.25rem]">
                 <i :class="['fas fas', submenu.icon || 'fas fa-circle']"></i>
               </div>
-              <span class="ml-4 flex-1 truncate font-medium" v-show="isExpanded">{{ submenu.text }}</span>
+              <span :class="['flex-1 truncate font-medium', isExpanded ? 'ml-2' : 'ml-0']" v-show="isExpanded">{{ submenu.text }}</span>
               <div class="flex items-center gap-1" v-show="isExpanded">
                 <i v-if="submenu.submenu && submenu.submenu.length > 0" class="fas fa-chevron-right text-sm"></i>
                 <i v-else-if="submenu.children && submenu.children.length > 0" class="fas fa-chevron-right text-sm"></i>
@@ -78,25 +81,29 @@
 
         <!-- Vista de documentación (mantener existente) -->
         <template v-else-if="currentView === 'documentation'">
-          <div class="px-2">
-            <div class="mx-2 my-1 flex h-12 cursor-pointer items-center rounded-lg px-4 text-slate-500 transition hover:-translate-y-0.5 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800" @click="goBackToMain">
-              <i class="fas fa-arrow-left text-[1.25rem]"></i>
-              <span class="ml-4 flex-1 truncate font-medium" v-show="isExpanded">Volver</span>
+          <div class="px-0">
+            <div class="my-1 flex h-12 cursor-pointer items-center rounded-lg px-4 text-slate-500 transition hover:-translate-y-0.5 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800" @click="goBackToMain">
+              <div class="grid min-w-12 place-items-center text-[1.25rem]">
+                <i class="fas fa-arrow-left"></i>
+              </div>
+              <span :class="['flex-1 truncate font-medium', isExpanded ? 'ml-2' : 'ml-0']" v-show="isExpanded">Volver</span>
             </div>
           </div>
 
-          <div class="px-2 py-2" v-show="isExpanded">
+          <div class="px-0 py-2" v-show="isExpanded">
             <span class="px-4 text-sm font-semibold text-slate-700 dark:text-slate-200">Documentación</span>
           </div>
 
-          <div v-for="item in documentationItems" :key="item.id" class="px-2">
+          <div v-for="item in documentationItems" :key="item.id" class="px-0">
             <div
-              class="relative mx-2 my-1 flex h-10 cursor-pointer items-center rounded-lg px-4 text-slate-500 transition hover:-translate-y-0.5 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800"
+              class="relative my-1 flex h-10 cursor-pointer items-center rounded-lg px-4 text-slate-500 transition hover:-translate-y-0.5 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800"
               :class="{ 'bg-gradient-to-tr from-blue-600 to-blue-700 text-white shadow': activeDocumentationId === item.id }"
               @click="selectDocumentationItem(item)"
             >
-              <i class="fas fa-circle text-[0.9rem]"></i>
-              <span class="ml-4 flex-1 truncate font-medium" v-show="isExpanded">{{ item.text }}</span>
+              <div class="grid min-w-12 place-items-center text-[1rem]">
+                <i class="fas fa-circle"></i>
+              </div>
+              <span :class="['flex-1 truncate font-medium', isExpanded ? 'ml-2' : 'ml-0']" v-show="isExpanded">{{ item.text }}</span>
             </div>
           </div>
         </template>
@@ -105,14 +112,16 @@
       <!-- Sección de administración (solo para SuperAdmin) -->
       <div v-if="authStore.hasRole('ROLE_SUPER_USER')" class="mt-auto py-2">
         <div class="mx-4 my-2 h-px scale-x-100 opacity-100 bg-slate-200 dark:bg-slate-700" v-show="isExpanded"></div>
-        <div class="px-2">
+        <div class="px-0">
           <div
-            class="relative mx-2 my-1 flex h-10 cursor-pointer items-center rounded-lg border border-blue-200/60 bg-blue-50/50 px-4 text-slate-600 transition hover:border-blue-300 hover:bg-blue-100/60 dark:border-blue-900/30 dark:bg-blue-900/10 dark:text-slate-300"
+            class="relative my-1 flex h-10 cursor-pointer items-center rounded-lg border border-blue-200/60 bg-blue-50/50 px-4 text-slate-600 transition hover:border-blue-300 hover:bg-blue-100/60 dark:border-blue-900/30 dark:bg-blue-900/10 dark:text-slate-300"
             :class="{ 'bg-gradient-to-tr from-blue-600 to-blue-700 text-white shadow border-blue-600': route.path === '/gestion-menus' }"
             @click="navigateToMenuManager"
           >
-            <i class="fas fa-edit text-[1rem]"></i>
-            <span class="ml-4 flex-1 truncate font-medium" v-show="isExpanded">Editar</span>
+            <div class="grid min-w-12 place-items-center text-[1rem]">
+              <i class="fas fa-edit"></i>
+            </div>
+            <span :class="['flex-1 truncate font-medium', isExpanded ? 'ml-2' : 'ml-0']" v-show="isExpanded">Editar</span>
           </div>
         </div>
       </div>
