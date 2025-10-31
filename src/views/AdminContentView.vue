@@ -146,6 +146,19 @@
                     <option value="Inactivo">Inactivos</option>
                   </select>
                 </div>
+
+                <div class="flex items-center gap-2">
+                  <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Documento:</label>
+                  <select
+                    v-model="filterType"
+                    class="w-full min-w-[160px] rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:w-auto"
+                  >
+                    <option value="">Todos</option>
+                    <option value="PDF">PDF</option>
+                    <option value="TEXT">Texto</option>
+                    <option value="URL">URL</option>
+                  </select>
+                </div>
               </div>
 
               <div class="flex flex-wrap items-center gap-3">
@@ -825,6 +838,68 @@
           @saved="handleSaveDocument"
           @close="closeEditDialog"
         />
+
+        <!-- Delete Confirm Modal -->
+        <div
+          v-if="deleteDialog"
+          class="fixed inset-0 z-[1000] grid place-items-center bg-black/60 p-4"
+        >
+          <div class="w-full max-w-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+            <div class="flex items-center justify-between bg-red-600 px-6 py-4 text-white">
+              <h3 class="m-0 text-base font-semibold">
+                <i class="fas fa-trash-alt mr-2"></i>
+                Confirmar eliminación
+              </h3>
+              <button
+                @click="closeDeleteDialog"
+                class="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-white ring-1 ring-white/30 backdrop-blur"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <div class="px-6 py-5 text-sm leading-relaxed">
+              <p class="mb-2">¿Estás seguro de que deseas eliminar este documento?</p>
+              <p class="font-semibold text-slate-800 dark:text-slate-200">
+                {{ selectedItem?.title || selectedItem?.name || 'Documento sin título' }}
+              </p>
+              <p class="text-xs text-slate-500 dark:text-slate-400">
+                Esta acción no se puede deshacer.
+              </p>
+            <div class="mt-4 space-y-2">
+              <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Escribe <span class="text-red-600">ELIMINAR</span> para confirmar
+              </label>
+              <input
+                v-model="deleteConfirmInput"
+                type="text"
+                placeholder="ELIMINAR"
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              />
+            </div>
+            </div>
+
+            <div class="flex justify-end gap-3 border-t border-slate-200 bg-slate-100 px-6 py-4 dark:border-slate-700 dark:bg-slate-800">
+              <button
+                @click="closeDeleteDialog"
+                class="inline-flex min-w-[110px] items-center justify-center gap-2 rounded-lg border border-slate-300 bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900 transition hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-100"
+                :disabled="deleting"
+              >
+                <i class="fas fa-times"></i>
+                Cancelar
+              </button>
+              <button
+                @click="confirmDelete"
+                class="inline-flex min-w-[110px] items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 disabled:opacity-60"
+                :disabled="deleting || deleteConfirmInput.trim().toUpperCase() !== 'ELIMINAR'"
+              >
+                <i v-if="!deleting" class="fas fa-trash-alt"></i>
+                <i v-else class="fas fa-spinner fa-spin"></i>
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -863,6 +938,7 @@ const showPreviewModal = ref(false)
 const showBulkDeleteModal = ref(false)
 const showStatusConfirmModal = ref(false)
 const selectedItem = ref(null)
+const deleteConfirmInput = ref('')
 const previewItem = ref(null)
 const statusConfirmItem = ref(null)
 const previewLoading = ref(false)
@@ -945,6 +1021,13 @@ const sortOrder = ref('desc')
 const viewMode = ref('table')
 const hasManualViewSelection = ref(false)
 
+const normalizeText = (text) =>
+  (text ?? '')
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+
 const setViewMode = (mode) => {
   viewMode.value = mode
   hasManualViewSelection.value = true
@@ -1013,19 +1096,43 @@ const filteredItems = computed(() => {
 
   // Aplicar búsqueda
   if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase().trim()
-    items = items.filter(
-      (item) =>
-        item.name?.toLowerCase().includes(query) ||
-        item.slug?.toLowerCase().includes(query) ||
-        item.type?.toLowerCase().includes(query) ||
-        item.createdBy?.toLowerCase().includes(query),
-    )
+    const normalizedQuery = normalizeText(searchQuery.value)
+    items = items.filter((item) => {
+      const searchableContent = [
+        item.title,
+        item.name,
+        item.slug,
+        item.type,
+        item.category,
+        item.createdBy,
+        item.author,
+        item.description,
+        Array.isArray(item.tags) ? item.tags.join(' ') : '',
+      ]
+
+      return searchableContent.some((field) => normalizeText(field).includes(normalizedQuery))
+    })
   }
 
   // Aplicar filtros
   if (filterType.value) {
-    items = items.filter((item) => item.type === filterType.value)
+    const normalizedType = filterType.value.toUpperCase()
+    items = items.filter((item) => {
+      const rawType = (item.type || item.category || '').toString().toUpperCase()
+      if (!rawType) {
+        return false
+      }
+
+      if (rawType === normalizedType) {
+        return true
+      }
+
+      if (rawType.startsWith('TYPE_') && rawType.replace('TYPE_', '') === normalizedType) {
+        return true
+      }
+
+      return normalizeText(rawType) === normalizeText(normalizedType)
+    })
   }
 
   if (filterStatus.value) {
@@ -1526,11 +1633,13 @@ const handleSaveDocument = async (documentData) => {
 const openDeleteDialog = (item) => {
   selectedItem.value = item
   deleteDialog.value = true
+  deleteConfirmInput.value = ''
 }
 
 const closeDeleteDialog = () => {
   deleteDialog.value = false
   selectedItem.value = null
+  deleteConfirmInput.value = ''
 }
 
 const confirmDelete = async () => {
@@ -1541,26 +1650,23 @@ const confirmDelete = async () => {
 
   try {
     await documentService.deleteDocument(selectedItem.value.id)
-    success.value = `Documento "${selectedItem.value.name}" eliminado correctamente`
-    closeDeleteDialog()
-    await loadDocuments()
+
+    const index = documents.value.findIndex((doc) => doc.id === selectedItem.value.id)
+    if (index > -1) {
+      documents.value.splice(index, 1)
+    }
+
+    success.value = `Documento "${selectedItem.value.name || selectedItem.value.title || 'sin título'}" eliminado correctamente`
 
     // Remover de seleccionados si estaba seleccionado
-    const index = selectedItems.value.indexOf(selectedItem.value.id)
-    if (index > -1) {
-      selectedItems.value.splice(index, 1)
+    const selectedIndex = selectedItems.value.indexOf(selectedItem.value.id)
+    if (selectedIndex > -1) {
+      selectedItems.value.splice(selectedIndex, 1)
     }
+
+    closeDeleteDialog()
   } catch (err) {
     error.value = err.message || 'Error al eliminar el documento'
-    // Para desarrollo, simular eliminación exitosa
-    if (selectedItem.value) {
-      const index = documents.value.findIndex((item) => item.id === selectedItem.value.id)
-      if (index > -1) {
-        documents.value.splice(index, 1)
-        success.value = `Documento "${selectedItem.value.name}" eliminado correctamente`
-        closeDeleteDialog()
-      }
-    }
   } finally {
     deleting.value = false
   }
