@@ -150,10 +150,15 @@ WikiFrontend/
 - **Vue Router** (v4.5.1) - Enrutador para SPAs
 - **Pinia** (v3.0.3) - State management
 
+### Estilos (Tailwind CSS)
+- El proyecto usa **Tailwind CSS** como ÚNICO sistema de estilos.
+- Importado en `src/main.js`: `import './styles/tailwind.css'`
+- Configuración en `tailwind.config.cjs` y `postcss.config.cjs`.
+- Se eliminó **Vuetify** y los estilos globales puros (`themes.css`).
+
 ### UI/UX
 - **Font Awesome** - Iconos
 - **Material Design Icons** - Iconos adicionales
-- **Vuetify** - Framework de UI (instalado pero no configurado)
 - **Roboto Font** - Fuente principal
 
 ### Utilidades
@@ -222,8 +227,8 @@ http://practicas.teclab.edu.ar:8080
 
 ```vue
 <template>
-  <div class="my-component">
-    <h1>{{ title }}</h1>
+  <div class="p-4 rounded-lg bg-white dark:bg-slate-800 shadow">
+    <h1 class="text-lg font-semibold text-slate-800 dark:text-slate-100">{{ title }}</h1>
   </div>
 </template>
 
@@ -234,12 +239,6 @@ defineProps({
   title: String
 })
 </script>
-
-<style scoped>
-.my-component {
-  padding: 1rem;
-}
-</style>
 ```
 
 2. Importa y usa el componente:
@@ -260,21 +259,14 @@ import MyComponent from '@/components/MyComponent.vue'
 
 ```vue
 <template>
-  <div class="my-view">
-    <h1>Mi Vista</h1>
+  <div class="min-h-screen p-6">
+    <h1 class="text-2xl font-bold">Mi Vista</h1>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-// Lógica aquí
 </script>
-
-<style scoped>
-.my-view {
-  min-height: 100vh;
-}
-</style>
 ```
 
 2. Agrega la ruta en `src/core/router/index.js`:
@@ -367,7 +359,7 @@ En `src/core/router/index.js`:
 {
   path: '/admin',
   meta: {
-    roles: ['ROLE_SUPER_USER'] // Solo super usuarios
+    roles: ['ROLE_SUPER_USER']
   }
 }
 ```
@@ -383,91 +375,33 @@ const authStore = useAuthStore()
 const isAdmin = computed(() =>
   authStore.hasRole('ROLE_ADMIN')
 )
-
-if (isAdmin.value) {
-  // Lógica solo para admins
-}
 ```
 
 ## 🎨 Estilos y Temas
 
-### Modo Oscuro/Claro
-
-El proyecto usa variables CSS para el tema. Las variables se definen en:
-
-- `src/styles/main.css`
-
-### Variables Disponibles
-
-```css
-:root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f5f5f5;
-  --text-primary: #333333;
-  --primary-color: #3b82f6;
-  --border-color: #e5e7eb;
-  /* ... más variables */
-}
-
-[data-theme="dark"] {
-  --bg-primary: #1f2937;
-  --bg-secondary: #374151;
-  --text-primary: #f9fafb;
-  /* ... ajustes para modo oscuro */
-}
-```
+- Usa clases `dark:` de Tailwind. Se puede activar añadiendo `class="dark"` o `data-theme="dark"` en `<html>` o `<body>`.
+- No hay archivos CSS globales personalizados: todo se maneja con utilidades de Tailwind.
 
 ## 🐛 Debugging
 
-### Consola del Navegador
-
-Todos los servicios incluyen logs detallados:
-
-```javascript
-console.log('✅ [SERVICE] Operación exitosa')
-console.error('❌ [SERVICE] Error:', error)
-```
-
-### Vue DevTools
-
-Instala la extensión Vue DevTools en tu navegador para inspeccionar el estado de los componentes.
-
-### Hot Module Replacement (HMR)
-
-Vite proporciona HMR por defecto. Los cambios en tus archivos se reflejan automáticamente sin recargar la página completa.
+- Usa la consola para revisar logs de servicios (`console.log` / `console.error`).
+- Instala Vue DevTools para inspeccionar el estado de componentes y stores.
 
 ## ✅ Verificación de Calidad
 
-### Linter
-
 ```bash
-npm run lint
+npm run lint     # Linter (ESLint + Oxlint)
+npm run format   # Formateador (Prettier)
 ```
-
-Esto ejecuta:
-- **ESLint** - Detección de errores y mejores prácticas
-- **Oxlint** - Linter rápido
-
-### Formateador
-
-```bash
-npm run format
-```
-
-Esto formatea todo el código con **Prettier**.
 
 ## 📝 Notas Importantes
 
 ### Convenciones de Nomenclatura
-
-- **Componentes**: PascalCase (`UserManagement.vue`)
-- **Archivos JS**: camelCase (`userService.js`)
-- **Vistas**: PascalCase (`MenuManagerView.vue`)
-- **Stores**: camelCase (`auth.js`)
+- Componentes: PascalCase (`UserManagement.vue`)
+- Archivos JS: camelCase (`userService.js`)
+- Vistas: PascalCase (`MenuManagerView.vue`)
 
 ### Importaciones
-
-Usa alias para importaciones:
 
 ```javascript
 // ✅ Correcto
@@ -496,34 +430,17 @@ chore: Cambios en configuración
    ```bash
    git checkout -b feature/mi-nueva-funcionalidad
    ```
-
 2. Realiza tus cambios
-
-3. Verifica que el código pase los linters:
+3. Verifica el código:
    ```bash
-   npm run lint
+   npm run lint && npm run format
    ```
-
-4. Formatea el código:
-   ```bash
-   npm run format
-   ```
-
-5. Commitea tus cambios:
-   ```bash
-   git add .
-   git commit -m "feat: Agregar nueva funcionalidad"
-   ```
-
-6. Push y crea un Pull Request
+4. Crea tu Pull Request
 
 ## 📞 Soporte
 
-Si tienes preguntas o encuentras problemas:
-
-1. Revisa la documentación
-2. Busca en los issues existentes
-3. Crea un nuevo issue con detalles del problema
+- Revisa la documentación y los issues.
+- Abre un issue con detalles si necesitas soporte.
 
 ## 📄 Licencia
 
@@ -531,4 +448,4 @@ Este proyecto es privado y de uso interno.
 
 ---
 
-**Desarrollado con ❤️ usando Vue 3**
+**Desarrollado con ❤️ usando Vue 3 + Tailwind CSS**

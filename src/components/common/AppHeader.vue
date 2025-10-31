@@ -1,48 +1,48 @@
 <template>
-  <header class="app-header" :class="{ 'sidebar-expanded': sidebarExpanded }">
+  <header :class="['fixed top-0 right-0 z-[999] h-16 flex items-center justify-between transition-all duration-300 px-6 border-b shadow bg-white/80 backdrop-blur dark:bg-slate-900/80 dark:border-slate-700', sidebarExpanded ? 'left-[280px]' : 'left-20']">
     <!-- Logo izquierdo -->
-    <div class="header-left">
+    <div class="flex items-center">
       <img
         src="@/assets/images/logos/LOGOSOCIALLEARNING.png"
         alt="Social Learning Logo"
-        class="header-logo"
+        class="h-11 w-auto transition hover:-translate-y-0.5 hover:scale-[1.02]"
       />
     </div>
 
     <!-- Menú de perfil derecho -->
-    <div class="header-right">
+    <div class="flex items-center gap-3">
       <!-- Botón de cambio de tema -->
       <button
         @click="toggleTheme"
-        class="theme-toggle-btn"
+        class="grid h-10 w-10 place-items-center rounded-full border bg-slate-100 text-slate-700 shadow hover:-translate-y-0.5 transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
         :title="isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
       >
-        <i :class="isDarkMode ? 'fas fas fa-sun' : 'fas fas fa-moon'" class="theme-icon"></i>
+        <i :class="isDarkMode ? 'fas fa-sun' : 'fas fa-moon'" class="text-[1.1rem]"></i>
       </button>
 
-      <div class="profile-menu" ref="profileMenu">
+      <div class="relative" ref="profileMenu">
         <button
-          class="profile-button"
+          class="flex items-center gap-3 rounded-xl border px-4 py-2 text-sm font-medium text-slate-700 transition hover:-translate-y-0.5 dark:border-slate-700 dark:text-slate-100"
           @click="toggleProfileDropdown"
-          :class="{ active: showDropdown }"
+          :class="{ 'bg-slate-100 dark:bg-slate-800': showDropdown }"
         >
-          <div class="profile-avatar">
+          <div class="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-tr from-blue-600 to-blue-700 text-white text-[1.05rem]">
             <i class="fas fa-user"></i>
           </div>
-          <span class="profile-name">{{ user?.username || 'Usuario' }}</span>
-          <i class="fas fa-chevron-down dropdown-arrow" :class="{ rotated: showDropdown }"></i>
+          <span class="max-w-[120px] truncate">{{ user?.username || 'Usuario' }}</span>
+          <i class="fas fa-chevron-down transition" :class="{ 'rotate-180': showDropdown }"></i>
         </button>
 
         <!-- Menú desplegable -->
         <transition name="dropdown">
-          <div v-if="showDropdown" class="dropdown-menu">
-            <div class="dropdown-item" @click="goToSettings">
-              <i class="fas fa-cog"></i>
+          <div v-if="showDropdown" class="absolute right-0 top-[calc(100%+8px)] min-w-[180px] overflow-hidden rounded-xl border bg-white/90 backdrop-blur shadow-xl dark:border-slate-700 dark:bg-slate-900/90">
+            <div class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800 cursor-pointer" @click="goToSettings">
+              <i class="fas fa-cog w-5 text-center"></i>
               <span>Ajustes</span>
             </div>
-            <div class="dropdown-divider"></div>
-            <div class="dropdown-item logout" @click="handleLogout">
-              <i class="fas fa-sign-out-alt"></i>
+            <div class="h-px bg-slate-200 dark:bg-slate-700"></div>
+            <div class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 cursor-pointer" @click="handleLogout">
+              <i class="fas fa-sign-out-alt w-5 text-center"></i>
               <span>Cerrar sesión</span>
             </div>
           </div>
@@ -96,7 +96,6 @@ const handleLogout = async () => {
     await authStore.logout()
     router.push('/login')
   } catch {
-    // El logout local siempre funciona
   }
 }
 
@@ -118,277 +117,4 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.app-header {
-  position: fixed;
-  top: 0;
-  left: 80px;
-  right: 0;
-  height: 60px;
-  background: var(--bg-primary);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 4px 20px var(--shadow-color);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 2rem;
-  z-index: 999;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.app-header.sidebar-expanded {
-  left: 280px;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-}
-
-.header-logo {
-  height: 45px;
-  width: auto;
-  filter: drop-shadow(0 2px 8px rgba(73, 233, 237, 0.2));
-  transition: all 0.3s ease;
-}
-
-.header-logo:hover {
-  transform: translateY(-1px) scale(1.02);
-  filter: drop-shadow(0 4px 12px rgba(73, 233, 237, 0.3));
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-/* Botón de cambio de tema */
-.theme-toggle-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 50%;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px var(--shadow-color);
-  position: relative;
-  overflow: hidden;
-}
-
-.theme-toggle-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 50%;
-}
-
-.theme-toggle-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--shadow-color);
-  border-color: var(--accent-color);
-}
-
-.theme-toggle-btn:hover::before {
-  opacity: 0.1;
-}
-
-.theme-icon {
-  font-size: 1.2rem;
-  z-index: 1;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.theme-toggle-btn:hover .theme-icon {
-  transform: scale(1.1);
-  color: var(--accent-color);
-}
-
-.profile-menu {
-  position: relative;
-}
-
-.profile-button {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.profile-button:hover {
-  background: var(--bg-hover);
-  border-color: var(--accent-color);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--shadow-color);
-}
-
-.profile-button.active {
-  background: var(--bg-active);
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-}
-
-.profile-avatar {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.1rem;
-}
-
-.profile-name {
-  font-size: 0.9rem;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dropdown-arrow {
-  font-size: 1rem;
-  transition: transform 0.3s ease;
-}
-
-.dropdown-arrow.rotated {
-  transform: rotate(180deg);
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 180px;
-  background: var(--bg-primary);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px var(--shadow-color);
-  overflow: hidden;
-  z-index: 1000;
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.dropdown-item:hover {
-  background: var(--bg-hover);
-  color: var(--accent-color);
-}
-
-.dropdown-item.logout {
-  color: #dc2626;
-}
-
-.dropdown-item.logout:hover {
-  background: rgba(239, 68, 68, 0.08);
-  color: #dc2626;
-}
-
-.dropdown-item i {
-  font-size: 1.1rem;
-  width: 20px;
-  text-align: center;
-}
-
-.dropdown-divider {
-  height: 1px;
-  background: var(--border-color);
-  margin: 0.25rem 0;
-}
-
-/* Animaciones del dropdown */
-.dropdown-enter-active,
-.dropdown-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.dropdown-enter-from {
-  opacity: 0;
-  transform: translateY(-10px) scale(0.95);
-}
-
-.dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(-10px) scale(0.95);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .app-header {
-    left: 0;
-    padding: 0 1rem;
-  }
-
-  .app-header.sidebar-expanded {
-    left: 0;
-  }
-
-  .header-logo {
-    height: 35px;
-  }
-
-  .profile-name {
-    display: none;
-  }
-
-  .profile-button {
-    padding: 0.5rem;
-  }
-
-  .theme-toggle-btn {
-    width: 36px;
-    height: 36px;
-  }
-
-  .theme-icon {
-    font-size: 1rem;
-  }
-
-  .dropdown-menu {
-    right: -1rem;
-    min-width: 160px;
-  }
-}
-
-@media (max-width: 480px) {
-  .app-header {
-    padding: 0 0.75rem;
-  }
-
-  .header-logo {
-    height: 30px;
-  }
-}
 </style>

@@ -1,44 +1,35 @@
 <template>
-  <!-- Aplicación principal de Vuetify -->
-  <v-app>
-    <!-- Barra de navegación superior removida para evitar duplicación con el sidebar -->
+  <div class="min-h-screen bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-100">
+    <!-- Loading global -->
+    <div
+      v-if="authStore.loading && !authStore.isAuthenticated"
+      class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40"
+    >
+      <div class="h-16 w-16 animate-spin rounded-full border-4 border-slate-300 border-t-blue-500"></div>
+      <div class="mt-4 text-center">
+        <p>Verificando autenticación...</p>
+      </div>
+    </div>
 
-    <!-- Contenido principal -->
-    <v-main>
-      <!-- Loading global -->
-      <v-overlay
-        v-if="authStore.loading && !authStore.isAuthenticated"
-        class="align-center justify-center"
-      >
-        <v-progress-circular indeterminate size="64" color="primary"></v-progress-circular>
-        <div class="mt-4 text-center">
-          <p>Verificando autenticación...</p>
-        </div>
-      </v-overlay>
-
-      <!-- Router view para las páginas -->
-      <router-view />
-    </v-main>
-  </v-app>
+    <!-- Router view para las páginas -->
+    <router-view />
+  </div>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useTheme } from '@/composables/useTheme'
 
 // Store de autenticación
 const authStore = useAuthStore()
 
-// Composable de tema
-const { initTheme, initVuetifyTheme } = useTheme()
+// Composable de tema (Tailwind)
+const { initTheme } = useTheme()
 
 // Inicializar autenticación al montar el componente
 onMounted(async () => {
-  // Inicializar el tema de Vuetify primero (dentro de setup function)
-  initVuetifyTheme()
-
-  // Luego inicializar el tema general
+  // Inicializar el tema
   initTheme()
 
   // Solo inicializar si hay tokens pero no hay usuario
@@ -52,15 +43,6 @@ onMounted(async () => {
 })
 </script>
 
-<style>
-/* Estilos globales */
-body {
-  margin: 0;
-  font-family: 'Roboto', sans-serif;
-}
-
-/* Estilos para el overlay de loading */
-.v-overlay .v-progress-circular {
-  margin-bottom: 16px;
-}
+<style scoped>
+/* Sin estilos globales: se usan utilidades Tailwind */
 </style>

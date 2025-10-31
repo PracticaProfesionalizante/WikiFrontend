@@ -1,25 +1,26 @@
 <template>
-  <div class="menu-manager-layout">
+  <div class="flex min-h-screen bg-white dark:bg-slate-900">
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
 
-    <div class="main-content" :class="{ 'with-header': true, 'sidebar-expanded': sidebarExpanded }">
-      <div class="menu-manager-container">
-        <div class="manager-header">
-          <h1 class="manager-title">
-            <i class="fas fa-bars"></i>
+    <main :class="['pt-20 flex-1 transition-all duration-300', sidebarExpanded ? 'ml-[280px]' : 'ml-20']">
+      <div class="p-8 max-w-[1400px] mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+          <h1 class="flex items-center justify-center gap-3 text-4xl font-bold m-0 mb-4 text-slate-900 dark:text-slate-100">
+            <i class="fas fa-bars text-blue-600"></i>
             Gestión de Menús
           </h1>
-          <p class="manager-subtitle">
+          <p class="m-0 text-slate-600 dark:text-slate-400">
             Crea y administra los menús de la aplicación de forma fácil y visual
           </p>
         </div>
 
         <!-- Barra de acciones centrada y mejorada -->
-        <div class="action-bar centered">
-          <div class="action-group main-actions">
+        <div class="flex justify-center mb-6">
+          <div class="flex items-center gap-3">
             <button
-              class="create-menu-btn primary"
+              class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-blue-700 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
               @click="openDialog"
               :disabled="isLoading"
               title="Crear un nuevo menú principal o submenú"
@@ -28,42 +29,42 @@
               Crear Nuevo Menú
             </button>
             <button
-              class="action-btn secondary"
+              class="inline-flex items-center gap-2 rounded-xl bg-slate-200 px-6 py-3 text-sm font-semibold text-slate-800 shadow transition hover:bg-slate-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600"
               @click="loadMenus"
               :disabled="isLoading"
               title="Actualizar lista de menús"
             >
-              <i class="fas fa-sync-alt" :class="{ 'fas fas fa-spin': isLoading }"></i>
+              <i class="fas fa-sync-alt" :class="{ 'fa-spin': isLoading }"></i>
               Actualizar
             </button>
           </div>
         </div>
 
         <!-- Indicador de carga -->
-        <div v-if="isLoading" class="loading-indicator">
-          <i class="fas fa-spinner fa-spin"></i>
-          <span v-if="!isCreatingSubmenus">Cargando menús...</span>
-          <span v-else
-            >Creando submenús... ({{ submenuProgress.current }}/{{ submenuProgress.total }})</span
-          >
+        <div v-if="isLoading" class="flex items-center justify-center gap-3 mb-6">
+          <i class="fas fa-spinner fa-spin text-blue-600 text-xl"></i>
+          <span v-if="!isCreatingSubmenus" class="text-slate-600 dark:text-slate-400">Cargando menús...</span>
+          <span v-else class="text-slate-600 dark:text-slate-400">
+            Creando submenús... ({{ submenuProgress.current }}/{{ submenuProgress.total }})
+          </span>
         </div>
 
         <!-- Mensaje de error -->
-        <div v-if="error" class="error-message">
+        <div v-if="error" class="flex items-center gap-3 mb-6 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200">
           <i class="fas fa-exclamation-circle"></i>
-          <span>{{ error }}</span>
-          <button @click="loadMenus" class="retry-btn" title="Volver a cargar la lista de menús">
+          <span class="flex-1">{{ error }}</span>
+          <button @click="loadMenus" class="rounded bg-red-600 px-3 py-1.5 text-white text-xs font-medium hover:bg-red-700" title="Volver a cargar la lista de menús">
             <i class="fas fa-sync-alt"></i>
             Reintentar
           </button>
         </div>
 
         <!-- Controles de vista -->
-        <div class="view-controls" v-if="!isLoading">
-          <div class="view-toggle">
+        <div v-if="!isLoading" class="flex justify-center mb-6">
+          <div class="inline-flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
             <button
-              class="toggle-btn"
-              :class="{ active: viewMode === 'grid' }"
+              class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition"
+              :class="viewMode === 'grid' ? 'bg-white text-blue-600 shadow dark:bg-slate-700 dark:text-blue-400' : 'text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700'"
               @click="viewMode = 'grid'"
               title="Cambiar a vista de tarjetas - Muestra los menús en formato de tarjetas con información detallada"
             >
@@ -71,8 +72,8 @@
               Vista de Tarjetas
             </button>
             <button
-              class="toggle-btn"
-              :class="{ active: viewMode === 'tree' }"
+              class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition"
+              :class="viewMode === 'tree' ? 'bg-white text-blue-600 shadow dark:bg-slate-700 dark:text-blue-400' : 'text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700'"
               @click="viewMode = 'tree'"
               title="Cambiar a vista de árbol - Muestra los menús en estructura jerárquica con relaciones padre-hijo"
             >
@@ -84,47 +85,47 @@
 
         <!-- Vista de tarjetas (original) -->
         <transition name="fade-slide" mode="out-in">
-          <div class="menus-grid" v-if="!isLoading && viewMode === 'grid'" key="grid">
+          <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" v-if="!isLoading && viewMode === 'grid'" key="grid">
             <div
               v-for="menu in filteredMenus"
               :key="menu.id"
-              class="menu-card"
+              class="rounded-xl border bg-white p-6 shadow transition hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
               :class="{
-                'is-submenu': menu.parentId,
-                'has-children': getMenuChildren(menu.id).length > 0,
+                'border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/20': menu.parentId,
               }"
             >
-              <div class="menu-card-header">
-                <div class="menu-icon">
-                  <i :class="['fas fas', menu.icon] || 'fas fas fa-circle'"></i>
-                </div>
-                <div class="menu-info">
-                  <div class="menu-title-row">
-                    <h3 class="menu-name">{{ menu.name }}</h3>
-                    <div class="menu-badges">
-                      <span v-if="menu.parentId" class="submenu-badge">
-                        <i class="fas fa-arrow-right"></i>
-                        Submenú
-                      </span>
-                      <span v-if="getMenuChildren(menu.id).length > 0" class="parent-badge">
-                        <i class="fas fa-folder"></i>
-                        {{ getMenuChildren(menu.id).length }} hijos
+              <div class="mb-4">
+                <div class="mb-4 flex items-start gap-4">
+                  <div class="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                    <i :class="['fas', menu.icon || 'fa-circle']"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="mb-2 flex items-start justify-between">
+                      <h3 class="m-0 text-lg font-bold text-slate-900 dark:text-slate-100">{{ menu.name }}</h3>
+                      <div class="ml-2 flex gap-1">
+                        <span v-if="menu.parentId" class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                          <i class="fas fa-arrow-right"></i>
+                          Submenú
+                        </span>
+                        <span v-if="getMenuChildren(menu.id).length > 0" class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">
+                          <i class="fas fa-folder"></i>
+                          {{ getMenuChildren(menu.id).length }} hijos
+                        </span>
+                      </div>
+                    </div>
+                    <p class="m-0 text-sm text-slate-600 dark:text-slate-400">{{ menu.path }}</p>
+                    <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
+                      <span>Orden: {{ menu.order }}</span>
+                      <span v-if="menu.parentId" class="inline-flex items-center gap-1">
+                        <i class="fas fa-arrow-up"></i>
+                        Padre: {{ getParentMenuName(menu.parentId) }}
                       </span>
                     </div>
-                  </div>
-                  <p class="menu-path">{{ menu.path }}</p>
-                  <div class="menu-meta">
-                    <span class="menu-order">Orden: {{ menu.order }}</span>
-                    <span v-if="menu.parentId" class="menu-parent">
-                      <i class="fas fa-arrow-up"></i>
-                      Padre: {{ getParentMenuName(menu.parentId) }}
-                    </span>
-                    <div class="menu-roles">
+                    <div class="mt-2 flex flex-wrap gap-1">
                       <span
                         v-for="role in menu.roles"
                         :key="role"
-                        class="role-badge"
-                        :class="`role-${role.toLowerCase().replace('role_', '')}`"
+                        class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-300"
                       >
                         {{ getRoleLabel(role) }}
                       </span>
@@ -133,20 +134,20 @@
                 </div>
               </div>
 
-              <div class="menu-actions">
+              <div class="flex items-center gap-2 border-t border-slate-200 pt-4 dark:border-slate-700">
                 <button
                   v-if="!menu.parentId"
-                  class="add-submenu-btn"
+                  class="flex-1 rounded-lg bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 transition hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30"
                   @click="createSubmenu(menu)"
                   title="Agregar submenú"
                 >
                   <i class="fas fa-plus"></i>
                   Submenú
                 </button>
-                <button class="edit-btn" @click="editMenu(menu)" title="Editar menú">
+                <button class="rounded-lg bg-green-50 px-3 py-2 text-green-700 transition hover:bg-green-100 dark:bg-green-900/20 dark:text-green-300 dark:hover:bg-green-900/30" @click="editMenu(menu)" title="Editar menú">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="delete-btn" @click="deleteMenu(menu.id)" title="Eliminar menú">
+                <button class="rounded-lg bg-red-50 px-3 py-2 text-red-700 transition hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30" @click="deleteMenu(menu.id)" title="Eliminar menú">
                   <i class="fas fa-trash-alt"></i>
                 </button>
               </div>
@@ -156,77 +157,79 @@
 
         <!-- Vista de árbol jerárquico -->
         <transition name="fade-slide" mode="out-in">
-          <div class="menu-tree-view" v-if="!isLoading && viewMode === 'tree'" key="tree">
+          <div class="rounded-xl border bg-white p-6 shadow dark:border-slate-700 dark:bg-slate-800" v-if="!isLoading && viewMode === 'tree'" key="tree">
             <!-- Sección de ayuda y buscador -->
-            <div class="tree-header">
+            <div class="mb-6">
               <!-- Sección de ayuda -->
-              <div class="help-section" :class="{ expanded: showHelp }">
+              <div class="mb-6">
                 <button
-                  class="help-toggle"
+                  class="flex w-full items-center justify-between rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-left text-slate-900 transition hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/20 dark:text-slate-100 dark:hover:bg-blue-900/30"
                   @click="showHelp = !showHelp"
                   title="Mostrar/ocultar guía de ayuda para nuevos usuarios"
                 >
-                  <i class="fas fa-question-circle"></i>
-                  <span>{{ showHelp ? 'Ocultar' : 'Mostrar' }} Guía de Uso</span>
-                  <i :class="showHelp ? 'fas fas fa-chevron-up' : 'fas fas fa-chevron-down'"></i>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-question-circle text-blue-600"></i>
+                    <span class="font-semibold">{{ showHelp ? 'Ocultar' : 'Mostrar' }} Guía de Uso</span>
+                  </div>
+                  <i :class="showHelp ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
                 </button>
 
-                <div class="help-content" v-if="showHelp">
+                <div v-if="showHelp" class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-900/50">
                   <!-- Título y descripción principal -->
-                  <div class="help-header">
-                    <h3 class="help-title">
-                      <i class="fas fa-book-open"></i>
+                  <div class="mb-6 text-center">
+                    <h3 class="mb-2 flex items-center justify-center gap-2 text-xl font-bold text-slate-900 dark:text-slate-100">
+                      <i class="fas fa-book-open text-blue-600"></i>
                       Guía de Gestión de Menús
                     </h3>
-                    <p class="help-description">
+                    <p class="m-0 text-slate-600 dark:text-slate-400">
                       Aprende a usar todas las funcionalidades disponibles para gestionar la
                       estructura de menús de tu aplicación de manera eficiente.
                     </p>
                   </div>
 
                   <!-- Funcionalidades organizadas por categorías -->
-                  <div class="help-categories">
+                  <div class="grid gap-6 sm:grid-cols-2">
                     <!-- Navegación y Visualización -->
-                    <div class="help-category">
-                      <h4 class="category-title">
-                        <i class="fas fa-eye"></i>
+                    <div>
+                      <h4 class="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+                        <i class="fas fa-eye text-blue-600"></i>
                         Navegación y Visualización
                       </h4>
 
-                      <div class="help-items">
-                        <div class="help-item">
-                          <div class="help-icon">
+                      <div class="space-y-4">
+                        <div class="flex gap-3">
+                          <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
                             <i class="fas fa-sitemap"></i>
                           </div>
-                          <div class="help-text">
-                            <h5>Vista de Árbol</h5>
-                            <p>
+                          <div class="flex-1">
+                            <h5 class="m-0 mb-1 font-semibold text-slate-900 dark:text-slate-100">Vista de Árbol</h5>
+                            <p class="m-0 text-sm text-slate-600 dark:text-slate-400">
                               Visualiza la estructura jerárquica completa de tus menús con
                               organización clara de niveles.
                             </p>
                           </div>
                         </div>
 
-                        <div class="help-item">
-                          <div class="help-icon">
+                        <div class="flex gap-3">
+                          <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
                             <i class="fas fa-chevron-right"></i>
                           </div>
-                          <div class="help-text">
-                            <h5>Acordeón Inteligente</h5>
-                            <p>
+                          <div class="flex-1">
+                            <h5 class="m-0 mb-1 font-semibold text-slate-900 dark:text-slate-100">Acordeón Inteligente</h5>
+                            <p class="m-0 text-sm text-slate-600 dark:text-slate-400">
                               Los menús padre se contraen automáticamente para una vista más limpia.
                               Haz clic en las flechas para expandir y ver los submenús.
                             </p>
                           </div>
                         </div>
 
-                        <div class="help-item">
-                          <div class="help-icon">
+                        <div class="flex gap-3">
+                          <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
                             <i class="fas fa-search"></i>
                           </div>
-                          <div class="help-text">
-                            <h5>Búsqueda Avanzada</h5>
-                            <p>
+                          <div class="flex-1">
+                            <h5 class="m-0 mb-1 font-semibold text-slate-900 dark:text-slate-100">Búsqueda Avanzada</h5>
+                            <p class="m-0 text-sm text-slate-600 dark:text-slate-400">
                               Encuentra menús específicos por nombre o ruta. La búsqueda resalta los
                               términos encontrados y filtra resultados en tiempo real.
                             </p>
@@ -236,59 +239,59 @@
                     </div>
 
                     <!-- Gestión de Contenido -->
-                    <div class="help-category">
-                      <h4 class="category-title">
-                        <i class="fas fa-cog"></i>
+                    <div>
+                      <h4 class="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+                        <i class="fas fa-cog text-blue-600"></i>
                         Gestión de Contenido
                       </h4>
 
-                      <div class="help-items">
-                        <div class="help-item">
-                          <div class="help-icon">
+                      <div class="space-y-4">
+                        <div class="flex gap-3">
+                          <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-lg bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-300">
                             <i class="fas fa-plus-circle"></i>
                           </div>
-                          <div class="help-text">
-                            <h5>Crear Menús y Submenús</h5>
-                            <p>
+                          <div class="flex-1">
+                            <h5 class="m-0 mb-1 font-semibold text-slate-900 dark:text-slate-100">Crear Menús y Submenús</h5>
+                            <p class="m-0 text-sm text-slate-600 dark:text-slate-400">
                               Usa el botón "Crear Nuevo Menú" o el "+" junto a cualquier menú para
                               agregar nuevos elementos a la estructura.
                             </p>
                           </div>
                         </div>
 
-                        <div class="help-item">
-                          <div class="help-icon">
+                        <div class="flex gap-3">
+                          <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
                             <i class="fas fa-edit"></i>
                           </div>
-                          <div class="help-text">
-                            <h5>Editar Propiedades</h5>
-                            <p>
+                          <div class="flex-1">
+                            <h5 class="m-0 mb-1 font-semibold text-slate-900 dark:text-slate-100">Editar Propiedades</h5>
+                            <p class="m-0 text-sm text-slate-600 dark:text-slate-400">
                               Modifica nombre, ruta, icono, orden y permisos de cualquier menú
                               usando el botón de edición.
                             </p>
                           </div>
                         </div>
 
-                        <div class="help-item">
-                          <div class="help-icon">
+                        <div class="flex gap-3">
+                          <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300">
                             <i class="fas fa-grip-vertical"></i>
                           </div>
-                          <div class="help-text">
-                            <h5>Reorganizar con Arrastrar y Soltar</h5>
-                            <p>
+                          <div class="flex-1">
+                            <h5 class="m-0 mb-1 font-semibold text-slate-900 dark:text-slate-100">Reorganizar con Arrastrar y Soltar</h5>
+                            <p class="m-0 text-sm text-slate-600 dark:text-slate-400">
                               Arrastra menús para cambiar su posición o convertirlos en submenús.
                               Las zonas de destino se resaltan automáticamente.
                             </p>
                           </div>
                         </div>
 
-                        <div class="help-item">
-                          <div class="help-icon">
+                        <div class="flex gap-3">
+                          <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-lg bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-300">
                             <i class="fas fa-trash-alt"></i>
                           </div>
-                          <div class="help-text">
-                            <h5>Eliminación Inteligente</h5>
-                            <p>
+                          <div class="flex-1">
+                            <h5 class="m-0 mb-1 font-semibold text-slate-900 dark:text-slate-100">Eliminación Inteligente</h5>
+                            <p class="m-0 text-sm text-slate-600 dark:text-slate-400">
                               Al eliminar menús con submenús, elige qué hacer: eliminar todo,
                               mantener submenús como principales, o seleccionar cuáles conservar.
                             </p>
@@ -301,28 +304,28 @@
               </div>
 
               <!-- Buscador -->
-              <div class="search-section">
-                <div class="search-container">
-                  <div class="search-input-wrapper">
-                    <i class="fas fa-search search-icon"></i>
+              <div class="mb-6">
+                <div class="relative">
+                  <div class="relative">
+                    <i class="fas fa-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <input
                       type="text"
                       v-model="searchQuery"
                       placeholder="Buscar menús, submenús, rutas o roles..."
-                      class="search-input"
+                      class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 pl-12 pr-12 text-slate-900 placeholder-slate-400 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                       @input="handleSearch"
                     />
                     <button
                       v-if="searchQuery"
                       @click="clearSearch"
-                      class="clear-search-btn"
+                      class="absolute right-4 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-600 dark:hover:text-slate-200"
                       title="Limpiar búsqueda"
                     >
                       <i class="fas fa-times"></i>
                     </button>
                   </div>
-                  <div class="search-stats" v-if="searchQuery">
-                    <span class="results-count">
+                  <div v-if="searchQuery" class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                    <span class="font-medium">
                       {{ filteredHierarchicalMenus.length }} resultado{{
                         filteredHierarchicalMenus.length !== 1 ? 's' : ''
                       }}
@@ -334,12 +337,12 @@
             </div>
 
             <!-- Contenedor del árbol -->
-            <div class="tree-container">
-              <div v-if="filteredHierarchicalMenus.length === 0 && searchQuery" class="no-results">
-                <i class="fas fa-search-close"></i>
-                <h3>No se encontraron menús</h3>
-                <p>No hay menús que coincidan con "{{ searchQuery }}"</p>
-                <button @click="clearSearch" class="clear-search-btn-large">
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-900/50">
+              <div v-if="filteredHierarchicalMenus.length === 0 && searchQuery" class="flex flex-col items-center justify-center py-12 text-center">
+                <i class="fas fa-search mb-4 text-4xl text-slate-400"></i>
+                <h3 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">No se encontraron menús</h3>
+                <p class="mb-4 text-slate-600 dark:text-slate-400">No hay menús que coincidan con "{{ searchQuery }}"</p>
+                <button @click="clearSearch" class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
                   <i class="fas fa-sync-alt"></i>
                   Mostrar todos los menús
                 </button>
@@ -361,108 +364,118 @@
             </div>
           </div>
         </transition>
+      </div>
+    </main>
 
-        <!-- Modal de eliminación avanzada -->
-        <DeleteMenuModal
-          :show="showDeleteModal"
-          :menu="menuToDelete"
-          :children="menuToDeleteChildren"
-          @close="closeDeleteModal"
-          @confirm="handleDeleteConfirm"
-        />
+    <!-- Modal de eliminación avanzada -->
+    <DeleteMenuModal
+      :show="showDeleteModal"
+      :menu="menuToDelete"
+      :children="menuToDeleteChildren"
+      @close="closeDeleteModal"
+      @confirm="handleDeleteConfirm"
+    />
 
-        <!-- Modal de creación/edición mejorado -->
-        <div
-          v-if="showDialog"
-          class="dialog-overlay"
-          @click="closeDialog"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
-          aria-describedby="modal-description"
-        >
-          <div class="dialog-content wizard-modal" @click.stop tabindex="-1" ref="modalContent">
-            <!-- Header del Wizard -->
-            <div class="wizard-header">
-              <div class="wizard-header-content">
-                <div class="wizard-title-section">
-                  <div class="wizard-icon">
-                    <i :class="isEditing ? 'fas fas fa-edit' : 'fas fas fa-plus'"></i>
-                  </div>
-                  <div class="wizard-text">
-                    <h2 class="wizard-title">
-                      {{ isEditing ? 'Editar Menú' : 'Crear Nuevo Menú' }}
-                    </h2>
-                    <p class="wizard-subtitle">
-                      {{
-                        isEditing
-                          ? 'Modifica la configuración del menú existente'
-                          : 'Completa los datos para crear un nuevo menú'
-                      }}
-                    </p>
-                  </div>
+    <!-- Modal de creación/edición mejorado -->
+    <div
+      v-if="showDialog"
+      class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4"
+      @click="closeDialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      aria-describedby="modal-description"
+    >
+      <div class="w-full max-w-5xl" @click.stop tabindex="-1" ref="modalContent">
+          <!-- Header del Wizard -->
+          <div class="rounded-t-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start gap-4">
+                <div class="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                  <i :class="isEditing ? 'fas fa-edit' : 'fas fa-plus'"></i>
                 </div>
-                <button @click="closeDialog" class="wizard-close-btn" :disabled="isSaving">
-                  <i class="fas fa-times"></i>
-                </button>
+                <div>
+                  <h2 class="m-0 mb-1 text-2xl font-bold text-slate-900 dark:text-slate-100">
+                    {{ isEditing ? 'Editar Menú' : 'Crear Nuevo Menú' }}
+                  </h2>
+                  <p class="m-0 text-sm text-slate-600 dark:text-slate-400">
+                    {{
+                      isEditing
+                        ? 'Modifica la configuración del menú existente'
+                        : 'Completa los datos para crear un nuevo menú'
+                    }}
+                  </p>
+                </div>
               </div>
+              <button @click="closeDialog" class="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed dark:hover:bg-slate-700 dark:hover:text-slate-100" :disabled="isSaving">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
+          </div>
 
-            <!-- Indicador de Pasos -->
-            <div class="wizard-steps">
-              <div
-                v-for="(step, index) in wizardSteps"
-                :key="step.id"
-                class="wizard-step"
-                :class="{
-                  active: currentWizardStep === index + 1,
-                  completed: currentWizardStep > index + 1,
-                  disabled: currentWizardStep < index + 1,
-                }"
-              >
-                <div class="step-indicator">
+          <!-- Indicador de Pasos -->
+          <div class="flex border-b border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+            <div
+              v-for="(step, index) in wizardSteps"
+              :key="step.id"
+              class="flex-1 border-l border-slate-200 first:border-l-0 bg-white p-4 transition dark:border-slate-700 dark:bg-slate-800"
+              :class="{
+                'bg-blue-50 border-blue-500 dark:bg-blue-900/30 dark:border-blue-400': currentWizardStep === index + 1,
+                'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400': currentWizardStep > index + 1,
+                'text-slate-400 dark:text-slate-500': currentWizardStep < index + 1,
+              }"
+            >
+              <div class="flex items-center gap-3">
+                <div class="grid h-8 w-8 place-items-center rounded-full text-sm font-semibold transition"
+                  :class="{
+                    'bg-blue-600 text-white dark:bg-blue-500': currentWizardStep === index + 1,
+                    'bg-green-600 text-white dark:bg-green-500': currentWizardStep > index + 1,
+                    'bg-slate-200 text-slate-400 dark:bg-slate-700 dark:text-slate-500': currentWizardStep < index + 1,
+                  }"
+                >
                   <i v-if="currentWizardStep > index + 1" class="fas fa-check"></i>
                   <span v-else>{{ index + 1 }}</span>
                 </div>
-                <div class="step-content">
-                  <h4 class="step-title">{{ step.title }}</h4>
-                  <p class="step-description">{{ step.description }}</p>
+                <div class="flex-1">
+                  <h4 class="font-semibold">{{ step.title }}</h4>
+                  <p class="text-sm opacity-75">{{ step.description }}</p>
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- Contenido del Wizard -->
-            <div class="wizard-body">
-              <p id="modal-description" class="sr-only">
-                Formulario para {{ isEditing ? 'editar' : 'crear' }} un elemento del menú. Complete
-                los campos requeridos y presione guardar.
-              </p>
+          <!-- Contenido del Wizard -->
+          <div class="rounded-b-xl border border-t-0 border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
+            <p id="modal-description" class="sr-only">
+              Formulario para {{ isEditing ? 'editar' : 'crear' }} un elemento del menú. Complete
+              los campos requeridos y presione guardar.
+            </p>
 
-              <form @submit.prevent="saveMenu" role="form" id="menu-form" class="wizard-form">
+            <form @submit.prevent="saveMenu" role="form" id="menu-form" class="space-y-6">
                 <!-- Paso 1: Información Básica -->
-                <div v-show="currentWizardStep === 1" class="wizard-step-content">
-                  <div class="step-header">
-                    <h3 class="step-title">
-                      <i class="fas fa-info-circle"></i>
+                <div v-show="currentWizardStep === 1">
+                  <div class="mb-6 text-center">
+                    <h3 class="mb-2 flex items-center justify-center gap-2 text-xl font-bold text-slate-900 dark:text-slate-100">
+                      <i class="fas fa-info-circle text-blue-600"></i>
                       Información Básica
                     </h3>
-                    <p class="step-description">Define el nombre, ruta y tipo de menú</p>
+                    <p class="text-slate-600 dark:text-slate-400">Define el nombre, ruta y tipo de menú</p>
                   </div>
 
-                  <div class="step-fields">
-                    <div class="form-group">
-                      <label for="menuName" class="form-label">
-                        <i class="fas fa-tag"></i>
+                  <div class="space-y-4">
+                    <div>
+                      <label for="menuName" class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <i class="fas fa-tag text-blue-600"></i>
                         Nombre del Menú *
                       </label>
                       <input
                         id="menuName"
                         v-model="menuForm.name"
                         type="text"
-                        class="form-input"
+                        class="w-full rounded-lg border px-4 py-3 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                         :class="{
-                          error: validationErrors.name,
-                          success: !validationErrors.name && menuForm.name.trim().length >= 3,
+                          'border-red-500 focus:border-red-500 focus:ring-red-500/20': validationErrors.name,
+                          'border-green-500': !validationErrors.name && menuForm.name.trim().length >= 3,
                         }"
                         placeholder="Ej: Gestión de Usuarios"
                         @input="generatePath"
@@ -470,32 +483,32 @@
                         required
                         ref="firstInput"
                       />
-                      <div v-if="validationErrors.name" class="error-message" role="alert">
+                      <div v-if="validationErrors.name" class="mt-1 flex items-center gap-2 text-sm text-red-600 dark:text-red-400" role="alert">
                         <i class="fas fa-exclamation-circle"></i>
                         {{ validationErrors.name }}
                       </div>
-                      <div class="help-text">
+                      <div class="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                         <i class="fas fa-info-circle"></i>
                         Este será el nombre que aparecerá en el menú lateral
                       </div>
                     </div>
 
-                    <div class="form-group">
-                      <label for="menuPath" class="form-label">
-                        <i class="fas fa-link"></i>
+                    <div>
+                      <label for="menuPath" class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <i class="fas fa-link text-blue-600"></i>
                         Ruta de Acceso *
                       </label>
 
-                      <div v-if="menuForm.parentId" class="path-input-container">
-                        <div class="path-static-part">
+                      <div v-if="menuForm.parentId" class="flex overflow-hidden rounded-lg border border-slate-300 dark:border-slate-600">
+                        <div class="flex items-center bg-slate-100 px-3 py-3 text-sm text-slate-700 dark:bg-slate-700 dark:text-slate-300">
                           {{ getParentPath(menuForm.parentId) || '/' }}
                         </div>
                         <input
                           id="menuPath"
                           v-model="menuForm.path"
                           type="text"
-                          class="form-input path-editable-part"
-                          :class="{ error: validationErrors.path }"
+                          class="flex-1 rounded-r-lg border-0 border-l border-slate-300 px-4 py-3 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                          :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-500/20': validationErrors.path }"
                           :placeholder="`Ej: ${getMenuPathPlaceholder()}`"
                           @input="validateMenuPath"
                           required
@@ -507,18 +520,18 @@
                         id="menuPath"
                         v-model="menuForm.path"
                         type="text"
-                        class="form-input"
-                        :class="{ error: validationErrors.path }"
+                        class="w-full rounded-lg border px-4 py-3 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+                        :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-500/20': validationErrors.path }"
                         placeholder="Ej: /gestion-usuarios"
                         @input="validateForm"
                         required
                       />
 
-                      <div v-if="validationErrors.path" class="error-message" role="alert">
+                      <div v-if="validationErrors.path" class="mt-1 flex items-center gap-2 text-sm text-red-600 dark:text-red-400" role="alert">
                         <i class="fas fa-exclamation-circle"></i>
                         {{ validationErrors.path }}
                       </div>
-                      <div class="help-text">
+                      <div class="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                         <i class="fas fa-info-circle"></i>
                         <span v-if="menuForm.parentId">
                           La parte del menú padre es fija, solo puedes editar la parte específica
@@ -530,51 +543,55 @@
                       </div>
                     </div>
 
-                    <div class="form-group">
-                      <label class="form-label">
-                        <i class="fas fa-list"></i>
+                    <div>
+                      <label class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <i class="fas fa-list text-blue-600"></i>
                         Tipo de Menú
                       </label>
-                      <div class="menu-type-selector">
+                      <div class="grid gap-4 sm:grid-cols-2">
                         <div
-                          class="menu-type-option"
-                          :class="{ active: menuForm.parentId === null }"
+                          class="cursor-pointer rounded-xl border-2 p-4 transition"
+                          :class="{ 'border-blue-600 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20': menuForm.parentId === null, 'border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500': menuForm.parentId !== null }"
                           @click="setMenuType('root')"
                           role="radio"
                           :aria-checked="menuForm.parentId === null"
                           tabindex="0"
                         >
-                          <i class="fas fa-home"></i>
-                          <div class="option-content">
-                            <span class="option-title">Menú Principal</span>
-                            <span class="option-description"
-                              >Aparece en el nivel raíz del menú lateral</span
-                            >
+                          <div class="flex items-start gap-3">
+                            <div class="grid h-10 w-10 place-items-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
+                              <i class="fas fa-home"></i>
+                            </div>
+                            <div>
+                              <div class="mb-1 font-semibold text-slate-900 dark:text-slate-100">Menú Principal</div>
+                              <div class="text-xs text-slate-600 dark:text-slate-400">Aparece en el nivel raíz del menú lateral</div>
+                            </div>
                           </div>
                         </div>
                         <div
-                          class="menu-type-option"
-                          :class="{ active: menuForm.parentId !== null }"
+                          class="cursor-pointer rounded-xl border-2 p-4 transition"
+                          :class="{ 'border-blue-600 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20': menuForm.parentId !== null, 'border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500': menuForm.parentId === null }"
                           @click="setMenuType('submenu')"
                           role="radio"
                           :aria-checked="menuForm.parentId !== null"
                           tabindex="0"
                         >
-                          <i class="fas fa-folder"></i>
-                          <div class="option-content">
-                            <span class="option-title">Submenú</span>
-                            <span class="option-description"
-                              >Aparece dentro de otro menú como elemento hijo</span
-                            >
+                          <div class="flex items-start gap-3">
+                            <div class="grid h-10 w-10 place-items-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">
+                              <i class="fas fa-folder"></i>
+                            </div>
+                            <div>
+                              <div class="mb-1 font-semibold text-slate-900 dark:text-slate-100">Submenú</div>
+                              <div class="text-xs text-slate-600 dark:text-slate-400">Aparece dentro de otro menú como elemento hijo</div>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     <!-- Selector de menú padre (solo si es submenú) -->
-                    <div v-if="menuForm.parentId !== null" class="form-group">
-                      <label class="form-label">
-                        <i class="fas fa-sitemap"></i>
+                    <div v-if="menuForm.parentId !== null">
+                      <label class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <i class="fas fa-sitemap text-blue-600"></i>
                         Menú Padre *
                       </label>
                       <MenuTreeSelector
@@ -583,7 +600,7 @@
                         :excluded-id="isEditing ? menuForm.id : null"
                         @select="handleParentSelect"
                       />
-                      <div v-if="validationErrors.parentId" class="error-message" role="alert">
+                      <div v-if="validationErrors.parentId" class="mt-1 flex items-center gap-2 text-sm text-red-600 dark:text-red-400" role="alert">
                         <i class="fas fa-exclamation-circle"></i>
                         {{ validationErrors.parentId }}
                       </div>
@@ -592,79 +609,57 @@
                 </div>
 
                 <!-- Paso 2: Apariencia -->
-                <div v-show="currentWizardStep === 2" class="wizard-step-content">
-                  <div class="step-header">
-                    <h3 class="step-title">
-                      <i class="fas fa-palette"></i>
+                <div v-show="currentWizardStep === 2">
+                  <div class="mb-6 text-center">
+                    <h3 class="mb-2 flex items-center justify-center gap-2 text-xl font-bold text-slate-900 dark:text-slate-100">
+                      <i class="fas fa-palette text-blue-600"></i>
                       Apariencia
                     </h3>
-                    <p class="step-description">Selecciona el icono y tipo de vista para tu menú</p>
+                    <p class="text-slate-600 dark:text-slate-400">Selecciona el icono y tipo de vista para tu menú</p>
                   </div>
 
-                  <div class="step-fields">
-                    <div class="form-group">
-                      <label class="form-label">
-                        <i class="fas fa-palette"></i>
+                  <div class="space-y-4">
+                    <div>
+                      <label class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <i class="fas fa-palette text-blue-600"></i>
                         Icono del Menú
                       </label>
-                      <div class="icon-selector-wrapper">
+                      <div>
                         <IconSelector v-model="menuForm.icon" @update:modelValue="validateForm" />
                       </div>
-                      <div v-if="validationErrors.icon" class="error-message" role="alert">
+                      <div v-if="validationErrors.icon" class="mt-1 flex items-center gap-2 text-sm text-red-600 dark:text-red-400" role="alert">
                         <i class="fas fa-exclamation-circle"></i>
                         {{ validationErrors.icon }}
                       </div>
                     </div>
 
-                    <div class="form-group">
-                      <label class="form-label">
-                        <i class="fas fa-desktop"></i>
+                    <div>
+                      <label class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <i class="fas fa-desktop text-blue-600"></i>
                         Tipo de Vista *
                       </label>
-                      <div class="template-selector">
+                      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div
                           v-for="template in viewTemplates"
                           :key="template.value"
-                          class="template-option"
-                          :class="{ selected: menuForm.template === template.value }"
+                          class="cursor-pointer rounded-xl border-2 p-4 transition"
+                          :class="{ 'border-blue-600 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20': menuForm.template === template.value, 'border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500': menuForm.template !== template.value }"
                           @click="selectTemplate(template.value)"
                           role="radio"
                           :aria-checked="menuForm.template === template.value"
                           tabindex="0"
                         >
-                          <div class="template-preview">
-                            <i :class="['fas fas', template.icon]"></i>
-                            <div class="template-mockup">
-                              <div v-if="template.value === 'basic'" class="mockup-basic">
-                                <div class="mockup-header"></div>
-                                <div class="mockup-content">
-                                  <div class="mockup-line"></div>
-                                  <div class="mockup-line short"></div>
-                                  <div class="mockup-line"></div>
-                                </div>
-                              </div>
-                              <div v-else-if="template.value === 'form'" class="mockup-form">
-                                <div class="mockup-field"></div>
-                                <div class="mockup-field"></div>
-                                <div class="mockup-field"></div>
-                                <div class="mockup-button"></div>
-                              </div>
-                              <div v-else-if="template.value === 'table'" class="mockup-table">
-                                <div class="mockup-table-header"></div>
-                                <div class="mockup-table-row"></div>
-                                <div class="mockup-table-row"></div>
-                                <div class="mockup-table-row"></div>
-                              </div>
-                            </div>
+                          <div class="mb-3 text-center">
+                            <i :class="['fas', template.icon, 'mb-2 text-3xl', menuForm.template === template.value ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500']"></i>
                           </div>
-                          <div class="template-info">
-                            <h4 class="template-name">{{ template.name }}</h4>
-                            <p class="template-description">{{ template.description }}</p>
-                            <div class="template-features">
+                          <div>
+                            <h4 class="mb-1 text-center font-semibold text-slate-900 dark:text-slate-100">{{ template.name }}</h4>
+                            <p class="mb-2 text-center text-xs text-slate-600 dark:text-slate-400">{{ template.description }}</p>
+                            <div class="flex flex-wrap gap-1 justify-center">
                               <span
                                 v-for="feature in template.features"
                                 :key="feature"
-                                class="feature-tag"
+                                class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-slate-700 dark:text-slate-300"
                               >
                                 {{ feature }}
                               </span>
@@ -672,7 +667,7 @@
                           </div>
                         </div>
                       </div>
-                      <div v-if="validationErrors.template" class="error-message" role="alert">
+                      <div v-if="validationErrors.template" class="mt-1 flex items-center gap-2 text-sm text-red-600 dark:text-red-400" role="alert">
                         <i class="fas fa-exclamation-circle"></i>
                         {{ validationErrors.template }}
                       </div>
@@ -681,22 +676,22 @@
                 </div>
 
                 <!-- Paso 3: Configuración -->
-                <div v-show="currentWizardStep === 3" class="wizard-step-content">
-                  <div class="step-header">
-                    <h3 class="step-title">
-                      <i class="fas fa-cog"></i>
+                <div v-show="currentWizardStep === 3">
+                  <div class="mb-6 text-center">
+                    <h3 class="mb-2 flex items-center justify-center gap-2 text-xl font-bold text-slate-900 dark:text-slate-100">
+                      <i class="fas fa-cog text-blue-600"></i>
                       Configuración
                     </h3>
-                    <p class="step-description">Define permisos, posición y estado del menú</p>
+                    <p class="text-slate-600 dark:text-slate-400">Define permisos, posición y estado del menú</p>
                   </div>
 
-                  <div class="step-fields">
-                    <div class="form-group">
-                      <label for="menuOrder" class="form-label">
-                        <i class="fas fa-sort-numeric-up"></i>
+                  <div class="space-y-4">
+                    <div>
+                      <label for="menuOrder" class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <i class="fas fa-sort-numeric-up text-blue-600"></i>
                         Posición en el menú
                       </label>
-                      <select id="menuOrder" v-model.number="menuForm.order" class="form-input">
+                      <select id="menuOrder" v-model.number="menuForm.order" class="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100">
                         <option
                           v-for="position in availablePositions"
                           :key="position.value"
@@ -705,7 +700,7 @@
                           {{ position.label }}
                         </option>
                       </select>
-                      <div class="help-text">
+                      <div class="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                         <i class="fas fa-info-circle"></i>
                         {{
                           menuForm.parentId
@@ -715,110 +710,108 @@
                       </div>
                     </div>
 
-                    <div class="form-group">
-                      <label class="form-label">
-                        <i class="fas fa-users"></i>
+                    <div>
+                      <label class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <i class="fas fa-users text-blue-600"></i>
                         Roles de Acceso *
                       </label>
 
                       <!-- Información sobre jerarquía de roles -->
-                      <div class="role-hierarchy-info">
+                      <div class="mb-3 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800 dark:border-blue-700 dark:bg-blue-900/20 dark:text-blue-200">
                         <i class="fas fa-info-circle"></i>
-                        <span
-                          >Los roles siguen una jerarquía: Super Usuario > Administrador >
-                          Colaborador</span
-                        >
+                        <span>Los roles siguen una jerarquía: Super Usuario > Administrador > Colaborador</span>
                       </div>
 
                       <!-- Rol Super Usuario siempre presente -->
-                      <div class="super-user-always-present">
-                        <div class="role-option super-user-option">
-                          <label class="checkbox-label disabled">
+                      <div class="mb-4">
+                        <div class="rounded-xl border-2 border-green-400 bg-gradient-to-br from-green-50 to-green-100/50 p-4 dark:border-green-600 dark:from-green-900/20 dark:to-green-800/10">
+                          <label class="flex cursor-not-allowed items-start gap-3">
                             <input
                               type="checkbox"
-                              class="form-checkbox"
+                              class="mt-1 h-5 w-5 cursor-not-allowed rounded border-slate-300 text-blue-600"
                               checked
                               disabled
                             />
-                            <span class="checkbox-text">
-                              <i class="fas fa-user-star"></i>
-                              <span class="role-label">
-                                <strong>Super Usuario</strong>
-                                <small>Acceso completo al sistema (siempre incluido)</small>
-                              </span>
-                            </span>
+                            <div class="flex-1">
+                              <div class="flex items-center gap-2">
+                                <i class="fas fa-user-star text-green-600"></i>
+                                <span class="font-bold text-slate-900 dark:text-slate-100">Super Usuario</span>
+                                <span class="rounded-full bg-green-600 px-2 py-0.5 text-xs font-semibold text-white">Siempre</span>
+                              </div>
+                              <p class="mt-1 text-xs text-slate-600 dark:text-slate-400">Acceso completo al sistema (siempre incluido)</p>
+                            </div>
                           </label>
                         </div>
                       </div>
 
-                      <div class="roles-selector">
+                      <div class="space-y-2">
                         <div
                           v-for="role in availableRolesList"
                           :key="role.value"
-                          class="role-option"
+                          class="rounded-lg border border-slate-200 p-3 transition dark:border-slate-700"
+                          :class="{ 'bg-slate-50 dark:bg-slate-700/50': menuForm.roles.includes(role.value) }"
                         >
                           <label
-                            class="checkbox-label"
-                            :class="{ disabled: isRoleDisabled(role.value) }"
+                            class="flex cursor-pointer items-start gap-3"
+                            :class="{ 'cursor-not-allowed opacity-60': isRoleDisabled(role.value) }"
                           >
                             <input
                               v-model="menuForm.roles"
                               :value="role.value"
                               type="checkbox"
-                              class="form-checkbox"
+                              class="mt-1 h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500/20"
                               :id="`role-${role.value}`"
                               :disabled="isRoleDisabled(role.value)"
                               @change="handleRoleChange(role.value)"
                             />
-                            <span class="checkbox-text">
-                              <i :class="['fas fas', role.icon]"></i>
-                              {{ role.label }}
-                              <span
-                                v-if="role.value === 'ROLE_SUPER_USER'"
-                                class="role-badge super-user"
+                            <div class="flex-1">
+                              <div class="flex items-center gap-2">
+                                <i :class="['fas', role.icon]"></i>
+                                <span class="font-semibold text-slate-900 dark:text-slate-100">{{ role.label }}</span>
+                                <span
+                                  v-if="role.value === 'ROLE_SUPER_USER'"
+                                  class="rounded-full bg-green-600 px-2 py-0.5 text-xs font-semibold text-white"
+                                >
+                                  Máximo Privilegio
+                                </span>
+                              </div>
+                              <p class="mt-1 text-xs text-slate-600 dark:text-slate-400">{{ role.description }}</p>
+                              <div
+                                v-if="
+                                  role.value === 'ROLE_SUPER_USER' &&
+                                  menuForm.roles.includes('ROLE_SUPER_USER')
+                                "
+                                class="mt-2 flex items-center gap-2 rounded border border-amber-300 bg-amber-50 px-2 py-1 text-xs text-amber-800 dark:border-amber-600 dark:bg-amber-900/20 dark:text-amber-200"
                               >
-                                Máximo Privilegio
-                              </span>
-                            </span>
-                          </label>
-                          <div class="role-description">
-                            {{ role.description }}
-                            <div
-                              v-if="
-                                role.value === 'ROLE_SUPER_USER' &&
-                                menuForm.roles.includes('ROLE_SUPER_USER')
-                              "
-                              class="role-warning"
-                            >
-                              <i class="fa-shield-check"></i>
-                              Super Usuario tiene acceso completo, otros roles son redundantes
+                                <i class="fas fa-shield-halved"></i>
+                                Super Usuario tiene acceso completo, otros roles son redundantes
+                              </div>
                             </div>
-                          </div>
+                          </label>
                         </div>
                       </div>
 
-                      <div v-if="validationErrors.roles" class="error-message" role="alert">
+                      <div v-if="validationErrors.roles" class="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400" role="alert">
                         <i class="fas fa-exclamation-circle"></i>
                         {{ validationErrors.roles }}
                       </div>
 
                       <!-- Resumen de roles seleccionados -->
-                      <div v-if="menuForm.roles.length > 0" class="selected-roles-summary">
-                        <h5 class="summary-title">
-                          <i class="fas fa-check-circle"></i>
+                      <div v-if="menuForm.roles.length > 0" class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                        <h5 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                          <i class="fas fa-check-circle text-green-600"></i>
                           Roles Seleccionados
                         </h5>
-                        <div class="selected-roles-list">
+                        <div class="flex flex-wrap gap-2">
                           <div
                             v-for="role in getSelectedRolesInfo()"
                             :key="role.value"
-                            class="selected-role-item"
-                            :class="role.value"
+                            class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/40 dark:text-blue-200"
                           >
-                            <i :class="['fas fas', role.icon]"></i>
+                            <i :class="['fas', role.icon]"></i>
                             <span>{{ role.label }}</span>
-                            <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-indicator">
-                              <i class="fa-crown"></i>
+                            <span v-if="role.value === 'ROLE_SUPER_USER'" class="ml-1 inline-flex items-center gap-1 rounded-full bg-green-600 px-2 py-0.5 text-white">
+                              <i class="fas fa-crown"></i>
                               Máximo
                             </span>
                           </div>
@@ -826,161 +819,160 @@
                       </div>
                     </div>
 
-                    <div class="form-group">
-                      <label class="checkbox-label">
+                    <div>
+                      <label class="flex cursor-pointer items-start gap-3">
                         <input
                           id="menuActive"
                           v-model="menuForm.isActive"
                           type="checkbox"
-                          class="form-checkbox"
+                          class="mt-1 h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500/20"
                         />
-                        <span class="checkbox-text">
-                          <i class="fas fa-check-circle"></i>
-                          Menú activo
-                        </span>
+                        <div>
+                          <div class="flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-100">
+                            <i class="fas fa-check-circle"></i>
+                            Menú activo
+                          </div>
+                          <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                            <i class="fas fa-info-circle"></i>
+                            Los menús inactivos no aparecerán en la navegación
+                          </p>
+                        </div>
                       </label>
-                      <div class="help-text">
-                        <i class="fas fa-info-circle"></i>
-                        Los menús inactivos no aparecerán en la navegación
-                      </div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Paso 4: Resumen -->
-                <div v-show="currentWizardStep === 4" class="wizard-step-content">
-                  <div class="step-header">
-                    <h3 class="step-title">
-                      <i class="fas fa-eye"></i>
+                <div v-show="currentWizardStep === 4">
+                  <div class="mb-6 text-center">
+                    <h3 class="mb-2 flex items-center justify-center gap-2 text-xl font-bold text-slate-900 dark:text-slate-100">
+                      <i class="fas fa-eye text-blue-600"></i>
                       Resumen
                     </h3>
-                    <p class="step-description">Revisa la configuración antes de crear el menú</p>
+                    <p class="text-slate-600 dark:text-slate-400">Revisa la configuración antes de crear el menú</p>
                   </div>
 
-                  <div class="summary-content">
-                    <div class="summary-section">
-                      <h4 class="summary-title">
-                        <i class="fas fa-info-circle-outline"></i>
+                  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                      <h4 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <i class="fas fa-info-circle text-blue-600"></i>
                         Información Básica
                       </h4>
-                      <div class="summary-item">
-                        <span class="summary-label">Nombre:</span>
-                        <span class="summary-value">{{ menuForm.name || 'No especificado' }}</span>
-                      </div>
-                      <div class="summary-item">
-                        <span class="summary-label">Ruta:</span>
-                        <span class="summary-value">{{ menuForm.path || 'No especificada' }}</span>
-                      </div>
-                      <div class="summary-item">
-                        <span class="summary-label">Tipo:</span>
-                        <span class="summary-value">{{
-                          menuForm.parentId ? 'Submenú' : 'Menú Principal'
-                        }}</span>
+                      <div class="space-y-2 text-sm">
+                        <div class="flex justify-between border-b border-slate-200 pb-2 dark:border-slate-700">
+                          <span class="font-medium text-slate-700 dark:text-slate-300">Nombre:</span>
+                          <span class="text-slate-900 dark:text-slate-100">{{ menuForm.name || 'No especificado' }}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-200 pb-2 dark:border-slate-700">
+                          <span class="font-medium text-slate-700 dark:text-slate-300">Ruta:</span>
+                          <span class="text-slate-900 dark:text-slate-100">{{ menuForm.path || 'No especificada' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="font-medium text-slate-700 dark:text-slate-300">Tipo:</span>
+                          <span class="text-slate-900 dark:text-slate-100">{{
+                            menuForm.parentId ? 'Submenú' : 'Menú Principal'
+                          }}</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div class="summary-section">
-                      <h4 class="summary-title">
-                        <i class="fa-palette"></i>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                      <h4 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <i class="fas fa-palette text-blue-600"></i>
                         Apariencia
                       </h4>
-                      <div class="summary-item">
-                        <span class="summary-label">Icono:</span>
-                        <span class="summary-value">
-                          <i v-if="menuForm.icon" :class="['fas fas', menuForm.icon]"></i>
-                          {{ menuForm.icon || 'No seleccionado' }}
-                        </span>
-                      </div>
-                      <div class="summary-item">
-                        <span class="summary-label">Tipo de Vista:</span>
-                        <span class="summary-value">{{ getTemplateName(menuForm.template) }}</span>
+                      <div class="space-y-2 text-sm">
+                        <div class="flex justify-between border-b border-slate-200 pb-2 dark:border-slate-700">
+                          <span class="font-medium text-slate-700 dark:text-slate-300">Icono:</span>
+                          <span class="text-slate-900 dark:text-slate-100">
+                            <i v-if="menuForm.icon" :class="['fas', menuForm.icon]"></i>
+                            {{ menuForm.icon || 'No seleccionado' }}
+                          </span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="font-medium text-slate-700 dark:text-slate-300">Vista:</span>
+                          <span class="text-slate-900 dark:text-slate-100">{{ getTemplateName(menuForm.template) }}</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div class="summary-section">
-                      <h4 class="summary-title">
-                        <i class="fas fa-cog-outline"></i>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                      <h4 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <i class="fas fa-cog text-blue-600"></i>
                         Configuración
                       </h4>
-                      <div class="summary-item">
-                        <span class="summary-label">Posición:</span>
-                        <span class="summary-value">{{ getPositionLabel(menuForm.order) }}</span>
-                      </div>
-                      <div class="summary-item">
-                        <span class="summary-label">Roles:</span>
-                        <div class="summary-value roles-summary">
-                          <div
-                            v-for="role in getSelectedRolesInfo()"
-                            :key="role.value"
-                            class="role-summary-item"
-                            :class="role.value"
-                          >
-                            <i :class="['fas fas', role.icon]"></i>
-                            <span>{{ role.label }}</span>
-                            <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-badge">
-                              <i class="fa-crown"></i>
-                              Máximo
+                      <div class="space-y-2 text-sm">
+                        <div class="flex justify-between border-b border-slate-200 pb-2 dark:border-slate-700">
+                          <span class="font-medium text-slate-700 dark:text-slate-300">Posición:</span>
+                          <span class="text-slate-900 dark:text-slate-100">{{ getPositionLabel(menuForm.order) }}</span>
+                        </div>
+                        <div class="flex flex-col gap-2 border-b border-slate-200 pb-2 dark:border-slate-700">
+                          <span class="font-medium text-slate-700 dark:text-slate-300">Roles:</span>
+                          <div class="flex flex-wrap gap-1">
+                            <span
+                              v-for="role in getSelectedRolesInfo()"
+                              :key="role.value"
+                              class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-800 dark:bg-blue-900/40 dark:text-blue-200"
+                            >
+                              <i :class="['fas', role.icon]"></i>
+                              {{ role.label }}
                             </span>
                           </div>
                         </div>
-                      </div>
-                      <div class="summary-item">
-                        <span class="summary-label">Estado:</span>
-                        <span class="summary-value">{{
-                          menuForm.isActive ? 'Activo' : 'Inactivo'
-                        }}</span>
+                        <div class="flex justify-between">
+                          <span class="font-medium text-slate-700 dark:text-slate-300">Estado:</span>
+                          <span :class="menuForm.isActive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">{{
+                            menuForm.isActive ? 'Activo' : 'Inactivo'
+                          }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </form>
+          </div>
+
+          <!-- Footer del Wizard -->
+          <div class="rounded-b-xl border border-t-0 border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-800">
+            <!-- Indicador de progreso -->
+            <div class="mb-4">
+              <div class="mb-2 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                <div
+                  class="h-full rounded-full bg-gradient-to-r from-blue-600 to-blue-500 transition-all duration-300"
+                  :style="{ width: `${(currentWizardStep / wizardSteps.length) * 100}%` }"
+                ></div>
+              </div>
+              <div class="text-center text-sm font-medium text-slate-600 dark:text-slate-400">
+                Paso {{ currentWizardStep }} de {{ wizardSteps.length }}
+              </div>
             </div>
 
-            <!-- Footer del Wizard -->
-            <div class="wizard-footer">
-              <!-- Indicador de progreso -->
-              <div class="wizard-progress">
-                <div class="progress-bar">
+            <!-- Botones de navegación -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <!-- Indicador de roles activos al editar -->
+              <div
+                v-if="isEditing && menuForm.roles && menuForm.roles.length > 0"
+                class="order-first w-full sm:order-none sm:w-auto"
+              >
+                <span class="text-xs font-medium text-slate-600 dark:text-slate-400">Roles activos:</span>
+                <div class="mt-1 flex flex-wrap gap-1">
                   <div
-                    class="progress-fill"
-                    :style="{ width: `${(currentWizardStep / wizardSteps.length) * 100}%` }"
-                  ></div>
-                </div>
-                <span class="progress-text"
-                  >Paso {{ currentWizardStep }} de {{ wizardSteps.length }}</span
-                >
-              </div>
-
-              <!-- Botones de navegación -->
-              <div class="wizard-actions">
-                <!-- Indicador de roles activos al editar -->
-                <div
-                  v-if="isEditing && menuForm.roles && menuForm.roles.length > 0"
-                  class="active-roles-indicator"
-                >
-                  <span class="indicator-label">Roles activos:</span>
-                  <div class="active-roles-list">
-                    <div
-                      v-for="role in getSelectedRolesInfo()"
-                      :key="role.value"
-                      class="active-role-item"
-                      :class="role.value"
-                    >
-                      <i :class="['fas fas', role.icon]"></i>
-                      <span>{{ role.label }}</span>
-                      <span v-if="role.value === 'ROLE_SUPER_USER'" class="role-badge">
-                        <i class="fa-crown"></i>
-                        Máximo
-                      </span>
-                    </div>
+                    v-for="role in getSelectedRolesInfo()"
+                    :key="role.value"
+                    class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-800 dark:bg-blue-900/40 dark:text-blue-200"
+                  >
+                    <i :class="['fas', role.icon]"></i>
+                    <span>{{ role.label }}</span>
                   </div>
                 </div>
+              </div>
 
+              <div class="flex items-center gap-2">
                 <button
                   v-if="currentWizardStep > 1"
                   type="button"
                   @click="previousStep"
-                  class="wizard-btn wizard-btn-secondary"
+                  class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
                 >
                   <i class="fas fa-chevron-left"></i>
                   Anterior
@@ -990,7 +982,7 @@
                   v-if="currentWizardStep < wizardSteps.length"
                   type="button"
                   @click="nextStep"
-                  class="wizard-btn wizard-btn-primary"
+                  class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   :disabled="!canProceedToNextStep"
                 >
                   Siguiente
@@ -1000,7 +992,7 @@
                 <button
                   v-if="currentWizardStep === wizardSteps.length"
                   type="submit"
-                  class="wizard-btn wizard-btn-success"
+                  class="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   :disabled="!validateForm()"
                   form="menu-form"
                 >
@@ -1008,14 +1000,13 @@
                   {{ isEditing ? 'Actualizar' : 'Crear' }} Menú
                 </button>
 
-                <button type="button" @click="closeDialog" class="wizard-btn wizard-btn-cancel">
+                <button type="button" @click="closeDialog" class="inline-flex items-center gap-2 rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 dark:border-red-700 dark:bg-slate-700 dark:text-red-400 dark:hover:bg-red-900/20">
                   <i class="fas fa-times"></i>
                   Cancelar
                 </button>
               </div>
             </div>
           </div>
-        </div>
       </div>
     </div>
 
@@ -3148,4147 +3139,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Layout principal */
-.menu-manager-layout {
-  display: flex;
-  min-height: 100vh;
-  background: var(--bg-secondary);
-}
-
-.main-content {
-  flex: 1;
-  margin-left: 80px;
-  padding-top: 80px;
-  transition: margin-left 0.3s ease;
-}
-
-.main-content.sidebar-expanded {
-  margin-left: 280px;
-}
-
-.main-content.with-header {
-  padding-top: 80px;
-}
-
-.menu-manager-container {
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* Header */
-.manager-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.manager-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 1rem 0;
-}
-
-.manager-title i {
-  color: var(--accent-primary);
-}
-
-.manager-subtitle {
-  font-size: 1.125rem;
-  color: var(--text-secondary);
-  margin: 0;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-/* Barra de acciones mejorada */
-.action-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: var(--bg-card);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 12px var(--shadow-color);
-}
-
-.action-group {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.action-group.main-actions {
-  justify-content: center;
-  gap: 1rem;
-}
-
-/* Barra de acciones centrada */
-.action-bar.centered {
-  justify-content: center;
-  padding: 1.5rem 0;
-}
-
-.create-menu-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 2rem;
-  background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
-  color: white;
-  border: none;
-  border-radius: 16px;
-  font-weight: 700;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 6px 20px var(--focus-shadow);
-  position: relative;
-  overflow: hidden;
-}
-
-.create-menu-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, var(--bg-overlay-light, rgba(255, 255, 255, 0.2)), transparent);
-  transition: left 0.6s ease;
-}
-
-.create-menu-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px var(--focus-shadow);
-  background: linear-gradient(135deg, var(--primary-color), var(--button-primary-hover));
-}
-
-.create-menu-btn:hover:not(:disabled)::before {
-  left: 100%;
-}
-
-.create-menu-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.action-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.action-btn:hover:not(:disabled) {
-  background: var(--bg-hover);
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-  transform: translateY(-1px);
-}
-
-.action-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.action-btn.secondary {
-  background: var(--bg-secondary);
-  border: 2px solid var(--border-color);
-  padding: 0.875rem 1.5rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  border-radius: 14px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.action-btn.secondary:hover:not(:disabled) {
-  background: var(--bg-hover);
-  border-color: var(--accent-primary);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--shadow-primary);
-}
-
-.action-btn.migration {
-  background: linear-gradient(135deg, var(--warning-color), var(--warning-hover));
-  color: white;
-  border: 2px solid transparent;
-  padding: 0.875rem 1.5rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  border-radius: 14px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
-}
-
-.action-btn.migration:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--warning-hover), var(--warning-color));
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-}
-
-.action-btn.migration:disabled {
-  background: var(--bg-disabled);
-  color: var(--text-disabled);
-  box-shadow: none;
-  cursor: not-allowed;
-}
-
-.action-btn.diagnostic {
-  background: linear-gradient(135deg, var(--info-color), var(--primary-color));
-  color: white;
-  border: 2px solid transparent;
-  padding: 0.875rem 1.5rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  border-radius: 14px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
-}
-
-.action-btn.diagnostic:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--primary-color), var(--info-color));
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
-}
-
-.action-btn.diagnostic:disabled {
-  background: var(--bg-disabled);
-  color: var(--text-disabled);
-  box-shadow: none;
-  cursor: not-allowed;
-}
-
-/* Barra de búsqueda y filtros */
-.search-and-filters {
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background: var(--bg-card);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 12px var(--shadow-color);
-}
-
-.search-container {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.search-box {
-  position: relative;
-  flex: 1;
-  max-width: 400px;
-}
-
-.search-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  font-size: 1.125rem;
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 3rem;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  font-size: 0.95rem;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  transition: all 0.3s ease;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.clear-search-btn {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-}
-
-.clear-search-btn:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.filter-controls {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.filter-select {
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 150px;
-}
-
-.filter-select:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-}
-
-.view-controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2rem;
-  margin: 1.5rem 0;
-  padding: 1rem;
-  background: var(--bg-primary);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* Opciones de visualización */
-.menu-display-options {
-  margin-bottom: 2rem;
-}
-
-.view-toggle {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  background: var(--bg-primary);
-  padding: 0.5rem;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 2px 8px var(--shadow-color);
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex: 1;
-  justify-content: center;
-  min-width: 0;
-}
-
-.toggle-btn i {
-  font-size: 1.1rem;
-  color: inherit;
-}
-
-.toggle-btn:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-  transform: translateY(-1px);
-}
-
-.toggle-btn.active {
-  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
-  color: white;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-}
-
-.toggle-btn.active:hover {
-  background: linear-gradient(135deg, #1d4ed8, var(--accent-color));
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-}
-
-.create-menu-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 2rem;
-  background: linear-gradient(135deg, var(--accent-primary), var(--button-primary-hover));
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(var(--primary-color-rgb), 0.3);
-}
-
-.create-menu-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(var(--primary-color-rgb), 0.4);
-}
-
-/* Grid de menús */
-.menus-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.menu-card {
-  background: var(--bg-primary);
-  border-radius: 16px;
-  padding: 1.5rem;
-  border: 1px solid var(--border-primary);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px var(--shadow-primary);
-  position: relative;
-  overflow: hidden;
-  animation: slideInUp 0.5s ease-out;
-}
-
-.menu-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, var(--bg-overlay-light, rgba(255, 255, 255, 0.2)), transparent);
-  transition: left 0.5s ease;
-}
-
-.menu-card:hover::before {
-  left: 100%;
-}
-
-.menu-card:hover {
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
-  border-color: var(--accent-primary);
-}
-
-.menu-card:active {
-  transform: translateY(-2px) scale(0.98);
-  transition: all 0.1s ease;
-}
-
-/* Animación de entrada para las tarjetas */
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Animación escalonada para múltiples tarjetas */
-.menu-card:nth-child(1) {
-  animation-delay: 0.1s;
-}
-.menu-card:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.menu-card:nth-child(3) {
-  animation-delay: 0.3s;
-}
-.menu-card:nth-child(4) {
-  animation-delay: 0.4s;
-}
-.menu-card:nth-child(5) {
-  animation-delay: 0.5s;
-}
-.menu-card:nth-child(6) {
-  animation-delay: 0.6s;
-}
-.menu-card:nth-child(n + 7) {
-  animation-delay: 0.7s;
-}
-
-/* Animaciones de transición entre vistas */
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.fade-slide-enter-from {
-  opacity: 0;
-  transform: translateX(30px);
-}
-
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateX(-30px);
-}
-
-.fade-slide-enter-to,
-.fade-slide-leave-from {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.menu-card-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.menu-icon {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, var(--accent-primary), var(--button-primary-hover));
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-
-.menu-icon i {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  line-height: 1;
-}
-
-.menu-info h3 {
-  margin: 0 0 0.25rem 0;
-  color: var(--text-primary);
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.menu-info p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-/* Estilos para metadatos del menú */
-.menu-meta {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-top: 0.5rem;
-}
-
-.menu-order,
-.menu-parent {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  background: var(--bg-secondary);
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.menu-path {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  font-family: 'Courier New', monospace;
-  background: var(--bg-secondary);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  margin: 0.5rem 0;
-}
-
-.menu-roles {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.role-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
-}
-
-.menu-actions {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.menu-card:hover .menu-actions {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.edit-btn,
-.delete-btn {
-  padding: 0.5rem;
-  border: none;
-  border-radius: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.edit-btn::before,
-.delete-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, var(--bg-overlay-light, rgba(255, 255, 255, 0.2)), transparent);
-  transition: left 0.3s ease;
-}
-
-.edit-btn:hover::before,
-.delete-btn:hover::before {
-  left: 100%;
-}
-
-.edit-btn:hover,
-.delete-btn:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.edit-btn:active,
-.delete-btn:active {
-  transform: translateY(0) scale(0.95);
-  transition: all 0.1s ease;
-}
-
-.edit-btn {
-  background: rgba(var(--accent-rgb), 0.1);
-  color: var(--accent-primary);
-}
-
-.edit-btn:hover {
-  background: rgba(var(--accent-rgb), 0.2);
-}
-
-.delete-btn {
-  background: var(--error-bg);
-  color: var(--error-color);
-}
-
-.delete-btn:hover {
-  background: var(--error-light);
-}
-
-/* Clase para elementos ocultos visualmente pero accesibles para lectores de pantalla */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* Modal */
-.dialog-overlay,
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--bg-overlay, rgba(0, 0, 0, 0.6));
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-  animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.dialog-content {
-  background: var(--bg-primary);
-  border-radius: 16px;
-  width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
-  overflow: hidden;
-  box-shadow: 0 20px 60px var(--shadow-color);
-  animation: slideIn 0.3s ease-out;
-  border: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2rem 2.5rem;
-  background: var(--primary-color);
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
-
-.dialog-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1));
-  pointer-events: none;
-}
-
-.dialog-header h2 {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  position: relative;
-  z-index: 1;
-}
-
-.dialog-header h2 i {
-  font-size: 1.75rem;
-  opacity: 0.9;
-}
-
-.close-btn {
-  background: var(--bg-overlay-light, rgba(255, 255, 255, 0.1));
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  font-size: 1.25rem;
-  cursor: pointer;
-  padding: 0.75rem;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  position: relative;
-  z-index: 1;
-  backdrop-filter: blur(10px);
-}
-
-.close-btn:hover {
-  background: var(--bg-overlay-medium, rgba(255, 255, 255, 0.2));
-  transform: scale(1.05);
-}
-
-.close-btn:hover {
-  background: var(--bg-overlay-light, rgba(255, 255, 255, 0.1));
-}
-
-.dialog-body {
-  padding: 2.5rem;
-  max-height: calc(95vh - 200px);
-  overflow-y: auto;
-  background: var(--bg-primary);
-  flex: 1;
-}
-
-/* Scrollbar personalizado para el modal */
-.dialog-body::-webkit-scrollbar {
-  width: 8px;
-}
-
-.dialog-body::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-  border-radius: 4px;
-}
-
-.dialog-body::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 4px;
-}
-
-.dialog-body::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
-
-/* Secciones del formulario */
-.form-section {
-  margin-bottom: 2.5rem;
-  padding: 2rem;
-  background: var(--bg-secondary);
-  border-radius: 16px;
-  border: 1px solid var(--border-primary);
-  transition: all 0.2s ease;
-}
-
-.form-section:hover {
-  border-color: var(--accent-primary);
-  box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.1);
-}
-
-.form-section:last-child {
-  margin-bottom: 0;
-}
-
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 1.75rem 0;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid var(--accent-primary);
-  position: relative;
-}
-
-.section-title::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 40px;
-  height: 2px;
-  background: var(--accent-secondary);
-  border-radius: 1px;
-}
-
-.section-title i {
-  color: var(--accent-primary);
-  font-size: 1.5rem;
-}
-
-/* Campos del formulario */
-.form-group {
-  margin-bottom: 2rem;
-  position: relative;
-}
-
-.form-label {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.75rem;
-  font-size: 1rem;
-  letter-spacing: 0.025em;
-}
-
-.form-label i {
-  color: var(--accent-primary);
-  font-size: 1.25rem;
-}
-
-.form-input,
-.form-select {
-  width: 100%;
-  padding: 1rem 1.25rem;
-  border: 2px solid var(--input-border);
-  border-radius: 12px;
-  font-size: 1rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: var(--input-bg);
-  color: var(--text-primary);
-  box-shadow:
-    inset 0 1px 3px rgba(0, 0, 0, 0.1),
-    0 1px 3px rgba(0, 0, 0, 0.05);
-  position: relative;
-}
-
-.form-input::placeholder,
-.form-select option {
-  color: var(--text-muted);
-  opacity: 0.7;
-  font-weight: 400;
-}
-
-.form-input:focus,
-.form-select:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow:
-    0 0 0 4px rgba(var(--accent-rgb), 0.15),
-    inset 0 1px 3px rgba(0, 0, 0, 0.1),
-    0 4px 12px rgba(0, 0, 0, 0.1);
-  background: var(--bg-primary);
-  transform: translateY(-1px);
-}
-
-.form-input:hover:not(:focus),
-.form-select:hover:not(:focus) {
-  border-color: var(--accent-primary);
-  box-shadow:
-    inset 0 1px 3px rgba(0, 0, 0, 0.1),
-    0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.form-input.error,
-.form-select.error {
-  border-color: var(--accent-danger);
-  background: var(--error-bg);
-  animation: shake 0.5s ease-in-out;
-}
-
-.form-input.success {
-  border-color: var(--accent-secondary);
-  background: rgba(16, 185, 129, 0.05);
-  position: relative;
-}
-
-.form-input.success::after {
-  content: '✓';
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--accent-secondary);
-  font-weight: bold;
-  font-size: 0.875rem;
-}
-
-.form-input.validating {
-  border-color: var(--accent-warning);
-  background: rgba(245, 158, 11, 0.05);
-  position: relative;
-}
-
-.form-input.validating::after {
-  content: '';
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--accent-warning);
-  border-top: 2px solid transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-4px);
-  }
-  75% {
-    transform: translateX(4px);
-  }
-}
-
-.form-input.error:focus,
-.form-select.error:focus {
-  border-color: var(--accent-danger);
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
-}
-
-/* Mensajes de error y ayuda */
-.error-message {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--error-color) !important;
-  font-size: 0.875rem;
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: rgba(220, 38, 38, 0.1) !important;
-  border: 1px solid rgba(220, 38, 38, 0.2) !important;
-  border-radius: 6px;
-}
-
-.error-message i {
-  font-size: 1rem;
-}
-
-.help-text {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: var(--bg-hover);
-  border: 1px solid var(--input-border);
-  border-radius: 6px;
-}
-
-.help-text i {
-  color: var(--accent-primary);
-  font-size: 1rem;
-}
-
-/* Selector de iconos */
-.icon-selector {
-  border: 1px solid var(--input-border);
-  border-radius: 12px;
-  padding: 1.5rem;
-  background: var(--bg-secondary);
-}
-
-.selected-icon {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: var(--bg-primary);
-  border: 2px solid var(--accent-primary);
-  border-radius: 8px;
-  margin-bottom: 1rem;
-}
-
-.selected-icon i {
-  font-size: 1.5rem;
-  color: var(--accent-primary);
-}
-
-.clear-icon {
-  margin-left: auto;
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 4px;
-}
-
-.clear-icon:hover {
-  background: var(--bg-hover);
-}
-
-.icon-search {
-  position: relative;
-  margin-bottom: 1rem;
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border: 2px solid var(--input-border);
-  border-radius: 8px;
-  font-size: 0.9rem;
-  background: var(--input-bg);
-  color: var(--text-primary);
-  transition: all 0.2s ease;
-}
-
-.search-input::placeholder {
-  color: var(--text-muted);
-  opacity: 0.8;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--input-focus);
-  box-shadow: 0 0 0 3px var(--focus-shadow);
-  background: var(--bg-primary);
-}
-
-.search-icon {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-secondary);
-}
-
-.icon-categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.category-btn {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--input-border);
-  background: var(--bg-primary);
-  color: var(--text-secondary);
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-}
-
-.category-btn:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-}
-
-.category-btn.active {
-  background: var(--accent-color);
-  color: white;
-  border-color: var(--accent-color);
-}
-
-.icon-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-  gap: 0.5rem;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.icon-item {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 1.25rem;
-  color: var(--text-secondary);
-}
-
-.icon-item:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-  transform: scale(1.05);
-}
-
-.icon-item.selected {
-  background: var(--accent-color);
-  color: white;
-  border-color: var(--accent-color);
-}
-
-.no-icons-found {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-secondary);
-}
-
-.no-icons-found i {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  display: block;
-}
-
-/* Selector de plantillas mejorado */
-.template-selector {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.template-option {
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem;
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  background: var(--bg-primary);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.template-option:hover {
-  border-color: var(--accent-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px var(--shadow-color);
-}
-
-.template-option.selected {
-  border-color: var(--accent-primary);
-  background: rgba(var(--accent-rgb), 0.05);
-  box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.2);
-}
-
-.template-option.selected::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-}
-
-.template-preview {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.template-preview i {
-  font-size: 2rem;
-  color: var(--accent-primary);
-  flex-shrink: 0;
-}
-
-.template-mockup {
-  flex: 1;
-  height: 80px;
-  background: var(--bg-secondary);
-  border-radius: 8px;
-  padding: 0.75rem;
-  border: 1px solid var(--border-color);
-}
-
-/* Mockups específicos */
-.mockup-basic {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.mockup-header {
-  height: 20px;
-  background: var(--accent-color);
-  border-radius: 4px;
-  opacity: 0.7;
-}
-
-.mockup-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.mockup-line {
-  height: 8px;
-  background: var(--text-secondary);
-  border-radius: 2px;
-  opacity: 0.3;
-}
-
-.mockup-line.short {
-  width: 60%;
-}
-
-.mockup-form {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.mockup-field {
-  height: 16px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-}
-
-.mockup-button {
-  height: 16px;
-  width: 50%;
-  background: var(--accent-color);
-  border-radius: 4px;
-  opacity: 0.7;
-  margin-top: auto;
-}
-
-.mockup-table {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.mockup-table-header {
-  height: 12px;
-  background: var(--accent-color);
-  border-radius: 2px;
-  opacity: 0.7;
-}
-
-.mockup-table-row {
-  height: 10px;
-  background: var(--text-secondary);
-  border-radius: 2px;
-  opacity: 0.2;
-}
-
-.mockup-dashboard {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.mockup-cards {
-  display: flex;
-  gap: 0.5rem;
-  height: 30px;
-}
-
-.mockup-card {
-  flex: 1;
-  background: var(--accent-color);
-  border-radius: 4px;
-  opacity: 0.6;
-}
-
-.mockup-chart {
-  flex: 1;
-  background: linear-gradient(
-    45deg,
-    var(--accent-color) 0%,
-    transparent 50%,
-    var(--accent-color) 100%
-  );
-  border-radius: 4px;
-  opacity: 0.3;
-}
-
-.template-info {
-  text-align: left;
-}
-
-.template-name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 0.5rem 0;
-}
-
-.template-description {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin: 0 0 1rem 0;
-  line-height: 1.4;
-}
-
-.template-features {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.feature-tag {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  background: rgba(var(--accent-rgb), 0.1);
-  color: var(--accent-primary);
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  border: 1px solid rgba(var(--accent-rgb), 0.2);
-}
-
-.template-option.selected .feature-tag {
-  background: rgba(var(--accent-rgb), 0.15);
-  border-color: rgba(var(--accent-rgb), 0.3);
-}
-
-/* Checkbox */
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
-}
-
-.form-checkbox {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.checkbox-text {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-/* Footer del diálogo mejorado */
-.dialog-footer {
-  display: flex !important;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 2rem 2.5rem;
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border-primary);
-  backdrop-filter: blur(10px);
-  position: relative;
-  visibility: visible !important;
-  opacity: 1 !important;
-  z-index: 1000;
-  flex-shrink: 0;
-  min-height: 80px;
-}
-
-.enhanced-footer {
-  flex-direction: column;
-  gap: 1.5rem;
-  padding: 2rem 2.5rem;
-}
-
-.validation-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.status-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.status-item.validating {
-  background: var(--bg-hover);
-  color: var(--primary-color);
-}
-
-.status-item.success {
-  background: var(--success-bg);
-  color: var(--success-color);
-}
-
-.status-item.error {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--error-color);
-}
-
-.action-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  width: 100%;
-}
-
-.dialog-footer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
-  opacity: 0.3;
-}
-
-/* Header limpio y organizado */
-.clean-header {
-  padding: 1.5rem 2rem;
-  background: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
-  position: relative;
-}
-
-.header-main {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.header-icon {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.25rem;
-}
-
-.header-text h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.header-subtitle {
-  margin: 0.25rem 0 0;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-}
-
-/* Indicador de progreso compacto */
-.progress-indicator.compact {
-  width: 100%;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 4px;
-  background: var(--border-color);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: 1rem;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-  border-radius: 2px;
-  transition: width 0.3s ease;
-}
-
-.progress-steps {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 1;
-  transition: all 0.3s ease;
-}
-
-.step i {
-  width: 24px;
-  height: 24px;
-  background: var(--bg-secondary);
-  border: 2px solid var(--border-color);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  transition: all 0.3s ease;
-}
-
-.step span {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  transition: all 0.3s ease;
-}
-
-.step.active i {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
-  color: white;
-}
-
-.step.active span {
-  color: var(--accent-primary);
-}
-
-.step.completed i {
-  background: var(--success-color);
-  border-color: var(--success-color);
-  color: white;
-}
-
-.step.completed span {
-  color: var(--success-color);
-}
-
-/* Botón de cerrar limpio */
-.clean-close {
-  width: 32px;
-  height: 32px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.clean-close:hover {
-  background: var(--error-color);
-  border-color: var(--error-color);
-  color: white;
-  transform: scale(1.05);
-}
-
-/* Cuerpo del modal mejorado */
-.enhanced-body {
-  padding: 0;
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.enhanced-form {
-  padding: 0;
-}
-
-/* Secciones mejoradas */
-.enhanced-section {
-  margin: 0;
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid var(--border-color);
-  transition: all 0.3s ease;
-}
-
-.enhanced-section:last-child {
-  border-bottom: none;
-}
-
-.enhanced-section.step-active {
-  background: rgba(var(--accent-primary-rgb), 0.02);
-  border-left: 3px solid var(--accent-primary);
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.section-icon {
-  width: 32px;
-  height: 32px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  font-size: 1rem;
-}
-
-.section-title-content {
-  flex: 1;
-}
-
-.section-title {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.section-description {
-  margin: 0.25rem 0 0;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-}
-
-.section-status {
-  display: flex;
-  align-items: center;
-}
-
-.section-status i {
-  font-size: 1.25rem;
-  color: var(--text-secondary);
-}
-
-.section-status i.success {
-  color: var(--success-color);
-}
-
-/* Wrapper para selector de iconos */
-.icon-selector-wrapper {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem;
-}
-
-/* Errores mejorados */
-.enhanced-error {
-  background: var(--error-bg);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 6px;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
-}
-
-/* Botón de guardar mejorado */
-.enhanced-save {
-  position: relative;
-  overflow: hidden;
-}
-
-.enhanced-save::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, var(--bg-overlay-light, rgba(255, 255, 255, 0.2)), transparent);
-  transition: left 0.6s ease;
-}
-
-.enhanced-save:hover::before {
-  left: 100%;
-}
-
-/* Botones */
-.btn {
-  display: flex !important;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 2rem;
-  border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-decoration: none;
-  position: relative;
-  overflow: hidden;
-  letter-spacing: 0.025em;
-  visibility: visible !important;
-  opacity: 1 !important;
-  z-index: 1001;
-}
-
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, var(--bg-overlay-light, rgba(255, 255, 255, 0.2)), transparent);
-  transition: left 0.5s ease;
-}
-
-.btn:hover::before {
-  left: 100%;
-}
-
-.btn:disabled {
-  opacity: 0.75 !important;
-  cursor: not-allowed;
-  border: 2px solid var(--border-primary);
-  background: var(--bg-secondary) !important;
-  color: var(--text-secondary) !important;
-  box-shadow: none !important;
-  position: relative;
-  display: flex !important;
-  visibility: visible !important;
-}
-
-.btn:disabled::before {
-  display: none;
-}
-
-.btn:disabled::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 2px,
-    rgba(var(--text-rgb, 0, 0, 0), 0.1) 2px,
-    rgba(var(--text-rgb, 0, 0, 0), 0.1) 4px
-  );
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  color: white;
-  box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.3);
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.4);
-}
-
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 10px rgba(var(--accent-rgb), 0.3);
-}
-
-.btn-secondary {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border: 2px solid var(--border-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: var(--bg-hover);
-  border-color: var(--accent-primary);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-}
-
-.btn-secondary:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
-}
-
-/* Modal de Vista Previa */
-.preview-modal {
-  background: var(--bg-primary);
-  border-radius: 16px;
-  width: 90%;
-  max-width: 800px;
-  max-height: 90vh;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.preview-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
-  color: white;
-}
-
-.preview-header h3 {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0;
-  font-size: 1.25rem;
-}
-
-.preview-content {
-  padding: 2rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.sidebar-preview {
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid var(--border-color);
-}
-
-.sidebar-preview h4 {
-  margin: 0 0 1rem 0;
-  color: var(--text-primary);
-  font-size: 1rem;
-}
-
-.menu-item-preview {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  background: var(--bg-primary);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.menu-item-preview i {
-  font-size: 1.25rem;
-  color: var(--accent-color);
-}
-
-.menu-details h4 {
-  margin: 0 0 1rem 0;
-  color: var(--text-primary);
-  font-size: 1rem;
-}
-
-.detail-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.detail-item:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-.detail-item strong {
-  min-width: 80px;
-  color: var(--text-primary);
-}
-
-.detail-item i {
-  color: var(--accent-color);
-  margin-right: 0.25rem;
-}
-
-.status-active {
-  color: var(--success-color);
-  font-weight: 600;
-}
-
-.status-inactive {
-  color: var(--error-color);
-  font-weight: 600;
-}
-
-.preview-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  padding: 1.5rem 2rem;
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border-color);
-}
-
-/* Estilos para carga y errores */
-.loading-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 2rem;
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  margin-bottom: 2rem;
-  color: var(--text-secondary);
-}
-
-.loading-indicator i {
-  font-size: 1.5rem;
-  color: var(--accent-color);
-}
-
-.error-message {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  background: rgba(220, 38, 38, 0.1) !important;
-  border: 1px solid rgba(220, 38, 38, 0.2) !important;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-  color: var(--error-color) !important;
-}
-
-.error-message i {
-  font-size: 1.25rem;
-}
-
-.retry-btn {
-  margin-left: auto;
-  padding: 0.5rem 1rem;
-  background: var(--error-color) !important;
-  color: white !important;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-}
-
-.retry-btn:hover {
-  background: var(--error-hover, #c53030);
-  transform: translateY(-1px);
-}
-
-.retry-btn:active {
-  transform: translateY(0);
-}
-
-/* Botones deshabilitados */
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-/* Estilos para selector de roles */
-.roles-selector {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-
-.role-option {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem;
-  transition: all 0.2s ease;
-}
-
-.role-option:hover {
-  border-color: var(--accent-color);
-  background: var(--bg-hover);
-}
-
-.role-option .checkbox-label {
-  margin-bottom: 0.5rem;
-}
-
-.role-option .checkbox-text {
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.role-description {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin-top: 0.25rem;
-  line-height: 1.4;
-}
-
-/* Estilos para vista de árbol */
-.menu-tree {
-  margin-top: 2rem;
-}
-
-/* Estilos para la vista de árbol */
-.menu-tree-view {
-  background: var(--bg-primary);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  overflow: hidden;
-}
-
-.tree-header {
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
-  padding: 1.5rem;
-}
-
-/* Estilos para la sección de ayuda */
-.help-section {
-  margin-bottom: 1.5rem;
-}
-
-.help-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 1rem 1.5rem;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.help-toggle:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.help-toggle i:first-child {
-  font-size: 1.25rem;
-}
-
-.help-toggle i:last-child {
-  margin-left: auto;
-  transition: transform 0.3s ease;
-}
-
-.help-section.expanded .help-toggle i:last-child {
-  transform: rotate(180deg);
-}
-
-.help-content {
-  margin-top: 1rem;
-  padding: 1.5rem;
-  background: var(--bg-primary);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* Estilos para el header de la guía */
-.help-header {
-  text-align: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 2px solid var(--border-color);
-}
-
-.help-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  margin: 0 0 1rem 0;
-  color: var(--text-primary);
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.help-title i {
-  color: var(--accent-primary);
-  font-size: 1.75rem;
-}
-
-.help-description {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 1rem;
-  line-height: 1.6;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-/* Estilos para las categorías */
-.help-categories {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.help-category {
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid var(--border-color);
-}
-
-.category-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 0 0 1.5rem 0;
-  color: var(--text-primary);
-  font-size: 1.25rem;
-  font-weight: 600;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.category-title i {
-  color: var(--accent-primary);
-  font-size: 1.25rem;
-}
-
-/* Estilos para los items de ayuda mejorados */
-.help-items {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.25rem;
-  align-items: stretch;
-}
-
-.help-item {
-  display: flex;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: var(--bg-primary);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
-  height: 100%;
-  align-items: flex-start;
-}
-
-.help-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  border-color: var(--accent-primary);
-}
-
-.help-icon {
-  flex-shrink: 0;
-  width: 52px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  border-radius: 12px;
-  color: white;
-  box-shadow: 0 3px 12px rgba(37, 99, 235, 0.3);
-}
-
-.help-icon i {
-  font-size: 1.5rem;
-}
-
-.help-text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.help-text h5 {
-  margin: 0 0 0.75rem 0;
-  color: var(--text-primary);
-  font-size: 1.125rem;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.help-text p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  line-height: 1.6;
-  flex: 1;
-}
-
-/* Responsive design mejorado para espacios angostos */
-@media (max-width: 768px) {
-  .help-content {
-    padding: 1rem;
-  }
-
-  .help-header {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-  }
-
-  .help-title {
-    font-size: 1.25rem;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .help-description {
-    font-size: 0.9rem;
-  }
-
-  .help-categories {
-    gap: 1.5rem;
-  }
-
-  .help-category {
-    padding: 1rem;
-  }
-
-  .category-title {
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-  }
-
-  .help-items {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .help-item {
-    padding: 1.25rem;
-  }
-
-  .help-icon {
-    width: 48px;
-    height: 48px;
-  }
-
-  .help-icon i {
-    font-size: 1.375rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .help-content {
-    padding: 0.75rem;
-  }
-
-  .help-item {
-    flex-direction: column;
-    text-align: center;
-    padding: 1rem;
-    align-items: center;
-  }
-
-  .help-icon {
-    width: 44px;
-    height: 44px;
-    margin-bottom: 0.75rem;
-  }
-
-  .help-icon i {
-    font-size: 1.25rem;
-  }
-
-  .help-text {
-    text-align: center;
-  }
-
-  .help-text h5 {
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .help-text p {
-    font-size: 0.875rem;
-  }
-}
-
-/* Estilos para la sección de búsqueda */
-.search-section {
-  margin-bottom: 0;
-}
-
-.search-container {
-  max-width: 600px;
-}
-
-.search-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-icon {
-  position: absolute;
-  left: 1rem;
-  color: var(--text-secondary);
-  font-size: 1.25rem;
-  z-index: 2;
-}
-
-.search-input {
-  width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.search-input::placeholder {
-  color: var(--text-secondary);
-}
-
-.clear-search-btn {
-  position: absolute;
-  right: 0.5rem;
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.clear-search-btn:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.search-stats {
-  margin-top: 0.5rem;
-  padding: 0 0.5rem;
-}
-
-.results-count {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-/* Estilos para el estado sin resultados */
-.no-results {
-  text-align: center;
-  padding: 3rem 2rem;
-  color: var(--text-secondary);
-}
-
-.no-results i {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-  opacity: 0.5;
-}
-
-.no-results h3 {
-  margin: 0 0 0.5rem 0;
-  color: var(--text-primary);
-  font-size: 1.5rem;
-}
-
-.no-results p {
-  margin: 0 0 1.5rem 0;
-  font-size: 1rem;
-}
-
-.clear-search-btn-large {
-  padding: 0.75rem 1.5rem;
-  background: var(--accent-primary);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0 auto;
-  transition: all 0.3s ease;
-}
-
-.clear-search-btn-large:hover {
-  background: var(--accent-secondary);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.tree-container {
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid var(--border-color);
-}
-
-.tree-container:empty::before {
-  content: 'No hay menús para mostrar';
-  display: block;
-  text-align: center;
-  color: var(--text-secondary);
-  font-style: italic;
-  padding: 2rem;
-}
-
-/* Estilos para selector de tipo de menú */
-.menu-type-selector {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-
-.menu-type-option {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: var(--bg-primary);
-}
-
-.menu-type-option:hover {
-  border-color: var(--accent-primary);
-  background: var(--bg-hover);
-}
-
-.menu-type-option.active {
-  border-color: var(--accent-primary);
-  background: rgba(var(--accent-rgb), 0.05);
-}
-
-.menu-type-option i {
-  font-size: 1.5rem;
-  color: var(--accent-primary);
-}
-
-.option-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.option-title {
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.option-description {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  line-height: 1.3;
-}
-
-/* Estilos para vista previa de jerarquía */
-.hierarchy-preview {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: var(--bg-secondary);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  margin-top: 0.5rem;
-}
-
-.hierarchy-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--bg-primary);
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-}
-
-.hierarchy-item.parent {
-  background: rgba(37, 99, 235, 0.1);
-  border-color: var(--primary-color);
-}
-
-.hierarchy-item.child {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: var(--success-color);
-}
-
-.hierarchy-item i {
-  color: var(--primary-color);
-}
-
-.hierarchy-item.child i {
-  color: var(--success-color);
-}
-
-.hierarchy-connector {
-  color: var(--text-secondary);
-  font-size: 1.25rem;
-}
-
-/* Estilos para visualización mejorada de submenús */
-.menu-card.is-submenu {
-  border-left: 4px solid var(--success-color);
-  background: linear-gradient(135deg, var(--success-bg) 0%, transparent 100%);
-}
-
-.menu-card.has-children {
-  border-left: 4px solid var(--primary-color);
-  background: linear-gradient(135deg, var(--bg-hover) 0%, transparent 100%);
-}
-
-.menu-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.menu-badges {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  align-items: flex-end;
-}
-
-.submenu-badge,
-.parent-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.submenu-badge {
-  background: rgba(34, 197, 94, 0.1);
-  color: var(--success-color);
-  border: 1px solid rgba(34, 197, 94, 0.2);
-}
-
-.parent-badge {
-  background: rgba(37, 99, 235, 0.1);
-  color: var(--primary-color);
-  border: 1px solid rgba(37, 99, 235, 0.2);
-}
-
-.menu-parent i {
-  margin-right: 0.25rem;
-  color: var(--text-secondary);
-}
-
-.add-submenu-btn {
-  background: rgba(34, 197, 94, 0.1);
-  color: var(--success-color);
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  padding: 0.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.add-submenu-btn:hover {
-  background: rgba(34, 197, 94, 0.2);
-  transform: translateY(-1px);
-}
-
-.add-submenu-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Estilos para vista de árbol jerárquico */
-.menu-tree-view {
-  background: var(--bg-primary);
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 20px var(--shadow-color);
-}
-
-.tree-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.tree-node {
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.root-node {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  margin-bottom: 1rem;
-}
-
-.root-node:hover {
-  border-color: var(--primary-color);
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
-}
-
-.child-node {
-  background: rgba(34, 197, 94, 0.05);
-  border: 1px solid rgba(34, 197, 94, 0.1);
-  margin-left: 2rem;
-  margin-bottom: 0.5rem;
-}
-
-.child-node:hover {
-  border-color: var(--success-color);
-  background: rgba(34, 197, 94, 0.1);
-}
-
-.node-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-}
-
-.node-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex: 1;
-}
-
-.expand-toggle {
-  background: none;
-  border: none;
-  padding: 0.25rem;
-  cursor: pointer;
-  color: var(--text-secondary);
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.expand-toggle:hover {
-  background: var(--bg-hover);
-  color: var(--primary-color);
-}
-
-.expand-toggle.expanded i {
-  transform: rotate(90deg);
-}
-
-.node-spacer {
-  width: 24px;
-  height: 24px;
-}
-
-.child-connector {
-  color: var(--success-color);
-  font-size: 1.25rem;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.node-icon {
-  color: var(--primary-color);
-  font-size: 1.5rem;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(37, 99, 235, 0.1);
-  border-radius: 6px;
-}
-
-.child-node .node-icon {
-  color: var(--success-color);
-  background: rgba(34, 197, 94, 0.1);
-}
-
-.node-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.node-name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 0.25rem 0;
-}
-
-.child-node .node-name {
-  font-size: 1rem;
-  font-weight: 500;
-}
-
-.node-path {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  font-family: 'Courier New', monospace;
-  background: var(--bg-secondary);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  display: inline-block;
-  margin-bottom: 0.5rem;
-}
-
-.node-meta {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.node-order,
-.children-count,
-.submenu-indicator {
-  font-size: 0.8rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-weight: 500;
-}
-
-.node-order {
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-}
-
-.children-count {
-  background: rgba(37, 99, 235, 0.1);
-  color: var(--primary-color);
-}
-
-.submenu-indicator {
-  background: rgba(34, 197, 94, 0.1);
-  color: var(--success-color);
-}
-
-.node-actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.node-actions .small {
-  padding: 0.5rem;
-  font-size: 0.9rem;
-  min-width: auto;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.children-container {
-  padding-left: 1rem;
-  border-left: 2px solid rgba(37, 99, 235, 0.1);
-  margin-left: 1rem;
-}
-
-/* Estilos para la sección de submenús */
-.submenu-section {
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-top: 1rem;
-}
-
-.submenu-section .section-title {
-  color: var(--accent-primary);
-  margin-bottom: 1rem;
-}
-
-/* Estilos para el contenedor de path con parte estática y editable */
-.path-input-container {
-  display: flex;
-  align-items: center;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: var(--bg-primary);
-  overflow: hidden;
-  transition: border-color 0.2s ease;
-}
-
-.path-input-container:focus-within {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-}
-
-.path-static-part {
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  padding: 12px 16px;
-  border-right: 1px solid var(--border-color);
-  font-family: 'Roboto Mono', monospace;
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-  user-select: none;
-  min-width: fit-content;
-  display: flex;
-  align-items: center;
-}
-
-.path-editable-part {
-  border: none !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  flex: 1;
-  padding: 12px 16px;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 14px;
-}
-
-.path-editable-part:focus {
-  outline: none;
-  box-shadow: none;
-  background: var(--bg-primary) !important;
-}
-
-.path-editable-part::placeholder {
-  color: var(--text-tertiary);
-  font-style: italic;
-}
-
-.submenus-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.submenu-item {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem;
-  position: relative;
-}
-
-.submenu-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.submenu-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.remove-submenu-btn {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--accent-danger);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 6px;
-  padding: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-}
-
-.remove-submenu-btn:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: var(--accent-danger);
-}
-
-.submenu-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.submenu-fields .form-group:last-child {
-  grid-column: 1 / -1;
-}
-
-.add-submenu-btn {
-  background: var(--accent-secondary);
-  color: var(--text-inverse);
-  border: none;
-  border-radius: 8px;
-  padding: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  border: 2px dashed transparent;
-}
-
-.add-submenu-btn:hover {
-  background: var(--success-hover);
-  transform: translateY(-1px);
-}
-
-.add-submenu-btn:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--focus-shadow);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0;
-    padding-top: 60px;
-  }
-
-  .menu-manager-container {
-    padding: 1rem;
-  }
-
-  .manager-title {
-    font-size: 2rem;
-  }
-
-  .menus-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .template-selector {
-    grid-template-columns: 1fr;
-  }
-
-  .preview-content {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .dialog-content {
-    margin: 1rem;
-    max-width: calc(100vw - 2rem);
-  }
-
-  /* Responsive para submenús */
-  .submenu-fields {
-    grid-template-columns: 1fr;
-  }
-
-  .submenu-section {
-    padding: 1rem;
-  }
-}
-
-/* ===== ESTILOS DEL WIZARD ===== */
-
-/* Modal del wizard */
-.wizard-modal {
-  max-width: 800px;
-  width: 90vw;
-  max-height: 90vh;
-  background: var(--bg-primary);
-  border-radius: 16px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--border-color);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Header del wizard */
-.wizard-header {
-  background: var(--primary-color);
-  color: white;
-  padding: 2rem;
-  border-radius: 12px 12px 0 0;
-  position: relative;
-  min-height: 120px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-/* Mejoras para modo oscuro */
-.dark-theme .wizard-header {
-  background: var(--primary-color);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.wizard-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-  pointer-events: none;
-  z-index: 0;
-}
-
-.dark-theme .wizard-header::before {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
-}
-
-.wizard-header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  position: relative;
-  z-index: 1;
-  width: 100%;
-}
-
-.wizard-title-section {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.wizard-icon {
-  width: 3rem;
-  height: 3rem;
-  background: var(--bg-overlay-medium, rgba(255, 255, 255, 0.2));
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: var(--text-inverse);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.wizard-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.wizard-text h2,
-.wizard-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 0;
-  color: var(--text-inverse);
-  line-height: 1.2;
-}
-
-.wizard-subtitle {
-  font-size: 1rem;
-  margin: 0;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.4;
-  font-weight: 400;
-}
-
-.wizard-close-btn {
-  background: var(--bg-overlay-medium, rgba(255, 255, 255, 0.2));
-  border: none;
-  color: var(--text-inverse);
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  flex-shrink: 0;
-  margin-top: 0.5rem;
-}
-
-.wizard-close-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
-}
-
-.wizard-close-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Indicador de pasos */
-.wizard-steps {
-  display: flex;
-  justify-content: space-between;
-  padding: 1.5rem 2rem 1rem 2rem;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
-  gap: 1rem;
-}
-
-/* Mejoras para modo oscuro */
-.dark-theme .wizard-steps {
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.wizard-step {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  flex: 1;
-  position: relative;
-}
-
-.wizard-step.active {
-  background: var(--bg-hover);
-}
-
-.wizard-step.completed {
-  opacity: 0.8;
-}
-
-.wizard-step.disabled {
-  opacity: 0.5;
-}
-
-.step-indicator {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--bg-tertiary);
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 0.875rem;
-  transition: all 0.3s ease;
-  border: 2px solid var(--border-color);
-  flex-shrink: 0;
-}
-
-.wizard-step.active .step-indicator {
-  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
-  color: var(--text-inverse);
-  box-shadow: 0 4px 12px var(--focus-shadow);
-  border-color: var(--accent-color);
-}
-
-.wizard-step.completed .step-indicator {
-  background: var(--success-color);
-  color: var(--text-inverse);
-  border-color: var(--success-color);
-}
-
-.step-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  flex: 1;
-}
-
-.step-title {
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: var(--text-primary);
-  transition: color 0.3s ease;
-}
-
-.step-description {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  line-height: 1.2;
-  transition: color 0.3s ease;
-}
-
-.wizard-step.active .step-title {
-  color: var(--accent-color);
-}
-
-.wizard-step.completed .step-title,
-.wizard-step.completed .step-description {
-  color: var(--success-color);
-}
-
-.wizard-step.disabled .step-title,
-.wizard-step.disabled .step-description {
-  opacity: 0.5;
-}
-
-/* Mejoras para modo oscuro */
-.dark-theme .wizard-step.active {
-  background: rgba(96, 165, 250, 0.1);
-  border: 1px solid rgba(96, 165, 250, 0.2);
-}
-
-.dark-theme .wizard-step.active .step-indicator {
-  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
-}
-
-.step-description {
-  margin: 0.25rem 0 0 0;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-/* Contenido del wizard */
-.wizard-body {
-  flex: 1;
-  padding: 2rem;
-  max-height: 60vh;
-  overflow-y: auto;
-  background: var(--bg-primary);
-}
-
-/* Mejoras para modo oscuro */
-.dark-theme .wizard-body {
-  background: var(--bg-primary);
-}
-
-.dark-theme .wizard-body::-webkit-scrollbar {
-  width: 8px;
-}
-
-.dark-theme .wizard-body::-webkit-scrollbar-track {
-  background: var(--bg-tertiary);
-  border-radius: 4px;
-}
-
-.dark-theme .wizard-body::-webkit-scrollbar-thumb {
-  background: var(--border-primary);
-  border-radius: 4px;
-}
-
-.dark-theme .wizard-body::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
-
-.wizard-form {
-  height: 100%;
-}
-
-.wizard-step-content {
-  min-height: 400px;
-  display: flex;
-  flex-direction: column;
-}
-
-.step-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.step-header .step-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.step-header .step-description {
-  color: var(--text-secondary);
-  font-size: 1rem;
-}
-
-.step-fields {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-/* Resumen */
-.summary-content {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.summary-section {
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid var(--border-color);
-}
-
-.summary-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.summary-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.summary-item:last-child {
-  border-bottom: none;
-}
-
-.summary-label {
-  font-weight: 600;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-.summary-value {
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  text-align: right;
-  max-width: 60%;
-  word-break: break-word;
-}
-
-.summary-value i {
-  margin-right: 0.25rem;
-}
-
-/* Footer del wizard */
-.wizard-footer {
-  background: var(--bg-secondary);
-  padding: 1rem 2rem;
-  border-radius: 0 0 12px 12px;
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* Mejoras para modo oscuro */
-.dark-theme .wizard-footer {
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border-primary);
-}
-
-.wizard-progress {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
-
-.progress-bar {
-  height: 8px;
-  background: var(--bg-tertiary);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent-color), #1d4ed8);
-  transition: width 0.3s ease;
-  border-radius: 4px;
-}
-
-.progress-text {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  text-align: center;
-  font-weight: 500;
-}
-
-.wizard-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.wizard-btn {
-  padding: 0.625rem 1.25rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
-  min-width: 120px;
-  justify-content: center;
-}
-
-.wizard-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.wizard-btn-secondary {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-primary);
-}
-
-.wizard-btn-secondary:hover:not(:disabled) {
-  background: var(--bg-secondary);
-  border-color: var(--border-hover);
-}
-
-/* Mejoras para modo oscuro */
-.dark-theme .wizard-btn-secondary {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-primary);
-}
-
-.dark-theme .wizard-btn-secondary:hover:not(:disabled) {
-  background: var(--bg-tertiary);
-  border-color: var(--border-hover);
-}
-
-.wizard-btn-primary {
-  background: linear-gradient(135deg, var(--accent-color), #1d4ed8);
-  color: white;
-}
-
-.wizard-btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
-}
-
-.wizard-btn-success {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-}
-
-.wizard-btn-success:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-}
-
-.wizard-btn-cancel {
-  background: var(--bg-primary);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-}
-
-.wizard-btn-cancel:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-/* Responsive para el wizard */
-@media (max-width: 768px) {
-  .wizard-modal {
-    width: 95vw;
-    max-height: 95vh;
-  }
-
-  .wizard-header {
-    padding: 1rem 1.5rem;
-  }
-
-  .wizard-steps {
-    padding: 1rem 1.5rem;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .wizard-step {
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .step-content {
-    flex: 1;
-  }
-
-  .wizard-body {
-    padding: 1.5rem;
-  }
-
-  .wizard-footer {
-    padding: 1rem 1.5rem;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .wizard-progress {
-    width: 100%;
-  }
-
-  .wizard-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .wizard-btn {
-    min-width: auto;
-    flex: 1;
-    padding: 0.75rem 1rem;
-  }
-
-  .summary-content {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ===== ESTILOS PARA ROLES MEJORADOS ===== */
-
-/* Información de jerarquía de roles */
-.role-hierarchy-info {
-  background: var(--bg-hover);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--primary-color);
-  font-size: 0.9rem;
-}
-
-.role-hierarchy-info i {
-  color: var(--primary-color);
-}
-
-/* Opciones de roles mejoradas */
-.role-option {
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 0.75rem;
-  transition: all 0.2s ease;
-}
-
-.role-option:hover {
-  border-color: var(--accent-color);
-  background: var(--bg-hover);
-}
-
-.checkbox-label.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.checkbox-label.disabled .checkbox-text {
-  color: var(--text-secondary);
-}
-
-/* Badge de rol - estilos específicos se definen más abajo */
-
-.role-badge.super-user {
-  background: var(--error-bg);
-  color: var(--error-color);
-  border: 1px solid var(--error-light);
-}
-
-.role-badge.admin {
-  background: var(--warning-bg, #fff3e0);
-  color: var(--warning-color);
-  border: 1px solid var(--warning-light, #ffcc80);
-}
-
-.role-badge.collaborator {
-  background: var(--success-bg);
-  color: var(--success-color);
-  border: 1px solid var(--success-light);
-}
-
-.role-badge.user {
-  background: var(--bg-hover);
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
-}
-
-/* Estilos específicos para roles individuales (igual que en vista de árbol) */
-.role-super_user {
-  background: var(--error-bg);
-  color: var(--error-color);
-  border: 1px solid var(--error-light);
-}
-
-.role-admin {
-  background: var(--warning-bg, #fff3e0);
-  color: var(--warning-color);
-  border: 1px solid var(--warning-light, #ffcc80);
-}
-
-.role-collaborator {
-  background: var(--success-bg);
-  color: var(--success-color);
-  border: 1px solid var(--success-light);
-}
-
-.role-user {
-  background: var(--bg-hover);
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
-}
-
-.role-badge i {
-  font-size: 0.7rem;
-}
-
-/* Advertencia de rol */
-.role-warning {
-  background: var(--success-bg);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 6px;
-  padding: 0.5rem 0.75rem;
-  margin-top: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--success-color);
-  font-size: 0.8rem;
-}
-
-.role-warning i {
-  color: var(--success-color);
-}
-
-/* Resumen de roles seleccionados */
-.selected-roles-summary {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-top: 1rem;
-}
-
-.summary-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.selected-roles-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.selected-role-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  border: 1px solid var(--border-color);
-}
-
-.selected-role-item.ROLE_SUPER_USER {
-  background: var(--warning-bg, linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1)));
-  border-color: var(--warning-color);
-  color: var(--warning-color);
-}
-
-.selected-role-item.ROLE_ADMIN {
-  background: var(--bg-hover);
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-}
-
-.selected-role-item.ROLE_COLLABORATOR {
-  background: var(--success-bg);
-  border-color: var(--success-color);
-  color: var(--success-color);
-}
-
-.role-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 8px;
-  background: var(--bg-overlay-medium, rgba(255, 255, 255, 0.2));
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-
-/* Indicador de roles activos en el footer */
-.active-roles-indicator {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--bg-tertiary);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  flex-shrink: 0;
-}
-
-.indicator-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-.active-roles-list {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.active-role-item {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.active-role-item.ROLE_SUPER_USER {
-  background: var(--warning-light, linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2)));
-  border-color: var(--warning-hover);
-  color: var(--warning-color);
-}
-
-.active-role-item.ROLE_ADMIN {
-  background: var(--bg-active);
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-}
-
-.active-role-item.ROLE_COLLABORATOR {
-  background: var(--success-light);
-  border-color: var(--success-hover);
-  color: var(--success-color);
-}
-
-/* Estilos específicos de roles se definen arriba */
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .wizard-header {
-    padding: 1.5rem;
-    min-height: 120px;
-  }
-
-  .wizard-title {
-    font-size: 1.5rem;
-    line-height: 1.3;
-  }
-
-  .wizard-subtitle {
-    font-size: 0.9rem;
-    line-height: 1.3;
-  }
-
-  .wizard-header-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .wizard-title-section {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-    width: 100%;
-  }
-
-  .wizard-close-btn {
-    align-self: flex-end;
-    margin-top: 0;
-    width: 2rem;
-    height: 2rem;
-    font-size: 1rem;
-  }
-
-  .wizard-icon {
-    width: 48px;
-    height: 48px;
-    font-size: 24px;
-  }
-
-  .wizard-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-
-  .active-roles-indicator {
-    order: -1;
-    justify-content: center;
-    padding: 0.5rem;
-  }
-
-  .active-roles-list {
-    justify-content: center;
-  }
-
-  .active-role-item {
-    white-space: normal;
-    word-wrap: break-word;
-  }
-}
-
-/* Resumen de roles en el paso de resumen */
-.roles-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.role-summary-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  border: 1px solid var(--border-color);
-}
-
-.role-summary-item.ROLE_SUPER_USER {
-  background: var(--warning-bg, linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1)));
-  border-color: var(--warning-color);
-  color: var(--warning-color);
-}
-
-.role-summary-item.ROLE_ADMIN {
-  background: var(--bg-hover);
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-}
-
-.role-summary-item.ROLE_COLLABORATOR {
-  background: var(--success-bg);
-  border-color: var(--success-color);
-  color: var(--success-color);
-}
-
-/* Responsive para roles */
-@media (max-width: 768px) {
-  .selected-roles-list,
-  .active-roles-list {
-    flex-direction: column;
-  }
-
-  .role-option {
-    padding: 0.75rem;
-  }
-
-  .role-hierarchy-info {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.8rem;
-  }
-}
-
-/* Mejoras adicionales para modo oscuro */
-.dark-theme .wizard-header {
-  position: relative;
-}
-
-.dark-theme .wizard-header::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(ellipse at center, rgba(96, 165, 250, 0.1) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.dark-theme .wizard-step.active {
-  background: rgba(96, 165, 250, 0.1);
-  border: 1px solid rgba(96, 165, 250, 0.2);
-}
-
-.dark-theme .wizard-step.active .step-indicator {
-  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
-}
-
-.dark-theme .wizard-btn-primary {
-  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
-}
-
-.dark-theme .wizard-btn-primary:hover:not(:disabled) {
-  box-shadow: 0 6px 20px rgba(96, 165, 250, 0.4);
-}
-
-.dark-theme .progress-fill {
-  box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
-}
-
-/* Mejoras para elementos de formulario en modo oscuro */
-.dark-theme .form-input,
-.dark-theme .form-select,
-.dark-theme .form-textarea {
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
-  color: var(--text-primary);
-}
-
-.dark-theme .form-input:focus,
-.dark-theme .form-select:focus,
-.dark-theme .form-textarea:focus {
-  border-color: var(--input-focus);
-  box-shadow: 0 0 0 3px var(--focus-shadow);
-}
-
-.dark-theme .form-label {
-  color: var(--text-primary);
-}
-
-.dark-theme .form-help {
-  color: var(--text-secondary);
-}
-
-.dark-theme .error-message {
-  background: var(--error-bg);
-  color: var(--error-text);
-  border: 1px solid var(--error-light);
-}
-
-/* Mejoras para el resumen en modo oscuro */
-.dark-theme .summary-section {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-}
-
-.dark-theme .summary-title {
-  color: var(--text-primary);
-  border-bottom: 2px solid var(--border-primary);
-}
-
-.dark-theme .summary-item {
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.dark-theme .summary-label {
-  color: var(--text-primary);
-}
-
-.dark-theme .summary-value {
-  color: var(--text-secondary);
-}
-
-/* Estilos para SUPER_USER siempre presente */
-.super-user-always-present {
-  margin-bottom: 16px;
-}
-
-.super-user-option {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
-  border: 2px solid rgba(34, 197, 94, 0.3);
-  border-radius: 8px;
-  padding: 12px;
-  position: relative;
-}
-
-.super-user-option::before {
-  content: '✓';
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: var(--success-color);
-  color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.super-user-option .checkbox-text {
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.super-user-option .role-label strong {
-  color: var(--success-color);
-}
-
-.super-user-option .role-label small {
-  color: var(--text-secondary);
-  font-size: 11px;
-  display: block;
-  margin-top: 2px;
-}
-
-/* Mejoras para modo oscuro */
-.dark-theme .super-user-option {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.08));
-  border: 2px solid rgba(34, 197, 94, 0.4);
-}
-
-.dark-theme .super-user-option .checkbox-text {
-  color: var(--text-primary);
-}
-
-.dark-theme .super-user-option .role-label strong {
-  color: var(--success-color);
-}
-
-.dark-theme .super-user-option .role-label small {
-  color: var(--text-secondary);
-}
+/* Styles have been migrated to Tailwind CSS */
 </style>
+

@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 
 // Importar vistas (las crearemos después)
 import LoginView from '@/views/auth/LoginView.vue'
-import DashboardView from '@/views/DashboardView.vue'
+import DashboardView from '@/views/UserManagementView.vue'
 import SettingsView from '@/views/SettingsView.vue'
 
 const routes = [

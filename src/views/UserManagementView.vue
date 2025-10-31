@@ -1,28 +1,28 @@
 <template>
-  <div class="user-management-layout">
+  <div class="flex min-h-screen relative bg-slate-50 dark:bg-slate-800">
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
 
-    <div class="main-content" :class="{ 'with-header': true, 'sidebar-expanded': sidebarExpanded }">
-      <div class="user-management-container">
+    <div :class="['pt-20 flex-1 transition-all duration-300', sidebarExpanded ? 'ml-[280px]' : 'ml-20']">
+      <div class="p-8 max-w-[1800px] mx-auto w-full box-border bg-white dark:bg-slate-900">
         <!-- Header -->
-        <div class="page-header">
-          <div class="header-content">
-            <div class="header-title">
-              <div class="title-section">
-                <div class="title-icon">
+        <div class="mb-8">
+          <div class="flex items-center justify-between gap-8 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-8 shadow">
+            <div class="flex-1 flex items-center justify-between">
+              <div class="flex items-center gap-6">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-xl shadow" style="background: linear-gradient(135deg,#2563eb,#60a5fa)">
                   <i class="fas fa-users"></i>
                 </div>
-                <div class="title-text">
-                  <h1 class="page-title">Gestión de Usuarios</h1>
-                  <p class="page-subtitle">Administra y controla el acceso de usuarios al sistema</p>
+                <div class="flex flex-col gap-2">
+                  <h1 class="m-0 text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-4">Gestión de Usuarios</h1>
+                  <p class="m-0 text-sm font-medium text-slate-500 dark:text-slate-300">Administra y controla el acceso de usuarios al sistema</p>
                 </div>
               </div>
             </div>
-            <div class="header-actions">
+            <div class="flex gap-4">
               <button
                 @click="openCreateModal"
-                class="action-btn create-btn"
+                class="inline-flex items-center gap-3 rounded-xl px-6 py-3 font-semibold text-white shadow transition hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-tr from-emerald-500 to-emerald-600"
                 title="Crear nuevo usuario"
               >
                 <i class="fas fa-user-plus"></i>
@@ -30,7 +30,7 @@
               </button>
               <button
                 @click="loadUsers"
-                class="action-btn refresh-btn"
+                class="inline-flex items-center gap-3 rounded-xl px-6 py-3 font-semibold text-white shadow transition hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-tr from-blue-500 to-blue-700 min-h-[56px] min-w-[160px] whitespace-nowrap"
                 :disabled="isLoading"
                 title="Actualizar lista de usuarios"
               >
@@ -42,43 +42,43 @@
         </div>
 
         <!-- Alertas -->
-        <div v-if="error || success" class="alerts-section">
+        <div v-if="error || success" class="mb-6">
           <div
             v-if="error"
-            class="alert alert-error"
+            class="relative mb-3 flex items-center gap-3 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200"
           >
             <i class="fas fa-exclamation-circle"></i>
             {{ error }}
-            <button @click="error = null" class="alert-close">
+            <button @click="error = null" class="absolute right-2 top-2 rounded p-1 opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10">
               <i class="fas fa-times"></i>
             </button>
           </div>
 
           <div
             v-if="success"
-            class="alert alert-success"
+            class="relative mb-3 flex items-center gap-3 rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-900/30 dark:text-emerald-200"
           >
             <i class="fas fa-check-circle"></i>
             {{ success }}
-            <button @click="success = null" class="alert-close">
+            <button @click="success = null" class="absolute right-2 top-2 rounded p-1 opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10">
               <i class="fas fa-times"></i>
             </button>
           </div>
         </div>
 
         <!-- Loading State -->
-        <div v-if="isLoading" class="loading-container">
-          <div class="loading-spinner"></div>
+        <div v-if="isLoading" class="min-h-[400px] flex flex-col items-center justify-center text-center">
+          <div class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-slate-300 border-t-blue-500"></div>
           <p>Cargando usuarios...</p>
         </div>
 
         <!-- Error State -->
-        <div v-else-if="error" class="error-container">
-          <div class="error-content">
-            <i class="fas fa-exclamation-triangle"></i>
-            <h3>Error al cargar usuarios</h3>
+        <div v-else-if="error" class="min-h-[400px] flex flex-col items-center justify-center text-center">
+          <div class="flex flex-col items-center gap-4">
+            <i class="fas fa-exclamation-triangle text-5xl text-red-500"></i>
+            <h3 class="m-0 text-xl font-semibold">Error al cargar usuarios</h3>
             <p>{{ error }}</p>
-            <button @click="loadUsers" class="retry-btn">
+            <button @click="loadUsers" class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700">
               <i class="fas fa-redo"></i>
               Reintentar
             </button>
@@ -86,123 +86,123 @@
         </div>
 
         <!-- Users List -->
-        <div v-else class="users-content">
+        <div v-else>
           <!-- Stats Cards -->
-          <div class="stats-grid">
-            <div class="stat-card total-users">
-              <div class="stat-header">
-                <div class="stat-icon">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-8 max-w-full">
+            <div class="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-5 shadow dark:border-slate-700 dark:bg-slate-800">
+              <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white text-base shadow" style="background: linear-gradient(135deg,#2563eb,#60a5fa)">
                   <i class="fas fa-users"></i>
                 </div>
-                <div class="stat-trend">
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-300 bg-slate-200/60 dark:bg-slate-700/60 px-3 py-2 rounded-full">
                   <i class="fas fa-chart-line"></i>
                   <span>+{{ Math.round((users.length / 100) * 10) || 0 }}%</span>
                 </div>
               </div>
-              <div class="stat-content">
-                <h3 class="stat-number">{{ users.length }}</h3>
-                <p class="stat-label">Total Usuarios</p>
-                <div class="stat-description">
-                  <i class="fas fa-info-circle"></i>
+              <div>
+                <h3 class="m-0 text-2xl font-bold bg-clip-text text-transparent" style="background-image: linear-gradient(135deg,#0f172a,#2563eb)">{{ users.length }}</h3>
+                <p class="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Usuarios</p>
+                <div class="mt-2 inline-flex items-center gap-2 rounded border border-slate-200 bg-slate-200/60 px-3 py-1 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-700/60 dark:text-slate-300">
+                  <i class="fas fa-info-circle text-blue-500"></i>
                   <span>Usuarios registrados en el sistema</span>
                 </div>
               </div>
             </div>
 
-            <div class="stat-card active-users">
-              <div class="stat-header">
-                <div class="stat-icon">
+            <div class="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-5 shadow dark:border-slate-700 dark:bg-slate-800">
+              <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white text-base shadow" style="background: linear-gradient(135deg,#10b981,#34d399)">
                   <i class="fas fa-user-check"></i>
                 </div>
-                <div class="stat-trend positive">
+                <div class="flex items-center gap-2 text-xs font-semibold text-emerald-600 bg-emerald-100/70 px-3 py-2 rounded-full dark:text-emerald-300 dark:bg-emerald-900/30">
                   <i class="fas fa-arrow-up"></i>
                   <span>{{ Math.round((activeUsersCount / users.length) * 100) || 0 }}%</span>
                 </div>
               </div>
-              <div class="stat-content">
-                <h3 class="stat-number">{{ activeUsersCount }}</h3>
-                <p class="stat-label">Usuarios Activos</p>
-                <div class="stat-description">
+              <div>
+                <h3 class="m-0 text-2xl font-bold bg-clip-text text-transparent" style="background-image: linear-gradient(135deg,#0f172a,#10b981)">{{ activeUsersCount }}</h3>
+                <p class="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Usuarios Activos</p>
+                <div class="mt-2 inline-flex items-center gap-2 rounded border border-emerald-200 bg-emerald-100/70 px-3 py-1 text-xs text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-900/30 dark:text-emerald-200">
                   <i class="fas fa-check-circle"></i>
                   <span>Usuarios con acceso activo</span>
                 </div>
               </div>
             </div>
 
-            <div class="stat-card inactive-users">
-              <div class="stat-header">
-                <div class="stat-icon">
+            <div class="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-5 shadow dark:border-slate-700 dark:bg-slate-800">
+              <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white text-base shadow" style="background: linear-gradient(135deg,#ef4444,#dc2626)">
                   <i class="fas fa-user-times"></i>
                 </div>
-                <div class="stat-trend negative">
+                <div class="flex items-center gap-2 text-xs font-semibold text-red-600 bg-red-100/70 px-3 py-2 rounded-full dark:text-red-300 dark:bg-red-900/30">
                   <i class="fas fa-arrow-down"></i>
                   <span>{{ Math.round((inactiveUsersCount / users.length) * 100) || 0 }}%</span>
                 </div>
               </div>
-              <div class="stat-content">
-                <h3 class="stat-number">{{ inactiveUsersCount }}</h3>
-                <p class="stat-label">Usuarios Inactivos</p>
-                <div class="stat-description">
+              <div>
+                <h3 class="m-0 text-2xl font-bold bg-clip-text text-transparent" style="background-image: linear-gradient(135deg,#0f172a,#ef4444)">{{ inactiveUsersCount }}</h3>
+                <p class="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Usuarios Inactivos</p>
+                <div class="mt-2 inline-flex items-center gap-2 rounded border border-red-200 bg-red-100/70 px-3 py-1 text-xs text-red-700 dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200">
                   <i class="fas fa-ban"></i>
                   <span>Usuarios sin acceso</span>
                 </div>
               </div>
             </div>
 
-            <div class="stat-card admin-users">
-              <div class="stat-header">
-                <div class="stat-icon">
+            <div class="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-5 shadow dark:border-slate-700 dark:bg-slate-800">
+              <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white text-base shadow" style="background: linear-gradient(135deg,#f59e0b,#d97706)">
                   <i class="fas fa-user-shield"></i>
                 </div>
-                <div class="stat-trend">
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-300 bg-slate-200/60 dark:bg-slate-700/60 px-3 py-2 rounded-full">
                   <i class="fas fa-crown"></i>
                   <span>Privilegiados</span>
                 </div>
               </div>
-              <div class="stat-content">
-                <h3 class="stat-number">{{ adminUsersCount }}</h3>
-                <p class="stat-label">Administradores</p>
-                <div class="stat-description">
+              <div>
+                <h3 class="m-0 text-2xl font-bold">{{ adminUsersCount }}</h3>
+                <p class="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Administradores</p>
+                <div class="mt-2 inline-flex items-center gap-2 rounded border border-amber-200 bg-amber-100/70 px-3 py-1 text-xs text-amber-700 dark:border-amber-900/40 dark:bg-amber-900/30 dark:text-amber-200">
                   <i class="fas fa-key"></i>
                   <span>Usuarios con privilegios</span>
                 </div>
               </div>
             </div>
 
-            <div class="stat-card super-user-users">
-              <div class="stat-header">
-                <div class="stat-icon">
+            <div class="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-5 shadow dark:border-slate-700 dark:bg-slate-800">
+              <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white text-base shadow" style="background: linear-gradient(135deg,#8b5cf6,#7c3aed)">
                   <i class="fas fa-crown"></i>
                 </div>
-                <div class="stat-trend">
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-300 bg-slate-200/60 dark:bg-slate-700/60 px-3 py-2 rounded-full">
                   <i class="fas fa-star"></i>
                   <span>Máximo nivel</span>
                 </div>
               </div>
-              <div class="stat-content">
-                <h3 class="stat-number">{{ superUserCount }}</h3>
-                <p class="stat-label">Super Usuarios</p>
-                <div class="stat-description">
+              <div>
+                <h3 class="m-0 text-2xl font-bold">{{ superUserCount }}</h3>
+                <p class="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Super Usuarios</p>
+                <div class="mt-2 inline-flex items-center gap-2 rounded border border-violet-200 bg-violet-100/70 px-3 py-1 text-xs text-violet-700 dark:border-violet-900/40 dark:bg-violet-900/30 dark:text-violet-200">
                   <i class="fas fa-gem"></i>
                   <span>Acceso completo al sistema</span>
                 </div>
               </div>
             </div>
 
-            <div class="stat-card collaborator-users">
-              <div class="stat-header">
-                <div class="stat-icon">
+            <div class="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100 p-5 shadow dark:border-slate-700 dark:bg-slate-800">
+              <div class="flex items-center justify-between">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white text-base shadow" style="background: linear-gradient(135deg,#06b6d4,#0891b2)">
                   <i class="fas fa-user-friends"></i>
                 </div>
-                <div class="stat-trend">
+                <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-300 bg-slate-200/60 dark:bg-slate-700/60 px-3 py-2 rounded-full">
                   <i class="fas fa-handshake"></i>
                   <span>Colaboradores</span>
                 </div>
               </div>
-              <div class="stat-content">
-                <h3 class="stat-number">{{ collaboratorUsersCount }}</h3>
-                <p class="stat-label">Colaboradores</p>
-                <div class="stat-description">
+              <div>
+                <h3 class="m-0 text-2xl font-bold">{{ collaboratorUsersCount }}</h3>
+                <p class="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Colaboradores</p>
+                <div class="mt-2 inline-flex items-center gap-2 rounded border border-cyan-200 bg-cyan-100/70 px-3 py-1 text-xs text-cyan-700 dark:border-cyan-900/40 dark:bg-cyan-900/30 dark:text-cyan-200">
                   <i class="fas fa-users"></i>
                   <span>Usuarios con permisos limitados</span>
                 </div>
@@ -211,46 +211,46 @@
           </div>
 
           <!-- Users Table -->
-          <div class="users-table-container">
-            <div class="table-header">
-              <h2 class="table-title">
-                <i class="fas fa-list"></i>
+          <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 overflow-hidden">
+            <div class="flex items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-700 p-6">
+              <h2 class="m-0 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+                <i class="fas fa-list text-blue-500"></i>
                 Lista de Usuarios
               </h2>
-              <div class="table-actions">
-                <div class="search-section">
-                  <div class="search-box">
-                    <i class="fas fa-search"></i>
+              <div class="flex flex-col gap-6">
+                <div class="flex flex-col gap-3">
+                  <div class="relative flex items-center rounded-xl border-2 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 p-2">
+                    <i class="fas fa-search mx-3 text-slate-500"></i>
                     <input
                       v-model="searchQuery"
                       type="text"
                       placeholder="Buscar por nombre, email o rol..."
-                      class="search-input"
+                      class="flex-1 bg-transparent outline-none text-[0.95rem] text-slate-900 dark:text-slate-100 placeholder:text-slate-500"
                     />
                     <button
                       v-if="searchQuery"
                       @click="clearSearch"
-                      class="clear-search-btn"
+                      class="ml-2 grid h-8 w-8 place-items-center rounded bg-red-600 text-white hover:bg-red-700"
                       title="Limpiar búsqueda"
                     >
                       <i class="fas fa-times"></i>
                     </button>
                   </div>
-                  <div class="search-stats" v-if="searchQuery">
+                  <div v-if="searchQuery" class="inline-block rounded border border-slate-200 bg-slate-200/60 px-3 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-700/60 dark:text-slate-300">
                     <span>{{ filteredUsers.length }} resultado{{ filteredUsers.length !== 1 ? 's' : '' }} encontrado{{ filteredUsers.length !== 1 ? 's' : '' }}</span>
                   </div>
                 </div>
 
-                <div class="filter-section">
-                  <div class="filter-dropdown">
-                    <label class="filter-label">
-                      <i class="fas fa-filter"></i>
+                <div class="flex items-center justify-between gap-4">
+                  <div class="flex items-center gap-3">
+                    <label class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      <i class="fas fa-filter text-blue-500 text-xs"></i>
                       Filtrar por rol:
                     </label>
                     <select
                       v-model="currentFilter"
                       @change="setFilter(currentFilter)"
-                      class="filter-select"
+                      class="min-w-[200px] rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                     >
                       <option value="all">
                         Todos ({{ users.length }})
@@ -273,8 +273,8 @@
                     </select>
                   </div>
 
-                  <div class="sort-section">
-                    <select v-model="sortField" class="sort-select">
+                  <div class="flex items-center gap-2">
+                    <select v-model="sortField" class="rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
                       <option value="username">Nombre de usuario</option>
                       <option value="email">Email</option>
                       <option value="enabled">Estado</option>
@@ -282,7 +282,7 @@
                     </select>
                     <button
                       @click="toggleSortOrder"
-                      class="sort-order-btn"
+                      class="grid h-10 w-10 place-items-center rounded-xl border-2 border-slate-200 bg-white text-slate-900 transition hover:scale-105 hover:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                       :title="sortOrder === 'asc' ? 'Orden ascendente' : 'Orden descendente'"
                     >
                       <i class="fas" :class="sortOrder === 'asc' ? 'fa-sort-amount-up' : 'fa-sort-amount-down'"></i>
@@ -292,107 +292,109 @@
               </div>
             </div>
 
-            <div class="table-wrapper">
-              <table class="users-table">
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[1400px] border-collapse">
                 <thead>
                   <tr>
-                    <th class="sortable" @click="sortBy('username')">
+                    <th class="sticky top-0 z-10 bg-slate-200/60 dark:bg-slate-700/60 text-left text-slate-900 dark:text-slate-100 font-semibold p-4 border-b border-slate-200 dark:border-slate-700 cursor-pointer select-none" @click="sortBy('username')">
                       Usuario
-                      <i class="fas fa-sort" :class="{ 'fa-sort-up': sortField === 'username' && sortOrder === 'asc', 'fa-sort-down': sortField === 'username' && sortOrder === 'desc' }"></i>
+                      <i class="fas fa-sort ml-2 text-slate-500" :class="{ 'fa-sort-up': sortField === 'username' && sortOrder === 'asc', 'fa-sort-down': sortField === 'username' && sortOrder === 'desc' }"></i>
                     </th>
-                    <th class="sortable" @click="sortBy('email')">
+                    <th class="sticky top-0 z-10 bg-slate-200/60 dark:bg-slate-700/60 text-left text-slate-900 dark:text-slate-100 font-semibold p-4 border-b border-slate-200 dark:border-slate-700 cursor-pointer select-none" @click="sortBy('email')">
                       Email
-                      <i class="fas fa-sort" :class="{ 'fa-sort-up': sortField === 'email' && sortOrder === 'asc', 'fa-sort-down': sortField === 'email' && sortOrder === 'desc' }"></i>
+                      <i class="fas fa-sort ml-2 text-slate-500" :class="{ 'fa-sort-up': sortField === 'email' && sortOrder === 'asc', 'fa-sort-down': sortField === 'email' && sortOrder === 'desc' }"></i>
                     </th>
-                    <th>Roles</th>
-                    <th class="sortable" @click="sortBy('enabled')">
+                    <th class="sticky top-0 z-10 bg-slate-200/60 dark:bg-slate-700/60 text-left text-slate-900 dark:text-slate-100 font-semibold p-4 border-b border-slate-200 dark:border-slate-700">Roles</th>
+                    <th class="sticky top-0 z-10 bg-slate-200/60 dark:bg-slate-700/60 text-left text-slate-900 dark:text-slate-100 font-semibold p-4 border-b border-slate-200 dark:border-slate-700 cursor-pointer select-none" @click="sortBy('enabled')">
                       Estado
-                      <i class="fas fa-sort" :class="{ 'fa-sort-up': sortField === 'enabled' && sortOrder === 'asc', 'fa-sort-down': sortField === 'enabled' && sortOrder === 'desc' }"></i>
+                      <i class="fas fa-sort ml-2 text-slate-500" :class="{ 'fa-sort-up': sortField === 'enabled' && sortOrder === 'asc', 'fa-sort-down': sortField === 'enabled' && sortOrder === 'desc' }"></i>
                     </th>
-                    <th class="sortable" @click="sortBy('createdAt')">
+                    <th class="sticky top-0 z-10 bg-slate-200/60 dark:bg-slate-700/60 text-left text-slate-900 dark:text-slate-100 font-semibold p-4 border-b border-slate-200 dark:border-slate-700 cursor-pointer select-none" @click="sortBy('createdAt')">
                       Fecha Creación
-                      <i class="fas fa-sort" :class="{ 'fa-sort-up': sortField === 'createdAt' && sortOrder === 'asc', 'fa-sort-down': sortField === 'createdAt' && sortOrder === 'desc' }"></i>
+                      <i class="fas fa-sort ml-2 text-slate-500" :class="{ 'fa-sort-up': sortField === 'createdAt' && sortOrder === 'asc', 'fa-sort-down': sortField === 'createdAt' && sortOrder === 'desc' }"></i>
                     </th>
-                    <th>Acciones</th>
+                    <th class="sticky top-0 z-10 bg-slate-200/60 dark:bg-slate-700/60 text-left text-slate-900 dark:text-slate-100 font-semibold p-4 border-b border-slate-200 dark:border-slate-700">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="user in filteredUsers" :key="user.id" class="user-row">
-                    <td class="user-info">
-                      <div class="user-avatar" :class="getUserAvatarClass(user)">
-                        <i class="fas fa-user"></i>
-                      </div>
-                      <div class="user-details">
-                        <span class="username">{{ user.username }}</span>
-                        <span class="user-id">ID: {{ user.id }}</span>
-                        <div class="user-meta">
-                          <span class="user-created">
-                            <i class="fas fa-clock"></i>
+                  <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-slate-200/60 dark:hover:bg-slate-700/40">
+                    <td class="p-4 align-middle">
+                      <div class="flex items-center gap-4">
+                        <div class="grid h-12 w-12 place-items-center rounded-full text-white text-base"
+                             :class="{
+                               'bg-red-500 ring-2 ring-red-300': user.roles.includes('ROLE_SUPER_USER'),
+                               'bg-amber-500 ring-2 ring-amber-300': user.roles.includes('ROLE_ADMIN'),
+                               'bg-emerald-500 ring-2 ring-emerald-300': user.roles.includes('ROLE_COLLABORATOR'),
+                               'bg-blue-600 ring-2 ring-blue-300': !user.roles.includes('ROLE_SUPER_USER') && !user.roles.includes('ROLE_ADMIN') && !user.roles.includes('ROLE_COLLABORATOR'),
+                             }">
+                          <i class="fas fa-user"></i>
+                        </div>
+                        <div class="flex flex-col gap-1 flex-1">
+                          <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ user.username }}</span>
+                          <span class="text-xs font-medium text-slate-500">ID: {{ user.id }}</span>
+                          <div class="mt-1 text-xs text-slate-500 flex items-center gap-1">
+                            <i class="fas fa-clock text-[0.7rem]"></i>
                             {{ formatRelativeDate(user.createdAt) }}
-                          </span>
+                          </div>
                         </div>
                       </div>
                     </td>
-                    <td class="user-email">
-                      <div class="email-content">
-                        <i class="fas fa-envelope"></i>
-                        <span class="email-text">{{ user.email }}</span>
-                        <button
-                          @click="copyEmail(user.email)"
-                          class="copy-btn"
-                          title="Copiar email"
-                        >
+                    <td class="p-4 align-middle text-slate-900 dark:text-slate-100">
+                      <div class="inline-flex items-center gap-3 rounded border border-slate-200 bg-slate-200/60 px-3 py-2 text-sm transition dark:border-slate-700 dark:bg-slate-700/60">
+                        <i class="fas fa-envelope text-blue-500"></i>
+                        <span class="font-medium">{{ user.email }}</span>
+                        <button @click="copyEmail(user.email)" class="opacity-60 hover:opacity-100 rounded p-1 hover:bg-blue-600 hover:text-white">
                           <i class="fas fa-copy"></i>
                         </button>
                       </div>
                     </td>
-                    <td class="user-roles">
-                      <div class="roles-container">
+                    <td class="p-4 align-middle">
+                      <div class="flex flex-wrap gap-2">
                         <span
                           v-for="role in user.roles"
                           :key="role"
-                          class="role-badge"
-                          :class="getRoleClass(role)"
+                          class="inline-flex items-center gap-1 rounded-xl border px-2 py-1 text-[0.75rem] font-semibold uppercase tracking-wide"
+                          :class="{
+                            'border-red-200 bg-red-50 text-red-600 dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200': role === 'ROLE_SUPER_USER',
+                            'border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-900/40 dark:bg-amber-900/30 dark:text-amber-200': role === 'ROLE_ADMIN',
+                            'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/30 dark:text-emerald-200': role === 'ROLE_COLLABORATOR',
+                            'border-slate-300 bg-slate-100 text-blue-600 dark:border-slate-700 dark:bg-slate-800 dark:text-blue-400': role === 'ROLE_USER',
+                          }"
                         >
                           <i :class="getRoleIcon(role)"></i>
                           {{ getRoleLabel(role) }}
                         </span>
                       </div>
                     </td>
-                <td class="user-status">
-                  <span
-                    @click="toggleUserStatus(user)"
-                    class="status-badge clickable"
-                    :class="{ 'active': user.enabled, 'inactive': !user.enabled }"
-                    :title="`Hacer clic para ${user.enabled ? 'desactivar' : 'activar'}`"
-                  >
-                    <i :class="user.enabled ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
-                    {{ user.enabled ? 'Activo' : 'Inactivo' }}
-                  </span>
-                </td>
-                    <td class="user-date">
-                      <div class="date-content">
-                        <i class="fas fa-calendar"></i>
-                        <div class="date-info">
-                          <span class="date-text">{{ formatDate(user.createdAt) }}</span>
-                          <span class="time-text">{{ formatTime(user.createdAt) }}</span>
+                    <td class="p-4 align-middle">
+                      <button
+                        type="button"
+                        @click="toggleUserStatus(user)"
+                        class="inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1 text-[0.8rem] font-semibold uppercase tracking-wide transition shadow-sm hover:scale-105 hover:shadow-md"
+                        :class="user.enabled
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/30 dark:text-emerald-200'
+                          : 'border-red-200 bg-red-50 text-red-600 dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200'"
+                        :title="`Hacer clic para ${user.enabled ? 'desactivar' : 'activar'}`"
+                      >
+                        <i :class="user.enabled ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                        {{ user.enabled ? 'Activo' : 'Inactivo' }}
+                      </button>
+                    </td>
+                    <td class="p-4 align-middle text-slate-900 dark:text-slate-100">
+                      <div class="inline-flex items-center gap-3 rounded border border-slate-200 bg-slate-200/60 px-3 py-2 text-sm transition dark:border-slate-700 dark:bg-slate-700/60">
+                        <i class="fas fa-calendar text-blue-500"></i>
+                        <div class="flex flex-col gap-0.5">
+                          <span class="text-sm font-medium">{{ formatDate(user.createdAt) }}</span>
+                          <span class="text-xs text-slate-500">{{ formatTime(user.createdAt) }}</span>
                         </div>
                       </div>
                     </td>
-                    <td class="user-actions">
-                      <div class="action-buttons">
-                        <button
-                          @click="editUser(user)"
-                          class="action-btn edit-btn"
-                          title="Editar usuario"
-                        >
+                    <td class="p-4 align-middle">
+                      <div class="flex gap-2">
+                        <button @click="editUser(user)" class="grid h-8 w-8 place-items-center rounded bg-blue-600 text-white hover:-translate-y-0.5">
                           <i class="fas fa-edit"></i>
                         </button>
-                        <button
-                          @click="deleteUser(user)"
-                          class="action-btn delete-btn"
-                          title="Eliminar usuario"
-                        >
+                        <button @click="deleteUser(user)" class="grid h-8 w-8 place-items-center rounded bg-red-600 text-white hover:-translate-y-0.5">
                           <i class="fas fa-trash"></i>
                         </button>
                       </div>
@@ -403,11 +405,11 @@
             </div>
 
             <!-- Empty State -->
-            <div v-if="filteredUsers.length === 0" class="empty-state">
-              <div class="empty-icon">
+            <div v-if="filteredUsers.length === 0" class="p-12 text-center text-slate-500">
+              <div class="mb-4 text-5xl text-slate-400">
                 <i class="fas fa-users"></i>
               </div>
-              <h3>No se encontraron usuarios</h3>
+              <h3 class="m-0 text-xl font-semibold text-slate-900 dark:text-slate-100">No se encontraron usuarios</h3>
               <p v-if="searchQuery">No hay usuarios que coincidan con "{{ searchQuery }}"</p>
               <p v-else-if="currentFilter !== 'all'">No hay usuarios con el filtro seleccionado</p>
               <p v-else>No hay usuarios registrados en el sistema</p>
@@ -574,8 +576,6 @@ const clearSearch = () => {
 
 const exportUsers = () => {
   console.log('📊 [USER MANAGEMENT] Exportando usuarios...')
-  // Implementar funcionalidad de exportación
-  // Por ahora solo mostramos un mensaje
   alert('Funcionalidad de exportación en desarrollo')
 }
 
@@ -605,17 +605,23 @@ const handleUserCreated = () => {
 }
 
 const toggleUserStatus = (user) => {
+  console.log('🔔 [USER MANAGEMENT] toggleUserStatus llamado con:', user)
+
   if (!user || !user.id) {
+    console.log('❌ [USER MANAGEMENT] Usuario no válido')
     return
   }
 
   const currentStatus = user.enabled ? 'Activo' : 'Inactivo'
   const action = currentStatus === 'Activo' ? 'deactivate' : 'activate'
 
-  // Configurar datos para el modal de confirmación
+  console.log('✅ [USER MANAGEMENT] Cambiando estado del usuario:', user.username, 'acción:', action)
+
   selectedUser.value = user
   statusConfirmAction.value = action
   showStatusModal.value = true
+
+  console.log('✅ [USER MANAGEMENT] Modal abierto:', showStatusModal.value)
 }
 
 const closeEditModal = () => {
@@ -655,7 +661,6 @@ const handleStatusChanged = async () => {
     const user = selectedUser.value
     const newStatus = statusConfirmAction.value === 'activate'
 
-    // Preparar datos para actualización
     const updateData = {
       username: user.username,
       email: user.email,
@@ -663,10 +668,8 @@ const handleStatusChanged = async () => {
       roles: user.roles
     }
 
-    // Actualizar el usuario en el backend
     const updatedUser = await userService.updateUser(user.id, updateData)
 
-    // Actualizar en la lista local
     const index = users.value.findIndex((u) => u.id === user.id)
     if (index > -1) {
       users.value[index] = updatedUser || { ...user, enabled: newStatus }
@@ -676,12 +679,10 @@ const handleStatusChanged = async () => {
     success.value = `Usuario "${user.username}" ${statusText} correctamente`
     console.log(`✅ [USER MANAGEMENT] Usuario "${user.username}" ${statusText} correctamente`)
 
-    // Cerrar modal
     closeStatusModal()
   } catch (err) {
     console.error('❌ [USER MANAGEMENT] Error al cambiar el estado del usuario:', err)
     error.value = 'Error al cambiar el estado del usuario'
-    // Recargar la lista para obtener el estado actual
     loadUsers()
     closeStatusModal()
   }
@@ -771,7 +772,6 @@ const copyEmail = async (email) => {
   try {
     await navigator.clipboard.writeText(email)
     console.log('✅ [USER MANAGEMENT] Email copiado:', email)
-    // Aquí podrías agregar una notificación toast
   } catch (error) {
     console.error('❌ [USER MANAGEMENT] Error copiando email:', error)
   }
@@ -786,1476 +786,3 @@ onMounted(() => {
   loadUsers()
 })
 </script>
-
-<style scoped>
-/* Layout principal */
-.user-management-layout {
-  display: flex;
-  min-height: 100vh;
-  background: var(--bg-secondary);
-  position: relative;
-}
-
-.main-content {
-  flex: 1;
-  margin-left: 80px;
-  padding-top: 80px;
-  transition: margin-left 0.3s ease;
-}
-
-.main-content.sidebar-expanded {
-  margin-left: 280px;
-}
-
-.main-content.with-header {
-  padding-top: 80px;
-}
-
-.user-management-container {
-  padding: 2rem;
-  max-width: 1800px;
-  margin: 0 auto;
-  background: var(--bg-primary);
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Header */
-.page-header {
-  margin-bottom: 2rem;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 2rem;
-  background: var(--bg-secondary);
-  padding: 2rem;
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 20px var(--shadow-color);
-}
-
-.header-title {
-  flex: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.title-section {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.title-icon {
-  width: 4rem;
-  height: 4rem;
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.5rem;
-  box-shadow: 0 8px 25px var(--primary-shadow);
-}
-
-.title-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.page-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.page-subtitle {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  margin: 0;
-  font-weight: 500;
-}
-
-.header-stats {
-  display: flex;
-  gap: 2rem;
-  align-items: center;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.75rem 1rem;
-  background: var(--bg-hover);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  transition: all 0.2s ease;
-}
-
-.stat-item:hover {
-  background: var(--bg-active);
-  transform: translateY(-2px);
-}
-
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.header-actions {
-  display: flex;
-  gap: 1rem;
-}
-
-/* Loading and Error States */
-.loading-container,
-.error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  text-align: center;
-}
-
-.loading-spinner {
-  width: 3rem;
-  height: 3rem;
-  border: 4px solid var(--border-color);
-  border-top: 4px solid var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.error-content i {
-  font-size: 3rem;
-  color: var(--error-color);
-}
-
-.retry-btn {
-  background: var(--error-color);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
-}
-
-.retry-btn:hover {
-  background: var(--error-hover);
-  transform: translateY(-2px);
-}
-
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-  max-width: 100%;
-}
-
-.stat-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  min-height: 100px;
-  box-shadow: 0 4px 20px var(--shadow-color);
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--primary-color);
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px var(--shadow-hover);
-}
-
-.stat-card:hover::before {
-  transform: scaleX(1);
-}
-
-.stat-card.total-users::before {
-  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
-}
-
-.stat-card.active-users::before {
-  background: linear-gradient(90deg, var(--success-color), var(--success-hover));
-}
-
-.stat-card.inactive-users::before {
-  background: linear-gradient(90deg, var(--error-color), var(--error-hover));
-}
-
-.stat-card.admin-users::before {
-  background: linear-gradient(90deg, #f59e0b, #d97706);
-}
-
-.stat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.stat-icon {
-  width: 2.5rem;
-  height: 2.5rem;
-  background: var(--primary-color);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 25px var(--primary-shadow);
-}
-
-.stat-card:hover .stat-icon {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.stat-card.total-users .stat-icon {
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  box-shadow: 0 8px 25px var(--primary-shadow);
-}
-
-.stat-card.active-users .stat-icon {
-  background: linear-gradient(135deg, var(--success-color), var(--success-hover));
-  box-shadow: 0 8px 25px var(--success-shadow);
-}
-
-.stat-card.inactive-users .stat-icon {
-  background: linear-gradient(135deg, var(--error-color), var(--error-hover));
-  box-shadow: 0 8px 25px var(--error-shadow);
-}
-
-.stat-card.admin-users .stat-icon {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
-}
-
-.stat-card.super-user-users::before {
-  background: linear-gradient(90deg, #8b5cf6, #7c3aed);
-}
-
-.stat-card.super-user-users .stat-icon {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
-}
-
-.stat-card.collaborator-users::before {
-  background: linear-gradient(90deg, #06b6d4, #0891b2);
-}
-
-.stat-card.collaborator-users .stat-icon {
-  background: linear-gradient(135deg, #06b6d4, #0891b2);
-  box-shadow: 0 8px 25px rgba(6, 182, 212, 0.3);
-}
-
-.stat-trend {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  padding: 0.5rem 1rem;
-  background: var(--bg-hover);
-  border-radius: 20px;
-  font-weight: 600;
-}
-
-.stat-trend.positive {
-  color: var(--success-color);
-  background: var(--success-bg);
-}
-
-.stat-trend.negative {
-  color: var(--error-color);
-  background: var(--error-bg);
-}
-
-.stat-trend i {
-  font-size: 0.75rem;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-number {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 0.25rem 0;
-  line-height: 1;
-  background: linear-gradient(135deg, var(--text-primary), var(--primary-color));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.stat-label {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  margin: 0 0 0.5rem 0;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.stat-description {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  padding: 0.5rem 0.75rem;
-  background: var(--bg-hover);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-}
-
-.stat-description i {
-  color: var(--primary-color);
-  font-size: 0.8rem;
-}
-
-/* Users Table */
-.users-table-container {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  overflow: hidden;
-  min-width: 1400px;
-}
-
-.table-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-
-.table-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.table-title i {
-  color: var(--primary-color);
-}
-
-.table-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.search-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.search-box {
-  position: relative;
-  display: flex;
-  align-items: center;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  padding: 0.5rem;
-  transition: all 0.2s ease;
-}
-
-.search-box:focus-within {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-shadow);
-}
-
-.search-box i {
-  color: var(--text-secondary);
-  margin: 0 0.75rem;
-  font-size: 1rem;
-}
-
-.search-input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  padding: 0.5rem 0;
-  outline: none;
-}
-
-.search-input::placeholder {
-  color: var(--text-secondary);
-}
-
-.clear-search-btn {
-  background: var(--error-color);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-left: 0.5rem;
-}
-
-.clear-search-btn:hover {
-  background: var(--error-hover);
-  transform: scale(1.1);
-}
-
-.search-stats {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  background: var(--bg-hover);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-}
-
-.filter-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-
-.filter-buttons {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.filter-dropdown {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.filter-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.filter-label i {
-  color: var(--primary-color);
-  font-size: 0.85rem;
-}
-
-.filter-select {
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border-color);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 200px;
-}
-
-.filter-select:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  outline: none;
-}
-
-.filter-select option {
-  padding: 0.5rem;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-.filter-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border-color);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
-  font-weight: 500;
-  position: relative;
-  overflow: hidden;
-}
-
-.filter-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.5s ease;
-}
-
-.filter-btn:hover::before {
-  left: 100%;
-}
-
-.filter-btn:hover {
-  background: var(--bg-hover);
-  border-color: var(--primary-color);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--shadow-color);
-}
-
-.filter-btn.active {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-  box-shadow: 0 4px 12px var(--primary-shadow);
-}
-
-.filter-btn i {
-  font-size: 0.85rem;
-}
-
-.filter-count {
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  min-width: 1.5rem;
-  text-align: center;
-}
-
-.filter-btn.active .filter-count {
-  background: var(--shine-color);
-  color: white;
-}
-
-.sort-section {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.sort-select {
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border-color);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border-radius: 12px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  outline: none;
-}
-
-.sort-select:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-shadow);
-}
-
-.sort-order-btn {
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 2px solid var(--border-color);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border-radius: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.sort-order-btn:hover {
-  background: var(--bg-hover);
-  border-color: var(--primary-color);
-  transform: scale(1.05);
-}
-
-.table-wrapper {
-  overflow-x: auto;
-}
-
-.users-table {
-  width: 100%;
-  min-width: 1400px;
-  border-collapse: collapse;
-}
-
-.users-table th {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-  font-weight: 600;
-  padding: 1rem;
-  text-align: left;
-  border-bottom: 1px solid var(--border-color);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.users-table th.sortable {
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.2s ease;
-}
-
-.users-table th.sortable:hover {
-  background: var(--bg-active);
-}
-
-.users-table th i {
-  margin-left: 0.5rem;
-  color: var(--text-secondary);
-}
-
-.users-table td {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border-color);
-  vertical-align: middle;
-}
-
-.user-row:hover {
-  background: var(--bg-hover);
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.user-avatar {
-  width: 3rem;
-  height: 3rem;
-  background: var(--primary-color);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.1rem;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.user-avatar.super-user {
-  background: var(--error-color);
-  box-shadow: 0 0 0 3px var(--error-shadow);
-}
-
-.user-avatar.admin {
-  background: var(--warning-color);
-  box-shadow: 0 0 0 3px var(--warning-shadow);
-}
-
-.user-avatar.collaborator {
-  background: var(--success-color);
-  box-shadow: 0 0 0 3px var(--success-shadow);
-}
-
-.user-avatar.user {
-  background: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-shadow);
-}
-
-.user-row:hover .user-avatar {
-  transform: scale(1.05);
-}
-
-.user-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-}
-
-.username {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 1rem;
-}
-
-.user-id {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.user-meta {
-  margin-top: 0.25rem;
-}
-
-.user-created {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-
-.user-created i {
-  font-size: 0.7rem;
-}
-
-.user-email {
-  color: var(--text-primary);
-}
-
-.email-content {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem;
-  background: var(--bg-hover);
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.email-content:hover {
-  background: var(--bg-active);
-}
-
-.email-content i:first-child {
-  color: var(--primary-color);
-  font-size: 0.9rem;
-}
-
-.email-text {
-  flex: 1;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.copy-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  opacity: 0;
-}
-
-.email-content:hover .copy-btn {
-  opacity: 1;
-}
-
-.copy-btn:hover {
-  background: var(--primary-color);
-  color: white;
-  transform: scale(1.1);
-}
-
-.roles-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.role-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
-}
-
-.role-badge.super-user {
-  background: var(--error-bg);
-  color: var(--error-color);
-  border: 1px solid var(--error-light);
-}
-
-.role-badge.admin {
-  background: var(--warning-bg, #fff3e0);
-  color: var(--warning-color);
-  border: 1px solid var(--warning-light, #ffcc80);
-}
-
-.role-badge.collaborator {
-  background: var(--success-bg);
-  color: var(--success-color);
-  border: 1px solid var(--success-light);
-}
-
-.role-badge.user {
-  background: var(--bg-hover);
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.2s ease;
-}
-
-.status-badge.clickable {
-  cursor: pointer;
-  user-select: none;
-}
-
-.status-badge.clickable:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--shadow-hover);
-}
-
-.status-badge.active {
-  background: var(--success-bg);
-  color: var(--success-color);
-  border: 1px solid var(--success-light);
-}
-
-.status-badge.inactive {
-  background: var(--error-bg);
-  color: var(--error-color);
-  border: 1px solid var(--error-light);
-}
-
-.user-date {
-  color: var(--text-primary);
-}
-
-.date-content {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem;
-  background: var(--bg-hover);
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.date-content:hover {
-  background: var(--bg-active);
-}
-
-.date-content i {
-  color: var(--primary-color);
-  font-size: 0.9rem;
-}
-
-.date-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-}
-
-.date-text {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.time-text {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.action-btn {
-  width: 2rem;
-  height: 2rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  font-size: 0.8rem;
-}
-
-.edit-btn {
-  background: var(--primary-color);
-  color: white;
-}
-
-.edit-btn:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-}
-
-.status-btn.activate {
-  background: var(--success-color);
-  color: white;
-}
-
-.status-btn.deactivate {
-  background: var(--warning-color);
-  color: white;
-}
-
-.status-btn:hover {
-  transform: translateY(-1px);
-}
-
-.delete-btn {
-  background: var(--error-color);
-  color: white;
-}
-
-.delete-btn:hover {
-  background: var(--error-hover);
-  transform: translateY(-1px);
-}
-
-.refresh-btn {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: white;
-  padding: 1.125rem 2.5rem;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.1rem;
-  font-weight: 700;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
-  position: relative;
-  overflow: hidden;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  min-height: 56px;
-  min-width: 160px;
-  white-space: nowrap;
-}
-
-
-.refresh-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #2563eb, #1e40af);
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
-}
-
-.refresh-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.create-btn {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-  padding: 1.125rem 2.5rem;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.1rem;
-  font-weight: 700;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
-  position: relative;
-  overflow: hidden;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  min-height: 56px;
-  min-width: 180px;
-  white-space: nowrap;
-}
-
-.create-btn:hover {
-  background: linear-gradient(135deg, #059669, #047857);
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4);
-}
-
-.export-btn {
-  background: linear-gradient(135deg, var(--success-color), var(--success-hover));
-  color: white;
-  padding: 1.125rem 2.5rem;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.1rem;
-  font-weight: 700;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 8px 25px var(--success-shadow);
-  position: relative;
-  overflow: hidden;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  min-height: 56px;
-  min-width: 160px;
-  white-space: nowrap;
-}
-
-.export-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, var(--shine-color), transparent);
-  transition: left 0.5s ease;
-}
-
-.export-btn:hover::before {
-  left: 100%;
-}
-
-.export-btn:hover {
-  background: linear-gradient(135deg, var(--success-hover), var(--success-dark));
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px var(--success-shadow);
-}
-
-/* Empty State */
-.empty-state {
-  text-align: center;
-  padding: 3rem;
-  color: var(--text-secondary);
-}
-
-.empty-icon {
-  font-size: 3rem;
-  color: var(--text-secondary);
-  margin-bottom: 1rem;
-}
-
-.empty-state h3 {
-  color: var(--text-primary);
-  margin: 0 0 0.5rem 0;
-}
-
-.empty-state p {
-  margin: 0;
-}
-
-/* Alertas */
-.alerts-section {
-  margin-bottom: 1.5rem;
-}
-
-.alert {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.25rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-bottom: 0.75rem;
-  position: relative;
-  animation: slideIn 0.3s ease-out;
-}
-
-.alert-error {
-  background: var(--error-bg);
-  color: var(--error-color);
-  border: 1px solid var(--error-light);
-}
-
-.alert-success {
-  background: var(--success-bg);
-  color: var(--success-color);
-  border: 1px solid var(--success-light);
-}
-
-.alert i {
-  font-size: 1.1rem;
-  flex-shrink: 0;
-}
-
-.alert-close {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-  opacity: 0.7;
-}
-
-.alert-close:hover {
-  background: var(--hover-overlay);
-  opacity: 1;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Responsive */
-@media (max-width: 1400px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.25rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0;
-    padding-top: 60px;
-  }
-
-  .user-management-container {
-    padding: 1rem;
-  }
-
-  .header-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.5rem;
-    padding: 1.5rem;
-  }
-
-  .header-title {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-    width: 100%;
-  }
-
-  .title-section {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .title-icon {
-    width: 3rem;
-    height: 3rem;
-    font-size: 1.25rem;
-  }
-
-  .page-title {
-    font-size: 1.75rem;
-  }
-
-  .page-subtitle {
-    font-size: 0.9rem;
-  }
-
-  .header-stats {
-    flex-direction: row;
-    gap: 1rem;
-    flex-wrap: wrap;
-    width: 100%;
-  }
-
-  .stat-item {
-    flex: 1;
-    min-width: 80px;
-    padding: 0.5rem 0.75rem;
-  }
-
-  .stat-value {
-    font-size: 1.25rem;
-  }
-
-  .stat-label {
-    font-size: 0.7rem;
-  }
-
-  .header-actions {
-    flex-direction: column;
-    width: 100%;
-    gap: 0.75rem;
-  }
-
-  .action-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .stat-card {
-    padding: 1rem;
-    min-height: 90px;
-  }
-
-  .stat-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .stat-trend {
-    align-self: flex-end;
-  }
-
-  .stat-number {
-    font-size: 2.5rem;
-  }
-
-  .table-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.5rem;
-    padding: 1rem;
-  }
-
-  .table-actions {
-    width: 100%;
-  }
-
-  .search-section {
-    width: 100%;
-  }
-
-  .search-box {
-    width: 100%;
-  }
-
-  .filter-section {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-
-  .filter-buttons {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .filter-btn {
-    flex: 1;
-    min-width: 120px;
-    justify-content: center;
-  }
-
-  .sort-section {
-    justify-content: center;
-  }
-
-  .sort-select {
-    flex: 1;
-  }
-
-  .users-table {
-    font-size: 0.9rem;
-  }
-
-  .users-table th,
-  .users-table td {
-    padding: 0.75rem 0.5rem;
-  }
-
-  .user-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .user-avatar {
-    width: 2.5rem;
-    height: 2.5rem;
-    font-size: 1rem;
-  }
-
-  .username {
-    font-size: 0.9rem;
-  }
-
-  .user-id {
-    font-size: 0.75rem;
-  }
-
-  .roles-container {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .role-badge {
-    font-size: 0.7rem;
-    padding: 0.2rem 0.4rem;
-  }
-
-  .action-buttons {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .action-btn {
-    width: 2rem;
-    height: 2rem;
-    font-size: 0.75rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .user-management-container {
-    padding: 0.75rem;
-  }
-
-  .header-content {
-    padding: 1rem;
-  }
-
-  .title-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-    font-size: 1rem;
-  }
-
-  .page-title {
-    font-size: 1.5rem;
-  }
-
-  .header-stats {
-    gap: 0.5rem;
-  }
-
-  .stat-item {
-    padding: 0.4rem 0.6rem;
-  }
-
-  .stat-value {
-    font-size: 1rem;
-  }
-
-  .stat-label {
-    font-size: 0.65rem;
-  }
-
-  .stat-card {
-    padding: 1rem;
-  }
-
-  .stat-number {
-    font-size: 2rem;
-  }
-
-  .filter-btn {
-    min-width: 100px;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.8rem;
-  }
-
-  .users-table {
-    font-size: 0.8rem;
-  }
-
-  .users-table th,
-  .users-table td {
-    padding: 0.5rem 0.25rem;
-  }
-}
-</style>

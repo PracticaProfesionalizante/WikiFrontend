@@ -1,75 +1,57 @@
 <template>
-  <div v-if="show" class="modal-overlay" @click="handleClose">
-    <div class="modal-container" @click.stop>
+  <div v-if="show" class="fixed inset-0 z-[1000] grid place-items-center bg-black/60 p-4" @click="handleClose">
+    <div class="w-full max-w-[800px] max-h-[90vh] overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" @click.stop>
       <!-- Modal Header -->
-      <div class="modal-header">
-        <div class="header-content">
-          <div class="header-title">
-            <div class="header-icon">
+      <div class="relative rounded-t-2xl bg-gradient-to-tr from-blue-600 to-blue-500 px-8 py-6 text-white">
+        <div class="relative z-10 flex items-start justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <div class="grid h-12 w-12 place-items-center rounded-full bg-white/20 text-xl text-white ring-1 ring-white/30 backdrop-blur">
               <i class="fas fa-user-edit"></i>
             </div>
-            <div class="header-text">
-              <h2 class="modal-title">Editar Usuario</h2>
-              <p class="modal-subtitle">Modifica los datos del usuario</p>
+            <div class="flex flex-col gap-1">
+              <h2 class="m-0 text-xl font-bold leading-tight">Editar Usuario</h2>
+              <p class="m-0 text-sm/6 text-white/90">Modifica los datos del usuario</p>
             </div>
           </div>
-          <button @click="handleClose" class="close-btn" :disabled="isSaving">
+          <button @click="handleClose" class="grid h-10 w-10 place-items-center rounded-full bg-white/20 text-white ring-1 ring-white/30 backdrop-blur transition hover:scale-105 disabled:opacity-50" :disabled="isSaving">
             <i class="fas fa-times"></i>
           </button>
         </div>
       </div>
 
       <!-- Modal Body -->
-      <div class="modal-body">
-        <form @submit.prevent="handleSubmit" class="edit-form">
+      <div class="max-h-[65vh] overflow-y-auto px-8 py-6">
+        <form @submit.prevent="handleSubmit" class="flex flex-col gap-6">
           <!-- User Info Section -->
-          <div class="form-section">
-            <h3 class="section-title">
-              <i class="fas fa-info-circle"></i>
+          <div class="flex flex-col gap-4">
+            <h3 class="m-0 flex items-center gap-2 border-b-2 border-slate-200 pb-2 text-base font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100">
+              <i class="fas fa-info-circle text-blue-500"></i>
               Información Básica
             </h3>
 
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="username" class="form-label">
-                  <i class="fas fa-user"></i>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div class="flex flex-col gap-2">
+                <label for="username" class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  <i class="fas fa-user text-blue-500"></i>
                   Nombre de Usuario
-                  <span class="required">*</span>
+                  <span class="font-bold text-red-500">*</span>
                 </label>
-                <input
-                  id="username"
-                  v-model="formData.username"
-                  type="text"
-                  class="form-input"
-                  :class="{ 'error': validationErrors.username }"
-                  placeholder="Ingresa el nombre de usuario"
-                  required
-                  :disabled="isSaving"
-                />
-                <div v-if="validationErrors.username" class="error-message">
-                  <i class="fas fa-exclamation-circle"></i>
+                <input id="username" v-model="formData.username" type="text" class="rounded-lg border bg-slate-50 px-3 py-2 text-sm outline-none transition placeholder:text-slate-500 dark:bg-slate-800" :class="validationErrors.username ? 'border-red-500 ring-2 ring-red-100' : 'border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'" placeholder="Ingresa el nombre de usuario" required :disabled="isSaving" />
+                <div v-if="validationErrors.username" class="mt-0.5 flex items-center gap-2 text-xs font-medium text-red-600 dark:text-red-300">
+                  <i class="fas fa-exclamation-circle text-[0.8rem]"></i>
                   {{ validationErrors.username }}
                 </div>
               </div>
 
-              <div class="form-group">
-                <label for="email" class="form-label">
-                  <i class="fas fa-envelope"></i>
+              <div class="flex flex-col gap-2">
+                <label for="email" class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  <i class="fas fa-envelope text-blue-500"></i>
                   Email
-                  <span class="required">*</span>
+                  <span class="font-bold text-red-500">*</span>
                 </label>
-                <input
-                  id="email"
-                  v-model="formData.email"
-                  type="email"
-                  class="form-input"
-                  :class="{ 'error': validationErrors.email }"
-                  placeholder="Ingresa el email del usuario"
-                  required
-                  :disabled="isSaving"
-                />
-                <div v-if="validationErrors.email" class="error-message">
-                  <i class="fas fa-exclamation-circle"></i>
+                <input id="email" v-model="formData.email" type="email" class="rounded-lg border bg-slate-50 px-3 py-2 text-sm outline-none transition placeholder:text-slate-500 dark:bg-slate-800" :class="validationErrors.email ? 'border-red-500 ring-2 ring-red-100' : 'border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'" placeholder="Ingresa el email del usuario" required :disabled="isSaving" />
+                <div v-if="validationErrors.email" class="mt-0.5 flex items-center gap-2 text-xs font-medium text-red-600 dark:text-red-300">
+                  <i class="fas fa-exclamation-circle text-[0.8rem]"></i>
                   {{ validationErrors.email }}
                 </div>
               </div>
@@ -77,138 +59,80 @@
           </div>
 
           <!-- Password Section -->
-          <div class="form-section">
-            <h3 class="section-title">
-              <i class="fas fa-lock"></i>
+          <div class="flex flex-col gap-4">
+            <h3 class="m-0 flex items-center gap-2 border-b-2 border-slate-200 pb-2 text-base font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100">
+              <i class="fas fa-lock text-blue-500"></i>
               Contraseña
             </h3>
 
-            <div class="form-group">
-              <label for="password" class="form-label">
-                <i class="fas fa-key"></i>
-                Nueva Contraseña
-                <span class="optional">(Opcional)</span>
+            <div class="flex flex-col gap-2">
+              <label for="password" class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                <i class="fas fa-key text-blue-500"></i>
+                Nueva Contraseña <span class="text-xs font-normal text-slate-500">(Opcional)</span>
               </label>
-              <div class="password-input-container">
-                <input
-                  id="password"
-                  v-model="formData.password"
-                  :type="showPassword ? 'text' : 'password'"
-                  class="form-input"
-                  :class="{ 'error': validationErrors.password }"
-                  placeholder="Deja vacío para mantener la contraseña actual"
-                  :disabled="isSaving"
-                />
-                <button
-                  type="button"
-                  @click="togglePasswordVisibility"
-                  class="password-toggle"
-                  :disabled="isSaving"
-                >
+              <div class="relative flex items-center">
+                <input id="password" v-model="formData.password" :type="showPassword ? 'text' : 'password'" class="w-full rounded-lg border bg-slate-50 px-3 py-2 text-sm outline-none transition placeholder:text-slate-500 dark:bg-slate-800" :class="validationErrors.password ? 'border-red-500 ring-2 ring-red-100' : 'border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'" placeholder="Deja vacío para mantener la contraseña actual" :disabled="isSaving" />
+                <button type="button" @click="togglePasswordVisibility" class="absolute right-2 rounded p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-700" :disabled="isSaving">
                   <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
                 </button>
               </div>
-              <div v-if="validationErrors.password" class="error-message">
-                <i class="fas fa-exclamation-circle"></i>
+              <div v-if="validationErrors.password" class="mt-0.5 flex items-center gap-2 text-xs font-medium text-red-600 dark:text-red-300">
+                <i class="fas fa-exclamation-circle text-[0.8rem]"></i>
                 {{ validationErrors.password }}
               </div>
-              <div class="help-text">
-                <i class="fas fa-info-circle"></i>
+              <div class="flex items-center gap-2 text-xs text-slate-500">
+                <i class="fas fa-info-circle text-[0.8rem]"></i>
                 Si no ingresas una nueva contraseña, se mantendrá la actual
               </div>
             </div>
           </div>
 
           <!-- Status Section -->
-          <div class="form-section">
-            <h3 class="section-title">
-              <i class="fas fa-toggle-on"></i>
+          <div class="flex flex-col gap-4">
+            <h3 class="m-0 flex items-center gap-2 border-b-2 border-slate-200 pb-2 text-base font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100">
+              <i class="fas fa-toggle-on text-blue-500"></i>
               Estado del Usuario
             </h3>
 
-            <div class="form-group">
-              <label class="checkbox-label">
-                <input
-                  v-model="formData.enabled"
-                  type="checkbox"
-                  class="checkbox-input"
-                  :disabled="isSaving"
-                />
-                <span class="checkbox-custom"></span>
-                <div class="checkbox-content">
-                  <span class="checkbox-title">Usuario Activo</span>
-                  <span class="checkbox-description">
-                    Los usuarios inactivos no pueden iniciar sesión
-                  </span>
-                </div>
-              </label>
-            </div>
+            <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-slate-100 p-4 transition hover:border-blue-500 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800">
+              <input v-model="formData.enabled" type="checkbox" class="mt-1.5 h-4 w-4 accent-blue-600" :disabled="isSaving" />
+              <div class="flex-1">
+                <div class="text-sm font-semibold text-slate-900 dark:text-slate-100">Usuario Activo</div>
+                <div class="text-xs text-slate-500">Los usuarios inactivos no pueden iniciar sesión</div>
+              </div>
+            </label>
           </div>
 
           <!-- Roles Section -->
-          <div class="form-section">
-            <h3 class="section-title">
-              <i class="fas fa-users"></i>
+          <div class="flex flex-col gap-4">
+            <h3 class="m-0 flex items-center gap-2 border-b-2 border-slate-200 pb-2 text-base font-semibold text-slate-900 dark:border-slate-700 dark:text-slate-100">
+              <i class="fas fa-users text-blue-500"></i>
               Roles y Permisos
             </h3>
 
-            <div class="form-group">
-              <label class="form-label">
-                <i class="fas fa-shield-alt"></i>
-                Roles del Usuario
-                <span class="required">*</span>
+            <div class="flex flex-col gap-2">
+              <label class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                <i class="fas fa-shield-alt text-blue-500"></i>
+                Roles del Usuario <span class="font-bold text-red-500">*</span>
               </label>
 
-              <!-- Super User Role (Always Present) -->
-              <div class="super-user-always-present">
-                <div class="role-option super-user-option">
-                  <label class="checkbox-label disabled">
-                    <input
-                      type="checkbox"
-                      class="role-checkbox"
-                      checked
-                      disabled
-                    />
-                    <span class="role-label">
-                      <i class="fas fa-crown"></i>
-                      <span class="role-name">
-                        <strong>Super Usuario</strong>
-                        <small>Acceso completo al sistema (siempre incluido)</small>
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div v-for="role in availableRoles" :key="role.value" class="rounded-lg border bg-slate-100 transition hover:border-blue-500 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800" :class="formData.roles.includes(role.value) ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-400/10' : 'border-slate-200'">
+                  <label class="flex w-full cursor-pointer items-center gap-3 p-4">
+                    <input v-model="formData.roles" :value="role.value" type="checkbox" class="h-4 w-4 accent-blue-600" :disabled="isSaving" />
+                    <span class="flex items-center gap-3">
+                      <i :class="role.icon" class="text-blue-500"></i>
+                      <span class="flex flex-col">
+                        <strong class="text-sm text-slate-900 dark:text-slate-100">{{ role.label }}</strong>
+                        <small class="text-xs text-slate-500">{{ role.description }}</small>
                       </span>
                     </span>
                   </label>
                 </div>
               </div>
 
-              <!-- Available Roles -->
-              <div class="roles-grid">
-                <div
-                  v-for="role in availableRoles"
-                  :key="role.value"
-                  class="role-option"
-                  :class="{ 'selected': formData.roles.includes(role.value) }"
-                >
-                  <label class="checkbox-label">
-                    <input
-                      v-model="formData.roles"
-                      :value="role.value"
-                      type="checkbox"
-                      class="role-checkbox"
-                      :disabled="isSaving"
-                    />
-                    <span class="role-label">
-                      <i :class="role.icon"></i>
-                      <span class="role-name">
-                        <strong>{{ role.label }}</strong>
-                        <small>{{ role.description }}</small>
-                      </span>
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              <div v-if="validationErrors.roles" class="error-message">
-                <i class="fas fa-exclamation-circle"></i>
+              <div v-if="validationErrors.roles" class="mt-0.5 flex items-center gap-2 text-xs font-medium text-red-600 dark:text-red-300">
+                <i class="fas fa-exclamation-circle text-[0.8rem]"></i>
                 {{ validationErrors.roles }}
               </div>
             </div>
@@ -217,22 +141,13 @@
       </div>
 
       <!-- Modal Footer -->
-      <div class="modal-footer">
-        <div class="footer-actions">
-          <button
-            @click="handleClose"
-            class="action-btn cancel-btn"
-            :disabled="isSaving"
-          >
+      <div class="border-t border-slate-200 bg-slate-100 px-8 py-4 dark:border-slate-700 dark:bg-slate-800">
+        <div class="flex justify-end gap-3">
+          <button @click="handleClose" class="inline-flex min-w-[120px] items-center justify-center gap-2 rounded-lg border border-slate-300 bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900 transition hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-100" :disabled="isSaving">
             <i class="fas fa-times"></i>
             Cancelar
           </button>
-          <button
-            @click="handleSubmit"
-            class="action-btn save-btn"
-            :disabled="!isFormValid || isSaving"
-            type="button"
-          >
+          <button @click="handleSubmit" type="button" class="inline-flex min-w-[120px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50" :disabled="!isFormValid || isSaving">
             <i class="fas fa-save" :class="{ 'fa-spin': isSaving }"></i>
             {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
           </button>
@@ -248,14 +163,8 @@ import userService from '@/services/userService'
 
 // Props
 const props = defineProps({
-  user: {
-    type: Object,
-    required: true
-  },
-  show: {
-    type: Boolean,
-    default: false
-  }
+  user: { type: Object, required: true },
+  show: { type: Boolean, default: false },
 })
 
 // Emits
@@ -271,29 +180,14 @@ const formData = ref({
   email: '',
   password: '',
   enabled: true,
-  roles: ['ROLE_SUPER_USER']
+  roles: ['ROLE_SUPER_USER'],
 })
 
 // Available roles (excluding SUPER_USER as it's always present)
 const availableRoles = [
-  {
-    value: 'ROLE_ADMIN',
-    label: 'Administrador',
-    icon: 'fas fa-user-shield',
-    description: 'Gestión de usuarios y configuración'
-  },
-  {
-    value: 'ROLE_COLLABORATOR',
-    label: 'Colaborador',
-    icon: 'fas fa-user-group',
-    description: 'Acceso a funciones básicas'
-  },
-  {
-    value: 'ROLE_USER',
-    label: 'Usuario',
-    icon: 'fas fa-user',
-    description: 'Acceso básico al sistema'
-  }
+  { value: 'ROLE_ADMIN', label: 'Administrador', icon: 'fas fa-user-shield', description: 'Gestión de usuarios y configuración' },
+  { value: 'ROLE_COLLABORATOR', label: 'Colaborador', icon: 'fas fa-user-group', description: 'Acceso a funciones básicas' },
+  { value: 'ROLE_USER', label: 'Usuario', icon: 'fas fa-user', description: 'Acceso básico al sistema' },
 ]
 
 // Computed
@@ -315,636 +209,50 @@ const initializeForm = () => {
       email: props.user.email || '',
       password: '',
       enabled: props.user.enabled !== undefined ? props.user.enabled : true,
-      roles: props.user.roles ? [...props.user.roles] : ['ROLE_SUPER_USER']
+      roles: props.user.roles ? [...props.user.roles] : ['ROLE_SUPER_USER'],
     }
   }
-
-  // Ensure SUPER_USER is always present
   if (!formData.value.roles.includes('ROLE_SUPER_USER')) {
     formData.value.roles.unshift('ROLE_SUPER_USER')
   }
-
   validationErrors.value = {}
 }
 
 const validateForm = () => {
   const errors = {}
-
-  if (!formData.value.username.trim()) {
-    errors.username = 'El nombre de usuario es requerido'
-  }
-
-  if (!formData.value.email.trim()) {
-    errors.email = 'El email es requerido'
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.value.email)) {
-    errors.email = 'El email no tiene un formato válido'
-  }
-
-  if (formData.value.password && formData.value.password.length < 6) {
-    errors.password = 'La contraseña debe tener al menos 6 caracteres'
-  }
-
-  if (!formData.value.roles || formData.value.roles.length === 0) {
-    errors.roles = 'Debe seleccionar al menos un rol'
-  }
-
+  if (!formData.value.username.trim()) errors.username = 'El nombre de usuario es requerido'
+  if (!formData.value.email.trim()) errors.email = 'El email es requerido'
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.value.email)) errors.email = 'El email no tiene un formato válido'
+  if (formData.value.password && formData.value.password.length < 6) errors.password = 'La contraseña debe tener al menos 6 caracteres'
+  if (!formData.value.roles || formData.value.roles.length === 0) errors.roles = 'Debe seleccionar al menos un rol'
   validationErrors.value = errors
   return Object.keys(errors).length === 0
 }
 
 const handleSubmit = async () => {
-  if (!validateForm()) {
-    console.log('❌ [EDIT USER MODAL] Formulario inválido')
-    return
-  }
-
+  if (!validateForm()) return
   try {
     isSaving.value = true
-    console.log('💾 [EDIT USER MODAL] Guardando usuario:', props.user.id)
-
-    // Prepare data for API
-    const updateData = {
-      username: formData.value.username,
-      email: formData.value.email,
-      enabled: formData.value.enabled,
-      roles: formData.value.roles
-    }
-
-    // Only include password if provided
-    if (formData.value.password.trim()) {
-      updateData.password = formData.value.password
-    }
-
+    const updateData = { username: formData.value.username, email: formData.value.email, enabled: formData.value.enabled, roles: formData.value.roles }
+    if (formData.value.password.trim()) updateData.password = formData.value.password
     await userService.updateUser(props.user.id, updateData)
-
-    console.log('✅ [EDIT USER MODAL] Usuario actualizado exitosamente')
     emit('saved')
   } catch (error) {
-    console.error('❌ [EDIT USER MODAL] Error actualizando usuario:', error)
-
-    // Handle validation errors from server
-    if (error.response?.status === 400) {
-      const serverErrors = error.response.data
-      if (serverErrors.errors) {
-        validationErrors.value = serverErrors.errors
-      }
+    if (error.response?.status === 400 && error.response.data?.errors) {
+      validationErrors.value = error.response.data.errors
     }
   } finally {
     isSaving.value = false
   }
 }
 
-const handleClose = () => {
-  if (!isSaving.value) {
-    emit('close')
-  }
-}
-
-const togglePasswordVisibility = () => {
-  showPassword.value = !showPassword.value
-}
+const handleClose = () => { if (!isSaving.value) emit('close') }
+const togglePasswordVisibility = () => { showPassword.value = !showPassword.value }
 
 // Watchers
 watch(() => props.user, initializeForm, { immediate: true })
-watch(() => props.show, (newValue) => {
-  if (newValue) {
-    initializeForm()
-  }
-})
+watch(() => props.show, (newValue) => { if (newValue) initializeForm() })
 
 // Lifecycle
-onMounted(() => {
-  initializeForm()
-})
+onMounted(() => { initializeForm() })
 </script>
-
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--bg-overlay, rgba(0, 0, 0, 0.6));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-}
-
-.modal-container {
-  background: var(--bg-primary);
-  border-radius: 16px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--border-color);
-  width: 100%;
-  max-width: 800px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* Modal Header */
-.modal-header {
-  background: var(--primary-color);
-  color: white;
-  padding: 2rem;
-  border-radius: 16px 16px 0 0;
-  position: relative;
-}
-
-.modal-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-  pointer-events: none;
-  z-index: 0;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  position: relative;
-  z-index: 1;
-}
-
-.header-title {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.header-icon {
-  width: 3rem;
-  height: 3rem;
-  background: var(--bg-overlay-medium, rgba(255, 255, 255, 0.2));
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: var(--text-inverse);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.header-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.modal-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 0;
-  color: var(--text-inverse);
-  line-height: 1.2;
-}
-
-.modal-subtitle {
-  font-size: 1rem;
-  margin: 0;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.4;
-  font-weight: 400;
-}
-
-.close-btn {
-  background: var(--bg-overlay-medium, rgba(255, 255, 255, 0.2));
-  border: none;
-  border-radius: 50%;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-inverse);
-  font-size: 1.25rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.close-btn:hover:not(:disabled) {
-  background: var(--bg-overlay-light, rgba(255, 255, 255, 0.3));
-  transform: scale(1.05);
-}
-
-.close-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Modal Body */
-.modal-body {
-  flex: 1;
-  padding: 2rem;
-  overflow-y: auto;
-}
-
-.edit-form {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.form-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.section-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--border-color);
-}
-
-.section-title i {
-  color: var(--primary-color);
-  font-size: 1.1rem;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-label {
-  font-weight: 600;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.form-label i {
-  color: var(--primary-color);
-  font-size: 1rem;
-}
-
-.required {
-  color: var(--error-color);
-  font-weight: 700;
-}
-
-.optional {
-  color: var(--text-secondary);
-  font-weight: 400;
-  font-size: 0.8rem;
-}
-
-.form-input {
-  padding: 0.75rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.form-input.error {
-  border-color: var(--error-color);
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-}
-
-.form-input:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.password-input-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.password-toggle {
-  position: absolute;
-  right: 0.75rem;
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.password-toggle:hover:not(:disabled) {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.password-toggle:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  cursor: pointer;
-  padding: 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--bg-secondary);
-  transition: all 0.2s ease;
-}
-
-.checkbox-label:hover {
-  background: var(--bg-hover);
-  border-color: var(--primary-color);
-}
-
-.checkbox-label.disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.checkbox-input {
-  display: none;
-}
-
-.checkbox-custom {
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid var(--border-color);
-  border-radius: 4px;
-  background: var(--bg-primary);
-  position: relative;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  margin-top: 0.125rem;
-}
-
-.checkbox-input:checked + .checkbox-custom {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.checkbox-input:checked + .checkbox-custom::after {
-  content: '✓';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 0.75rem;
-  font-weight: bold;
-}
-
-.checkbox-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-}
-
-.checkbox-title {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 0.9rem;
-}
-
-.checkbox-description {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  line-height: 1.3;
-}
-
-/* Roles Section */
-.super-user-always-present {
-  margin-bottom: 1rem;
-}
-
-.super-user-option {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
-  border: 2px solid rgba(34, 197, 94, 0.3);
-  border-radius: 8px;
-  padding: 1rem;
-  position: relative;
-}
-
-.super-user-option::before {
-  content: '✓';
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  background: var(--success-color);
-  color: white;
-  border-radius: 50%;
-  width: 1.5rem;
-  height: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: bold;
-}
-
-.roles-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-}
-
-.role-option {
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--bg-secondary);
-  transition: all 0.2s ease;
-}
-
-.role-option:hover {
-  border-color: var(--primary-color);
-  background: var(--bg-hover);
-}
-
-.role-option.selected {
-  border-color: var(--primary-color);
-  background: var(--bg-active);
-}
-
-.role-label {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  cursor: pointer;
-  width: 100%;
-}
-
-.role-label i {
-  color: var(--primary-color);
-  font-size: 1.1rem;
-}
-
-.role-name {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-}
-
-.role-name strong {
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.role-name small {
-  color: var(--text-secondary);
-  font-size: 0.8rem;
-  line-height: 1.3;
-}
-
-.error-message {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--error-color);
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
-}
-
-.error-message i {
-  font-size: 0.75rem;
-}
-
-.help-text {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--text-secondary);
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
-}
-
-.help-text i {
-  font-size: 0.75rem;
-}
-
-/* Modal Footer */
-.modal-footer {
-  padding: 1.5rem 2rem;
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-}
-
-.footer-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-}
-
-.action-btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
-  min-width: 120px;
-  justify-content: center;
-}
-
-.cancel-btn {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-
-.cancel-btn:hover:not(:disabled) {
-  background: var(--bg-hover);
-  transform: translateY(-1px);
-}
-
-.save-btn {
-  background: var(--primary-color);
-  color: white;
-}
-
-.save-btn:hover:not(:disabled) {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-}
-
-.save-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .modal-container {
-    margin: 0.5rem;
-    max-height: 95vh;
-  }
-
-  .modal-header {
-    padding: 1.5rem;
-  }
-
-  .modal-body {
-    padding: 1.5rem;
-  }
-
-  .modal-footer {
-    padding: 1rem 1.5rem;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .roles-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .footer-actions {
-    flex-direction: column;
-  }
-
-  .action-btn {
-    width: 100%;
-  }
-}
-</style>
