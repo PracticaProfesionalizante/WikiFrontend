@@ -206,7 +206,7 @@
             <div v-else>
               <div v-if="viewMode === 'table'" class="space-y-4 p-4 pt-0">
                 <div class="hidden overflow-x-auto md:block">
-                  <table class="w-full min-w-[1100px] border-collapse">
+                  <table class="w-full min-w-[1220px] border-collapse">
                     <thead>
                       <tr>
                         <th
@@ -232,7 +232,7 @@
                         <th
                           class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
                         >
-                          Creado
+                          Última edición
                         </th>
                         <th
                           class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
@@ -269,7 +269,15 @@
                           </span>
                         </td>
                         <td class="p-3 align-middle text-slate-700 dark:text-slate-200">
-                          {{ doc.author || doc.createdBy || 'Sin autor' }}
+                          <div class="flex flex-col">
+                            <span>{{ getDocumentAuthor(doc) }}</span>
+                            <span
+                              v-if="doc.createdAt || doc.created_at"
+                              class="text-xs text-slate-500 dark:text-slate-400"
+                            >
+                              {{ formatDate(doc.createdAt || doc.created_at) }}
+                            </span>
+                          </div>
                         </td>
                         <td class="p-3 align-middle">
                           <button
@@ -293,7 +301,15 @@
                           </button>
                         </td>
                         <td class="p-3 align-middle text-slate-700 dark:text-slate-200">
-                          {{ new Date(doc.createdAt || doc.created_at).toLocaleDateString('es-ES') }}
+                          <div class="flex flex-col">
+                            <span>{{ getDocumentEditor(doc) }}</span>
+                            <span
+                              v-if="doc.updatedAt || doc.updated_at"
+                              class="text-xs text-slate-500 dark:text-slate-400"
+                            >
+                              {{ formatDate(doc.updatedAt || doc.updated_at) }}
+                            </span>
+                          </div>
                         </td>
                         <td class="p-3 align-middle">
                           <div class="flex items-center gap-2">
@@ -336,17 +352,15 @@
                         <div class="flex flex-1 items-start gap-3">
                           <div
                             class="grid h-10 w-10 place-items-center rounded-full text-white"
-                            :class="getDocumentStatus(doc) === 'Activo'
-                              ? 'bg-emerald-500'
-                              : 'bg-red-500'"
+                            :class="getDocumentStatus(doc) === 'Activo' ? 'bg-emerald-500' : 'bg-red-500'"
                           >
                             <i class="fas fa-file-alt"></i>
                           </div>
                           <div class="flex flex-col">
                             <button
-                              class="text-left text-base font-semibold text-slate-900 underline-offset-2 hover:text-blue-600 hover:underline focus:underline focus:outline-none dark:text-slate-100"
                               type="button"
                               @click="previewContent(doc)"
+                              class="text-left text-base font-semibold text-slate-900 underline-offset-2 hover:text-blue-600 hover:underline focus:underline focus:outline-none dark:text-slate-100"
                             >
                               {{ doc.title || doc.name || 'Sin título' }}
                             </button>
@@ -366,7 +380,7 @@
                         </button>
                       </div>
 
-                      <div class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                      <div class="space-y-3 text-sm text-slate-600 dark:text-slate-300">
                         <div class="flex items-center gap-2">
                           <strong>Tipo:</strong>
                           <span :class="['inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold', getTypeColors(doc.type).bg, getTypeColors(doc.type).text, getTypeColors(doc.type).border]">
@@ -374,10 +388,25 @@
                             {{ getTypeDisplay(doc.type || doc.category) }}
                           </span>
                         </div>
-                        <div><strong>Autor:</strong> {{ doc.author || doc.createdBy || 'Sin autor' }}</div>
-                        <div>
-                          <strong>Creado:</strong>
-                          {{ new Date(doc.createdAt || doc.created_at).toLocaleDateString('es-ES') }}
+                        <div class="flex flex-col">
+                          <span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Autor</span>
+                          <span>{{ getDocumentAuthor(doc) }}</span>
+                          <span
+                            v-if="doc.createdAt || doc.created_at"
+                            class="text-xs text-slate-500 dark:text-slate-400"
+                          >
+                            {{ formatDate(doc.createdAt || doc.created_at) }}
+                          </span>
+                        </div>
+                        <div class="flex flex-col">
+                          <span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Última edición</span>
+                          <span>{{ getDocumentEditor(doc) }}</span>
+                          <span
+                            v-if="doc.updatedAt || doc.updated_at"
+                            class="text-xs text-slate-500 dark:text-slate-400"
+                          >
+                            {{ formatDate(doc.updatedAt || doc.updated_at) }}
+                          </span>
                         </div>
                       </div>
 
@@ -454,10 +483,25 @@
                         {{ getTypeDisplay(doc.type || doc.category) }}
                       </span>
                     </div>
-                    <div><strong>Autor:</strong> {{ doc.author || doc.createdBy || 'Sin autor' }}</div>
-                    <div>
-                      <strong>Creado:</strong>
-                      {{ new Date(doc.createdAt || doc.created_at).toLocaleDateString('es-ES') }}
+                    <div class="mt-1 flex flex-col">
+                      <span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Autor</span>
+                      <span>{{ getDocumentAuthor(doc) }}</span>
+                      <span
+                        v-if="doc.createdAt || doc.created_at"
+                        class="text-xs text-slate-500 dark:text-slate-400"
+                      >
+                        {{ formatDate(doc.createdAt || doc.created_at) }}
+                      </span>
+                    </div>
+                    <div class="mt-1 flex flex-col">
+                      <span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Última edición</span>
+                      <span>{{ getDocumentEditor(doc) }}</span>
+                      <span
+                        v-if="doc.updatedAt || doc.updated_at"
+                        class="text-xs text-slate-500 dark:text-slate-400"
+                      >
+                        {{ formatDate(doc.updatedAt || doc.updated_at) }}
+                      </span>
                     </div>
                   </div>
                   <div class="flex items-center gap-2">
@@ -2268,4 +2312,92 @@ onUnmounted(() => {
     URL.revokeObjectURL(pdfBlobUrl.value)
   }
 })
+
+const extractUserName = (user) => {
+  if (!user) {
+    return ''
+  }
+
+  if (typeof user === 'string') {
+    return user
+  }
+
+  if (typeof user === 'object') {
+    return (
+      user.fullName ||
+      user.name ||
+      [user.firstName, user.lastName].filter(Boolean).join(' ') ||
+      user.username ||
+      user.email ||
+      ''
+    )
+  }
+
+  return ''
+}
+
+const getDocumentEditor = (doc) => {
+  if (!doc) {
+    return 'Sin cambios'
+  }
+
+  const candidates = [
+    doc.updatedBy,
+    doc.updated_by,
+    doc.lastModifiedBy,
+    doc.last_modified_by,
+    doc.modifiedBy,
+    doc.modified_by,
+    doc.editedBy,
+    doc.edited_by,
+    doc.lastEditor,
+    doc.last_editor,
+    doc.updatedByUser,
+    doc.updated_by_user,
+    doc.lastModifiedUser,
+    doc.last_modified_user,
+  ]
+
+  for (const candidate of candidates) {
+    const name = extractUserName(candidate)
+    if (name) {
+      return name
+    }
+  }
+
+  if (doc.updatedAt || doc.updated_at) {
+    return 'Actualizado (usuario no disponible)'
+  }
+
+  return 'Sin cambios'
+}
+
+const getDocumentAuthor = (doc) => {
+  if (!doc) {
+    return 'Sin autor'
+  }
+
+  const candidates = [
+    doc.author,
+    doc.authorUser,
+    doc.author_user,
+    doc.createdBy,
+    doc.created_by,
+    doc.owner,
+    doc.ownerUser,
+    doc.owner_user,
+    doc.createdByUser,
+    doc.created_by_user,
+  ]
+
+  for (const candidate of candidates) {
+    const name = extractUserName(candidate)
+    if (name) {
+      return name
+    }
+  }
+
+  return 'Sin autor'
+}
+
 </script>

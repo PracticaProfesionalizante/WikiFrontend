@@ -508,31 +508,32 @@
                       </label>
 
                       <div v-if="menuForm.parentId" class="flex overflow-hidden rounded-lg border border-slate-300 dark:border-slate-600">
-                        <div class="flex items-center bg-slate-100 px-3 py-3 text-sm text-slate-700 dark:bg-slate-700 dark:text-slate-300">
-                          {{ getParentPath(menuForm.parentId) || '/' }}
-                        </div>
+                        <span class="bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                          {{ getParentPathPrefix(menuForm.parentId) }}
+                        </span>
                         <input
-                          id="menuPath"
                           v-model="menuForm.path"
                           type="text"
-                          class="flex-1 rounded-r-lg border-0 border-l border-slate-300 px-4 py-3 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
-                          :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-500/20': validationErrors.path }"
-                          :placeholder="`Ej: ${getMenuPathPlaceholder()}`"
-                          @input="validateMenuPath"
-                          required
+                          class="w-full border-0 bg-white px-3 py-2 text-sm font-medium text-slate-900 outline-none transition focus:bg-slate-50 dark:bg-slate-800 dark:text-slate-100"
+                          placeholder="segmento-hijo"
+                          @input="handlePathInput"
+                          :class="{
+                            'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-300': validationErrors.path,
+                            'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-200': !validationErrors.path && menuForm.path,
+                          }"
                         />
                       </div>
-
                       <input
                         v-else
-                        id="menuPath"
                         v-model="menuForm.path"
                         type="text"
-                        class="w-full rounded-lg border px-4 py-3 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
-                        :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-500/20': validationErrors.path }"
-                        placeholder="Ej: /gestion-usuarios"
-                        @input="validateForm"
-                        required
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-900 outline-none transition focus:border-blue-500 focus:bg-blue-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                        placeholder="/ruta-del-menu"
+                        @input="handlePathInput"
+                        :class="{
+                          'border-red-500 bg-red-50 text-red-600 dark:border-red-500 dark:bg-red-900/20 dark:text-red-300': validationErrors.path,
+                          'border-emerald-500 bg-emerald-50 text-emerald-600 dark:border-emerald-500 dark:bg-emerald-900/20 dark:text-emerald-200': !validationErrors.path && menuForm.path,
+                        }"
                       />
 
                       <div v-if="validationErrors.path" class="mt-1 flex items-center gap-2 text-sm text-red-600 dark:text-red-400" role="alert">
@@ -873,7 +874,7 @@
                       </div>
                         <div class="flex justify-between border-b border-slate-200 pb-2 dark:border-slate-700">
                           <span class="font-medium text-slate-700 dark:text-slate-300">Ruta:</span>
-                          <span class="text-slate-900 dark:text-slate-100">{{ menuForm.path || 'No especificada' }}</span>
+                          <span class="text-slate-900 dark:text-slate-100">{{ currentFullMenuPath || 'No especificada' }}</span>
                       </div>
                         <div class="flex justify-between">
                           <span class="font-medium text-slate-700 dark:text-slate-300">Tipo:</span>
@@ -1165,6 +1166,15 @@ const menuForm = ref({
   isActive: true,
   createSubmenus: false,
   submenus: [],
+})
+
+const currentFullMenuPath = computed(() => {
+  if (menuForm.value.parentId) {
+    const parentPath = getParentPath(menuForm.value.parentId)
+    return buildCompletePath(parentPath, menuForm.value.path)
+  }
+
+  return menuForm.value.path || '/'
 })
 
 // Watcher para actualizar el orden cuando cambie el parentId
@@ -2144,25 +2154,44 @@ const validateForm = () => {
   }
 
   // Validar ruta con reglas más estrictas
-  if (!menuForm.value.path.trim()) {
+  const trimmedPath = menuForm.value.path.trim()
+  if (!trimmedPath) {
     errors.path = 'La ruta es obligatoria'
-  } else if (!menuForm.value.path.startsWith('/')) {
-    errors.path = 'La ruta debe comenzar con /'
-  } else if (!/^\/[a-z0-9\-\/]*$/.test(menuForm.value.path)) {
-    errors.path = 'La ruta solo puede contener letras minúsculas, números, guiones y barras'
-  } else if (menuForm.value.path.endsWith('/') && menuForm.value.path !== '/') {
-    errors.path = 'La ruta no puede terminar con / (excepto la raíz)'
-  } else if (menuForm.value.path.includes('//')) {
-    errors.path = 'La ruta no puede contener barras consecutivas'
-  } else if (menuForm.value.path.length > 100) {
-    errors.path = 'La ruta no puede exceder 100 caracteres'
+  } else if (menuForm.value.parentId) {
+    if (trimmedPath.startsWith('/')) {
+      errors.path = 'No agregues "/" al inicio. Se agrega automáticamente la ruta del menú padre.'
+    } else if (trimmedPath.endsWith('/')) {
+      errors.path = 'El segmento final no puede terminar con /'
+    } else if (!/^[a-z0-9][a-z0-9-]*(?:\/[a-z0-9][a-z0-9-]*)*$/.test(trimmedPath)) {
+      errors.path = 'Usa solo letras minúsculas, números, guiones y / para separar subsegmentos'
+    } else {
+      const parentPath = getParentPath(menuForm.value.parentId)
+      const fullPath = buildCompletePath(parentPath, trimmedPath)
+      const existingMenu = menus.value.find(
+        (menu) => menu.path === fullPath && menu.id !== editingMenuId.value,
+      )
+      if (existingMenu) {
+        errors.path = `Ya existe un menú con la ruta "${fullPath}"`
+      }
+    }
   } else {
-    // Validar unicidad de ruta
-    const existingMenu = menus.value.find(
-      (menu) => menu.path === menuForm.value.path && menu.id !== editingMenuId.value,
-    )
-    if (existingMenu) {
-      errors.path = `Ya existe un menú con la ruta "${menuForm.value.path}"`
+    const normalizedRootPath = trimmedPath.startsWith('/') ? trimmedPath : `/${trimmedPath}`
+
+    if (!/^\/[a-z0-9\-\/]*$/.test(normalizedRootPath)) {
+      errors.path = 'La ruta solo puede contener letras minúsculas, números, guiones y barras'
+    } else if (normalizedRootPath.endsWith('/') && normalizedRootPath !== '/') {
+      errors.path = 'La ruta no puede terminar con / (excepto la raíz)'
+    } else if (normalizedRootPath.includes('//')) {
+      errors.path = 'La ruta no puede contener barras consecutivas'
+    } else if (normalizedRootPath.length > 100) {
+      errors.path = 'La ruta no puede exceder 100 caracteres'
+    } else {
+      const existingMenu = menus.value.find(
+        (menu) => menu.path === normalizedRootPath && menu.id !== editingMenuId.value,
+      )
+      if (existingMenu) {
+        errors.path = `Ya existe un menú con la ruta "${normalizedRootPath}"`
+      }
     }
   }
 
@@ -3144,6 +3173,50 @@ onMounted(() => {
   // Cargar menús desde el backend
   loadMenus()
 })
+
+const handlePathInput = () => {
+  if (!menuForm.value.path) {
+    validateFormDebounced()
+    return
+  }
+
+  let rawPath = menuForm.value.path.toLowerCase().trim()
+  rawPath = rawPath
+    .replace(/[^a-z0-9\/-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/\/+$/g, '')
+    .replace(/^-+/g, '')
+
+  if (menuForm.value.parentId) {
+    rawPath = rawPath.replace(/^\/+/, '')
+    rawPath = rawPath || 'nuevo-submenu'
+    menuForm.value.path = rawPath
+  } else {
+    rawPath = '/' + rawPath.replace(/^\/+/, '')
+    if (rawPath === '/') {
+      rawPath = '/' + (menuForm.value.name || 'nuevo-menu').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+    }
+    menuForm.value.path = rawPath
+  }
+
+  validateFormDebounced()
+}
+
+const ensureLeadingSlash = (path) => {
+  if (!path) return '/'
+  return path.startsWith('/') ? path : '/' + path
+}
+
+const getParentPathPrefix = (parentId) => {
+  const base = ensureLeadingSlash(getParentPath(parentId) || '')
+
+  if (!base || base === '/') {
+    return '/'
+  }
+
+  return base.endsWith('/') ? base : `${base}/`
+}
+
 </script>
 
 <style scoped>
