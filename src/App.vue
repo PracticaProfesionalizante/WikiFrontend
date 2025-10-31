@@ -13,6 +13,7 @@
 
       <!-- Router view para las páginas -->
       <router-view />
+      <HalloweenOverlay />
   </div>
 </template>
 
@@ -20,6 +21,7 @@
 import { onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useTheme } from '@/composables/useTheme'
+import HalloweenOverlay from '@/components/common/HalloweenOverlay.vue'
 
 // Store de autenticación
 const authStore = useAuthStore()
