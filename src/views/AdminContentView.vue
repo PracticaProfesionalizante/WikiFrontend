@@ -236,7 +236,7 @@
                         </div>
                       </td>
                       <td class="p-3 align-middle text-slate-700 dark:text-slate-200">
-                        {{ doc.type || doc.category || '�' }}
+                        {{ getTypeDisplay(doc.type || doc.category) || '�' }}
                       </td>
                       <td class="p-3 align-middle text-slate-700 dark:text-slate-200">
                         {{ doc.author || doc.createdBy || '�' }}
@@ -329,7 +329,7 @@
                     </button>
                   </div>
                   <div class="mb-3 text-sm text-slate-600 dark:text-slate-300">
-                    <div><strong>Tipo:</strong> {{ doc.type || doc.category || '�' }}</div>
+                    <div><strong>Tipo:</strong> {{ getTypeDisplay(doc.type || doc.category) || '�' }}</div>
                     <div><strong>Autor:</strong> {{ doc.author || doc.createdBy || '�' }}</div>
                     <div>
                       <strong>Creado:</strong>
@@ -1476,6 +1476,18 @@ const getDocumentStatus = (item) => {
   return 'Inactivo'
 }
 
+const getTypeDisplay = (type) => {
+  const displayNames = {
+    TYPE_TEXT: 'TEXTO',
+    TYPE_URL: 'URL',
+    TYPE_PDF: 'PDF',
+    TEXT: 'TEXTO',
+    URL: 'URL',
+    PDF: 'PDF',
+  }
+  return displayNames[type] || type || 'Desconocido'
+}
+
 const getTypeIcon = (type) => {
   const icons = {
     TYPE_TEXT: 'fas fas fa-file-alt',
@@ -1486,6 +1498,53 @@ const getTypeIcon = (type) => {
     PDF: 'fas fas fa-file-pdf',
   }
   return icons[type] || 'fas fas fa-file'
+}
+
+const getTypeColors = (type) => {
+  const colors = {
+    TYPE_TEXT: {
+      bg: 'bg-blue-100 dark:bg-blue-900/30',
+      text: 'text-blue-700 dark:text-blue-300',
+      border: 'border-blue-200 dark:border-blue-800',
+      icon: 'text-blue-600 dark:text-blue-400'
+    },
+    TYPE_URL: {
+      bg: 'bg-purple-100 dark:bg-purple-900/30',
+      text: 'text-purple-700 dark:text-purple-300',
+      border: 'border-purple-200 dark:border-purple-800',
+      icon: 'text-purple-600 dark:text-purple-400'
+    },
+    TYPE_PDF: {
+      bg: 'bg-red-100 dark:bg-red-900/30',
+      text: 'text-red-700 dark:text-red-300',
+      border: 'border-red-200 dark:border-red-800',
+      icon: 'text-red-600 dark:text-red-400'
+    },
+    TEXT: {
+      bg: 'bg-blue-100 dark:bg-blue-900/30',
+      text: 'text-blue-700 dark:text-blue-300',
+      border: 'border-blue-200 dark:border-blue-800',
+      icon: 'text-blue-600 dark:text-blue-400'
+    },
+    URL: {
+      bg: 'bg-purple-100 dark:bg-purple-900/30',
+      text: 'text-purple-700 dark:text-purple-300',
+      border: 'border-purple-200 dark:border-purple-800',
+      icon: 'text-purple-600 dark:text-purple-400'
+    },
+    PDF: {
+      bg: 'bg-red-100 dark:bg-red-900/30',
+      text: 'text-red-700 dark:text-red-300',
+      border: 'border-red-200 dark:border-red-800',
+      icon: 'text-red-600 dark:text-red-400'
+    },
+  }
+  return colors[type] || {
+    bg: 'bg-slate-100 dark:bg-slate-900/30',
+    text: 'text-slate-700 dark:text-slate-300',
+    border: 'border-slate-200 dark:border-slate-800',
+    icon: 'text-slate-600 dark:text-slate-400'
+  }
 }
 
 const getStatusIcon = (status) => {
