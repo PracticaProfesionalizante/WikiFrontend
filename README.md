@@ -139,15 +139,110 @@ Si vienes de otro proyecto, fíjate que aquí todo está pensado para ser **resp
 
 ## Estilos con Tailwind
 
-* Usa utilidades Tailwind (`class="bg-slate-100 text-sm"`), no CSS tradicional salvo casos puntuales.
-* Para estilos reutilizables, crea clases personalizadas en `tailwind.config.cjs` o componentes específicos.
-* Recuerda siempre revisar versión móvil (`Ctrl+Shift+M` en Chrome/Edge) porque el diseño es mobile-first.
+### Tailwind en pocas palabras
 
-### Recursos rápidos de Tailwind
+- **Tailwind** funciona con utilidades como `bg-blue-600` o `p-4`. No escribimos CSS clásico salvo casos puntuales.
+- Los estilos globales se definen en `src/styles/tailwind.css`. Allí encontrarás las directivas principales:
+  ```css
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+  ```
+- Tailwind lee todas las clases usadas en `src/**/*` y genera sólo las necesarias. Si inventas una clase a mano, Tailwind **no** la va a reconocer. Usa las utilidades existentes o extiende la configuración.
 
-* [Cheat sheet oficial](https://tailwindcss.com/docs)
-* Para colores, usa la escala `slate`, `blue`, `emerald`… Ejemplo: `text-slate-600`, `bg-blue-600`.
-* Para dark mode, agrega `dark:` antes de la clase (ej: `dark:bg-slate-900`).
+### Agregar estilos reutilizables con @apply
+
+Si necesitas una combinación de clases que reutilizarás muchas veces, crea una clase usando `@apply` dentro de `tailwind.css` o en un archivo `.css` importado después de las directivas Tailwind.
+
+```css
+/* src/styles/tailwind.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 hover:bg-blue-700;
+}
+```
+
+Luego, úsala en un componente:
+
+```vue
+<button class="btn-primary">Guardar</button>
+```
+
+### Extender Tailwind (colores, fuentes, animaciones…)
+
+Si necesitas nuevos colores, tamaños o animaciones, agrégalos en `tailwind.config.cjs`, dentro de `theme.extend`.
+
+```js
+// tailwind.config.cjs
+module.exports = {
+  content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          light: '#60a5fa',
+          DEFAULT: '#2563eb',
+          dark: '#1e3a8a'
+        }
+      },
+      boxShadow: {
+        glow: '0 10px 40px rgba(37, 99, 235, 0.3)'
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.3s ease-out forwards'
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: 0, transform: 'translateY(10px)' },
+          '100%': { opacity: 1, transform: 'translateY(0)' }
+        }
+      }
+    }
+  },
+  plugins: []
+}
+```
+
+Después de modificar la configuración, **reinicia `npm run dev`** para que Tailwind regenere las clases.
+
+### Variantes (dark mode, hover, responsive)
+
+- `hover:bg-blue-700` → aplica sólo al pasar el mouse.
+- `sm:text-base` → aplica cuando el ancho es ≥ 640px.
+- `dark:bg-slate-900` → aplica cuando el documento tiene la clase `dark`.
+
+Ejemplo completo:
+
+```vue
+<div class="p-4 sm:p-8 bg-white dark:bg-slate-900 rounded-3xl shadow hover:shadow-lg transition">
+  <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Título</h2>
+  <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+    Contenido del bloque
+  </p>
+</div>
+```
+
+### ¿Y si realmente necesito CSS clásico?
+
+Puedes crear un archivo `.css` nuevo (por ejemplo, `src/styles/custom.css`) e importarlo en `main.js`. Ahí puedes mezclar utilidades con reglas personalizadas.
+
+```css
+/* src/styles/custom.css */
+.card-shadow {
+  box-shadow: 0 15px 30px rgba(15, 23, 42, 0.15);
+}
+```
+
+```js
+// src/main.js
+import './styles/tailwind.css'
+import './styles/custom.css'
+```
+
+> Usa esta opción sólo cuando Tailwind no cubra un caso específico. Mantén las clases lo más simples posible para que el equipo pueda entenderlas rápido.
 
 ---
 
