@@ -100,9 +100,13 @@
               </div>
             </div>
 
-            <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <div
+              class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between"
+            >
               <div class="flex flex-wrap items-center gap-3">
-                <span class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                <span
+                  class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100"
+                >
                   <i class="fas fa-eye text-blue-500 text-xs"></i>
                   Vista:
                 </span>
@@ -136,7 +140,9 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                  <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Estado:</label>
+                  <label class="text-sm font-semibold text-slate-700 dark:text-slate-200"
+                    >Estado:</label
+                  >
                   <select
                     v-model="filterStatus"
                     class="w-full min-w-[160px] rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:w-auto"
@@ -148,7 +154,9 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                  <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Documento:</label>
+                  <label class="text-sm font-semibold text-slate-700 dark:text-slate-200"
+                    >Documento:</label
+                  >
                   <select
                     v-model="filterType"
                     class="w-full min-w-[160px] rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:w-auto"
@@ -163,7 +171,9 @@
 
               <div class="flex flex-wrap items-center gap-3">
                 <div class="flex items-center gap-2">
-                  <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Ordenar por:</label>
+                  <label class="text-sm font-semibold text-slate-700 dark:text-slate-200"
+                    >Ordenar por:</label
+                  >
                   <select
                     v-model="sortBy"
                     class="w-full min-w-[180px] rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:w-auto"
@@ -263,7 +273,14 @@
                           </div>
                         </td>
                         <td class="p-3 align-middle">
-                          <span :class="['inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold', getTypeColors(doc.type).bg, getTypeColors(doc.type).text, getTypeColors(doc.type).border]">
+                          <span
+                            :class="[
+                              'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold',
+                              getTypeColors(doc.type).bg,
+                              getTypeColors(doc.type).text,
+                              getTypeColors(doc.type).border,
+                            ]"
+                          >
                             <i :class="[getTypeIcon(doc.type), getTypeColors(doc.type).icon]"></i>
                             {{ getTypeDisplay(doc.type || doc.category) }}
                           </span>
@@ -352,7 +369,9 @@
                         <div class="flex flex-1 items-start gap-3">
                           <div
                             class="grid h-10 w-10 place-items-center rounded-full text-white"
-                            :class="getDocumentStatus(doc) === 'Activo' ? 'bg-emerald-500' : 'bg-red-500'"
+                            :class="
+                              getDocumentStatus(doc) === 'Activo' ? 'bg-emerald-500' : 'bg-red-500'
+                            "
                           >
                             <i class="fas fa-file-alt"></i>
                           </div>
@@ -364,18 +383,28 @@
                             >
                               {{ doc.title || doc.name || 'Sin título' }}
                             </button>
-                            <span class="text-xs text-slate-500">{{ getTypeDisplay(doc.type || doc.category) }}</span>
+                            <span class="text-xs text-slate-500">{{
+                              getTypeDisplay(doc.type || doc.category)
+                            }}</span>
                           </div>
                         </div>
                         <button
                           type="button"
                           @click="toggleDocumentStatus(doc)"
                           class="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-wide transition shadow-sm hover:scale-105"
-                          :class="getDocumentStatus(doc) === 'Activo'
-                            ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/30 dark:text-emerald-200'
-                            : 'border-red-200 bg-red-50 text-red-600 dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200'"
+                          :class="
+                            getDocumentStatus(doc) === 'Activo'
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/30 dark:text-emerald-200'
+                              : 'border-red-200 bg-red-50 text-red-600 dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200'
+                          "
                         >
-                          <i :class="getDocumentStatus(doc) === 'Activo' ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                          <i
+                            :class="
+                              getDocumentStatus(doc) === 'Activo'
+                                ? 'fas fa-check-circle'
+                                : 'fas fa-times-circle'
+                            "
+                          ></i>
                           {{ getDocumentStatus(doc) === 'Activo' ? 'Activo' : 'Inactivo' }}
                         </button>
                       </div>
@@ -383,13 +412,23 @@
                       <div class="space-y-3 text-sm text-slate-600 dark:text-slate-300">
                         <div class="flex items-center gap-2">
                           <strong>Tipo:</strong>
-                          <span :class="['inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold', getTypeColors(doc.type).bg, getTypeColors(doc.type).text, getTypeColors(doc.type).border]">
+                          <span
+                            :class="[
+                              'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold',
+                              getTypeColors(doc.type).bg,
+                              getTypeColors(doc.type).text,
+                              getTypeColors(doc.type).border,
+                            ]"
+                          >
                             <i :class="[getTypeIcon(doc.type), getTypeColors(doc.type).icon]"></i>
                             {{ getTypeDisplay(doc.type || doc.category) }}
                           </span>
                         </div>
                         <div class="flex flex-col">
-                          <span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Autor</span>
+                          <span
+                            class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+                            >Autor</span
+                          >
                           <span>{{ getDocumentAuthor(doc) }}</span>
                           <span
                             v-if="doc.createdAt || doc.created_at"
@@ -399,7 +438,10 @@
                           </span>
                         </div>
                         <div class="flex flex-col">
-                          <span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Última edición</span>
+                          <span
+                            class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+                            >Última edición</span
+                          >
                           <span>{{ getDocumentEditor(doc) }}</span>
                           <span
                             v-if="doc.updatedAt || doc.updated_at"
@@ -478,13 +520,23 @@
                   <div class="mb-3 text-sm text-slate-600 dark:text-slate-300">
                     <div class="flex items-center gap-2">
                       <strong>Tipo:</strong>
-                      <span :class="['inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold', getTypeColors(doc.type).bg, getTypeColors(doc.type).text, getTypeColors(doc.type).border]">
+                      <span
+                        :class="[
+                          'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold',
+                          getTypeColors(doc.type).bg,
+                          getTypeColors(doc.type).text,
+                          getTypeColors(doc.type).border,
+                        ]"
+                      >
                         <i :class="[getTypeIcon(doc.type), getTypeColors(doc.type).icon]"></i>
                         {{ getTypeDisplay(doc.type || doc.category) }}
                       </span>
                     </div>
                     <div class="mt-1 flex flex-col">
-                      <span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Autor</span>
+                      <span
+                        class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+                        >Autor</span
+                      >
                       <span>{{ getDocumentAuthor(doc) }}</span>
                       <span
                         v-if="doc.createdAt || doc.created_at"
@@ -494,7 +546,10 @@
                       </span>
                     </div>
                     <div class="mt-1 flex flex-col">
-                      <span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Última edición</span>
+                      <span
+                        class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+                        >Última edición</span
+                      >
                       <span>{{ getDocumentEditor(doc) }}</span>
                       <span
                         v-if="doc.updatedAt || doc.updated_at"
@@ -704,7 +759,7 @@
                   <!-- PDF Embed -->
                   <div
                     class="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 relative"
-                    style="max-height: 70vh;"
+                    style="max-height: 70vh"
                     @contextmenu.prevent="handleRightClick"
                     @mousedown="handleMouseDown"
                     @mousemove="handleMouseMove"
@@ -712,16 +767,13 @@
                     @mouseleave="handleMouseUp"
                     :style="{ cursor: isDragging ? 'grabbing' : pdfZoom > 1 ? 'grab' : 'default' }"
                   >
-                    <div
-                      class="overflow-auto"
-                      style="height: 100%; max-height: 70vh;"
-                    >
+                    <div class="overflow-auto" style="height: 100%; max-height: 70vh">
                       <div
                         :style="{
                           transform: `scale(${pdfZoom}) translate(${pdfPanX}px, ${pdfPanY}px)`,
                           transformOrigin: 'top left',
                           width: `${100 / pdfZoom}%`,
-                          transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+                          transition: isDragging ? 'none' : 'transform 0.1s ease-out',
                         }"
                         class="min-h-[500px]"
                       >
@@ -732,7 +784,7 @@
                           @loaded="onPdfLoaded"
                           @loading-failed="onPdfError"
                           class="w-full rounded-lg border border-slate-200 shadow dark:border-slate-700"
-                          style="user-select: text;"
+                          style="user-select: text"
                         />
                       </div>
                     </div>
@@ -890,7 +942,9 @@
           v-if="deleteDialog"
           class="fixed inset-0 z-[1000] grid place-items-center bg-black/60 p-4"
         >
-          <div class="w-full max-w-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+          <div
+            class="w-full max-w-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          >
             <div class="flex items-center justify-between bg-red-600 px-6 py-4 text-white">
               <h3 class="m-0 text-base font-semibold">
                 <i class="fas fa-trash-alt mr-2"></i>
@@ -912,20 +966,24 @@
               <p class="text-xs text-slate-500 dark:text-slate-400">
                 Esta acción no se puede deshacer.
               </p>
-            <div class="mt-4 space-y-2">
-              <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Escribe <span class="text-red-600">ELIMINAR</span> para confirmar
-              </label>
-              <input
-                v-model="deleteConfirmInput"
-                type="text"
-                placeholder="ELIMINAR"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-              />
-            </div>
+              <div class="mt-4 space-y-2">
+                <label
+                  class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+                >
+                  Escribe <span class="text-red-600">ELIMINAR</span> para confirmar
+                </label>
+                <input
+                  v-model="deleteConfirmInput"
+                  type="text"
+                  placeholder="ELIMINAR"
+                  class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                />
+              </div>
             </div>
 
-            <div class="flex justify-end gap-3 border-t border-slate-200 bg-slate-100 px-6 py-4 dark:border-slate-700 dark:bg-slate-800">
+            <div
+              class="flex justify-end gap-3 border-t border-slate-200 bg-slate-100 px-6 py-4 dark:border-slate-700 dark:bg-slate-800"
+            >
               <button
                 @click="closeDeleteDialog"
                 class="inline-flex min-w-[110px] items-center justify-center gap-2 rounded-lg border border-slate-300 bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900 transition hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-100"
@@ -1098,8 +1156,7 @@ const selectedItems = ref([])
 const currentPage = ref(1)
 const itemsPerPage = ref(25)
 
-// URL base de la API
-const apiBaseUrl = 'http://practicas.teclab.edu.ar:8080'
+// API base URL removed (unused)
 
 // Computed properties para estadísticas
 const activeCount = computed(
@@ -1512,10 +1569,7 @@ const cancelStatusChange = () => {
   statusConfirmAction.value = ''
 }
 
-// Función para refrescar datos
-const refreshData = () => {
-  loadDocuments()
-}
+// Función para refrescar datos (se usa directamente loadDocuments cuando se necesita)
 
 // Funciones de diálogos
 const openCreateDialog = () => {
@@ -1841,45 +1895,47 @@ const getTypeColors = (type) => {
       bg: 'bg-blue-100 dark:bg-blue-900/30',
       text: 'text-blue-700 dark:text-blue-300',
       border: 'border-blue-200 dark:border-blue-800',
-      icon: 'text-blue-600 dark:text-blue-400'
+      icon: 'text-blue-600 dark:text-blue-400',
     },
     TYPE_URL: {
       bg: 'bg-purple-100 dark:bg-purple-900/30',
       text: 'text-purple-700 dark:text-purple-300',
       border: 'border-purple-200 dark:border-purple-800',
-      icon: 'text-purple-600 dark:text-purple-400'
+      icon: 'text-purple-600 dark:text-purple-400',
     },
     TYPE_PDF: {
       bg: 'bg-red-100 dark:bg-red-900/30',
       text: 'text-red-700 dark:text-red-300',
       border: 'border-red-200 dark:border-red-800',
-      icon: 'text-red-600 dark:text-red-400'
+      icon: 'text-red-600 dark:text-red-400',
     },
     TEXT: {
       bg: 'bg-blue-100 dark:bg-blue-900/30',
       text: 'text-blue-700 dark:text-blue-300',
       border: 'border-blue-200 dark:border-blue-800',
-      icon: 'text-blue-600 dark:text-blue-400'
+      icon: 'text-blue-600 dark:text-blue-400',
     },
     URL: {
       bg: 'bg-purple-100 dark:bg-purple-900/30',
       text: 'text-purple-700 dark:text-purple-300',
       border: 'border-purple-200 dark:border-purple-800',
-      icon: 'text-purple-600 dark:text-purple-400'
+      icon: 'text-purple-600 dark:text-purple-400',
     },
     PDF: {
       bg: 'bg-red-100 dark:bg-red-900/30',
       text: 'text-red-700 dark:text-red-300',
       border: 'border-red-200 dark:border-red-800',
-      icon: 'text-red-600 dark:text-red-400'
+      icon: 'text-red-600 dark:text-red-400',
     },
   }
-  return colors[type] || {
-    bg: 'bg-slate-100 dark:bg-slate-900/30',
-    text: 'text-slate-700 dark:text-slate-300',
-    border: 'border-slate-200 dark:border-slate-800',
-    icon: 'text-slate-600 dark:text-slate-400'
-  }
+  return (
+    colors[type] || {
+      bg: 'bg-slate-100 dark:bg-slate-900/30',
+      text: 'text-slate-700 dark:text-slate-300',
+      border: 'border-slate-200 dark:border-slate-800',
+      icon: 'text-slate-600 dark:text-slate-400',
+    }
+  )
 }
 
 const getStatusIcon = (status) => {
@@ -1979,7 +2035,12 @@ const loadPdfFile = async (documentId) => {
     pdfLoading.value = false
 
     console.log('? PDF cargado exitosamente como blob URL:', blobUrl)
-    console.log('? Estado después de cargar - pdfLoading:', pdfLoading.value, 'pdfBlobUrl:', !!pdfBlobUrl.value)
+    console.log(
+      '? Estado después de cargar - pdfLoading:',
+      pdfLoading.value,
+      'pdfBlobUrl:',
+      !!pdfBlobUrl.value,
+    )
     return blobUrl
   } catch (error) {
     console.error('? Error cargando PDF:', error)
@@ -1987,7 +2048,9 @@ const loadPdfFile = async (documentId) => {
     if (error.status === 401 || /autenticad/.test(error.message)) {
       pdfError.value = new Error('Tu sesión expiró. Inicia sesión nuevamente para ver el PDF.')
     } else if (error.status === 422 || /no existe/.test(error.message)) {
-      pdfError.value = new Error('El archivo PDF no está disponible. Puede haber sido eliminado o nunca se subió correctamente.')
+      pdfError.value = new Error(
+        'El archivo PDF no está disponible. Puede haber sido eliminado o nunca se subió correctamente.',
+      )
     } else {
       pdfError.value = new Error(error.message || 'No se pudo cargar el documento PDF.')
     }
@@ -2171,8 +2234,10 @@ const handleRightClick = (event) => {
 
 const handleMouseDown = (event) => {
   // Arrastrar con clic derecho (button 2) o con clic izquierdo si hay zoom
-  if ((event.button === 2 && pdfZoom.value > 1.0) ||
-      (event.button === 0 && pdfZoom.value > 1.0 && event.ctrlKey)) {
+  if (
+    (event.button === 2 && pdfZoom.value > 1.0) ||
+    (event.button === 0 && pdfZoom.value > 1.0 && event.ctrlKey)
+  ) {
     event.preventDefault()
     startDrag(event)
   }
@@ -2399,5 +2464,4 @@ const getDocumentAuthor = (doc) => {
 
   return 'Sin autor'
 }
-
 </script>
