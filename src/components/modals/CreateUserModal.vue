@@ -1,5 +1,5 @@
 <template>
-  <div v-if="show" class="fixed inset-0 z-[1000] grid place-items-center bg-black/60 p-4 sm:p-6" @click="handleClose">
+  <div v-if="show" class="fixed inset-0 z-[1000] grid place-items-center bg-black/60 p-4 sm:p-6">
     <div class="w-full max-w-full sm:max-w-[800px] max-h-[90vh] overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" @click.stop>
       <!-- Modal Header -->
       <div class="relative rounded-t-2xl bg-gradient-to-tr from-blue-600 to-blue-500 px-5 py-5 text-white sm:px-8 sm:py-6">

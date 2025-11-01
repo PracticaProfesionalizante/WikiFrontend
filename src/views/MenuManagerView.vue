@@ -388,7 +388,6 @@
         <div
           v-if="showDialog"
       class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4"
-          @click="closeDialog"
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
