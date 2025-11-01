@@ -154,7 +154,7 @@ export default {
             return (
               normalizedKeyword.includes(query) ||
               query.includes(normalizedKeyword)
-            )
+          )
           })
         })
 

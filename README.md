@@ -48,8 +48,8 @@ Asegúrate de tener instalado lo siguiente:
    ```
 2. Instala las dependencias del proyecto:
    ```bash
-   npm install
-   ```
+npm install
+```
 3. Levanta el servidor de desarrollo:
    ```bash
    npm run dev

@@ -24,8 +24,8 @@
             </h1>
             <p class="text-base font-medium leading-relaxed text-slate-700 dark:text-slate-300 sm:text-lg">
               Para gestionar el contenido de la plataforma utiliza el menú lateral. Encontrarás todas las secciones disponibles y podrás acceder rápidamente a tus tareas habituales.
-            </p>
-          </div>
+          </p>
+        </div>
         </article>
       </section>
     </main>

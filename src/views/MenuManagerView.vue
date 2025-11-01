@@ -348,25 +348,25 @@
                   <h3 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">No se encontraron menús</h3>
                   <p class="mb-4 text-slate-600 dark:text-slate-400">No hay menús que coincidan con "{{ searchQuery }}"</p>
                   <button @click="clearSearch" class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700">
-                    <i class="fas fa-sync-alt"></i>
-                    Mostrar todos los menús
-                  </button>
-                </div>
+                  <i class="fas fa-sync-alt"></i>
+                  Mostrar todos los menús
+                </button>
+              </div>
 
                 <template v-else>
-                  <MenuTreeNode
-                    v-for="rootMenu in filteredHierarchicalMenus"
-                    :key="rootMenu.id"
-                    :menu="rootMenu"
-                    :level="0"
-                    :all-menus="menus"
-                    :available-roles="availableRolesList"
-                    :search-query="searchQuery"
-                    @edit="editMenu"
-                    @delete="deleteMenu"
-                    @move="moveMenu"
-                    @create-submenu="createSubmenu"
-                  />
+              <MenuTreeNode
+                v-for="rootMenu in filteredHierarchicalMenus"
+                :key="rootMenu.id"
+                :menu="rootMenu"
+                :level="0"
+                :all-menus="menus"
+                :available-roles="availableRolesList"
+                :search-query="searchQuery"
+                @edit="editMenu"
+                @delete="deleteMenu"
+                @move="moveMenu"
+                @create-submenu="createSubmenu"
+              />
                 </template>
               </div>
             </div>
@@ -2178,18 +2178,18 @@ const validateForm = () => {
     const normalizedRootPath = trimmedPath.startsWith('/') ? trimmedPath : `/${trimmedPath}`
 
     if (!/^\/[a-z0-9\-\/]*$/.test(normalizedRootPath)) {
-      errors.path = 'La ruta solo puede contener letras minúsculas, números, guiones y barras'
+    errors.path = 'La ruta solo puede contener letras minúsculas, números, guiones y barras'
     } else if (normalizedRootPath.endsWith('/') && normalizedRootPath !== '/') {
-      errors.path = 'La ruta no puede terminar con / (excepto la raíz)'
+    errors.path = 'La ruta no puede terminar con / (excepto la raíz)'
     } else if (normalizedRootPath.includes('//')) {
-      errors.path = 'La ruta no puede contener barras consecutivas'
+    errors.path = 'La ruta no puede contener barras consecutivas'
     } else if (normalizedRootPath.length > 100) {
-      errors.path = 'La ruta no puede exceder 100 caracteres'
-    } else {
-      const existingMenu = menus.value.find(
+    errors.path = 'La ruta no puede exceder 100 caracteres'
+  } else {
+    const existingMenu = menus.value.find(
         (menu) => menu.path === normalizedRootPath && menu.id !== editingMenuId.value,
-      )
-      if (existingMenu) {
+    )
+    if (existingMenu) {
         errors.path = `Ya existe un menú con la ruta "${normalizedRootPath}"`
       }
     }

@@ -51,7 +51,7 @@
             v-if="error"
             class="mb-3 flex items-center gap-2 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200"
           >
-            <i class="fas fa-exclamation-circle"></i>
+              <i class="fas fa-exclamation-circle"></i>
             {{ error }}
           </div>
 
@@ -59,7 +59,7 @@
             v-if="success"
             class="mb-3 flex items-center gap-2 rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-900/30 dark:text-emerald-200"
           >
-            <i class="fas fa-check-circle"></i>
+              <i class="fas fa-check-circle"></i>
             {{ success }}
           </div>
         </div>
@@ -97,8 +97,8 @@
               >
                 <i class="fas fa-filter"></i>
                 {{ filteredItems.length }} resultado(s) encontrados
-              </div>
             </div>
+          </div>
 
             <div
               class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between"
@@ -113,7 +113,7 @@
                 <div
                   class="inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm dark:border-slate-700 dark:bg-slate-900"
                 >
-                  <button
+              <button
                     @click="setViewMode('table')"
                     :class="[
                       'px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wide transition',
@@ -123,9 +123,9 @@
                     ]"
                   >
                     <i class="fas fa-table mr-1"></i>
-                    Tabla
-                  </button>
-                  <button
+                Tabla
+              </button>
+              <button
                     @click="setViewMode('grid')"
                     :class="[
                       'px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wide transition',
@@ -135,9 +135,9 @@
                     ]"
                   >
                     <i class="fas fa-th-large mr-1"></i>
-                    Tarjetas
-                  </button>
-                </div>
+                Tarjetas
+              </button>
+            </div>
 
                 <div class="flex items-center gap-2">
                   <label class="text-sm font-semibold text-slate-700 dark:text-slate-200"
@@ -151,7 +151,7 @@
                     <option value="Activo">Activos</option>
                     <option value="Inactivo">Inactivos</option>
                   </select>
-                </div>
+            </div>
 
                 <div class="flex items-center gap-2">
                   <label class="text-sm font-semibold text-slate-700 dark:text-slate-200"
@@ -178,24 +178,24 @@
                     v-model="sortBy"
                     class="w-full min-w-[180px] rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:w-auto"
                   >
-                    <option value="createdAt">Fecha de creación</option>
+                <option value="createdAt">Fecha de creación</option>
                     <option value="name">Título</option>
-                    <option value="type">Tipo</option>
+                <option value="type">Tipo</option>
                     <option value="createdBy">Autor</option>
-                    <option value="status">Estado</option>
-                  </select>
+                <option value="status">Estado</option>
+              </select>
                 </div>
-                <button
-                  @click="toggleSortOrder"
+              <button
+                @click="toggleSortOrder"
                   class="grid h-10 w-10 place-items-center rounded-xl border-2 border-slate-200 bg-white text-slate-900 transition hover:scale-105 hover:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-                  :title="sortOrder === 'asc' ? 'Ordenar descendente' : 'Ordenar ascendente'"
-                >
+                :title="sortOrder === 'asc' ? 'Ordenar descendente' : 'Ordenar ascendente'"
+              >
                   <i
                     :class="
                       sortOrder === 'asc' ? 'fas fa-sort-amount-up' : 'fas fa-sort-amount-down'
                     "
                   ></i>
-                </button>
+              </button>
               </div>
             </div>
           </div>
@@ -217,13 +217,13 @@
               <div v-if="viewMode === 'table'" class="space-y-4 p-4 pt-0">
                 <div class="hidden overflow-x-auto md:block">
                   <table class="w-full min-w-[1220px] border-collapse">
-                    <thead>
-                      <tr>
+                  <thead>
+                    <tr>
                         <th
                           class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
                         >
                           Título
-                        </th>
+                      </th>
                         <th
                           class="sticky top-0 z-10 bg-slate-200/60 p-3 text-left text-sm font-semibold text-slate-700 dark:bg-slate-700/60 dark:text-slate-100"
                         >
@@ -249,9 +249,9 @@
                         >
                           Acciones
                         </th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                    </tr>
+                  </thead>
+                  <tbody>
                       <tr
                         v-for="doc in paginatedItems"
                         :key="doc.id"
@@ -270,8 +270,8 @@
                             >
                               {{ doc.title || doc.name || 'Sin título' }}
                             </button>
-                          </div>
-                        </td>
+                        </div>
+                      </td>
                         <td class="p-3 align-middle">
                           <span
                             :class="[
@@ -284,7 +284,7 @@
                             <i :class="[getTypeIcon(doc.type), getTypeColors(doc.type).icon]"></i>
                             {{ getTypeDisplay(doc.type || doc.category) }}
                           </span>
-                        </td>
+                      </td>
                         <td class="p-3 align-middle text-slate-700 dark:text-slate-200">
                           <div class="flex flex-col">
                             <span>{{ getDocumentAuthor(doc) }}</span>
@@ -294,8 +294,8 @@
                             >
                               {{ formatDate(doc.createdAt || doc.created_at) }}
                             </span>
-                          </div>
-                        </td>
+                        </div>
+                      </td>
                         <td class="p-3 align-middle">
                           <button
                             type="button"
@@ -316,7 +316,7 @@
                             ></i>
                             {{ getDocumentStatus(doc) === 'Activo' ? 'Activo' : 'Inactivo' }}
                           </button>
-                        </td>
+                      </td>
                         <td class="p-3 align-middle text-slate-700 dark:text-slate-200">
                           <div class="flex flex-col">
                             <span>{{ getDocumentEditor(doc) }}</span>
@@ -326,11 +326,11 @@
                             >
                               {{ formatDate(doc.updatedAt || doc.updated_at) }}
                             </span>
-                          </div>
-                        </td>
+                        </div>
+                      </td>
                         <td class="p-3 align-middle">
                           <div class="flex items-center gap-2">
-                            <button
+                          <button
                               @click="previewContent(doc)"
                               class="grid h-8 w-8 place-items-center rounded bg-slate-300 text-slate-800 transition hover:-translate-y-0.5 dark:bg-slate-700 dark:text-slate-100"
                               title="Ver"
@@ -340,23 +340,23 @@
                             <button
                               @click="openEditDialog(doc)"
                               class="grid h-8 w-8 place-items-center rounded bg-blue-600 text-white transition hover:-translate-y-0.5"
-                              title="Editar"
-                            >
-                              <i class="fas fa-edit"></i>
-                            </button>
-                            <button
+                            title="Editar"
+                          >
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          <button
                               @click="openDeleteDialog(doc)"
                               class="grid h-8 w-8 place-items-center rounded bg-red-600 text-white transition hover:-translate-y-0.5"
-                              title="Eliminar"
-                            >
+                            title="Eliminar"
+                          >
                               <i class="fas fa-trash"></i>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+            </div>
 
                 <div class="space-y-4 md:hidden">
                   <div
@@ -373,8 +373,8 @@
                               getDocumentStatus(doc) === 'Activo' ? 'bg-emerald-500' : 'bg-red-500'
                             "
                           >
-                            <i class="fas fa-file-alt"></i>
-                          </div>
+                  <i class="fas fa-file-alt"></i>
+                </div>
                           <div class="flex flex-col">
                             <button
                               type="button"
@@ -386,8 +386,8 @@
                             <span class="text-xs text-slate-500">{{
                               getTypeDisplay(doc.type || doc.category)
                             }}</span>
-                          </div>
-                        </div>
+                    </div>
+                    </div>
                         <button
                           type="button"
                           @click="toggleDocumentStatus(doc)"
@@ -407,7 +407,7 @@
                           ></i>
                           {{ getDocumentStatus(doc) === 'Activo' ? 'Activo' : 'Inactivo' }}
                         </button>
-                      </div>
+                  </div>
 
                       <div class="space-y-3 text-sm text-slate-600 dark:text-slate-300">
                         <div class="flex items-center gap-2">
@@ -423,7 +423,7 @@
                             <i :class="[getTypeIcon(doc.type), getTypeColors(doc.type).icon]"></i>
                             {{ getTypeDisplay(doc.type || doc.category) }}
                           </span>
-                        </div>
+                      </div>
                         <div class="flex flex-col">
                           <span
                             class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
@@ -436,7 +436,7 @@
                           >
                             {{ formatDate(doc.createdAt || doc.created_at) }}
                           </span>
-                        </div>
+                      </div>
                         <div class="flex flex-col">
                           <span
                             class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
@@ -449,11 +449,11 @@
                           >
                             {{ formatDate(doc.updatedAt || doc.updated_at) }}
                           </span>
-                        </div>
-                      </div>
+                    </div>
+                  </div>
 
                       <div class="flex flex-wrap gap-2">
-                        <button
+                    <button
                           @click="previewContent(doc)"
                           class="inline-flex items-center gap-2 rounded bg-slate-300 px-3 py-1.5 text-sm font-medium text-slate-800 transition hover:-translate-y-0.5 dark:bg-slate-700 dark:text-slate-100"
                         >
@@ -463,22 +463,22 @@
                         <button
                           @click="openEditDialog(doc)"
                           class="inline-flex items-center gap-2 rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition hover:-translate-y-0.5"
-                        >
-                          <i class="fas fa-edit"></i>
+                    >
+                      <i class="fas fa-edit"></i>
                           Editar
-                        </button>
-                        <button
+                    </button>
+                    <button
                           @click="openDeleteDialog(doc)"
                           class="inline-flex items-center gap-2 rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition hover:-translate-y-0.5"
                         >
                           <i class="fas fa-trash"></i>
                           Eliminar
-                        </button>
+                    </button>
                       </div>
-                    </div>
                   </div>
                 </div>
               </div>
+            </div>
 
               <!-- Grid -->
               <div v-else class="grid grid-cols-1 gap-4 p-4 pt-0 sm:grid-cols-2 xl:grid-cols-3">
@@ -496,8 +496,8 @@
                       >
                         {{ doc.title || doc.name || 'Sin título' }}
                       </h3>
-                    </div>
-                    <button
+              </div>
+                <button
                       type="button"
                       @click="toggleDocumentStatus(doc)"
                       :class="[
@@ -515,7 +515,7 @@
                         "
                       ></i>
                       {{ getDocumentStatus(doc) === 'Activo' ? 'Activo' : 'Inactivo' }}
-                    </button>
+                </button>
                   </div>
                   <div class="mb-3 text-sm text-slate-600 dark:text-slate-300">
                     <div class="flex items-center gap-2">
@@ -560,27 +560,27 @@
                     </div>
                   </div>
                   <div class="flex items-center gap-2">
-                    <button
+                  <button
                       @click="previewContent(doc)"
                       class="inline-flex items-center gap-2 rounded bg-slate-300 px-3 py-1.5 text-sm font-medium text-slate-800 hover:-translate-y-0.5 dark:bg-slate-700 dark:text-slate-100"
                     >
                       <i class="fas fa-eye"></i> Ver
-                    </button>
-                    <button
+                  </button>
+                <button
                       @click="openEditDialog(doc)"
                       class="inline-flex items-center gap-2 rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:-translate-y-0.5"
                     >
                       <i class="fas fa-edit"></i> Editar
-                    </button>
-                    <button
+                </button>
+                <button
                       @click="openDeleteDialog(doc)"
                       class="inline-flex items-center gap-2 rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:-translate-y-0.5"
                     >
                       <i class="fas fa-trash"></i> Eliminar
-                    </button>
-                  </div>
-                </div>
+                </button>
               </div>
+              </div>
+            </div>
 
               <!-- Empty State -->
               <div
@@ -592,9 +592,9 @@
                   No hay contenidos
                 </h3>
                 <p>Comienza creando un nuevo documento.</p>
-              </div>
-            </div>
           </div>
+        </div>
+      </div>
         </div>
 
         <!-- Preview Modal -->
@@ -617,9 +617,9 @@
                 @click="closePreviewModal"
                 class="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-white ring-1 ring-white/30 backdrop-blur hover:bg-white/30"
               >
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
 
             <!-- Body -->
             <div class="flex-1 overflow-y-auto p-6">
@@ -628,7 +628,7 @@
                 <div
                   class="h-12 w-12 animate-spin rounded-full border-4 border-slate-300 border-t-blue-500"
                 ></div>
-              </div>
+                </div>
 
               <!-- PDF Content -->
               <div
@@ -645,14 +645,14 @@
                   <p class="text-xs">
                     {{ pdfError?.message || 'No se pudo cargar el documento PDF' }}
                   </p>
-                  <button
+                            <button
                     @click="retryPdfLoad"
                     class="mt-3 inline-flex items-center gap-2 rounded bg-red-600 px-3 py-2 text-xs font-medium text-white hover:bg-red-700"
-                  >
+                            >
                     <i class="fas fa-redo"></i>
                     Reintentar
-                  </button>
-                </div>
+                            </button>
+                        </div>
 
                 <!-- PDF Loading -->
                 <div v-else-if="pdfLoading" class="grid min-h-[400px] place-items-center">
@@ -662,7 +662,7 @@
                     ></div>
                     <p class="text-sm text-slate-600 dark:text-slate-300">Cargando PDF...</p>
                   </div>
-                </div>
+                      </div>
 
                 <!-- PDF Viewer -->
                 <div v-else-if="pdfBlobUrl" class="space-y-4">
@@ -679,25 +679,25 @@
                       >
                         <i class="fas fa-angle-double-left text-xs"></i>
                       </button>
-                      <button
-                        @click="previousPage"
+                        <button
+                          @click="previousPage"
                         :disabled="currentPdfPage === 1"
                         class="grid h-8 w-8 place-items-center rounded bg-blue-600 text-white transition disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
                         title="Página anterior"
-                      >
+                        >
                         <i class="fas fa-angle-left text-xs"></i>
-                      </button>
+                        </button>
                       <span class="px-3 text-sm font-medium text-slate-700 dark:text-slate-200"
                         >Página {{ currentPdfPage }} de {{ totalPdfPages }}</span
                       >
-                      <button
-                        @click="nextPage"
-                        :disabled="currentPdfPage >= totalPdfPages"
+                        <button
+                          @click="nextPage"
+                          :disabled="currentPdfPage >= totalPdfPages"
                         class="grid h-8 w-8 place-items-center rounded bg-blue-600 text-white transition disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
                         title="Página siguiente"
-                      >
+                        >
                         <i class="fas fa-angle-right text-xs"></i>
-                      </button>
+                        </button>
                       <button
                         @click="goToLastPage"
                         :disabled="currentPdfPage >= totalPdfPages"
@@ -705,7 +705,7 @@
                         title="Última página"
                       >
                         <i class="fas fa-angle-double-right text-xs"></i>
-                      </button>
+                        </button>
                     </div>
                     <div class="flex items-center gap-2">
                       <button
@@ -753,7 +753,7 @@
                       >
                         <i class="fas fa-download text-xs"></i>
                       </button>
-                    </div>
+                      </div>
                   </div>
 
                   <!-- PDF Embed -->
@@ -798,8 +798,8 @@
                 >
                   <i class="fas fa-info-circle mb-2 text-2xl"></i>
                   <p class="font-semibold">No hay PDF disponible</p>
+                  </div>
                 </div>
-              </div>
 
               <!-- TEXT Content -->
               <div v-else-if="previewItem?.type === 'TYPE_TEXT' || previewItem?.type === 'TEXT'">
@@ -823,8 +823,8 @@
                       <p class="m-0 text-sm text-slate-600 dark:text-slate-300">
                         Este documento redirige a un enlace externo
                       </p>
-                    </div>
-                  </div>
+              </div>
+            </div>
                   <div
                     class="rounded-lg border border-blue-200 bg-white p-4 dark:border-blue-900/40 dark:bg-slate-900"
                   >
@@ -856,8 +856,8 @@
                 <p class="text-slate-600 dark:text-slate-300">
                   Este tipo de documento no puede ser previsualizado
                 </p>
+                </div>
               </div>
-            </div>
 
             <!-- Footer -->
             <div
@@ -871,13 +871,13 @@
                 <i class="fas fa-edit"></i>
                 Editar
               </button>
-              <button
+                <button
                 @click="closePreviewModal"
                 class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-100"
               >
                 <i class="fas fa-times"></i>
                 Cerrar
-              </button>
+                </button>
             </div>
           </div>
         </div>
@@ -895,12 +895,12 @@
                 <i :class="statusConfirmAction === 'activate' ? 'fas fa-check' : 'fas fa-ban'"></i>
                 Confirmar {{ statusConfirmAction === 'activate' ? 'Activación' : 'Desactivación' }}
               </h3>
-              <button
+                <button
                 @click="cancelStatusChange"
                 class="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-white ring-1 ring-white/30 backdrop-blur"
               >
                 <i class="fas fa-times"></i>
-              </button>
+                </button>
             </div>
             <div class="px-6 py-5 text-sm">
               ¿Estás seguro de que deseas
@@ -914,17 +914,17 @@
                 class="inline-flex min-w-[110px] items-center justify-center gap-2 rounded-lg border border-slate-300 bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900 transition hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-100"
               >
                 <i class="fas fa-times"></i> Cancelar
-              </button>
+                  </button>
               <button
                 @click="confirmStatusChange"
                 class="inline-flex min-w-[110px] items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5"
               >
                 <i :class="statusConfirmAction === 'activate' ? 'fas fa-check' : 'fas fa-ban'"></i>
                 {{ statusConfirmAction === 'activate' ? 'Activar' : 'Desactivar' }}
-              </button>
+                  </button>
+              </div>
             </div>
           </div>
-        </div>
 
         <!-- Content Form Modal -->
         <ContentForm
@@ -950,13 +950,13 @@
                 <i class="fas fa-trash-alt mr-2"></i>
                 Confirmar eliminación
               </h3>
-              <button
+          <button
                 @click="closeDeleteDialog"
                 class="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-white ring-1 ring-white/30 backdrop-blur"
-              >
+          >
                 <i class="fas fa-times"></i>
-              </button>
-            </div>
+          </button>
+    </div>
 
             <div class="px-6 py-5 text-sm leading-relaxed">
               <p class="mb-2">¿Estás seguro de que deseas eliminar este documento?</p>
@@ -964,8 +964,8 @@
                 {{ selectedItem?.title || selectedItem?.name || 'Documento sin título' }}
               </p>
               <p class="text-xs text-slate-500 dark:text-slate-400">
-                Esta acción no se puede deshacer.
-              </p>
+            Esta acción no se puede deshacer.
+          </p>
               <div class="mt-4 space-y-2">
                 <label
                   class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
@@ -978,8 +978,8 @@
                   placeholder="ELIMINAR"
                   class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 />
-              </div>
-            </div>
+      </div>
+    </div>
 
             <div
               class="flex justify-end gap-3 border-t border-slate-200 bg-slate-100 px-6 py-4 dark:border-slate-700 dark:bg-slate-800"
@@ -1000,17 +1000,17 @@
                 <i v-if="!deleting" class="fas fa-trash-alt"></i>
                 <i v-else class="fas fa-spinner fa-spin"></i>
                 Eliminar
-              </button>
-            </div>
-          </div>
+          </button>
         </div>
+      </div>
+    </div>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import documentService from '@/services/documentService'
 import SidebarMenu from '@/components/common/SidebarMenu.vue'
@@ -1475,8 +1475,11 @@ const closePreviewModal = () => {
 }
 
 const editFromPreview = () => {
+  const itemToEdit = previewItem.value
   closePreviewModal()
-  openEditDialog(previewItem.value)
+  nextTick(() => {
+    openEditDialog(itemToEdit)
+  })
 }
 
 const duplicateContent = async (item) => {
@@ -1503,7 +1506,7 @@ const toggleDocumentStatus = (item) => {
     return
   }
 
-  const currentStatus = getDocumentStatus(item)
+    const currentStatus = getDocumentStatus(item)
   const action = currentStatus === 'Activo' ? 'deactivate' : 'activate'
 
   // Configurar datos para el modal de confirmación
@@ -1752,8 +1755,8 @@ const confirmDelete = async () => {
     await documentService.deleteDocument(selectedItem.value.id)
 
     const index = documents.value.findIndex((doc) => doc.id === selectedItem.value.id)
-    if (index > -1) {
-      documents.value.splice(index, 1)
+      if (index > -1) {
+        documents.value.splice(index, 1)
     }
 
     success.value = `Documento "${selectedItem.value.name || selectedItem.value.title || 'sin título'}" eliminado correctamente`
@@ -2051,7 +2054,7 @@ const loadPdfFile = async (documentId) => {
       pdfError.value = new Error(
         'El archivo PDF no está disponible. Puede haber sido eliminado o nunca se subió correctamente.',
       )
-    } else {
+      } else {
       pdfError.value = new Error(error.message || 'No se pudo cargar el documento PDF.')
     }
 

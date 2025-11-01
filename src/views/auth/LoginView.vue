@@ -22,10 +22,10 @@
             Tu plataforma de conocimiento y aprendizaje colaborativo
           </p>
         </div>
+        </div>
       </div>
-    </div>
 
-    <!-- Form Section -->
+      <!-- Form Section -->
     <div class="flex w-full items-center justify-center bg-white px-6 py-12 shadow-2xl lg:w-1/2 lg:min-h-screen lg:px-12">
       <div class="w-full max-w-[420px] opacity-0 animate-slideInRight">
           <!-- Logo Header -->
@@ -268,7 +268,7 @@
                         </button>
                       </div>
                     </div>
-                  </div>
+                </div>
 
                   <!-- Success Message -->
                   <div v-else class="text-center py-6">
@@ -304,9 +304,9 @@
           <div v-if="successMessage" class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 text-green-700 py-3 px-4 rounded-xl text-sm mt-4 flex items-center gap-2 shadow-[0_4px_12px_rgba(16,185,129,0.15)] opacity-0 animate-fadeIn">
             <i class="fas fa-check-circle text-base"></i>
             {{ successMessage }}
-          </div>
         </div>
       </div>
+    </div>
   </div>
 </template>
 
@@ -560,11 +560,11 @@ if (authStore.error) {
 @keyframes successPulse {
   0% {
     transform: scale(0.8);
-    opacity: 0;
-  }
+  opacity: 0;
+}
   50% {
     transform: scale(1.05);
-  }
+}
   100% {
     transform: scale(1);
     opacity: 1;

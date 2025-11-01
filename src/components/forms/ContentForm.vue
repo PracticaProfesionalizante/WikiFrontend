@@ -1,5 +1,5 @@
 <template>
-  <div v-if="dialog" class="fixed inset-0 z-[1000] grid place-items-center bg-black/60 p-4 sm:p-6" @click="handleClose">
+  <div v-if="dialog" class="fixed inset-0 z-[1000] grid place-items-center bg-black/60 p-4 sm:p-6">
     <div class="w-full max-w-full sm:max-w-[900px] max-h-[90vh] flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" @click.stop>
       <!-- Wizard Header -->
       <div class="border-b border-slate-200 bg-blue-600 text-white dark:border-slate-700 px-4 py-4 sm:px-6">
@@ -45,8 +45,8 @@
                 ? 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/60'
                 : 'cursor-default',
               {
-                'opacity-100': currentWizardStep === index + 1 || currentWizardStep > index + 1,
-                'opacity-50': currentWizardStep < index + 1
+              'opacity-100': currentWizardStep === index + 1 || currentWizardStep > index + 1,
+              'opacity-50': currentWizardStep < index + 1
               }
             ]"
             :aria-current="currentWizardStep === index + 1 ? 'step' : undefined"
@@ -184,86 +184,383 @@
 
               <!-- Contenido TYPE_TEXT/Markdown -->
               <div v-else-if="form.type === 'TYPE_TEXT'" class="space-y-4">
-                <div class="flex items-center justify-between gap-4 border-b-2 border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-800">
-                  <div class="flex items-center gap-1">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b-2 border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-800">
+                  <div class="flex flex-wrap items-center gap-1">
                     <button
                       type="button"
                       class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition"
-                      :class="activeTab === 'edit' ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-slate-200 dark:text-slate-100 dark:hover:bg-slate-700'"
-                      @click="activeTab = 'edit'"
+                      :class="previewMode === 'edit' ? 'bg-blue-600 text-white shadow' : 'text-slate-700 hover:bg-slate-200 dark:text-slate-100 dark:hover:bg-slate-700'"
+                      @click="setPreviewMode('edit')"
+                      :aria-pressed="previewMode === 'edit'"
                     >
-                      <i class="fas fa-pencil"></i>
-                      Editar
+                      <i class="fas fa-pen-nib"></i>
+                      Editor
                     </button>
                     <button
                       type="button"
                       class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition"
-                      :class="activeTab === 'preview' ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-slate-200 dark:text-slate-100 dark:hover:bg-slate-700'"
-                      @click="activeTab = 'preview'"
+                      :class="previewMode === 'split' ? 'bg-blue-600 text-white shadow' : 'text-slate-700 hover:bg-slate-200 dark:text-slate-100 dark:hover:bg-slate-700'"
+                      @click="setPreviewMode('split')"
+                      :aria-pressed="previewMode === 'split'"
+                    >
+                      <i class="fas fa-columns"></i>
+                      Dividir
+                    </button>
+                    <button
+                      type="button"
+                      class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition"
+                      :class="previewMode === 'preview' ? 'bg-blue-600 text-white shadow' : 'text-slate-700 hover:bg-slate-200 dark:text-slate-100 dark:hover:bg-slate-700'"
+                      @click="setPreviewMode('preview')"
+                      :aria-pressed="previewMode === 'preview'"
                     >
                       <i class="fas fa-eye"></i>
-                      Vista Previa
+                      Vista previa
+                    </button>
+                    <div class="flex items-center gap-1">
+                      <button
+                        type="button"
+                        class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition"
+                        :class="editViewMode === 'visual' ? 'bg-emerald-600 text-white shadow' : 'text-slate-700 hover:bg-slate-200 dark:text-slate-100 dark:hover:bg-slate-700'"
+                        @click="setEditViewMode('visual')"
+                        :disabled="previewMode === 'preview'"
+                        :aria-pressed="editViewMode === 'visual'"
+                      >
+                        <i class="fas fa-magic"></i>
+                        Visual
+                      </button>
+                      <button
+                        type="button"
+                        class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition"
+                        :class="editViewMode === 'markdown' ? 'bg-slate-900 text-white shadow dark:bg-slate-200 dark:text-slate-900' : 'text-slate-700 hover:bg-slate-200 dark:text-slate-100 dark:hover:bg-slate-700'"
+                        @click="setEditViewMode('markdown')"
+                        :disabled="previewMode === 'preview'"
+                        :aria-pressed="editViewMode === 'markdown'"
+                      >
+                        <i class="fas fa-code"></i>
+                        Markdown
                     </button>
                   </div>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
-                    class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                      class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                      @click="toggleMarkdownHelp"
+                      :aria-expanded="showMarkdownHelp"
+                      :disabled="editViewMode === 'visual'"
+                    >
+                      <i class="fas fa-graduation-cap"></i>
+                      Guía rápida
+                    </button>
+                    <button
+                      type="button"
+                      class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                      :class="scrollSyncEnabled ? 'border-emerald-500 text-emerald-600 dark:border-emerald-500 dark:text-emerald-300' : ''"
+                      @click="toggleScrollSync"
+                      :title="scrollSyncEnabled ? 'Desactivar sincronización de desplazamiento' : 'Activar sincronización de desplazamiento'"
+                    >
+                      <i :class="scrollSyncEnabled ? 'fas fa-link' : 'fas fa-unlink'"></i>
+                      Sync
+                    </button>
+                    <button
+                      type="button"
+                      class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
                     @click="toggleFullscreen"
                     :title="isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'"
                   >
-                    <i :class="isFullscreen ? 'fas fa-compress' : 'fas fa-fullscreen'"></i>
+                      <i :class="isFullscreen ? 'fas fa-compress' : 'fas fa-expand'"></i>
                   </button>
-                </div>
-
-                <!-- Toolbar de Markdown -->
-                <div v-if="activeTab === 'edit'" class="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-800">
-                  <div class="flex items-center gap-1">
-                    <button type="button" @click="insertMarkdown('bold')" class="inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800" title="Negrita"><i class="fas fa-bold"></i></button>
-                    <button type="button" @click="insertMarkdown('italic')" class="inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800" title="Cursiva"><i class="fas fa-italic"></i></button>
-                    <button type="button" @click="insertMarkdown('strikethrough')" class="inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800" title="Tachado"><i class="fas fa-strikethrough"></i></button>
-                  </div>
-                  <div class="h-6 w-px bg-slate-300 dark:bg-slate-600"></div>
-                  <div class="flex items-center gap-1">
-                    <button type="button" @click="insertMarkdown('h1')" class="inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800" title="Título 1"><i class="fas fa-heading"></i></button>
-                    <button type="button" @click="insertMarkdown('h2')" class="inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800" title="Título 2"><i class="fas fa-heading"></i></button>
-                    <button type="button" @click="insertMarkdown('h3')" class="inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800" title="Título 3"><i class="fas fa-heading"></i></button>
-                  </div>
-                  <div class="h-6 w-px bg-slate-300 dark:bg-slate-600"></div>
-                  <div class="flex items-center gap-1">
-                    <button type="button" @click="insertMarkdown('link')" class="inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800" title="Enlace"><i class="fas fa-link"></i></button>
-                    <button type="button" @click="insertMarkdown('image')" class="inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800" title="Imagen"><i class="fas fa-image"></i></button>
-                    <button type="button" @click="insertMarkdown('code')" class="inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800" title="Código"><i class="fas fa-code"></i></button>
-                  </div>
-                  <div class="h-6 w-px bg-slate-300 dark:bg-slate-600"></div>
-                  <div class="flex items-center gap-1">
-                    <button type="button" @click="insertMarkdown('list')" class="inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800" title="Lista"><i class="fas fa-list-ul"></i></button>
-                    <button type="button" @click="insertMarkdown('orderedList')" class="inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800" title="Lista numerada"><i class="fas fa-list-ol"></i></button>
-                    <button type="button" @click="insertMarkdown('quote')" class="inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800" title="Cita"><i class="fas fa-quote-right"></i></button>
-                  </div>
-                  <div class="h-6 w-px bg-slate-300 dark:bg-slate-600"></div>
-                  <div class="flex items-center gap-1">
-                    <button type="button" @click="insertMarkdown('table')" class="inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800" title="Tabla"><i class="fas fa-table"></i></button>
-                    <button type="button" @click="insertMarkdown('horizontalRule')" class="inline-flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800" title="Línea horizontal"><i class="fas fa-minus"></i></button>
                   </div>
                 </div>
 
-                <div class="overflow-hidden rounded-lg border-2 border-slate-300 dark:border-slate-700" :class="{ 'fixed inset-4 z-[9999]': isFullscreen }">
+                <transition name="markdown-help">
+                  <div
+                    v-if="showMarkdownHelp && editViewMode === 'markdown'"
+                    class="rounded-xl border border-slate-200 bg-white/95 p-4 text-xs shadow-sm dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-200"
+                  >
+                    <div class="mb-3 flex items-center justify-between">
+                      <h4 class="m-0 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        Guía rápida de Markdown
+                      </h4>
+                      <button
+                        type="button"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+                        @click="toggleMarkdownHelp"
+                        title="Cerrar guía"
+                      >
+                        <i class="fas fa-times text-sm"></i>
+                      </button>
+                    </div>
+                    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      <div
+                        v-for="section in markdownCheatSheet"
+                        :key="section.title"
+                        class="rounded-lg border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-800/80"
+                      >
+                        <h5 class="m-0 mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+                          {{ section.title }}
+                        </h5>
+                        <ul class="space-y-1.5">
+                          <li v-for="item in section.items" :key="item.syntax" class="flex flex-col gap-1">
+                            <code class="rounded bg-slate-900/90 px-2 py-1 font-mono text-[11px] text-sky-200 dark:bg-slate-950/80">
+                              {{ item.syntax }}
+                            </code>
+                            <span class="text-[11px] text-slate-600 dark:text-slate-300">{{ item.description }}</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </transition>
+
+                <div v-if="previewMode !== 'preview'" class="space-y-2">
+                  <div
+                    v-if="editViewMode === 'visual'"
+                    class="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white/90 p-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/80"
+                  >
+                  <div class="flex items-center gap-1">
+                      <button type="button" @click="applyFormat('bold')" :disabled="isSaving" class="markdown-toolbar-btn" title="Negrita"><i class="fas fa-bold"></i></button>
+                      <button type="button" @click="applyFormat('italic')" :disabled="isSaving" class="markdown-toolbar-btn" title="Cursiva"><i class="fas fa-italic"></i></button>
+                      <button type="button" @click="applyFormat('strikethrough')" :disabled="isSaving" class="markdown-toolbar-btn" title="Tachado"><i class="fas fa-strikethrough"></i></button>
+                  </div>
+                    <div class="markdown-toolbar-separator"></div>
+                  <div class="flex items-center gap-1">
+                      <button type="button" @click="applyFormat('h1')" :disabled="isSaving" class="markdown-toolbar-btn" title="Encabezado H1"><span class="font-semibold">H1</span></button>
+                      <button type="button" @click="applyFormat('h2')" :disabled="isSaving" class="markdown-toolbar-btn" title="Encabezado H2"><span class="font-semibold">H2</span></button>
+                      <button type="button" @click="applyFormat('h3')" :disabled="isSaving" class="markdown-toolbar-btn" title="Encabezado H3"><span class="font-semibold">H3</span></button>
+                  </div>
+                    <div class="markdown-toolbar-separator"></div>
+                  <div class="flex items-center gap-1">
+                      <button type="button" @click="applyFormat('list')" :disabled="isSaving" class="markdown-toolbar-btn" title="Lista con viñetas"><i class="fas fa-list-ul"></i></button>
+                      <button type="button" @click="applyFormat('orderedList')" :disabled="isSaving" class="markdown-toolbar-btn" title="Lista numerada"><i class="fas fa-list-ol"></i></button>
+                      <button type="button" @click="applyFormat('quote')" :disabled="isSaving" class="markdown-toolbar-btn" title="Cita"><i class="fas fa-quote-right"></i></button>
+                  </div>
+                    <div class="markdown-toolbar-separator"></div>
+                  <div class="flex items-center gap-1">
+                      <button type="button" @click="applyFormat('link')" :disabled="isSaving" class="markdown-toolbar-btn" title="Insertar enlace"><i class="fas fa-link"></i></button>
+                      <button type="button" @click="applyFormat('image')" :disabled="isSaving" class="markdown-toolbar-btn" title="Insertar imagen"><i class="fas fa-image"></i></button>
+                      <button type="button" @click="applyFormat('code')" :disabled="isSaving" class="markdown-toolbar-btn" title="Código en línea"><i class="fas fa-terminal"></i></button>
+                  </div>
+                    <div class="markdown-toolbar-separator"></div>
+                    <div class="relative flex items-center gap-1">
+                      <button
+                        type="button"
+                        class="markdown-toolbar-btn"
+                        :disabled="isSaving"
+                        title="Aplicar color al texto"
+                        @click="toggleColorPalette"
+                      >
+                        <i class="fas fa-palette"></i>
+                      </button>
+                      <transition name="markdown-help">
+                        <div
+                          v-if="showColorPalette"
+                          class="color-palette-popover"
+                          @mousedown.stop
+                        >
+                          <header class="color-palette-header">
+                            <span>Colores rápidos</span>
+                            <button type="button" class="close-btn" @click="toggleColorPalette" title="Cerrar paleta">
+                              <i class="fas fa-times"></i>
+                            </button>
+                          </header>
+                          <div class="color-palette-grid">
+                            <button
+                              v-for="color in colorPalette"
+                              :key="color.className"
+                              type="button"
+                              class="color-swatch"
+                              @click="handleColorSelection(color)"
+                            >
+                              <span :class="['swatch-preview', color.className]"></span>
+                              <span class="swatch-label">{{ color.label }}</span>
+                            </button>
+                          </div>
+                        </div>
+                      </transition>
+                    </div>
+                    <div class="markdown-toolbar-separator"></div>
+                  <div class="flex items-center gap-1">
+                      <button type="button" @click="applyFormat('codeBlock')" :disabled="isSaving" class="markdown-toolbar-btn" title="Bloque de código"><i class="fas fa-code"></i></button>
+                      <button type="button" @click="applyFormat('removeFormat')" :disabled="isSaving" class="markdown-toolbar-btn" title="Limpiar formato"><i class="fas fa-eraser"></i></button>
+                  </div>
+                </div>
+
+                  <div
+                    v-else
+                    class="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white/85 p-2 shadow-sm dark:border-slate-700 dark:bg-slate-900/70"
+                  >
+                    <div class="flex items-center gap-1">
+                      <button type="button" @click="insertMarkdown('bold')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Negrita (Ctrl + B)"><i class="fas fa-bold"></i></button>
+                      <button type="button" @click="insertMarkdown('italic')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Cursiva (Ctrl + I)"><i class="fas fa-italic"></i></button>
+                      <button type="button" @click="insertMarkdown('strikethrough')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Tachado"><i class="fas fa-strikethrough"></i></button>
+                      <button type="button" @click="insertMarkdown('code')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Código en línea"><i class="fas fa-terminal"></i></button>
+                    </div>
+                    <div class="markdown-toolbar-separator"></div>
+                    <div class="flex items-center gap-1">
+                      <button type="button" @click="insertMarkdown('h1')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Encabezado H1"><span class="font-semibold">H1</span></button>
+                      <button type="button" @click="insertMarkdown('h2')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Encabezado H2"><span class="font-semibold">H2</span></button>
+                      <button type="button" @click="insertMarkdown('h3')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Encabezado H3"><span class="font-semibold">H3</span></button>
+                    </div>
+                    <div class="markdown-toolbar-separator"></div>
+                    <div class="flex items-center gap-1">
+                      <button type="button" @click="insertMarkdown('list')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Lista desordenada (Ctrl + Shift + L)"><i class="fas fa-list-ul"></i></button>
+                      <button type="button" @click="insertMarkdown('orderedList')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Lista numerada (Ctrl + Shift + O)"><i class="fas fa-list-ol"></i></button>
+                      <button type="button" @click="insertMarkdown('checkbox')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Lista de tareas"><i class="fas fa-square-check"></i></button>
+                    </div>
+                    <div class="markdown-toolbar-separator"></div>
+                    <div class="flex items-center gap-1">
+                      <button type="button" @click="insertMarkdown('link')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Insertar enlace (Ctrl + K)"><i class="fas fa-link"></i></button>
+                      <button type="button" @click="insertMarkdown('image')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Insertar imagen"><i class="fas fa-image"></i></button>
+                      <button type="button" @click="insertMarkdown('callout')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Insertar callout"><i class="fas fa-lightbulb"></i></button>
+                    </div>
+                    <div class="markdown-toolbar-separator"></div>
+                    <div class="relative flex items-center gap-1">
+                      <button
+                        type="button"
+                        class="markdown-toolbar-btn"
+                        :disabled="previewMode === 'preview' || isSaving"
+                        title="Aplicar color al texto"
+                        @click="toggleColorPalette"
+                      >
+                        <i class="fas fa-palette"></i>
+                      </button>
+                      <transition name="markdown-help">
+                        <div
+                          v-if="showColorPalette"
+                          class="color-palette-popover"
+                          @mousedown.stop
+                        >
+                          <header class="color-palette-header">
+                            <span>Colores rápidos</span>
+                            <button type="button" class="close-btn" @click="toggleColorPalette" title="Cerrar paleta">
+                              <i class="fas fa-times"></i>
+                            </button>
+                          </header>
+                          <div class="color-palette-grid">
+                            <button
+                              v-for="color in colorPalette"
+                              :key="color.className"
+                              type="button"
+                              class="color-swatch"
+                              @click="handleColorSelection(color)"
+                            >
+                              <span :class="['swatch-preview', color.className]"></span>
+                              <span class="swatch-label">{{ color.label }}</span>
+                            </button>
+                          </div>
+                        </div>
+                      </transition>
+                    </div>
+                    <div class="markdown-toolbar-separator"></div>
+                    <div class="flex items-center gap-1">
+                      <button type="button" @click="insertMarkdown('quote')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Cita"><i class="fas fa-quote-right"></i></button>
+                      <button type="button" @click="insertMarkdown('codeBlock')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Bloque de código (Ctrl + Shift + C)"><i class="fas fa-code"></i></button>
+                      <button type="button" @click="insertMarkdown('table')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Tabla básica"><i class="fas fa-table"></i></button>
+                      <button type="button" @click="insertMarkdown('horizontalRule')" :disabled="previewMode === 'preview' || isSaving" class="markdown-toolbar-btn" title="Separador"><i class="fas fa-minus"></i></button>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="markdown-editor-container overflow-hidden rounded-lg border-2 border-slate-300 dark:border-slate-700"
+                  :class="{ 'fixed inset-4 z-[9999] bg-slate-950/90 p-4 md:p-6': isFullscreen }"
+                >
+                  <div
+                    class="flex h-full flex-col md:flex-row"
+                    :class="previewMode === 'split' ? 'md:divide-x md:divide-slate-200 dark:md:divide-slate-700' : ''"
+                  >
+                    <div
+                      v-show="previewMode !== 'preview'"
+                      class="markdown-editor-pane flex-1"
+                    >
+                      <div
+                        v-if="editViewMode === 'visual'"
+                        ref="visualEditorRef"
+                        :class="['wysiwyg-editor', validationErrors.content ? 'wysiwyg-editor-error' : '']"
+                        contenteditable="true"
+                        role="textbox"
+                        dir="ltr"
+                        :aria-multiline="true"
+                        :aria-invalid="validationErrors.content ? 'true' : 'false'"
+                        :data-placeholder="'Escribe tu contenido en formato enriquecido...'"
+                        @input="handleVisualInput"
+                        @scroll="syncScroll('editor')"
+                        @paste="handleVisualPaste"
+                      ></div>
                   <textarea
-                    v-if="activeTab === 'edit'"
+                        v-else
                     id="documentContent"
+                        ref="markdownTextarea"
                     v-model="form.content"
-                    class="min-h-[300px] w-full resize-none border-0 px-4 py-3 text-sm font-mono outline-none disabled:opacity-50 dark:bg-slate-900 dark:text-slate-100"
+                        class="markdown-textarea min-h-[280px] w-full resize-none border-0 px-4 py-4 text-sm font-mono outline-none disabled:opacity-50 dark:bg-slate-900 dark:text-slate-100"
                     :class="validationErrors.content ? 'text-red-600' : 'text-slate-900'"
                     placeholder="Escribe tu contenido en formato Markdown..."
                     @input="validateField('content')"
+                        @scroll="syncScroll('editor')"
+                        @keydown="handleMarkdownShortcut"
                     :disabled="isSaving"
+                        :spellcheck="true"
                     required
                   ></textarea>
+                    </div>
+
+                    <div
+                      v-show="previewMode !== 'edit'"
+                      ref="markdownPreview"
+                      class="markdown-preview-pane flex-1 overflow-auto bg-slate-50/80 px-4 py-4 dark:bg-slate-900/60"
+                      @scroll="syncScroll('preview')"
+                    >
+                      <pre v-if="previewMode === 'split'" class="whitespace-pre-wrap font-mono text-xs text-slate-800 dark:text-slate-200">{{ form.content || 'Escribe tu contenido en formato Markdown...' }}</pre>
+                      <article v-else class="markdown-preview prose prose-slate max-w-none dark:prose-invert">
+                        <div v-html="renderedMarkdown"></div>
+                      </article>
+                    </div>
+                  </div>
+
                   <div
-                    v-else
-                    class="min-h-[300px] overflow-auto px-4 py-3 text-sm text-slate-900 prose prose-slate max-w-none dark:prose-invert dark:text-slate-100 prose-headings:text-slate-900 dark:prose-headings:text-slate-100"
-                    v-html="renderedMarkdown"
-                  ></div>
+                    class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                  >
+                    <div class="flex flex-wrap items-center gap-3">
+                      <span class="inline-flex items-center gap-1">
+                        <i class="fas fa-font text-slate-500"></i>
+                        {{ markdownStats.words }} palabras
+                      </span>
+                      <span class="inline-flex items-center gap-1">
+                        <i class="fas fa-align-left text-slate-500"></i>
+                        {{ markdownStats.lines }} líneas
+                      </span>
+                      <span class="inline-flex items-center gap-1">
+                        <i class="fas fa-heading text-slate-500"></i>
+                        {{ markdownStats.headings }} encabezados
+                      </span>
+                      <span class="inline-flex items-center gap-1">
+                        <i class="fas fa-code text-slate-500"></i>
+                        {{ markdownStats.codeBlocks }} bloques de código
+                      </span>
+                      <span class="inline-flex items-center gap-1">
+                        <i class="fas fa-square-check text-slate-500"></i>
+                        {{ markdownStats.tasks }} tareas
+                      </span>
+                      <span class="inline-flex items-center gap-1">
+                        <i class="fas fa-clock text-slate-500"></i>
+                        {{ markdownStats.readingTime > 0 ? `${markdownStats.readingTime} min lectura` : 'Lectura inmediata' }}
+                      </span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span v-if="copyStatus" class="text-emerald-600 dark:text-emerald-400">
+                        {{ copyStatus }}
+                      </span>
+                      <button
+                        type="button"
+                        class="inline-flex items-center gap-2 rounded-lg border border-blue-500 bg-white px-3 py-1.5 text-xs font-semibold text-blue-600 transition hover:-translate-y-0.5 hover:bg-blue-50 dark:border-blue-400 dark:bg-slate-900 dark:text-blue-300 dark:hover:bg-slate-800"
+                        @click="copyMarkdownToClipboard"
+                      >
+                        <i class="fas fa-copy"></i>
+                        Copiar Markdown
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 <div v-if="validationErrors.content" class="flex items-center gap-2 text-xs font-medium text-red-600">
@@ -308,7 +605,7 @@
                   <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-center gap-3">
                       <i class="fas fa-file-pdf text-2xl"></i>
-                      <div>
+                <div>
                         <p class="m-0 text-base font-semibold">{{ currentPdfName || 'No especificado' }}</p>
                         <p class="m-0 text-xs opacity-80">Archivo PDF actualmente asociado al documento</p>
                       </div>
@@ -383,22 +680,22 @@
                           </div>
                         </div>
                         <div class="flex gap-2">
-                          <button
-                            type="button"
-                            class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white transition hover:bg-red-700 disabled:opacity-50"
-                            @click="removeFile"
-                            :disabled="isSaving"
-                          >
-                            <i class="fas fa-times"></i>
-                          </button>
+                        <button
+                          type="button"
+                          class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-600 text-white transition hover:bg-red-700 disabled:opacity-50"
+                          @click="removeFile"
+                          :disabled="isSaving"
+                        >
+                          <i class="fas fa-times"></i>
+                        </button>
                         </div>
+                      </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div v-if="validationErrors.pdfFile" class="mt-2 flex items-center gap-2 text-xs font-medium text-red-600">
-                  <i class="fas fa-exclamation-circle"></i>
-                  {{ validationErrors.pdfFile }}
+                  <div v-if="validationErrors.pdfFile" class="mt-2 flex items-center gap-2 text-xs font-medium text-red-600">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ validationErrors.pdfFile }}
                 </div>
               </div>
             </div>
@@ -628,10 +925,103 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { marked } from 'marked'
+import { markedHighlight } from 'marked-highlight'
+import hljs from 'highlight.js'
+import DOMPurify from 'dompurify'
+import 'highlight.js/styles/github.min.css'
+import TurndownService from 'turndown'
+
+const markedOptions = Object.freeze({
+  breaks: true,
+  gfm: true,
+  headerIds: true,
+  mangle: false,
+  smartLists: true,
+  smartypants: true
+})
+
 import documentService from '@/services/documentService'
 import IconSelector from '@/components/common/IconSelector.vue'
+
+const renderer = new marked.Renderer()
+
+renderer.link = (href, title, text) => {
+  const isHash = href?.startsWith('#')
+  const isMail = href?.startsWith('mailto:')
+  const isTel = href?.startsWith('tel:')
+  const isRelative = href && (href.startsWith('/') || href.startsWith('./') || href.startsWith('../'))
+  const isExternal = href && !isHash && !isMail && !isTel && !isRelative
+  const target = isExternal ? '_blank' : '_self'
+  const rel = isExternal ? 'noopener noreferrer' : ''
+  const titleAttr = title ? ` title="${title}"` : ''
+  const relAttr = rel ? ` rel="${rel}"` : ''
+  const targetAttr = ` target="${target}"`
+  return `<a href="${href}"${titleAttr}${targetAttr}${relAttr}>${text}</a>`
+}
+
+renderer.image = (href, title, text) => {
+  const titleAttr = title ? ` title="${title}"` : ''
+  const altText = text || 'Imagen'
+  return `<img src="${href}" alt="${altText}" loading="lazy"${titleAttr} />`
+}
+
+renderer.table = (header, body) => {
+  return `<table class="markdown-table"><thead>${header}</thead><tbody>${body}</tbody></table>`
+}
+
+marked.use(
+  markedHighlight({
+    langPrefix: 'hljs language-',
+    highlight(code, lang) {
+      if (lang && hljs.getLanguage(lang)) {
+        return hljs.highlight(code, { language: lang }).value
+      }
+      return hljs.highlightAuto(code).value
+    }
+  })
+)
+
+marked.use({ renderer })
+marked.setOptions(markedOptions)
+
+const turndownService = new TurndownService({
+  headingStyle: 'atx',
+  bulletListMarker: '-',
+  codeBlockStyle: 'fenced'
+})
+
+turndownService.keep(['span', 'code'])
+
+turndownService.addRule('colorSpan', {
+  filter: (node) => {
+    if (node.nodeName === 'SPAN') {
+      const className = node.getAttribute('class') || ''
+      const style = node.getAttribute('style') || ''
+      return className.includes('md-color-') || /color:/i.test(style)
+    }
+    if (node.nodeName === 'FONT') {
+      return !!node.getAttribute('color')
+    }
+    return false
+  },
+  replacement: (content, node) => {
+    const className = node.getAttribute('class')
+    const style = node.getAttribute('style')
+    if (className && className.includes('md-color-')) {
+      return `<span class="${className}">${content}</span>`
+    }
+    if (style && /color:/i.test(style)) {
+      return `<span style="${style}">${content}</span>`
+    }
+    const color = node.getAttribute('color')
+    if (color) {
+      return `<span style="color:${color}">${content}</span>`
+    }
+    return content
+  }
+})
 
 // Props
 const props = defineProps({
@@ -679,9 +1069,29 @@ const validationErrors = ref({})
 const isSaving = ref(false)
 const slugAlternatives = ref([])
 
-// Editor de Markdown
-const activeTab = ref('edit')
+// Editor de Markdown avanzado
 const isFullscreen = ref(false)
+const markdownTextarea = ref(null)
+const markdownPreview = ref(null)
+
+const getDefaultPreviewMode = () => {
+  if (typeof window === 'undefined') {
+    return 'edit'
+  }
+  return window.innerWidth < 768 ? 'edit' : 'split'
+}
+
+const previewMode = ref(getDefaultPreviewMode())
+const scrollSyncEnabled = ref(true)
+const showMarkdownHelp = ref(false)
+const showColorPalette = ref(false)
+const copyStatus = ref('')
+let copyStatusTimeout = null
+const editViewMode = ref('visual')
+const visualEditorRef = ref(null)
+const visualContent = ref('')
+let isSyncingFromVisual = false
+let isSyncingFromMarkdown = false
 
 // Wizard variables
 const currentWizardStep = ref(1)
@@ -755,44 +1165,124 @@ const availableRolesList = [
   }
 ]
 
+const markdownCheatSheet = Object.freeze([
+  {
+    title: 'Encabezados',
+    items: [
+      { syntax: '# Título principal', description: 'Encabezado nivel 1' },
+      { syntax: '## Sección', description: 'Encabezado nivel 2' },
+      { syntax: '### Subsección', description: 'Encabezado nivel 3' }
+    ]
+  },
+  {
+    title: 'Texto',
+    items: [
+      { syntax: '**negrita**', description: 'Texto en negrita' },
+      { syntax: '*cursiva*', description: 'Texto en cursiva' },
+      { syntax: '~~tachado~~', description: 'Texto tachado' },
+      { syntax: '`código`', description: 'Código en línea' }
+    ]
+  },
+  {
+    title: 'Listas',
+    items: [
+      { syntax: '- elemento', description: 'Lista desordenada' },
+      { syntax: '1. elemento', description: 'Lista numerada' },
+      { syntax: '- [ ] tarea pendiente', description: 'Lista de tareas' }
+    ]
+  },
+  {
+    title: 'Enlaces e imágenes',
+    items: [
+      { syntax: '[Texto](https://ejemplo.com)', description: 'Enlace con texto' },
+      { syntax: '![Alt](https://ejemplo.com/imagen.png)', description: 'Imagen con texto alternativo' }
+    ]
+  },
+  {
+    title: 'Citas y bloques',
+    items: [
+      { syntax: '> Cita', description: 'Bloque de cita' },
+      { syntax: '> [!TIP] Consejo', description: 'Callout informativo' },
+      { syntax: '---', description: 'Separador horizontal' }
+    ]
+  },
+  {
+    title: 'Código y tablas',
+    items: [
+      { syntax: '```js\nconsole.log("Hola")\n```', description: 'Bloque de código con lenguaje' },
+      { syntax: '| Col 1 | Col 2 |\n| --- | --- |\n| Dato | Dato |', description: 'Tabla básica' }
+    ]
+  }
+])
+
+const colorPalette = Object.freeze([
+  { label: 'Azul cielo', className: 'md-color-sky', color: '#0ea5e9' },
+  { label: 'Azul profundo', className: 'md-color-blue', color: '#2563eb' },
+  { label: 'Verde esmeralda', className: 'md-color-emerald', color: '#059669' },
+  { label: 'Verde lima', className: 'md-color-lime', color: '#65a30d' },
+  { label: 'Amarillo dorado', className: 'md-color-amber', color: '#d97706' },
+  { label: 'Naranja', className: 'md-color-orange', color: '#ea580c' },
+  { label: 'Rojo', className: 'md-color-rose', color: '#e11d48' },
+  { label: 'Fucsia', className: 'md-color-pink', color: '#db2777' },
+  { label: 'Morado', className: 'md-color-purple', color: '#7c3aed' },
+  { label: 'Gris', className: 'md-color-slate', color: '#475569' }
+])
+
 // Computed
 const isEditing = computed(() => props.isEditing || !!props.document)
 
 // Roles disponibles para el template
 const availableRoles = computed(() => availableRolesList)
 
+const markdownStats = computed(() => {
+  const raw = form.value.content || ''
+  const trimmed = raw.trim()
+  const words = trimmed ? trimmed.split(/\s+/).filter(Boolean).length : 0
+  const characters = raw.length
+  const charactersNoSpaces = raw.replace(/\s/g, '').length
+  const lines = raw ? raw.split(/\r?\n/).length : 0
+  const headings = (raw.match(/^#{1,6}\s+/gm) || []).length
+  const unorderedLists = (raw.match(/^\s*[-*+]\s+/gm) || []).length
+  const orderedLists = (raw.match(/^\s*\d+\.\s+/gm) || []).length
+  const tasks = (raw.match(/^\s*[-*+]\s+\[[ xX]\]\s+/gm) || []).length
+  const codeBlocks = Math.max(0, Math.round(((raw.match(/```/g) || []).length) / 2))
+  const blockquotes = (raw.match(/^\s*>\s+/gm) || []).length
+  const tables = (raw.match(/^\s*\|.*\|\s*$/gm) || []).length
+  const readingTime = words === 0 ? 0 : Math.max(1, Math.ceil(words / 180))
+
+  return {
+    words,
+    characters,
+    charactersNoSpaces,
+    lines,
+    headings,
+    unorderedLists,
+    orderedLists,
+    tasks,
+    codeBlocks,
+    blockquotes,
+    tables,
+    readingTime
+  }
+})
+
 // Renderizar Markdown
 const renderedMarkdown = computed(() => {
-  console.log('📝 [MARKDOWN] Computed ejecutado, contenido:', form.value.content ? 'Sí' : 'No')
+  const content = form.value.content || ''
 
-  if (!form.value.content || form.value.content.trim() === '') {
-    console.log('📝 [MARKDOWN] No hay contenido para renderizar')
-    return '<div class="markdown-empty"><p>No hay contenido para mostrar</p></div>'
+  if (content.trim() === '') {
+    return '<div class="markdown-empty-state"><p>Empieza a escribir para ver la vista previa en vivo.</p><p class="hint">Usa la barra de herramientas o atajos como <strong>Ctrl + B</strong>, <strong>Ctrl + I</strong>, <strong>Ctrl + K</strong> y <strong>Ctrl + Shift + C</strong>.</p></div>'
   }
 
   try {
-    console.log('📝 [MARKDOWN] Renderizando contenido:', form.value.content.substring(0, 100) + '...')
-
-    // Configurar marked para renderizado seguro
-    const options = {
-      breaks: true,
-      gfm: true,
-      smartLists: true,
-      smartypants: true,
-      sanitize: false,
-      silent: false
-    }
-
-    // Usar la API correcta de marked v16
-    const result = marked(form.value.content, options)
-    console.log('📝 [MARKDOWN] Resultado renderizado:', result.substring(0, 100) + '...')
-    console.log('📝 [MARKDOWN] Longitud del resultado:', result.length)
-
-    return result
+    const html = marked.parse(content)
+    return DOMPurify.sanitize(html, {
+      ADD_ATTR: ['target', 'rel'],
+      USE_PROFILES: { html: true }
+    })
   } catch (error) {
     console.error('❌ [MARKDOWN] Error renderizando Markdown:', error)
-    console.error('❌ [MARKDOWN] Contenido que causó el error:', form.value.content)
-    return '<div class="markdown-error"><p>❌ Error al renderizar el Markdown</p><pre>' + error.message + '</pre></div>'
+    return '<div class="markdown-error-state"><p>❌ Error al renderizar el Markdown.</p><p class="hint">Revisa la sintaxis del contenido.</p></div>'
   }
 })
 
@@ -1001,6 +1491,9 @@ const handleTypeChange = () => {
   // Limpiar contenido cuando cambia el tipo
   form.value.content = ''
   validateField('content')
+  showMarkdownHelp.value = false
+  showColorPalette.value = false
+  previewMode.value = getDefaultPreviewMode()
 
   if (form.value.type !== 'TYPE_PDF') {
     pdfFile.value = null
@@ -1010,6 +1503,13 @@ const handleTypeChange = () => {
     isReplacingPdf.value = false
     pdfPreviewError.value = ''
   }
+
+  if (form.value.type === 'TYPE_TEXT') {
+    setEditViewMode('visual')
+    syncVisualFromMarkdown()
+  } else {
+    editViewMode.value = 'visual'
+  }
 }
 
 // Funciones del editor de Markdown
@@ -1017,124 +1517,698 @@ const toggleFullscreen = () => {
   isFullscreen.value = !isFullscreen.value
 }
 
-// Funciones del toolbar de Markdown
-const insertMarkdown = (type) => {
-  const textarea = document.querySelector('.markdown-textarea')
+const focusEditor = () => {
+  nextTick(() => {
+    if (editViewMode.value === 'visual') {
+      visualEditorRef.value?.focus()
+    } else {
+      markdownTextarea.value?.focus()
+    }
+  })
+}
+
+const setPreviewMode = (mode) => {
+  if (!['edit', 'split', 'preview'].includes(mode)) {
+    return
+  }
+  previewMode.value = mode
+  if (mode !== 'preview') {
+    focusEditor()
+    if (mode === 'split' && scrollSyncEnabled.value) {
+      nextTick(() => syncScroll('editor'))
+    }
+  } else {
+    showColorPalette.value = false
+    showMarkdownHelp.value = false
+  }
+}
+
+const syncScroll = (source) => {
+  if (!scrollSyncEnabled.value || previewMode.value !== 'split') {
+    return
+  }
+
+  const editor = editViewMode.value === 'visual' ? visualEditorRef.value : markdownTextarea.value
+  const preview = markdownPreview.value
+  if (!editor || !preview) {
+    return
+  }
+
+  if (source === 'editor') {
+    const ratio = editor.scrollTop / Math.max(editor.scrollHeight - editor.clientHeight, 1)
+    preview.scrollTop = ratio * Math.max(preview.scrollHeight - preview.clientHeight, 1)
+  } else if (source === 'preview') {
+    const ratio = preview.scrollTop / Math.max(preview.scrollHeight - preview.clientHeight, 1)
+    editor.scrollTop = ratio * Math.max(editor.scrollHeight - editor.clientHeight, 1)
+  }
+}
+
+const toggleMarkdownHelp = () => {
+  showMarkdownHelp.value = !showMarkdownHelp.value
+  if (showMarkdownHelp.value) {
+    showColorPalette.value = false
+  }
+}
+
+const toggleScrollSync = () => {
+  scrollSyncEnabled.value = !scrollSyncEnabled.value
+  if (scrollSyncEnabled.value) {
+    nextTick(() => syncScroll('editor'))
+  }
+}
+
+const focusVisualEditor = () => {
+  nextTick(() => {
+    visualEditorRef.value?.focus()
+  })
+}
+
+const convertMarkdownToHtml = (markdown) => {
+  const rawHtml = marked.parse(markdown || '')
+  return DOMPurify.sanitize(rawHtml, {
+    ADD_ATTR: ['target', 'rel', 'class', 'style']
+  })
+}
+
+const convertHtmlToMarkdown = (html) => {
+  if (!html) return ''
+  return turndownService.turndown(html)
+}
+
+const syncVisualFromMarkdown = () => {
+  if (isSyncingFromVisual) return
+  isSyncingFromMarkdown = true
+  const html = convertMarkdownToHtml(form.value.content || '')
+  visualContent.value = html
+  nextTick(() => {
+    if (visualEditorRef.value) {
+      visualEditorRef.value.innerHTML = html
+    }
+    isSyncingFromMarkdown = false
+  })
+}
+
+const syncMarkdownFromVisual = () => {
+  if (isSyncingFromMarkdown) return
+  const editor = visualEditorRef.value
+  if (!editor) return
+  isSyncingFromVisual = true
+  visualContent.value = editor.innerHTML
+  const markdown = convertHtmlToMarkdown(visualContent.value)
+  form.value.content = markdown
+  validateField('content')
+  isSyncingFromVisual = false
+}
+
+const handleVisualInput = () => {
+  syncMarkdownFromVisual()
+}
+
+const handleVisualPaste = (event) => {
+  event.preventDefault()
+  const text = event.clipboardData?.getData('text/plain') || ''
+  document.execCommand('insertText', false, text)
+  syncMarkdownFromVisual()
+}
+
+const findAncestorColorSpan = (node, colorClass) => {
+  while (node && node !== visualEditorRef.value) {
+    if (node.nodeType === Node.ELEMENT_NODE && node.classList?.contains(colorClass)) {
+      return node
+    }
+    node = node.parentElement
+  }
+  return null
+}
+
+const removeColorClasses = (node) => {
+  if (node.nodeType === Node.ELEMENT_NODE && node.classList) {
+    colorPalette.forEach(({ className }) => {
+      if (node.classList.contains(className)) {
+        node.classList.remove(className)
+      }
+    })
+    if (node.style && node.style.color) {
+      node.style.removeProperty('color')
+    }
+  }
+  const children = node.childNodes ? Array.from(node.childNodes) : []
+  children.forEach((child) => removeColorClasses(child))
+}
+
+const unwrapElement = (element) => {
+  if (!element || !element.parentNode) return
+  while (element.firstChild) {
+    element.parentNode.insertBefore(element.firstChild, element)
+  }
+  element.parentNode.removeChild(element)
+}
+
+const applyVisualColor = (color) => {
+  const editor = visualEditorRef.value
+  if (!editor) return
+  editor.focus()
+
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return
+  const range = selection.getRangeAt(0)
+
+  const focusNode = selection.focusNode instanceof Element ? selection.focusNode : selection.focusNode?.parentElement
+  const existingSpan = focusNode ? findAncestorColorSpan(focusNode, color.className) : null
+
+  if (existingSpan) {
+    unwrapElement(existingSpan)
+    syncMarkdownFromVisual()
+    showColorPalette.value = false
+    return
+  }
+
+  let fragment
+  if (range.collapsed) {
+    const placeholder = document.createTextNode('Texto coloreado')
+    range.insertNode(placeholder)
+    selection.removeAllRanges()
+    const tempRange = document.createRange()
+    tempRange.setStartBefore(placeholder)
+    tempRange.setEndAfter(placeholder)
+    selection.addRange(tempRange)
+    fragment = tempRange.extractContents()
+  } else {
+    fragment = range.extractContents()
+  }
+
+  removeColorClasses(fragment)
+
+  const span = document.createElement('span')
+  span.className = color.className
+  span.style.color = color.color
+  span.appendChild(fragment)
+  range.insertNode(span)
+
+  selection.removeAllRanges()
+  const newRange = document.createRange()
+  newRange.selectNodeContents(span)
+  selection.addRange(newRange)
+
+  syncMarkdownFromVisual()
+  showColorPalette.value = false
+}
+
+const insertHtmlAtSelection = (html) => {
+  const editor = visualEditorRef.value
+  if (!editor) return
+  editor.focus()
+  document.execCommand('insertHTML', false, html)
+  syncMarkdownFromVisual()
+}
+
+const executeVisualCommand = (command, value = null) => {
+  const editor = visualEditorRef.value
+  if (!editor) return
+  editor.focus()
+  document.execCommand(command, false, value)
+  syncMarkdownFromVisual()
+}
+
+const applyVisualHeading = (tag) => {
+  const editor = visualEditorRef.value
+  if (!editor) return
+  editor.focus()
+
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return
+  const focusNode = selection.focusNode instanceof Element ? selection.focusNode : selection.focusNode?.parentElement
+  const currentHeading = focusNode?.closest?.('h1, h2, h3')
+
+  if (currentHeading && currentHeading.tagName.toLowerCase() === tag) {
+    document.execCommand('formatBlock', false, 'p')
+  } else {
+    document.execCommand('formatBlock', false, tag.toUpperCase())
+  }
+  syncMarkdownFromVisual()
+}
+
+const applyVisualBlock = (tag) => {
+  document.execCommand('formatBlock', false, tag.toUpperCase())
+  syncMarkdownFromVisual()
+}
+
+const insertVisualInlineCode = () => {
+  const editor = visualEditorRef.value
+  if (!editor) return
+  editor.focus()
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return
+  const range = selection.getRangeAt(0)
+  const selected = range.toString() || 'código'
+  const codeElement = document.createElement('code')
+  codeElement.textContent = selected
+  range.deleteContents()
+  range.insertNode(codeElement)
+  selection.removeAllRanges()
+  const newRange = document.createRange()
+  newRange.selectNodeContents(codeElement)
+  selection.addRange(newRange)
+  syncMarkdownFromVisual()
+}
+
+const applyFormat = (action) => {
+  if (editViewMode.value === 'visual') {
+    focusVisualEditor()
+    switch (action) {
+    case 'bold':
+        executeVisualCommand('bold')
+      break
+    case 'italic':
+        executeVisualCommand('italic')
+      break
+    case 'strikethrough':
+        executeVisualCommand('strikeThrough')
+      break
+    case 'h1':
+        applyVisualHeading('h1')
+      break
+    case 'h2':
+        applyVisualHeading('h2')
+      break
+    case 'h3':
+        applyVisualHeading('h3')
+      break
+      case 'list':
+        executeVisualCommand('insertUnorderedList')
+        break
+      case 'orderedList':
+        executeVisualCommand('insertOrderedList')
+        break
+      case 'quote':
+        applyVisualBlock('blockquote')
+        break
+      case 'code':
+        insertVisualInlineCode()
+        break
+      case 'codeBlock':
+        applyVisualBlock('pre')
+        break
+      case 'link': {
+      const url = prompt('Ingresa la URL del enlace:')
+      if (url) {
+          executeVisualCommand('createLink', url)
+      }
+      break
+      }
+      case 'image': {
+        const src = prompt('Ingresa la URL de la imagen:')
+        if (src) {
+          insertHtmlAtSelection(`<img src="${src}" alt="Imagen" />`)
+        }
+        break
+      }
+      case 'removeFormat': {
+        const editor = visualEditorRef.value
+        if (!editor) return
+        editor.focus()
+        document.execCommand('removeFormat')
+        const selection = window.getSelection()
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0)
+          const container = range.commonAncestorContainer?.nodeType === Node.ELEMENT_NODE
+            ? range.commonAncestorContainer
+            : range.commonAncestorContainer?.parentElement
+          if (container) {
+            removeColorClasses(container)
+          }
+        }
+        syncMarkdownFromVisual()
+        break
+      }
+      default:
+        insertMarkdown(action)
+        break
+    }
+      } else {
+    insertMarkdown(action)
+  }
+}
+
+const handleColorSelection = (color) => {
+  if (editViewMode.value === 'visual') {
+    applyVisualColor(color)
+  } else {
+    applyMarkdownColor(color.className)
+  }
+}
+
+const setEditViewMode = (mode) => {
+  if (!['visual', 'markdown'].includes(mode) || editViewMode.value === mode) return
+  editViewMode.value = mode
+  showColorPalette.value = false
+  if (mode === 'visual') {
+    showMarkdownHelp.value = false
+    syncVisualFromMarkdown()
+    focusVisualEditor()
+  } else {
+    syncMarkdownFromVisual()
+    nextTick(() => {
+      markdownTextarea.value?.focus()
+    })
+  }
+}
+
+const toggleColorPalette = () => {
+  if (previewMode.value === 'preview' || isSaving.value) return
+  showColorPalette.value = !showColorPalette.value
+  if (showColorPalette.value) {
+    showMarkdownHelp.value = false
+    if (editViewMode.value === 'visual') {
+      focusVisualEditor()
+    } else {
+      markdownTextarea.value?.focus()
+    }
+  }
+}
+
+const applyMarkdownColor = (colorClass) => {
+  const textarea = markdownTextarea.value
   if (!textarea) return
 
   const start = textarea.selectionStart
   const end = textarea.selectionEnd
-  const selectedText = textarea.value.substring(start, end)
-  const beforeText = textarea.value.substring(0, start)
-  const afterText = textarea.value.substring(end)
+  const selectedText = textarea.value.slice(start, end) || 'Texto coloreado'
+  const beforeText = textarea.value.slice(0, start)
+  const afterText = textarea.value.slice(end)
+  const openTag = `<span class="${colorClass}">`
+  const closeTag = '</span>'
+  const snippet = `${openTag}${selectedText}${closeTag}`
+  const newValue = beforeText + snippet + afterText
 
-  let before = ''
-  let after = ''
-  let placeholder = ''
+  textarea.value = newValue
+  form.value.content = newValue
+  validateField('content')
+
+  nextTick(() => {
+    const area = markdownTextarea.value
+    if (!area) return
+    const selectionStart = beforeText.length + openTag.length
+    const selectionEnd = selectionStart + selectedText.length
+    area.setSelectionRange(selectionStart, selectionEnd)
+    area.focus()
+    if (scrollSyncEnabled.value && previewMode.value !== 'edit') {
+      syncScroll('editor')
+    }
+  })
+
+  showColorPalette.value = false
+  if (previewMode.value === 'preview') {
+    setPreviewMode('split')
+  }
+}
+
+const copyMarkdownToClipboard = async () => {
+  if (!form.value.content) {
+    copyStatus.value = 'No hay contenido para copiar'
+        return
+      }
+
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(form.value.content)
+    } else {
+      const helper = document.createElement('textarea')
+      helper.value = form.value.content
+      helper.setAttribute('readonly', '')
+      helper.style.position = 'absolute'
+      helper.style.left = '-9999px'
+      document.body.appendChild(helper)
+      helper.select()
+      document.execCommand('copy')
+      document.body.removeChild(helper)
+    }
+    copyStatus.value = 'Markdown copiado'
+  } catch (error) {
+    console.error('❌ [MARKDOWN] Error al copiar contenido:', error)
+    copyStatus.value = 'No se pudo copiar'
+  }
+
+  if (copyStatusTimeout) {
+    clearTimeout(copyStatusTimeout)
+  }
+  copyStatusTimeout = setTimeout(() => {
+    copyStatus.value = ''
+  }, 2500)
+}
+
+// Funciones del toolbar de Markdown
+const insertMarkdown = (type) => {
+  const textarea = markdownTextarea.value
+  if (!textarea) return
+
+  const start = textarea.selectionStart
+  const end = textarea.selectionEnd
+  const selectedText = textarea.value.slice(start, end)
+  const beforeText = textarea.value.slice(0, start)
+  const afterText = textarea.value.slice(end)
+
+  const ensureNewLineBefore = () => {
+    if (beforeText === '' || beforeText.endsWith('\n') || beforeText.endsWith('\n\n')) {
+      return ''
+    }
+    return '\n'
+  }
+
+  const applyInsertion = (snippet, placeholder = '', caretOffset) => {
+    const newValue = beforeText + snippet + afterText
+    textarea.value = newValue
+    form.value.content = newValue
+    validateField('content')
+
+    nextTick(() => {
+      const area = markdownTextarea.value
+      if (!area) return
+
+      let selectionStart = beforeText.length + snippet.length
+      let selectionEnd = selectionStart
+      const hasPlaceholder = placeholder && placeholder.length > 0
+
+      if (hasPlaceholder) {
+        const searchStart = beforeText.length
+        const index = newValue.indexOf(placeholder, searchStart)
+        if (index !== -1) {
+          selectionStart = index
+          selectionEnd = index + placeholder.length
+        }
+      }
+
+      if (!hasPlaceholder && typeof caretOffset === 'number') {
+        selectionStart = beforeText.length + caretOffset
+        selectionEnd = selectionStart
+      }
+
+      area.setSelectionRange(selectionStart, selectionEnd)
+      area.focus()
+
+      if (scrollSyncEnabled.value && previewMode.value !== 'edit') {
+        syncScroll('editor')
+      }
+    })
+  }
+
+  const wrapInline = (prefix, suffix, placeholderText) => {
+    const placeholder = selectedText || placeholderText
+    const snippet = `${prefix}${placeholder}${suffix}`
+    applyInsertion(snippet, placeholder)
+  }
 
   switch (type) {
     case 'bold':
-      before = '**'
-      after = '**'
-      placeholder = 'texto en negrita'
+      wrapInline('**', '**', 'texto en negrita')
       break
     case 'italic':
-      before = '*'
-      after = '*'
-      placeholder = 'texto en cursiva'
+      wrapInline('*', '*', 'texto en cursiva')
       break
     case 'strikethrough':
-      before = '~~'
-      after = '~~'
-      placeholder = 'texto tachado'
-      break
-    case 'h1':
-      before = '# '
-      after = ''
-      placeholder = 'Título 1'
-      break
-    case 'h2':
-      before = '## '
-      after = ''
-      placeholder = 'Título 2'
-      break
-    case 'h3':
-      before = '### '
-      after = ''
-      placeholder = 'Título 3'
-      break
-    case 'link':
-      const url = prompt('Ingresa la URL del enlace:')
-      if (url) {
-        before = '['
-        after = `](${url})`
-        placeholder = 'texto del enlace'
-      } else {
-        return
-      }
-      break
-    case 'image':
-      const imageUrl = prompt('Ingresa la URL de la imagen:')
-      if (imageUrl) {
-        before = '!['
-        after = `](${imageUrl})`
-        placeholder = 'texto alternativo'
-      } else {
-        return
-      }
+      wrapInline('~~', '~~', 'texto tachado')
       break
     case 'code':
-      before = '`'
-      after = '`'
-      placeholder = 'código'
+      wrapInline('`', '`', 'código')
       break
-    case 'list':
-      before = '- '
-      after = ''
-      placeholder = 'elemento de lista'
+    case 'h1': {
+      const placeholder = selectedText || 'Título principal'
+      const snippet = `${ensureNewLineBefore()}# ${placeholder}\n\n`
+      applyInsertion(snippet, placeholder)
       break
-    case 'orderedList':
-      before = '1. '
-      after = ''
-      placeholder = 'elemento de lista numerada'
+    }
+    case 'h2': {
+      const placeholder = selectedText || 'Título de sección'
+      const snippet = `${ensureNewLineBefore()}## ${placeholder}\n\n`
+      applyInsertion(snippet, placeholder)
       break
-    case 'quote':
-      before = '> '
-      after = ''
-      placeholder = 'texto de cita'
+    }
+    case 'h3': {
+      const placeholder = selectedText || 'Subtítulo'
+      const snippet = `${ensureNewLineBefore()}### ${placeholder}\n\n`
+      applyInsertion(snippet, placeholder)
       break
-    case 'table':
-      const tableMarkdown = `| Columna 1 | Columna 2 | Columna 3 |
-|-----------|-----------|-----------|
-| Fila 1    | Fila 1    | Fila 1    |
-| Fila 2    | Fila 2    | Fila 2    |`
-      before = tableMarkdown + '\n\n'
-      after = ''
-      placeholder = ''
+    }
+    case 'list': {
+      const placeholder = selectedText || 'Elemento de lista'
+      const snippet = `${ensureNewLineBefore()}- ${placeholder}\n`
+      applyInsertion(snippet, placeholder)
       break
-    case 'horizontalRule':
-      before = '---\n'
-      after = ''
-      placeholder = ''
+    }
+    case 'orderedList': {
+      const placeholder = selectedText || 'Elemento numerado'
+      const snippet = `${ensureNewLineBefore()}1. ${placeholder}\n`
+      applyInsertion(snippet, placeholder)
       break
+    }
+    case 'checkbox': {
+      const placeholder = selectedText || 'Elemento pendiente'
+      const snippet = `${ensureNewLineBefore()}- [ ] ${placeholder}\n`
+      applyInsertion(snippet, placeholder)
+      break
+    }
+    case 'quote': {
+      const placeholder = selectedText || 'Texto de la cita'
+      const snippet = `${ensureNewLineBefore()}> ${placeholder}\n`
+      applyInsertion(snippet, placeholder)
+      break
+    }
+    case 'link': {
+      const url = prompt('Ingresa la URL del enlace:')
+      if (!url) return
+      const placeholder = selectedText || 'Texto del enlace'
+      const snippet = `[${placeholder}](${url})`
+      applyInsertion(snippet, placeholder)
+      break
+    }
+    case 'image': {
+      const imageUrl = prompt('Ingresa la URL de la imagen:')
+      if (!imageUrl) return
+      const altText = selectedText || 'Texto alternativo'
+      const snippet = `![${altText}](${imageUrl})`
+      applyInsertion(snippet, altText)
+      break
+    }
+    case 'codeBlock': {
+      const language = (prompt('Lenguaje del bloque de código (opcional):', 'javascript') || '').trim()
+      const placeholder = selectedText || '// Escribe tu código aquí'
+      const openingFence = '```' + language
+      const closingFence = '```'
+      const snippet = `${ensureNewLineBefore()}${openingFence}\n${placeholder}\n${closingFence}\n\n`
+      applyInsertion(snippet, placeholder)
+      break
+    }
+    case 'table': {
+      const lines = [
+        '| Columna 1 | Columna 2 | Columna 3 |',
+        '|-----------|-----------|-----------|',
+        '| Dato 1    | Dato 1    | Dato 1    |',
+        '| Dato 2    | Dato 2    | Dato 2    |',
+        ''
+      ]
+      const snippet = `${ensureNewLineBefore()}${lines.join('\n')}\n`
+      applyInsertion(snippet, '')
+      break
+    }
+    case 'horizontalRule': {
+      const snippet = `${ensureNewLineBefore()}---\n\n`
+      applyInsertion(snippet, '', snippet.length)
+      break
+    }
+    case 'callout': {
+      const typeInput = (prompt('Tipo de callout (TIP, INFO, WARNING, NOTE, IMPORTANT):', 'TIP') || 'TIP').toUpperCase()
+      const allowedTypes = ['TIP', 'INFO', 'WARNING', 'NOTE', 'IMPORTANT', 'CAUTION']
+      const calloutType = allowedTypes.includes(typeInput) ? typeInput : 'TIP'
+      const titlePlaceholder = selectedText || 'Título del callout'
+      const bodyPlaceholder = 'Añade más detalles aquí.'
+      const snippet = `${ensureNewLineBefore()}> [!${calloutType}] ${titlePlaceholder}\n> ${bodyPlaceholder}\n\n`
+      applyInsertion(snippet, titlePlaceholder)
+      break
+    }
     default:
       return
   }
 
-  // Si no hay texto seleccionado, usar placeholder
-  const textToInsert = selectedText || placeholder
+  if (previewMode.value === 'preview') {
+    setPreviewMode('split')
+  }
+}
 
-  const newText = beforeText + before + textToInsert + after + afterText
-  textarea.value = newText
+const handleMarkdownShortcut = (event) => {
+  const isCtrlCmd = event.ctrlKey || event.metaKey
 
-  // Restaurar la selección
-  const newStart = start + before.length
-  const newEnd = newStart + textToInsert.length
-  textarea.setSelectionRange(newStart, newEnd)
-  textarea.focus()
+  if (event.key === 'Tab' && !event.altKey) {
+    event.preventDefault()
+    const area = markdownTextarea.value
+    if (!area) return
+    const value = area.value
+    const startPos = area.selectionStart
+    const endPos = area.selectionEnd
+    const indent = '  '
+    area.value = value.slice(0, startPos) + indent + value.slice(endPos)
+    area.selectionStart = area.selectionEnd = startPos + indent.length
+    form.value.content = area.value
+    validateField('content')
+    nextTick(() => {
+      if (scrollSyncEnabled.value && previewMode.value !== 'edit') {
+        syncScroll('editor')
+      }
+    })
+    return
+  }
 
-  // Actualizar el modelo
-  form.value.content = textarea.value
+  if (!isCtrlCmd) {
+    return
+  }
+
+  const key = event.key.toLowerCase()
+
+  if (!event.shiftKey && !event.altKey) {
+    switch (key) {
+      case 'b':
+        event.preventDefault()
+        insertMarkdown('bold')
+        break
+      case 'i':
+        event.preventDefault()
+        insertMarkdown('italic')
+        break
+      case 'k':
+        event.preventDefault()
+        insertMarkdown('link')
+        break
+      default:
+        break
+    }
+    return
+  }
+
+  if (event.shiftKey) {
+    switch (key) {
+      case 'c':
+        event.preventDefault()
+        insertMarkdown('codeBlock')
+        break
+      case 'l':
+        event.preventDefault()
+        insertMarkdown('list')
+        break
+      case 'o':
+        event.preventDefault()
+        insertMarkdown('orderedList')
+        break
+      case 'x':
+        event.preventDefault()
+        insertMarkdown('strikethrough')
+        break
+      case 'm':
+        event.preventDefault()
+        insertMarkdown('callout')
+        break
+      default:
+        break
+    }
+  }
 }
 
 // Funciones auxiliares para URL y PDF
@@ -1294,7 +2368,23 @@ const resetForm = () => {
   originalPdfUrl.value = ''
   originalPdfName.value = ''
   isReplacingPdf.value = false
-  activeTab.value = 'edit'
+  showMarkdownHelp.value = false
+  showColorPalette.value = false
+  scrollSyncEnabled.value = true
+  editViewMode.value = 'visual'
+  visualContent.value = ''
+  nextTick(() => {
+    if (visualEditorRef.value) {
+      visualEditorRef.value.innerHTML = ''
+    }
+  })
+  previewMode.value = getDefaultPreviewMode()
+  copyStatus.value = ''
+  isFullscreen.value = false
+  if (copyStatusTimeout) {
+    clearTimeout(copyStatusTimeout)
+    copyStatusTimeout = null
+  }
   console.log('✅ [CONTENT FORM] Formulario reseteado')
 }
 
@@ -1356,6 +2446,16 @@ const loadDocumentData = () => {
       icon: props.document.icon || '',
       roles: cleanRoles
     }
+
+    showMarkdownHelp.value = false
+    scrollSyncEnabled.value = true
+    copyStatus.value = ''
+    const defaultMode = getDefaultPreviewMode()
+    previewMode.value = props.document.type === 'TYPE_TEXT' && defaultMode !== 'edit'
+      ? 'split'
+      : defaultMode
+    showColorPalette.value = false
+    setEditViewMode('visual')
 
     pdfPreviewUrl.value = null
 
@@ -1426,11 +2526,11 @@ const handleSubmit = async () => {
       console.log('🔍 [CONTENT FORM] Validación PDF - originalPdfUrl:', originalPdfUrl.value)
 
       if (pdfFile.value) {
-        console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.name:', pdfFile.value?.name)
-        console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.size:', pdfFile.value?.size)
+      console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.name:', pdfFile.value?.name)
+      console.log('🔍 [CONTENT FORM] Validación PDF - pdfFile.size:', pdfFile.value?.size)
 
-        if (!pdfFile.value.name) {
-          throw new Error('El archivo PDF seleccionado no es válido')
+      if (!pdfFile.value.name) {
+        throw new Error('El archivo PDF seleccionado no es válido')
         }
       } else if (!hasOriginalPdf.value) {
         throw new Error('Debe seleccionar un archivo PDF válido')
@@ -1627,8 +2727,40 @@ watch(() => props.modelValue, (newValue) => {
     console.log('📄 [CONTENT FORM] Cargando datos del documento...')
     loadDocumentData()
     currentWizardStep.value = isEditing.value ? desiredStartStep.value : 1
+    nextTick(() => {
+      if (previewMode.value !== 'preview') {
+        focusEditor()
+      }
+    })
   } else {
     resetForm()
+  }
+})
+
+watch(isFullscreen, (value) => {
+  if (typeof document === 'undefined') return
+  document.body.style.overflow = value ? 'hidden' : ''
+})
+
+watch(() => form.value.content, () => {
+  if (scrollSyncEnabled.value && previewMode.value === 'split') {
+    nextTick(() => syncScroll('editor'))
+  }
+})
+
+onMounted(() => {
+  previewMode.value = getDefaultPreviewMode()
+  if (editViewMode.value === 'visual') {
+    syncVisualFromMarkdown()
+  }
+})
+
+onBeforeUnmount(() => {
+  if (copyStatusTimeout) {
+    clearTimeout(copyStatusTimeout)
+  }
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = ''
   }
 })
 
@@ -1767,4 +2899,427 @@ const openOriginalPdf = async () => {
   }
 }
 
+
 </script>
+
+<style scoped>
+.markdown-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  width: 32px;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background-color: rgba(255, 255, 255, 0.95);
+  color: #1e293b;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.markdown-toolbar-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background-color: rgba(59, 130, 246, 0.08);
+  color: #1d4ed8;
+}
+
+.markdown-toolbar-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.markdown-toolbar-btn i,
+.markdown-toolbar-btn span {
+  pointer-events: none;
+}
+
+.markdown-toolbar-separator {
+  width: 1px;
+  height: 24px;
+  background-color: rgba(148, 163, 184, 0.4);
+  margin: 0 4px;
+}
+
+.color-palette-popover {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 30;
+  min-width: 220px;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background-color: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 18px 36px -18px rgba(15, 23, 42, 0.45);
+  padding: 0.75rem;
+}
+
+.color-palette-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background-color: rgba(255, 255, 255, 0.95);
+  color: #475569;
+  font-size: 0.65rem;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background-color: rgba(59, 130, 246, 0.12);
+  color: #1d4ed8;
+}
+
+.color-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.color-swatch {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background-color: rgba(248, 250, 252, 0.95);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+.color-swatch:hover {
+  transform: translateY(-1px);
+  border-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 8px 18px -12px rgba(30, 64, 175, 0.4);
+}
+
+.swatch-preview {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 2px solid rgba(15, 23, 42, 0.12);
+  flex-shrink: 0;
+  background-color: currentColor;
+}
+
+.swatch-label {
+  flex: 1;
+  text-align: left;
+}
+
+.wysiwyg-editor {
+  min-height: 280px;
+  width: 100%;
+  padding: 1rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.96);
+  color: #0f172a;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  outline: none;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  transition: box-shadow 0.2s ease;
+  direction: ltr;
+  text-align: left;
+}
+
+.wysiwyg-editor:focus {
+  box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.45);
+}
+
+.wysiwyg-editor-error {
+  box-shadow: inset 0 0 0 2px rgba(248, 113, 113, 0.45);
+}
+
+.wysiwyg-editor:empty:before {
+  content: attr(data-placeholder);
+  color: #94a3b8;
+  font-style: italic;
+}
+
+:global(.dark) .markdown-toolbar-btn {
+  background-color: rgba(15, 23, 42, 0.9);
+  border-color: rgba(71, 85, 105, 0.75);
+  color: rgba(226, 232, 240, 0.9);
+}
+
+:global(.dark) .markdown-toolbar-btn:hover:not(:disabled) {
+  background-color: rgba(30, 64, 175, 0.3);
+  color: #38bdf8;
+}
+
+:global(.dark) .markdown-toolbar-separator {
+  background-color: rgba(71, 85, 105, 0.65);
+}
+
+:global(.dark) .color-palette-popover {
+  border-color: rgba(71, 85, 105, 0.6);
+  background-color: rgba(15, 23, 42, 0.94);
+  box-shadow: 0 18px 42px -22px rgba(15, 118, 110, 0.6);
+}
+
+:global(.dark) .color-palette-header {
+  color: rgba(226, 232, 240, 0.95);
+}
+
+:global(.dark) .close-btn {
+  border-color: rgba(71, 85, 105, 0.65);
+  background-color: rgba(15, 23, 42, 0.85);
+  color: rgba(226, 232, 240, 0.8);
+}
+
+:global(.dark) .close-btn:hover {
+  background-color: rgba(30, 64, 175, 0.35);
+  color: #bae6fd;
+}
+
+:global(.dark) .color-swatch {
+  border-color: rgba(71, 85, 105, 0.55);
+  background-color: rgba(30, 41, 59, 0.92);
+  color: rgba(226, 232, 240, 0.85);
+}
+
+:global(.dark) .color-swatch:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+}
+
+:global(.dark) .wysiwyg-editor {
+  background-color: rgba(15, 23, 42, 0.94);
+  color: #e2e8f0;
+}
+
+:global(.dark) .wysiwyg-editor:focus {
+  box-shadow: inset 0 0 0 2px rgba(56, 189, 248, 0.35);
+}
+
+:global(.dark) .wysiwyg-editor-error {
+  box-shadow: inset 0 0 0 2px rgba(248, 113, 113, 0.55);
+}
+
+:global(.dark) .wysiwyg-editor:empty:before {
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.markdown-editor-container {
+  background: linear-gradient(135deg, rgba(241, 245, 249, 0.85), rgba(255, 255, 255, 0.92));
+  backdrop-filter: blur(8px);
+}
+
+:global(.dark) .markdown-editor-container {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.88));
+}
+
+.markdown-editor-pane {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+:global(.dark) .markdown-editor-pane {
+  background-color: rgba(15, 23, 42, 0.95);
+}
+
+.markdown-preview-pane {
+  border-top: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+@media (min-width: 768px) {
+  .markdown-preview-pane {
+    border-top: none;
+  }
+}
+
+:deep(.markdown-preview pre) {
+  background-color: #0f172a;
+  color: #e2e8f0;
+  border-radius: 0.875rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  overflow-x: auto;
+  font-size: 0.9rem;
+}
+
+:global(.dark) :deep(.markdown-preview pre) {
+  background-color: rgba(15, 23, 42, 0.9);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+:deep(.markdown-preview code:not(pre code)) {
+  background-color: rgba(59, 130, 246, 0.12);
+  color: #0f172a;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.5rem;
+  font-size: 0.85em;
+  border: 1px solid rgba(59, 130, 246, 0.18);
+}
+
+:global(.dark) :deep(.markdown-preview code:not(pre code)) {
+  background-color: rgba(59, 130, 246, 0.22);
+  color: #e0f2fe;
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+:deep(.markdown-preview a) {
+  color: #1d4ed8;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(29, 78, 216, 0.35);
+}
+
+:deep(.markdown-preview a:hover) {
+  color: #2563eb;
+  border-bottom-color: rgba(37, 99, 235, 0.7);
+}
+
+:global(.dark) :deep(.markdown-preview a) {
+  color: #38bdf8;
+  border-bottom-color: rgba(56, 189, 248, 0.45);
+}
+
+:deep(.markdown-preview blockquote) {
+  border-left: 4px solid rgba(59, 130, 246, 0.6);
+  background-color: rgba(59, 130, 246, 0.1);
+  padding: 0.75rem 1.2rem;
+  border-radius: 0.75rem;
+  margin: 1.2rem 0;
+  color: #1e293b;
+  font-style: italic;
+}
+
+:global(.dark) :deep(.markdown-preview blockquote) {
+  border-left-color: rgba(56, 189, 248, 0.65);
+  background-color: rgba(56, 189, 248, 0.12);
+  color: #cbd5f5;
+}
+
+:deep(.markdown-preview table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.25rem;
+  font-size: 0.95rem;
+}
+
+:deep(.markdown-preview th),
+:deep(.markdown-preview td) {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+}
+
+:deep(.markdown-preview thead) {
+  background-color: rgba(59, 130, 246, 0.08);
+  font-weight: 700;
+}
+
+:global(.dark) :deep(.markdown-preview thead) {
+  background-color: rgba(30, 64, 175, 0.35);
+}
+
+:deep(.markdown-empty-state) {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  padding: 3rem 1.5rem;
+  color: #334155;
+  background: radial-gradient(circle at top, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0));
+  border-radius: 0.75rem;
+  border: 1px dashed rgba(148, 163, 184, 0.4);
+}
+
+:global(.dark) :deep(.markdown-empty-state) {
+  color: #cbd5f5;
+  border-color: rgba(148, 163, 184, 0.3);
+  background: radial-gradient(circle at top, rgba(59, 130, 246, 0.18), rgba(15, 23, 42, 0.05));
+}
+
+:deep(.markdown-empty-state .hint) {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+:global(.dark) :deep(.markdown-empty-state .hint) {
+  color: rgba(148, 163, 184, 0.8);
+}
+
+:deep(.markdown-error-state) {
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  background-color: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #b91c1c;
+}
+
+:global(.dark) :deep(.markdown-error-state) {
+  background-color: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #fca5a5;
+}
+
+:deep(.md-color-sky) {
+  color: #0ea5e9;
+}
+
+:deep(.md-color-blue) {
+  color: #2563eb;
+}
+
+:deep(.md-color-emerald) {
+  color: #059669;
+}
+
+:deep(.md-color-lime) {
+  color: #65a30d;
+}
+
+:deep(.md-color-amber) {
+  color: #d97706;
+}
+
+:deep(.md-color-orange) {
+  color: #ea580c;
+}
+
+:deep(.md-color-rose) {
+  color: #e11d48;
+}
+
+:deep(.md-color-pink) {
+  color: #db2777;
+}
+
+:deep(.md-color-purple) {
+  color: #7c3aed;
+}
+
+:deep(.md-color-slate) {
+  color: #475569;
+}
+
+.markdown-help-enter-active,
+.markdown-help-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.markdown-help-enter-from,
+.markdown-help-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+</style>
