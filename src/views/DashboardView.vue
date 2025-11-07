@@ -51,6 +51,14 @@ const handleSidebarToggle = (expanded) => {
 }
 
 onMounted(async () => {
+/*
+    DETECCION:
+    - Este if aparentemente esta de mas ya que la autenticacion y el usuario se cargan antes de navegar a esta pantalla
+
+    RECOMENDACION:
+    - Eliminar metodo si no se le da uso
+    - Mantener validacion y solo hacer la carga de usuario desde esta pantalla
+*/
   // Obtener información actualizada del usuario desde el backend
   if (authStore.isAuthenticated && !user?.name) {
     try {

@@ -385,8 +385,16 @@
   </div>
 </template>
 
+
 <script setup>
+/*
+    DETECCION:
+     - onMounted no se usa. eliminar
+*/
 import { ref, reactive, computed, onMounted } from 'vue'
+/*
+* -------------------------------------------------------------
+*/
 import { useAuthStore } from '@/stores/auth'
 import userStudyingImage from '@/assets/images/illustrations/user_studying.webp'
 
@@ -476,6 +484,22 @@ const handleLogin = async () => {
     successMessage.value = '¡Bienvenido! Redirigiendo...'
     // No resetear isLoading aquí para mantener el botón deshabilitado durante la redirección
   } catch (error) {
+    /*
+    DETECCION:
+     - Tenemos dos variables con el mismo nombre "error" y se confunden las referencias en sus llamados
+    error - global que se usa para mensajes de error al usario
+    error - local del catch para gestion de los errores del login o dentro del try
+
+    MOTIVOS DE LA INCONSISTENCIA:
+    - Se busca hacer referencia a error local para saber porque fallo el try y se hacer referencia a error global para setear un mensaje
+    de error para informar al usuario
+
+    - Esta inconsistencia no es perceptible para el usuario ya que aun asi no se hace uso del mensaje que se setea en este catch.
+    Ya que se usa la propiedad authStore.error como opcion para mensajes cuando error es vacio en - (v-if="error || authStore.error")
+
+    RECOMENDACION:
+    - Quitar la propiedad authStore.error y que todos los errores sean seteados en los catch correspondientes.
+*/
     // Manejar diferentes tipos de errores con mensajes específicos
     if (
       error.message?.includes('Credenciales inválidas') ||
@@ -520,6 +544,14 @@ const handleBackToLogin = () => {
 }
 
 const handleSendResetEmail = async () => {
+  /*
+    DETECCION:
+     - Esta funcion no se usa nunca ya que no se puede presionar el btn de enviar si el Email es vacio
+
+    RECOMENDACION:
+    - Eliminar metodo si no se le da uso
+    - Dejar habilitado btn de enviar e imprimir un toast con el error correspondiente
+*/
   if (!forgotPasswordEmail.value) {
     error.value = 'Por favor ingresa tu email'
     return
@@ -528,6 +560,10 @@ const handleSendResetEmail = async () => {
    * -------------------------------------------------------------------------------
    */
 
+  /*
+    DETECCION:
+      - He visto en varios lugares la misma validacion de email. podria pasarse a un metodo que se engargue y devuelva un bool
+*/
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(forgotPasswordEmail.value)) {
     error.value = 'Por favor ingresa un email válido'

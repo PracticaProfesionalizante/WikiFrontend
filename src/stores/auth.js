@@ -133,6 +133,11 @@ export const useAuthStore = defineStore('auth', () => {
         setMenus([])
       }
 
+      /*
+      DETECCION:
+      - Los delays se pueden sacar sin problema,
+      Apenas se obtiene una respuesta del backend redirigir al dashboard
+      */
       // Pequeño delay para asegurar que el estado se actualice
       await new Promise((resolve) => setTimeout(resolve, 100))
 
@@ -141,6 +146,9 @@ export const useAuthStore = defineStore('auth', () => {
       setTimeout(() => {
         router.push('/dashboard')
       }, 1000)
+      /*
+       * -------------------------------------------------------------------------------
+       */
 
       return response
     } catch (err) {
@@ -156,6 +164,7 @@ export const useAuthStore = defineStore('auth', () => {
   // LOGOUT ACTUALIZADO - Conectado con authService
   const logout = async () => {
     try {
+      console.log('🔄 [AUTH STORE] refreshToken.value disponible:', refreshToken.value ? 'Sí' : 'No')
       // Intentar logout en el backend
       if (refreshToken.value) {
         await authService.logout(refreshToken.value)
@@ -349,7 +358,6 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = null
         menus.value = []
       }
-
     } catch (error) {
       console.error('❌ [AUTH STORE] Error limpiando tokens expirados:', error)
     }
