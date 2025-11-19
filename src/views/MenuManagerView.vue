@@ -422,7 +422,7 @@
 
             <!-- Indicador de Pasos -->
           <div class="flex border-b border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-              <div
+            <div
                 v-for="(step, index) in wizardSteps"
                 :key="step.id"
               class="flex-1 border-l border-slate-200 first:border-l-0 bg-white p-4 transition dark:border-slate-700 dark:bg-slate-800"
@@ -2226,12 +2226,13 @@ const validateForm = () => {
       errors.parentId = 'Un menú no puede ser padre de sí mismo'
     } else {
       // Verificar si el padre existe
-      const parentExists = menus.value.find((menu) => menu.id === menuForm.value.parentId)
-      if (!parentExists) {
-        errors.parentId = 'El menú padre seleccionado no existe'
-      } else if (parentExists.parentId === editingMenuId.value) {
-        errors.parentId = 'No puede crear una referencia circular'
-      }
+      // const parentExists = menus.value.find((menu) => menu.id === menuForm.value.parentId)
+      // if (!parentExists) {
+      //   errors.parentId = 'El menú padre seleccionado no existe'
+      // }
+      // else if (parentExists.parentId === editingMenuId.value) {
+      //   errors.parentId = 'No puede crear una referencia circular'
+      // }
     }
   }
 

@@ -24,7 +24,7 @@
               </div>
               <div>
                 <h1 class="m-0 text-xl font-bold text-slate-900 dark:text-slate-100 md:text-2xl">
-                  Administración de Contenidos
+                  Administración de Contenidos - {{ path }} - ${{ view }}
                 </h1>
                 <p class="m-0 text-sm text-slate-500 dark:text-slate-300">
                   Gestiona y organiza todo el contenido de tu plataforma
@@ -1028,6 +1028,10 @@ import {
 
 const authStore = useAuthStore()
 
+
+// Props
+const props = defineProps(['path', 'view']);
+
 // Estado básico
 const documents = ref([])
 const loading = ref(false)
@@ -1328,8 +1332,11 @@ const handleSidebarToggle = (expanded) => {
 const loadDocuments = async () => {
   loading.value = true
   error.value = null
+  const params = {
+    slug: props.path
+}
   try {
-    const response = await documentService.getDocuments()
+    const response = await documentService.getDocuments(params)
 
     // Verificar si la respuesta es válida
     if (Array.isArray(response)) {

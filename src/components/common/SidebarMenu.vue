@@ -158,6 +158,7 @@ const menuItems = computed(() => {
     text: menu.name,
     active: false,
     route: menu.path,
+    view: menu.view,
     submenu: menu.children && menu.children.length > 0 ? menu.children.map((child) => transformMenu(child)) : null,
     showSubmenu: false,
     children: menu.children || [],
@@ -270,15 +271,24 @@ const navigateToMenuManager = () => {
 
 const selectSubmenu = (submenu) => {
   if (submenu.submenu && submenu.submenu.length > 0) {
-    currentParentMenu.value = submenu
     currentSubmenus.value = submenu.submenu
-    activeSubmenuId.value = null
     return
+  } else {
+    console.log("path", submenu.route)
+    console.log("view", submenu.view)
+    router.push({
+      path: '/admin/content',
+      query: {
+        path: submenu.route,
+        view: submenu.view,
+      }
+    });
   }
+  currentParentMenu.value = submenu
   activeSubmenuId.value = submenu.id
-  if (submenu.route) {
-    router.push(submenu.route)
-  }
+  // if (submenu.route) {
+  // router.push({ name: '/admin/content', params: { path: submenu.path } });
+  // }
   if (isMobile.value) closeMobile()
 }
 
