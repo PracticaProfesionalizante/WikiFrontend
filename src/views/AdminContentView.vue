@@ -1032,6 +1032,17 @@ const authStore = useAuthStore()
 // Props
 const props = defineProps(['path', 'view']);
 
+watch(
+  () => props.path,
+  (newVal, oldVal) => {
+    console.log(`Cambio ${oldVal} por ${newVal}`);
+    loadDocuments()
+  }
+);
+
+//loadDocuments()
+
+
 // Estado básico
 const documents = ref([])
 const loading = ref(false)
@@ -1334,7 +1345,7 @@ const loadDocuments = async () => {
   error.value = null
   const params = {
     slug: props.path
-}
+  }
   try {
     const response = await documentService.getDocuments(params)
 
@@ -2368,7 +2379,6 @@ const handlePdfError = (event) => {
 // Cargar contenidos al montar el componente
 onMounted(() => {
   handleResponsiveViewMode()
-  loadDocuments()
   // Agregar listeners
   document.addEventListener('keydown', handleKeydown)
   if (typeof window !== 'undefined') {
