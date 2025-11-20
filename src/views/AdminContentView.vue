@@ -12,7 +12,9 @@
     >
       <div class="w-full max-w-[1800px] mx-auto p-4 sm:p-6">
         <!-- Header Section -->
-        <div class="mb-6">
+        <ContentAdminHeader :path="props.path" :view="props.view" @create="openCreateDialog"/>
+
+        <!-- <div class="mb-6">
           <div
             class="flex flex-col gap-5 rounded-2xl border bg-slate-100 p-6 shadow dark:border-slate-700 dark:bg-slate-800 lg:flex-row lg:items-center lg:justify-between"
           >
@@ -44,8 +46,8 @@
               </button>
             </div>
           </div>
-        </div>
-
+        </div> -->
+      <!-- Header Section -->
         <!-- Alertas -->
         <div class="mb-4">
           <div
@@ -1016,6 +1018,8 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import documentService from '@/services/documentService'
 import AdminContentLayout from '@/layouts/AdminContentLayout.vue'
+import ContentAdminHeader from '@/components/content/ContentAdminHeader.vue'
+
 // import SidebarMenu from '@/components/common/SidebarMenu.vue'
 // import AppHeader from '@/components/common/AppHeader.vue'
 import ContentForm from '@/components/forms/ContentForm.vue'
