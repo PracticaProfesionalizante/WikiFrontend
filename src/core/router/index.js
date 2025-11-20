@@ -66,10 +66,6 @@ const routes = [
     name: 'AdminContent',
     component: () => import('@/views/AdminContentView.vue'), // Lazy loading
     beforeEnter: requireAuth,
-    props: (route) => ({
-      path: route.query.path,
-      view: route.query.view,
-    }),
     meta: {
       title: 'Administración de Contenidos',
       requiresAuth: true,

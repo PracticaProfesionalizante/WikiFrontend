@@ -135,10 +135,12 @@
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { defDocumentStore } from '@/stores/documentsStore'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const documentStore = defDocumentStore()
 
 const emit = defineEmits(['sidebar-toggle'])
 
@@ -276,19 +278,11 @@ const selectSubmenu = (submenu) => {
   } else {
     console.log("path", submenu.route)
     console.log("view", submenu.view)
-    router.push({
-      path: '/admin/content',
-      query: {
-        path: submenu.route,
-        view: submenu.view,
-      }
-    });
+    documentStore.setPathAndType(submenu.route, submenu.view)
+    router.push('/admin/content');
   }
   currentParentMenu.value = submenu
   activeSubmenuId.value = submenu.id
-  // if (submenu.route) {
-  // router.push({ name: '/admin/content', params: { path: submenu.path } });
-  // }
   if (isMobile.value) closeMobile()
 }
 
