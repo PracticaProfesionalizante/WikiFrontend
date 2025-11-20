@@ -387,13 +387,13 @@
         <!-- Modal de creación/edición mejorado -->
         <div
           v-if="showDialog"
-      class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4"
+          class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
           aria-describedby="modal-description"
         >
-      <div class="w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-xl flex flex-col" @click.stop tabindex="-1" ref="modalContent">
+        <div class="w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-xl flex flex-col" @click.stop tabindex="-1" ref="modalContent">
             <!-- Header del Wizard -->
           <div class="rounded-t-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
             <div class="flex items-start justify-between">
@@ -508,7 +508,7 @@
 
                       <div v-if="menuForm.parentId" class="flex overflow-hidden rounded-lg border border-slate-300 dark:border-slate-600">
                         <span class="bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                          {{ getParentPathPrefix(menuForm.parentId) }}
+                          {{ menuForm.parentPath}}
                         </span>
                         <input
                           v-model="menuForm.path"
@@ -1156,6 +1156,7 @@ const wizardSteps = ref([
 ])
 const menuForm = ref({
   name: '',
+  parentPath: '',
   path: '',
   icon: '',
   template: 'basic',
@@ -1604,7 +1605,6 @@ const editMenu = (menu) => {
 
   // Crear una copia del menú y asegurar que roles sea un array
   const menuCopy = { ...menu }
-
   // Procesar roles para asegurar que sea un array y manejar diferentes formatos
   let processedRoles = []
 
@@ -1637,9 +1637,11 @@ const editMenu = (menu) => {
   console.log('📝 [MENU MANAGER] Roles procesados:', processedRoles)
 
   // Procesar el path para mostrar solo la parte editable
+  let parentPath = '';
   let editablePath = menu.path
   if (menu.parentId) {
     const parentMenu = findMenuById(menu.parentId)
+    parentPath = parentMenu.path
     if (parentMenu) {
       editablePath = extractEditablePath(menu.path, parentMenu.path)
     }
@@ -1651,6 +1653,7 @@ const editMenu = (menu) => {
     ...menuCopy,
     roles: processedRoles,
     path: editablePath,
+    parentPath: parentPath + '/',
   }
 
   editingMenuId.value = menu.id
@@ -2416,7 +2419,6 @@ const findMenuById = (menuId) => {
   if (menu) {
     return menu
   }
-
   // Buscar en la estructura jerárquica
   const findInHierarchy = (menuList) => {
     for (const m of menuList) {
