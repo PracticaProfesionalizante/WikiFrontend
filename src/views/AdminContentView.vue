@@ -1,4 +1,5 @@
 ﻿<template>
+  <AdminContentLayout>
   <div class="flex min-h-screen bg-white dark:bg-slate-900">
     <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
     <AppHeader :sidebar-expanded="sidebarExpanded" />
@@ -1007,14 +1008,16 @@
       </div>
     </main>
   </div>
+  </AdminContentLayout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import documentService from '@/services/documentService'
-import SidebarMenu from '@/components/common/SidebarMenu.vue'
-import AppHeader from '@/components/common/AppHeader.vue'
+import AdminContentLayout from '@/layouts/AdminContentLayout.vue'
+// import SidebarMenu from '@/components/common/SidebarMenu.vue'
+// import AppHeader from '@/components/common/AppHeader.vue'
 import ContentForm from '@/components/forms/ContentForm.vue'
 import { marked } from 'marked'
 import VuePdfEmbed from 'vue-pdf-embed'
@@ -1037,7 +1040,7 @@ const documents = ref([])
 const loading = ref(false)
 const error = ref(null)
 const success = ref(null)
-const sidebarExpanded = ref(false)
+// const sidebarExpanded = ref(false)
 
 // Estados de modales
 const deleteDialog = ref(false)
@@ -1325,9 +1328,9 @@ watch([filterType, filterStatus, filterAuthor], () => {
 })
 
 // Funciones principales
-const handleSidebarToggle = (expanded) => {
-  sidebarExpanded.value = expanded
-}
+// const handleSidebarToggle = (expanded) => {
+//   sidebarExpanded.value = expanded
+// }
 
 const loadDocuments = async () => {
   loading.value = true
