@@ -2241,10 +2241,6 @@ const getPdfTitle = (url) => {
   }
 }
 
-const handlePdfError = () => {
-  console.warn('⚠️ [PDF] Error cargando PDF:', form.value.content)
-}
-
 // PDF File Upload Functions
 const handleFileSelect = (event) => {
   const file = event.target.files[0]

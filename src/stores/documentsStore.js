@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
-export const defDocumentStore = defineStore('document', () => {
+export const documentsStore = defineStore('document', () => {
 
   const path = ref(localStorage.getItem('currentPath') || '')
   const type = ref(localStorage.getItem('currentType') || '')

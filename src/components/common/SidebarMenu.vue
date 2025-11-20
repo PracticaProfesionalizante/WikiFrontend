@@ -135,12 +135,12 @@
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { defDocumentStore } from '@/stores/documentsStore'
+import { documentsStore } from '@/stores/documentsStore'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-const documentStore = defDocumentStore()
+const documentStore = documentsStore()
 
 const emit = defineEmits(['sidebar-toggle'])
 
@@ -255,6 +255,9 @@ const selectItem = (item) => {
 
   activeMenuId.value = item.id
   if (item.route) {
+
+    if(item.route === '/admin/content') documentStore.setPathAndType('',null)
+
     router.push(item.route)
     if (isMobile.value) closeMobile()
   }

@@ -1,50 +1,14 @@
 ﻿<template>
   <AdminContentLayout>
     <div class="flex min-h-screen bg-white dark:bg-slate-900">
-      <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
-      <AppHeader :sidebar-expanded="sidebarExpanded" />
-
       <main :class="[
         'pt-20 flex-1 transition-all duration-300',
         sidebarExpanded ? 'ml-0 md:ml-[280px]' : 'ml-0 md:ml-20',
       ]">
         <div class="w-full max-w-[1800px] mx-auto p-4 sm:p-6">
           <!-- Header Section -->
-          <ContentAdminHeader :path="props.path" :view="props.view" @create="openCreateDialog" />
+          <ContentAdminHeader :path="docStore.getPath" :view="docStore.getView" @create="openCreateDialog" />
 
-          <!-- <div class="mb-6">
-          <div
-            class="flex flex-col gap-5 rounded-2xl border bg-slate-100 p-6 shadow dark:border-slate-700 dark:bg-slate-800 lg:flex-row lg:items-center lg:justify-between"
-          >
-            <div class="flex items-start gap-4 md:items-center">
-              <div
-                class="grid h-12 w-12 place-items-center rounded-xl text-lg text-white shadow md:h-14 md:w-14 md:text-xl"
-                style="background: linear-gradient(135deg, #2563eb, #60a5fa)"
-              >
-                <i class="fas fa-cogs"></i>
-              </div>
-              <div>
-                <h1 class="m-0 text-xl font-bold text-slate-900 dark:text-slate-100 md:text-2xl">
-                  Administración de Contenidos - {{ path }} - ${{ view }}
-                </h1>
-                <p class="m-0 text-sm text-slate-500 dark:text-slate-300">
-                  Gestiona y organiza todo el contenido de tu plataforma
-                </p>
-              </div>
-            </div>
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <button
-                v-can="['ROLE_ADMIN', 'ROLE_SUPER_USER']"
-                @click="openCreateDialog"
-                class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 disabled:opacity-50 sm:w-auto"
-                title="Crear Documento"
-              >
-                <i class="fas fa-plus"></i>
-                Crear Documento
-              </button>
-            </div>
-          </div>
-        </div> -->
           <!-- Header Section -->
           <!-- Alertas -->
           <ContentAlertToast type="error" :message="error" @close="error = null" />
@@ -751,39 +715,25 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { useAuthStore } from '@/stores/auth'
+import { documentsStore } from '@/stores/documentsStore'
 import documentService from '@/services/documentService'
 import AdminContentLayout from '@/layouts/AdminContentLayout.vue'
 import ContentAdminHeader from '@/components/content/ContentAdminHeader.vue'
 import ContentAlertToast from '@/components/common/ContentAlertToast.vue'
-// import SidebarMenu from '@/components/common/SidebarMenu.vue'
-// import AppHeader from '@/components/common/AppHeader.vue'
 import ContentForm from '@/components/forms/ContentForm.vue'
 import { marked } from 'marked'
 import VuePdfEmbed from 'vue-pdf-embed'
 import {
   setupPdfWarningSuppression,
-  handleProblematicPdf,
-  isValidPdfUrl,
   isKnownPdfWarning,
-  buildPdfUrl,
 } from '@/utils/pdfUtils'
 
-const authStore = useAuthStore()
-
-
-// Props
-const props = defineProps(['path', 'view']);
+const docStore = documentsStore()
 
 watch(
-  () => props.path,
-  (newVal, oldVal) => {
-    console.log(`Cambio ${oldVal} por ${newVal}`);
-    loadDocuments()
-  }
+  () => docStore.getPath,
+  () => { loadDocuments() }
 );
-
-//loadDocuments()
 
 
 // Estado básico
@@ -913,43 +863,6 @@ const handleResponsiveViewMode = () => {
 const selectedItems = ref([])
 const currentPage = ref(1)
 const itemsPerPage = ref(25)
-
-// API base URL removed (unused)
-
-// Computed properties para estadísticas
-const activeCount = computed(
-  () =>
-    documents.value.filter((item) => {
-      const status = getDocumentStatus(item)
-      return status === 'Activo'
-    }).length,
-)
-
-const inactiveCount = computed(
-  () =>
-    documents.value.filter((item) => {
-      const status = getDocumentStatus(item)
-      return status === 'Inactivo'
-    }).length,
-)
-
-const textDocumentsCount = computed(
-  () => documents.value.filter((item) => item.type === 'TEXT').length,
-)
-
-const urlDocumentsCount = computed(
-  () => documents.value.filter((item) => item.type === 'URL').length,
-)
-
-const pdfDocumentsCount = computed(
-  () => documents.value.filter((item) => item.type === 'PDF').length,
-)
-
-// Computed para autores únicos
-const uniqueAuthors = computed(() => {
-  const authors = [...new Set(documents.value.map((item) => item.createdBy).filter(Boolean))]
-  return authors.sort()
-})
 
 // Computed para filtrado y búsqueda
 const filteredItems = computed(() => {
@@ -1087,7 +1000,7 @@ const loadDocuments = async () => {
   loading.value = true
   error.value = null
   const params = {
-    slug: props.path
+    slug: docStore.getPath
   }
   try {
     const response = await documentService.getDocuments(params)
@@ -1567,39 +1480,6 @@ const closeBulkDeleteModal = () => {
   showBulkDeleteModal.value = false
 }
 
-const confirmBulkDelete = async () => {
-  if (selectedItems.value.length === 0) return
-
-  bulkDeleting.value = true
-  error.value = null
-
-  try {
-    // En una aplicación real, esto se enviar a al backend
-    for (const itemId of selectedItems.value) {
-      await documentService.deleteDocument(itemId)
-    }
-
-    success.value = `${selectedItems.value.length} documento(s) eliminado(s) correctamente`
-    closeBulkDeleteModal()
-    selectedItems.value = []
-    await loadDocuments()
-  } catch (err) {
-    error.value = err.message || 'Error al eliminar los contenidos'
-    // Para desarrollo, simular eliminación exitosa
-    selectedItems.value.forEach((itemId) => {
-      const index = documents.value.findIndex((item) => item.id === itemId)
-      if (index > -1) {
-        documents.value.splice(index, 1)
-      }
-    })
-
-    success.value = `${selectedItems.value.length} contenido(s) eliminado(s) correctamente`
-    closeBulkDeleteModal()
-    selectedItems.value = []
-  } finally {
-    bulkDeleting.value = false
-  }
-}
 
 // Funciones de utilidad
 const getDocumentStatus = (item) => {
@@ -2115,14 +1995,12 @@ const getPdfTitle = (content) => {
   }
 }
 
-const handlePdfError = (event) => {
-  // Error cargando PDF
-}
 
 // Cargar contenidos al montar el componente
 onMounted(() => {
   handleResponsiveViewMode()
   // Agregar listeners
+  loadDocuments()
   document.addEventListener('keydown', handleKeydown)
   if (typeof window !== 'undefined') {
     window.addEventListener('resize', handleResponsiveViewMode)
