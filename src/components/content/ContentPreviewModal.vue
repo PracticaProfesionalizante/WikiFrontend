@@ -232,22 +232,11 @@
                 </p>
               </div>
             </div>
-            <div
-              class="rounded-lg border border-blue-200 bg-white p-4 dark:border-blue-900/40 dark:bg-slate-900"
-            >
-              <a
-                :href="normalizeUrl(item?.content)"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-2 text-blue-600 underline-offset-2 hover:underline dark:text-blue-400"
-              >
-                <i class="fas fa-external-link-alt"></i>
-                {{ getUrlTitle(item?.content) }}
-              </a>
-              <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                {{ item?.content }}
-              </p>
-            </div>
+            <LinkButtonModal
+              :url="normalizeUrl(item?.content)"
+              :title="'Abrir en una nueva pestaña'"
+              :logoUrl="'https://mmedia.notitarde.com.ve/19502/agencia-26108.jpg'"
+            />
           </div>
         </div>
 
@@ -292,6 +281,8 @@
 
 <script setup>
 import VuePdfEmbed from 'vue-pdf-embed'
+import LinkButtonModal from '@/components/modals/LinkButtonModal.vue'
+
 
 defineProps({
   open: {
