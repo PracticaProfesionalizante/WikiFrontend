@@ -15,17 +15,18 @@
       <div
         class="rounded-xl border border-slate-200 bg-slate-100 shadow dark:border-slate-700 dark:bg-slate-800 overflow-hidden">
         <!-- Filtros y búsqueda -->
-        <!-- Filtros y búsqueda -->
+
         <ContentFilters v-model:search="searchQuery" v-model:filterType="filterType" v-model:filterStatus="filterStatus"
           v-model:sortBy="sortBy" v-model:sortOrder="sortOrder" v-model:viewMode="viewMode"
           :filtered-count="filteredItems.length" @toggle-sort-order="toggleSortOrder" @search-input="onSearchInput" />
 
-        <!-- Listado -->
         <div>
+          <!-- Filtros y búsqueda -->
           <!-- Loading -->
           <div v-if="loading" class="min-h-[300px] grid place-items-center p-8 text-slate-600 dark:text-slate-300">
             <div class="h-12 w-12 animate-spin rounded-full border-4 border-slate-300 border-t-blue-500"></div>
           </div>
+          <!-- Loading -->
 
           <!-- Tabla -->
           <div v-if="viewMode === 'table'" class="space-y-4 p-4 pt-0">
@@ -47,76 +48,12 @@
 
 
           <!-- Grid -->
-          <div v-else class="grid grid-cols-1 gap-4 p-4 pt-0 sm:grid-cols-2 xl:grid-cols-3">
-            <div v-for="doc in paginatedItems" :key="doc.id"
-              class="rounded-xl border bg-white p-4 shadow transition dark:border-slate-700 dark:bg-slate-900">
-              <div class="mb-2 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <i class="fas fa-file-alt text-blue-500"></i>
-                  <h3 class="m-0 text-base font-semibold text-slate-900 dark:text-slate-100 truncate"
-                    :title="doc.title || doc.name || 'Sin título'">
-                    {{ doc.title || doc.name || 'Sin título' }}
-                  </h3>
-                </div>
-                <button type="button" @click="toggleDocumentStatus(doc)" :class="[
-                  'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide transition shadow-sm hover:scale-105',
-                  getDocumentStatus(doc) === 'Activo'
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-900/30 dark:text-emerald-200'
-                    : 'border-red-200 bg-red-50 text-red-600 dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200',
-                ]">
-                  <i :class="getDocumentStatus(doc) === 'Activo'
-                    ? 'fas fa-check-circle'
-                    : 'fas fa-times-circle'
-                    "></i>
-                  {{ getDocumentStatus(doc) === 'Activo' ? 'Activo' : 'Inactivo' }}
-                </button>
-              </div>
-              <div class="mb-3 text-sm text-slate-600 dark:text-slate-300">
-                <div class="flex items-center gap-2">
-                  <strong>Tipo:</strong>
-                  <span :class="[
-                    'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold',
-                    getTypeColors(doc.type).bg,
-                    getTypeColors(doc.type).text,
-                    getTypeColors(doc.type).border,
-                  ]">
-                    <i :class="[getTypeIcon(doc.type), getTypeColors(doc.type).icon]"></i>
-                    {{ getTypeDisplay(doc.type || doc.category) }}
-                  </span>
-                </div>
-                <div class="mt-1 flex flex-col">
-                  <span
-                    class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Autor</span>
-                  <span>{{ getDocumentAuthor(doc) }}</span>
-                  <span v-if="doc.createdAt || doc.created_at" class="text-xs text-slate-500 dark:text-slate-400">
-                    {{ formatDate(doc.createdAt || doc.created_at) }}
-                  </span>
-                </div>
-                <div class="mt-1 flex flex-col">
-                  <span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Última
-                    edición</span>
-                  <span>{{ getDocumentEditor(doc) }}</span>
-                  <span v-if="doc.updatedAt || doc.updated_at" class="text-xs text-slate-500 dark:text-slate-400">
-                    {{ formatDate(doc.updatedAt || doc.updated_at) }}
-                  </span>
-                </div>
-              </div>
-              <div class="flex items-center gap-2">
-                <button @click="previewContent(doc)"
-                  class="inline-flex items-center gap-2 rounded bg-slate-300 px-3 py-1.5 text-sm font-medium text-slate-800 hover:-translate-y-0.5 dark:bg-slate-700 dark:text-slate-100">
-                  <i class="fas fa-eye"></i> Ver
-                </button>
-                <button @click="openEditDialog(doc)"
-                  class="inline-flex items-center gap-2 rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:-translate-y-0.5">
-                  <i class="fas fa-edit"></i> Editar
-                </button>
-                <button @click="openDeleteDialog(doc)"
-                  class="inline-flex items-center gap-2 rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:-translate-y-0.5">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
+          <!-- Grid -->
+          <ContentGrid v-else :items="paginatedItems" :get-document-status="getDocumentStatus"
+            :get-type-display="getTypeDisplay" :get-type-colors="getTypeColors" :get-type-icon="getTypeIcon"
+            :get-document-author="getDocumentAuthor" :get-document-editor="getDocumentEditor" :format-date="formatDate"
+            @preview="previewContent" @edit="openEditDialog" @delete="openDeleteDialog"
+            @toggle-status="toggleDocumentStatus" />
 
           <!-- Empty State -->
           <div v-if="paginatedItems.length === 0 && filteredItems.length === 0" class="p-12 text-center text-slate-500">
@@ -439,6 +376,7 @@ import ContentAlertToast from '@/components/common/ContentAlertToast.vue'
 import ContentForm from '@/components/forms/ContentForm.vue'
 import ContentFilters from '@/components/content/ContentFilters.vue'
 import ContentTable from '@/components/content/ContentTable.vue'
+import ContentGrid from '@/components/content/ContentGrid.vue'
 import { marked } from 'marked'
 import VuePdfEmbed from 'vue-pdf-embed'
 import {
