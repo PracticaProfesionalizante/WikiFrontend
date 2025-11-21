@@ -67,301 +67,58 @@
       </div>
 
       <!-- Preview Modal -->
-      <div v-if="showPreviewModal" class="fixed inset-0 z-[1000] grid place-items-center bg-black/60 p-4">
-        <div
-          class="w-full max-w-[1200px] flex max-h-[90vh] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-          <!-- Header -->
-          <div
-            class="flex items-center justify-between border-b border-slate-200 bg-blue-600 px-6 py-4 text-white dark:border-slate-700">
-            <h3 class="m-0 text-lg font-semibold">
-              <i class="fas fa-eye mr-2"></i>
-              {{ previewItem?.name || 'Vista Previa' }}
-            </h3>
-            <button @click="closePreviewModal"
-              class="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-white ring-1 ring-white/30 backdrop-blur hover:bg-white/30">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-
-          <!-- Body -->
-          <div class="flex-1 overflow-y-auto p-6">
-            <!-- Loading State -->
-            <div v-if="previewLoading" class="grid min-h-[300px] place-items-center">
-              <div class="h-12 w-12 animate-spin rounded-full border-4 border-slate-300 border-t-blue-500"></div>
-            </div>
-
-            <!-- PDF Content -->
-            <div v-else-if="previewItem?.type === 'TYPE_PDF' || previewItem?.type === 'PDF'" class="space-y-4">
-              <!-- PDF Error -->
-              <div v-if="pdfError"
-                class="rounded-lg border border-red-200 bg-red-50 p-4 text-center text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/30 dark:text-red-200">
-                <i class="fas fa-exclamation-circle mb-2 text-2xl"></i>
-                <p class="font-semibold">Error al cargar el PDF</p>
-                <p class="text-xs">
-                  {{ pdfError?.message || 'No se pudo cargar el documento PDF' }}
-                </p>
-                <button @click="retryPdfLoad"
-                  class="mt-3 inline-flex items-center gap-2 rounded bg-red-600 px-3 py-2 text-xs font-medium text-white hover:bg-red-700">
-                  <i class="fas fa-redo"></i>
-                  Reintentar
-                </button>
-              </div>
-
-              <!-- PDF Loading -->
-              <div v-else-if="pdfLoading" class="grid min-h-[400px] place-items-center">
-                <div class="text-center">
-                  <div
-                    class="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-slate-300 border-t-blue-500">
-                  </div>
-                  <p class="text-sm text-slate-600 dark:text-slate-300">Cargando PDF...</p>
-                </div>
-              </div>
-
-              <!-- PDF Viewer -->
-              <div v-else-if="pdfBlobUrl" class="space-y-4">
-                <!-- PDF Controls -->
-                <div
-                  class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
-                  <div class="flex items-center gap-2">
-                    <button @click="goToFirstPage" :disabled="currentPdfPage === 1"
-                      class="grid h-8 w-8 place-items-center rounded bg-blue-600 text-white transition disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
-                      title="Primera página">
-                      <i class="fas fa-angle-double-left text-xs"></i>
-                    </button>
-                    <button @click="previousPage" :disabled="currentPdfPage === 1"
-                      class="grid h-8 w-8 place-items-center rounded bg-blue-600 text-white transition disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
-                      title="Página anterior">
-                      <i class="fas fa-angle-left text-xs"></i>
-                    </button>
-                    <span class="px-3 text-sm font-medium text-slate-700 dark:text-slate-200">Página {{
-                      currentPdfPage }} de {{ totalPdfPages }}</span>
-                    <button @click="nextPage" :disabled="currentPdfPage >= totalPdfPages"
-                      class="grid h-8 w-8 place-items-center rounded bg-blue-600 text-white transition disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
-                      title="Página siguiente">
-                      <i class="fas fa-angle-right text-xs"></i>
-                    </button>
-                    <button @click="goToLastPage" :disabled="currentPdfPage >= totalPdfPages"
-                      class="grid h-8 w-8 place-items-center rounded bg-blue-600 text-white transition disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
-                      title="Última página">
-                      <i class="fas fa-angle-double-right text-xs"></i>
-                    </button>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <button @click="zoomOut"
-                      class="grid h-8 w-8 place-items-center rounded bg-slate-300 text-slate-800 transition hover:-translate-y-0.5 dark:bg-slate-700 dark:text-slate-100"
-                      title="Alejar">
-                      <i class="fas fa-search-minus text-xs"></i>
-                    </button>
-                    <span class="text-sm font-medium text-slate-700 dark:text-slate-200">{{ Math.round(pdfZoom *
-                      100) }}%</span>
-                    <button @click="zoomIn"
-                      class="grid h-8 w-8 place-items-center rounded bg-slate-300 text-slate-800 transition hover:-translate-y-0.5 dark:bg-slate-700 dark:text-slate-100"
-                      title="Acercar">
-                      <i class="fas fa-search-plus text-xs"></i>
-                    </button>
-                    <button @click="resetZoom"
-                      class="grid h-8 w-8 place-items-center rounded bg-slate-300 text-slate-800 transition hover:-translate-y-0.5 dark:bg-slate-700 dark:text-slate-100"
-                      title="Resetear zoom">
-                      <i class="fas fa-expand text-xs"></i>
-                    </button>
-                    <button @click="refreshPdfViewer"
-                      class="grid h-8 w-8 place-items-center rounded bg-green-600 text-white transition hover:-translate-y-0.5"
-                      title="Recargar PDF">
-                      <i class="fas fa-redo text-xs"></i>
-                    </button>
-                    <button @click="openPdfInNewTab"
-                      class="grid h-8 w-8 place-items-center rounded bg-blue-600 text-white transition hover:-translate-y-0.5"
-                      title="Abrir PDF en nueva pestaña">
-                      <i class="fas fa-external-link-alt text-xs"></i>
-                    </button>
-                    <button @click="downloadPdf"
-                      class="grid h-8 w-8 place-items-center rounded bg-purple-600 text-white transition hover:-translate-y-0.5"
-                      title="Descargar PDF">
-                      <i class="fas fa-download text-xs"></i>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- PDF Embed -->
-                <div class="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 relative"
-                  style="max-height: 70vh" @contextmenu.prevent="handleRightClick" @mousedown="handleMouseDown"
-                  @mousemove="handleMouseMove" @mouseup="handleMouseUp" @mouseleave="handleMouseUp"
-                  :style="{ cursor: isDragging ? 'grabbing' : pdfZoom > 1 ? 'grab' : 'default' }">
-                  <div class="overflow-auto" style="height: 100%; max-height: 70vh">
-                    <div :style="{
-                      transform: `scale(${pdfZoom}) translate(${pdfPanX}px, ${pdfPanY}px)`,
-                      transformOrigin: 'top left',
-                      width: `${100 / pdfZoom}%`,
-                      transition: isDragging ? 'none' : 'transform 0.1s ease-out',
-                    }" class="min-h-[500px]">
-                      <VuePdfEmbed :key="`pdf-${previewItem?.id}-${currentPdfPage}`" :source="pdfBlobUrl"
-                        :page="currentPdfPage" @loaded="onPdfLoaded" @loading-failed="onPdfError"
-                        class="w-full rounded-lg border border-slate-200 shadow dark:border-slate-700"
-                        style="user-select: text" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- No PDF -->
-              <div v-else
-                class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-center text-sm text-amber-700 dark:border-amber-900/40 dark:bg-amber-900/30 dark:text-amber-200">
-                <i class="fas fa-info-circle mb-2 text-2xl"></i>
-                <p class="font-semibold">No hay PDF disponible</p>
-              </div>
-            </div>
-
-            <!-- TEXT Content -->
-            <div v-else-if="previewItem?.type === 'TYPE_TEXT' || previewItem?.type === 'TEXT'">
-              <div
-                class="prose max-w-none rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800 dark:prose-invert"
-                v-html="renderedMarkdown"></div>
-            </div>
-
-            <!-- URL Content -->
-            <div v-else-if="previewItem?.type === 'TYPE_URL' || previewItem?.type === 'URL'">
-              <div class="rounded-lg border border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-800">
-                <div class="mb-4 flex items-center gap-3">
-                  <i class="fas fa-link text-2xl text-blue-500"></i>
-                  <div>
-                    <h4 class="m-0 text-lg font-semibold text-slate-900 dark:text-slate-100">
-                      Enlace Externo
-                    </h4>
-                    <p class="m-0 text-sm text-slate-600 dark:text-slate-300">
-                      Este documento redirige a un enlace externo
-                    </p>
-                  </div>
-                </div>
-                <div class="rounded-lg border border-blue-200 bg-white p-4 dark:border-blue-900/40 dark:bg-slate-900">
-                  <a :href="normalizeUrl(previewItem?.content)" target="_blank" rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 text-blue-600 underline-offset-2 hover:underline dark:text-blue-400">
-                    <i class="fas fa-external-link-alt"></i>
-                    {{ getUrlTitle(previewItem?.content) }}
-                  </a>
-                  <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                    {{ previewItem?.content }}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Unknown Content -->
-            <div v-else
-              class="rounded-lg border border-slate-200 bg-slate-50 p-8 text-center dark:border-slate-700 dark:bg-slate-800">
-              <i class="fas fa-file-question mb-4 text-5xl text-slate-400"></i>
-              <h3 class="m-0 text-xl font-semibold text-slate-900 dark:text-slate-100">
-                Tipo de contenido no soportado
-              </h3>
-              <p class="text-slate-600 dark:text-slate-300">
-                Este tipo de documento no puede ser previsualizado
-              </p>
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div v-if="!previewLoading"
-            class="flex justify-end gap-3 border-t border-slate-200 bg-slate-100 px-6 py-4 dark:border-slate-700 dark:bg-slate-800">
-            <button @click="editFromPreview"
-              class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:-translate-y-0.5">
-              <i class="fas fa-edit"></i>
-              Editar
-            </button>
-            <button @click="closePreviewModal"
-              class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-100">
-              <i class="fas fa-times"></i>
-              Cerrar
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Status Confirm Modal -->
-      <div v-if="showStatusConfirmModal" class="fixed inset-0 z-[1000] grid place-items-center bg-black/60 p-4">
-        <div
-          class="w-full max-w-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
-          <div class="flex items-center justify-between bg-amber-500 px-6 py-4 text-white">
-            <h3 class="m-0 text-base font-semibold">
-              <i :class="statusConfirmAction === 'activate' ? 'fas fa-check' : 'fas fa-ban'"></i>
-              Confirmar {{ statusConfirmAction === 'activate' ? 'Activación' : 'Desactivación' }}
-            </h3>
-            <button @click="cancelStatusChange"
-              class="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-white ring-1 ring-white/30 backdrop-blur">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <div class="px-6 py-5 text-sm">
-            ¿Estás seguro de que deseas
-            {{ statusConfirmAction === 'activate' ? 'activar' : 'desactivar' }} este contenido?
-          </div>
-          <div
-            class="flex justify-end gap-3 border-t border-slate-200 bg-slate-100 px-6 py-4 dark:border-slate-700 dark:bg-slate-800">
-            <button @click="cancelStatusChange"
-              class="inline-flex min-w-[110px] items-center justify-center gap-2 rounded-lg border border-slate-300 bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900 transition hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-100">
-              <i class="fas fa-times"></i> Cancelar
-            </button>
-            <button @click="confirmStatusChange"
-              class="inline-flex min-w-[110px] items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5">
-              <i :class="statusConfirmAction === 'activate' ? 'fas fa-check' : 'fas fa-ban'"></i>
-              {{ statusConfirmAction === 'activate' ? 'Activar' : 'Desactivar' }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <ContentPreviewModal
+        :open="showPreviewModal"
+        :item="previewItem"
+        :loading="previewLoading"
+        :rendered-markdown="renderedMarkdown"
+        :pdf-error="pdfError"
+        :pdf-loading="pdfLoading"
+        :pdf-blob-url="pdfBlobUrl"
+        :current-pdf-page="currentPdfPage"
+        :total-pdf-pages="totalPdfPages"
+        :pdf-zoom="pdfZoom"
+        :is-dragging="isDragging"
+        :pdf-pan-x="pdfPanX"
+        :pdf-pan-y="pdfPanY"
+        :normalize-url="normalizeUrl"
+        :get-url-title="getUrlTitle"
+        :retry-pdf-load="retryPdfLoad"
+        :go-to-first-page="goToFirstPage"
+        :previous-page="previousPage"
+        :next-page="nextPage"
+        :go-to-last-page="goToLastPage"
+        :zoom-in="zoomIn"
+        :zoom-out="zoomOut"
+        :reset-zoom="resetZoom"
+        :refresh-pdf-viewer="refreshPdfViewer"
+        :open-pdf-in-new-tab="openPdfInNewTab"
+        :download-pdf="downloadPdf"
+        :handle-right-click="handleRightClick"
+        :handle-mouse-down="handleMouseDown"
+        :handle-mouse-move="handleMouseMove"
+        :handle-mouse-up="handleMouseUp"
+        :on-pdf-loaded="onPdfLoaded"
+        :on-pdf-error="onPdfError"
+        @close="closePreviewModal"
+        @edit="editFromPreview"
+      />
+      <!-- Preview Modal -->
+      <!-- Status Confirm Modal --> <!-- Status Confirm Modal -->
+      <ContentStatusConfirmModal :open="showStatusConfirmModal" :action="statusConfirmAction"
+        @confirm="confirmStatusChange" @cancel="cancelStatusChange" />
 
       <!-- Content Form Modal -->
       <ContentForm v-model="editDialog" :document="selectedItem" :loading="editLoading" :is-editing="isEditing"
         :start-step="isEditing ? 2 : 1" @saved="handleSaveDocument" @close="closeEditDialog" />
-
+      <!-- Content Form Modal -->
       <!-- Delete Confirm Modal -->
-      <div v-if="deleteDialog" class="fixed inset-0 z-[1000] grid place-items-center bg-black/60 p-4">
-        <div
-          class="w-full max-w-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
-          <div class="flex items-center justify-between bg-red-600 px-6 py-4 text-white">
-            <h3 class="m-0 text-base font-semibold">
-              <i class="fas fa-trash-alt mr-2"></i>
-              Confirmar eliminación
-            </h3>
-            <button @click="closeDeleteDialog"
-              class="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-white ring-1 ring-white/30 backdrop-blur">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
+      <ContentDeleteModal :open="deleteDialog"
+        :item-title="selectedItem?.title || selectedItem?.name || 'Documento sin título'"
+        v-model:confirm-input="deleteConfirmInput" :deleting="deleting" @confirm="confirmDelete"
+        @cancel="closeDeleteDialog" />
+      <!-- Delete Confirm Modal -->
 
-          <div class="px-6 py-5 text-sm leading-relaxed">
-            <p class="mb-2">¿Estás seguro de que deseas eliminar este documento?</p>
-            <p class="font-semibold text-slate-800 dark:text-slate-200">
-              {{ selectedItem?.title || selectedItem?.name || 'Documento sin título' }}
-            </p>
-            <p class="text-xs text-slate-500 dark:text-slate-400">
-              Esta acción no se puede deshacer.
-            </p>
-            <div class="mt-4 space-y-2">
-              <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Escribe <span class="text-red-600">ELIMINAR</span> para confirmar
-              </label>
-              <input v-model="deleteConfirmInput" type="text" placeholder="ELIMINAR"
-                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" />
-            </div>
-          </div>
-
-          <div
-            class="flex justify-end gap-3 border-t border-slate-200 bg-slate-100 px-6 py-4 dark:border-slate-700 dark:bg-slate-800">
-            <button @click="closeDeleteDialog"
-              class="inline-flex min-w-[110px] items-center justify-center gap-2 rounded-lg border border-slate-300 bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900 transition hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-700 dark:text-slate-100"
-              :disabled="deleting">
-              <i class="fas fa-times"></i>
-              Cancelar
-            </button>
-            <button @click="confirmDelete"
-              class="inline-flex min-w-[110px] items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 disabled:opacity-60"
-              :disabled="deleting || deleteConfirmInput.trim().toUpperCase() !== 'ELIMINAR'">
-              <i v-if="!deleting" class="fas fa-trash-alt"></i>
-              <i v-else class="fas fa-spinner fa-spin"></i>
-              Eliminar
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   </AdminContentLayout>
 </template>
@@ -377,6 +134,9 @@ import ContentForm from '@/components/forms/ContentForm.vue'
 import ContentFilters from '@/components/content/ContentFilters.vue'
 import ContentTable from '@/components/content/ContentTable.vue'
 import ContentGrid from '@/components/content/ContentGrid.vue'
+import ContentStatusConfirmModal from '@/components/content/ContentStatusConfirmModal.vue'
+import ContentDeleteModal from '@/components/content/ContentDeleteModal.vue'
+import ContentPreviewModal from '@/components/content/ContentPreviewModal.vue'
 import { marked } from 'marked'
 import VuePdfEmbed from 'vue-pdf-embed'
 import {
