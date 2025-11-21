@@ -256,7 +256,7 @@ const selectItem = (item) => {
   activeMenuId.value = item.id
   if (item.route) {
 
-    if(item.route === '/admin/content') documentStore.setPathAndType('',null)
+    if(item.route === '/admin/content') documentStore.setPathAndType("Administración de Contenidos")
 
     router.push(item.route)
     if (isMobile.value) closeMobile()
@@ -279,9 +279,7 @@ const selectSubmenu = (submenu) => {
     currentSubmenus.value = submenu.submenu
     return
   } else {
-    console.log("path", submenu.route)
-    console.log("view", submenu.view)
-    documentStore.setPathAndType(submenu.route, submenu.view)
+    documentStore.setPathAndType(submenu.text, submenu.route, submenu.view)
     router.push('/admin/content');
   }
   currentParentMenu.value = submenu
