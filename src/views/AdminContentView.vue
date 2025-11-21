@@ -11,7 +11,7 @@
           <!-- Header Section -->
           <ContentAdminHeader
             :path="docStore.getPath"
-            :view="docStore.getView"
+            :view="docStore.getType"
             @create="openCreateDialog"
           />
 
@@ -1266,9 +1266,10 @@ watch([filterType, filterStatus, filterAuthor], () => {
 const loadDocuments = async () => {
   loading.value = true
   error.value = null
-  const params = {
-    slug: docStore.getPath,
-  }
+  const params = {}
+  if(docStore.getPath != null) params.slug = docStore.getPath
+  if(docStore.getType != null) params.type = docStore.getType
+
   try {
     const response = await documentService.getDocuments(params)
 
