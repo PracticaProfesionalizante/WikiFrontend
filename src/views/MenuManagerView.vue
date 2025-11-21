@@ -1283,6 +1283,7 @@ const loadMenus = async () => {
 // Iconos ahora se manejan en IconSelector.vue
 
 // Plantillas de vista
+
 const viewTemplates = [
   {
     value: null,
@@ -1393,7 +1394,7 @@ const canProceedToNextStep = computed(() => {
         !validationErrors.value.path
       )
     case 2: // Apariencia
-      return menuForm.value.view && !validationErrors.value.template && !validationErrors.value.icon
+      return !validationErrors.value.template && !validationErrors.value.icon
     case 3: // Configuración
       return (
         menuForm.value.roles && menuForm.value.roles.length > 0 && !validationErrors.value.roles
