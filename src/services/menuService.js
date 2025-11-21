@@ -61,6 +61,7 @@ const menuService = {
       const backendData = {
         name: menuData.name,
         path: menuData.path,
+        view: menuData.view,
         order: menuData.order || 1,
         parentId: menuData.parentId,
         children: null,
@@ -173,6 +174,7 @@ const menuService = {
         backendData = {
           name: menuData.name,
           path: menuData.path,
+          view: menuData.view,
           order: menuData.order || 0,
           parentId: menuData.parentId,
           children: null,

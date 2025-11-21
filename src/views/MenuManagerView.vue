@@ -651,14 +651,14 @@
                           v-for="template in viewTemplates"
                           :key="template.value"
                           class="cursor-pointer rounded-xl border-2 p-4 transition"
-                          :class="{ 'border-blue-600 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20': menuForm.template === template.value, 'border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500': menuForm.template !== template.value }"
+                          :class="{ 'border-blue-600 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20': menuForm.view === template.value, 'border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500': menuForm.view !== template.value }"
                           @click="selectTemplate(template.value)"
                           role="radio"
-                          :aria-checked="menuForm.template === template.value"
+                          :aria-checked="menuForm.view === template.value"
                           tabindex="0"
                         >
                           <div class="mb-3 text-center">
-                            <i :class="['fas', template.icon, 'mb-2 text-3xl', menuForm.template === template.value ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500']"></i>
+                            <i :class="['fas', template.icon, 'mb-2 text-3xl', menuForm.view === template.value ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500']"></i>
                                 </div>
                           <div>
                             <h4 class="mb-1 text-center font-semibold text-slate-900 dark:text-slate-100">{{ template.name }}</h4>
@@ -899,7 +899,7 @@
                       </div>
                         <div class="flex justify-between">
                           <span class="font-medium text-slate-700 dark:text-slate-300">Vista:</span>
-                          <span class="text-slate-900 dark:text-slate-100">{{ getTemplateName(menuForm.template) }}</span>
+                          <span class="text-slate-900 dark:text-slate-100">{{ getTemplateName(menuForm.view) }}</span>
                         </div>
                       </div>
                     </div>
@@ -1159,7 +1159,7 @@ const menuForm = ref({
   parentPath: '',
   path: '',
   icon: '',
-  template: 'basic',
+  view: 'basic',
   order: 1,
   parentId: null,
   roles: [],
@@ -1285,32 +1285,32 @@ const loadMenus = async () => {
 // Plantillas de vista
 const viewTemplates = [
   {
-    value: 'basic',
-    name: 'Vista Básica',
-    description: 'Página simple con contenido estático',
-    icon: 'fas fas fa-file-document-outline',
-    features: ['Contenido Simple', 'Texto e Imágenes', 'Fácil de Usar'],
+    value: null,
+    name: 'Completo',
+    description: 'En la seccion se podran almacenar todo tipo de archivo',
+    icon: 'fa-chart-pie',
+    features: [],
   },
   {
-    value: 'form',
-    name: 'Vista de Formulario',
-    description: 'Formulario para captura de datos',
-    icon: 'fas fas fa-form-select',
-    features: ['Campos de Entrada', 'Validaciones', 'Envío de Datos'],
+    value: 'TYPE_PDF',
+    name: 'PDF',
+    description: 'Seccion especifica para PDF',
+    icon: 'fa-file-pdf',
+    features: ['Manuales', 'Instructivos'],
   },
   {
-    value: 'table',
-    name: 'Vista de Tabla',
-    description: 'Listado de datos con funciones CRUD',
-    icon: 'fas fas fa-table',
-    features: ['Listado de Datos', 'Búsqueda', 'Paginación', 'CRUD'],
+    value: 'TYPE_TEXT',
+    name: 'TEXTO',
+    description: 'Seccion especifica para Textos planos',
+    icon: 'fa-file-alt',
+    features: ['Investigaciones', 'Informes', 'Reglas'],
   },
   {
-    value: 'dashboard',
-    name: 'Vista de Dashboard',
-    description: 'Panel con métricas y gráficos',
-    icon: 'fas fas fa-view-dashboard',
-    features: ['Métricas', 'Gráficos', 'Widgets', 'Tiempo Real'],
+    value: 'TYPE_URL',
+    name: 'BOTONERA',
+    description: 'Seccion especifica para links externos',
+    icon: 'fa-external-link-alt',
+    features: ['Patrocinadores', 'Redes Sociales', 'Documentacion Externa'],
   },
 ]
 
@@ -1393,7 +1393,7 @@ const canProceedToNextStep = computed(() => {
         !validationErrors.value.path
       )
     case 2: // Apariencia
-      return menuForm.value.template && !validationErrors.value.template && !validationErrors.value.icon
+      return menuForm.value.view && !validationErrors.value.template && !validationErrors.value.icon
     case 3: // Configuración
       return (
         menuForm.value.roles && menuForm.value.roles.length > 0 && !validationErrors.value.roles
@@ -1871,7 +1871,7 @@ const saveMenu = async () => {
               name: submenu.name,
               path: fullSubmenuPath,
               icon: submenu.icon || '',
-              template: submenu.template || 'basic',
+              view: submenu.view || 'basic',
               order: submenu.order || globalIndex + 1,
               parentId: parentMenuId,
               roles:
@@ -1978,7 +1978,7 @@ const saveMenu = async () => {
 
 // Método para seleccionar template
 const selectTemplate = (templateValue) => {
-  menuForm.value.template = templateValue
+  menuForm.value.view = templateValue
   validateForm()
 }
 
@@ -1994,7 +1994,7 @@ const resetForm = () => {
     parentPath: '',
     path: '',
     icon: '',
-    template: 'basic',
+    view: 'basic',
     order: 1,
     parentId: null,
     roles: ['ROLE_SUPER_USER'], // SUPER_USER se asigna automáticamente a todos los menús
@@ -2058,7 +2058,7 @@ const validateForm = () => {
     name: menuForm.value.name,
     path: menuForm.value.path,
     icon: menuForm.value.icon,
-    template: menuForm.value.template,
+    template: menuForm.value.view,
     roles: menuForm.value.roles,
     parentId: menuForm.value.parentId,
   })
@@ -2124,11 +2124,11 @@ const validateForm = () => {
   }
 
   // Validar plantilla
-  if (!menuForm.value.template) {
-    errors.template = 'Debe seleccionar un tipo de vista'
-  } else if (!['basic', 'form', 'table'].includes(menuForm.value.template)) {
-    errors.template = 'Tipo de vista no válido'
-  }
+  // if (!menuForm.value.view) {
+  //   errors.template = 'Debe seleccionar un tipo de vista'
+  // } else if (!['basic', 'form', 'table'].includes(menuForm.value.view)) {
+  //   errors.template = 'Tipo de vista no válido'
+  // }
 
   // Validar roles
   if (!menuForm.value.roles || menuForm.value.roles.length === 0) {
@@ -2152,9 +2152,9 @@ const validateForm = () => {
   }
 
   // Validar plantilla
-  if (!menuForm.value.template) {
-    errors.template = 'Debe seleccionar una plantilla de vista'
-  }
+  // if (!menuForm.value.view) {
+  //   errors.template = 'Debe seleccionar una plantilla de vista'
+  // }
 
   // Validar menú padre si es submenú
   if (menuForm.value.parentId !== null && !menuForm.value.parentId) {
@@ -2242,7 +2242,7 @@ const validateForm = () => {
       name: menuForm.value.name,
       path: menuForm.value.path,
       icon: menuForm.value.icon,
-      template: menuForm.value.template,
+      template: menuForm.value.view,
       roles: menuForm.value.roles,
       parentId: menuForm.value.parentId,
     })
@@ -2688,7 +2688,7 @@ watch(
     updateCurrentStep()
   },
 )
-watch(() => menuForm.value.template, validateFormDebounced)
+watch(() => menuForm.value.view, validateFormDebounced)
 watch(() => menuForm.value.roles, validateFormDebounced)
 watch(
   () => menuForm.value.parentId,
