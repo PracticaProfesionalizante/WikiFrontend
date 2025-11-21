@@ -644,7 +644,7 @@
                     <div>
                       <label class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
                         <i class="fas fa-desktop text-blue-600"></i>
-                        Tipo de Vista *
+                        Tipo de Contenido *
                       </label>
                       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div
@@ -1771,7 +1771,6 @@ const saveMenu = async () => {
         ...menuForm.value,
         path: currentFullMenuPath.value,
       }
-
       parentMenuResult = await menuService.updateMenu(menuForm.value.id, menuDataToUpdate)
 
       // Si el path cambió y tiene submenús, actualizar todos los submenús
@@ -1812,144 +1811,13 @@ const saveMenu = async () => {
         path: currentFullMenuPath.value,
         order: 9999 // Orden temporal muy alto
       }
-      parentMenuResult = await menuService.createMenu(tempMenuData)
+      menuService.createMenu(tempMenuData)
 
       // Actualizar progreso
       submenuProgress.value.current = 1
       progressModalAction.value = 'Organizando posición del menú...'
 
-      // Ahora mover el menú a la posición correcta usando la misma lógica del arrastre
-      if (menuForm.value.order !== 9999) {
-        await menuService.moveMenu({
-          menuId: parentMenuResult.id,
-          parentId: menuForm.value.parentId,
-          order: menuForm.value.order,
-        })
-      }
-
-      // Actualizar progreso
       submenuProgress.value.current = 2
-
-      // Si se activó la creación de submenús y hay submenús definidos
-      if (hasSubmenus) {
-        const parentMenuId = parentMenuResult.id
-
-        // Mostrar modal de progreso
-        showProgressModal.value = true
-        progressModalTitle.value = 'Creando Menú con Submenús'
-        progressModalAction.value = 'Preparando creación de submenús...'
-        progressErrors.value = []
-
-        // Activar indicador de progreso de submenús
-        isCreatingSubmenus.value = true
-        submenuProgress.value = { current: 0, total: menuForm.value.submenus.length }
-
-        // Recargar menús antes de crear submenús para tener el estado actualizado
-        progressModalAction.value = 'Actualizando lista de menús...'
-        await loadMenus()
-
-        // Crear submenús en lotes para evitar sobrecarga del servidor
-        const BATCH_SIZE = 2 // Procesar máximo 2 submenús simultáneamente
-        const validSubmenus = menuForm.value.submenus.filter(
-          (submenu) => submenu.name && submenu.path,
-        )
-        const allResults = []
-
-        for (let i = 0; i < validSubmenus.length; i += BATCH_SIZE) {
-          const batch = validSubmenus.slice(i, i + BATCH_SIZE)
-
-          progressModalAction.value = `Procesando lote ${Math.floor(i / BATCH_SIZE) + 1} de ${Math.ceil(validSubmenus.length / BATCH_SIZE)}...`
-
-          const batchPromises = batch.map(async (submenu, batchIndex) => {
-            const globalIndex = i + batchIndex
-
-            // Construir el path completo del submenú
-            const parentPath = getParentPath(parentMenuId)
-            const fullSubmenuPath = buildCompletePath(parentPath, submenu.path)
-
-            const submenuData = {
-              name: submenu.name,
-              path: fullSubmenuPath,
-              icon: submenu.icon || '',
-              view: submenu.view || 'basic',
-              order: submenu.order || globalIndex + 1,
-              parentId: parentMenuId,
-              roles:
-                submenu.roles && submenu.roles.length > 0
-                  ? submenu.roles
-                  : menuForm.value.roles || [],
-              isActive: submenu.isActive !== undefined ? submenu.isActive : true,
-            }
-
-            try {
-              progressModalAction.value = `Creando submenú: ${submenu.name}...`
-              const submenuResult = await menuService.createMenu(submenuData)
-              // Actualizar progreso
-              submenuProgress.value.current++
-              return { success: true, submenu: submenu.name, result: submenuResult }
-            } catch (submenuError) {
-              console.error(`Error creando submenú "${submenu.name}":`, submenuError)
-              // Agregar error al modal
-              progressErrors.value.push(`${submenu.name}: ${submenuError.message}`)
-              // Actualizar progreso incluso en caso de error
-              submenuProgress.value.current++
-              return { success: false, submenu: submenu.name, error: submenuError.message }
-            }
-          })
-
-          // Esperar a que termine el lote actual antes de continuar
-          const batchResults = await Promise.allSettled(batchPromises)
-          allResults.push(...batchResults)
-
-          // Pequeña pausa entre lotes para evitar saturar el servidor
-          if (i + BATCH_SIZE < validSubmenus.length) {
-            await new Promise((resolve) => setTimeout(resolve, 200))
-          }
-        }
-
-        // Procesar submenús con datos incompletos
-        const incompleteSubmenus = menuForm.value.submenus.filter(
-          (submenu) => !submenu.name || !submenu.path,
-        )
-        incompleteSubmenus.forEach((submenu) => {
-          submenuProgress.value.current++
-          progressErrors.value.push(`${submenu.name || 'Sin nombre'}: Datos incompletos`)
-          allResults.push({
-            status: 'fulfilled',
-            value: {
-              success: false,
-              submenu: submenu.name || 'Sin nombre',
-              error: 'Datos incompletos',
-            },
-          })
-        })
-
-        // Finalizar proceso
-        progressModalAction.value =
-          progressErrors.value.length > 0
-            ? `Proceso completado con ${progressErrors.value.length} error(es)`
-            : 'Proceso completado exitosamente'
-
-        // Desactivar indicador de progreso
-        isCreatingSubmenus.value = false
-
-        // Verificar si hubo errores
-        const failedSubmenus = allResults
-          .map((result, index) => ({ result, index }))
-          .filter(({ result }) => result.status === 'rejected' || !result.value?.success)
-          .map(({ result, index }) => {
-            const submenuName = menuForm.value.submenus[index]?.name || `Submenú ${index + 1}`
-            const errorMsg =
-              result.status === 'rejected'
-                ? result.reason?.message || 'Error desconocido'
-                : result.value?.error || 'Error desconocido'
-            return `${submenuName}: ${errorMsg}`
-          })
-
-        if (failedSubmenus.length > 0) {
-          error.value = `Algunos submenús no se pudieron crear:\n${failedSubmenus.join('\n')}`
-        }
-      }
     }
 
     // Recargar la lista de menús
@@ -2481,6 +2349,7 @@ const moveMenu = async (moveData) => {
       menuId: moveData.menuId,
       parentId: moveData.newParentId,
       order: moveData.newOrder,
+      view: moveData.newView,
     })
 
     // Recargar la lista de menús
@@ -2586,10 +2455,12 @@ const updateSubmenusPaths = async (parentId, oldParentPath, newParentPath) => {
       console.log(`   Path nuevo: ${newSubmenuPath}`)
 
       // Actualizar el submenú en el backend
-      await menuService.updateMenu(submenu.id, {
+      console.log("[BEFORE UPDATE] - submenu: ", submenu.view)
+      const response =await menuService.updateMenu(submenu.id, {
         ...submenu,
         path: newSubmenuPath,
       })
+      console.log('[AFTER UPDATE] - response: ', response.view)
 
       console.log(`✅ [MENU MANAGER] Submenú "${submenu.name}" actualizado exitosamente`)
 
@@ -2630,26 +2501,6 @@ const extractEditablePath = (fullPath, parentPath) => {
 
   return fullPath
 }
-
-// Función para migrar paths existentes al nuevo formato
-
-
-// Función para diagnosticar estructura de menús y detectar submenús huérfanos
-
-
-// Función para corregir submenús huérfanos
-
-
-// Función para obtener el placeholder del path del submenú
-
-
-// Función para obtener el placeholder del path del menú principal
-
-
-// Función para validar el path del menú principal
-
-
-// Función para validar el path del submenú
 
 // Verificar permisos de SuperAdmin
 const checkSuperAdminAccess = () => {

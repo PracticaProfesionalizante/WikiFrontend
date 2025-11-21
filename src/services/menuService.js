@@ -304,6 +304,8 @@ const menuService = {
    * @returns {Promise} Confirmación de actualización
    */
   async moveMenu(moveData) {
+    console.log('🔍 [MENU SERVICE] Moviendo menú:', moveData)
+
     try {
       // Validar datos de entrada
       if (!moveData.menuId) {
@@ -318,10 +320,13 @@ const menuService = {
       const updatedMenuData = {
         parentId: moveData.parentId === null ? null : moveData.parentId,
         order: moveData.order,
+        view: moveData.view,
       }
 
       // Usar el método updateMenu existente
+      console.log('[BEFORE UPDATE] - updatedMenuData: ', updatedMenuData.view)
       const response = await this.updateMenu(moveData.menuId, updatedMenuData)
+      console.log('[AFTER UPDATE] - response: ', response.view)
 
       return response
     } catch (error) {
