@@ -424,14 +424,6 @@ const menuService = {
         }
       }
 
-      // Validar que el parentId existe si se especifica
-      if (menuData.parentId) {
-        const parentExists = allMenus.find(menu => menu.id === menuData.parentId)
-        if (!parentExists) {
-          throw new Error(`El menú padre con ID ${menuData.parentId} no existe`)
-        }
-      }
-
       console.log('✅ [MENU SERVICE] Validación exitosa')
       return { valid: true }
     } catch (error) {
