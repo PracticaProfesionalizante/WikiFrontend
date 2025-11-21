@@ -139,18 +139,17 @@ import ContentDeleteModal from '@/components/content/ContentDeleteModal.vue'
 import ContentPreviewModal from '@/components/content/ContentPreviewModal.vue'
 import { marked } from 'marked'
 import VuePdfEmbed from 'vue-pdf-embed'
-import {
-  setupPdfWarningSuppression,
-  isKnownPdfWarning,
-} from '@/utils/pdfUtils'
+import { setupPdfWarningSuppression, isKnownPdfWarning } from '@/utils/pdfUtils'
+import LinkButtonModal from '@/components/modals/LinkButtonModal.vue'
 
 const docStore = documentsStore()
 
 watch(
   () => docStore.getPath,
-  () => { loadDocuments() }
-);
-
+  () => {
+    loadDocuments()
+  },
+)
 
 // Estado básico
 const documents = ref([])
@@ -416,7 +415,7 @@ const loadDocuments = async () => {
   loading.value = true
   error.value = null
   const params = {
-    slug: docStore.getPath
+    slug: docStore.getPath,
   }
   try {
     const response = await documentService.getDocuments(params)
@@ -895,7 +894,6 @@ const bulkArchive = async () => {
 const closeBulkDeleteModal = () => {
   showBulkDeleteModal.value = false
 }
-
 
 // Funciones de utilidad
 const getDocumentStatus = (item) => {
@@ -1410,7 +1408,6 @@ const getPdfTitle = (content) => {
     return 'Documento PDF'
   }
 }
-
 
 // Cargar contenidos al montar el componente
 onMounted(() => {
