@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import LoginView from '@/views/auth/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import SettingsView from '@/views/SettingsView.vue'
+import UrlContentCardLayout from '@/layouts/UrlContentCardLayout.vue'
 
 const routes = [
   {
@@ -108,6 +109,12 @@ const routes = [
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     redirect: '/login',
+  },
+  {
+    path: '/botonera-view',
+    name: 'BotoneraView',
+    component: UrlContentCardLayout, // Lazy loading
+    beforeEnter: requireAuth,
   },
 ]
 
