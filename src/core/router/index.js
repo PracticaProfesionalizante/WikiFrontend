@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import LoginView from '@/views/auth/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import SettingsView from '@/views/SettingsView.vue'
-import UrlContentCardLayout from '@/layouts/UrlContentCardLayout.vue'
+import UrlContentView from '@/views/dynamic/UrlContentView.vue'
 
 const routes = [
   {
@@ -113,7 +113,7 @@ const routes = [
   {
     path: '/botonera-view',
     name: 'BotoneraView',
-    component: UrlContentCardLayout, // Lazy loading
+    component: UrlContentView, // Lazy loading
     beforeEnter: requireAuth,
   },
 ]

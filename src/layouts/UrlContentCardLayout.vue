@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div
     class="url-layout-container"
     :class="{ 'sidebar-open': isSidebarOpen }"
@@ -165,4 +165,4 @@ function handleCardClick(card) {
   min-width: 5px;
   flex-shrink: 0;
 }
-</style>
+</style> -->
