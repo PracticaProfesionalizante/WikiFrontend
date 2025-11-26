@@ -36,7 +36,9 @@
             v-if="loading"
             class="min-h-[300px] grid place-items-center p-8 text-slate-600 dark:text-slate-300"
           >
-            <div class="h-12 w-12 animate-spin rounded-full border-4 border-slate-300 border-t-blue-500"></div>
+            <div
+              class="h-12 w-12 animate-spin rounded-full border-4 border-slate-300 border-t-blue-500"
+            ></div>
           </div>
           <!-- Loading -->
 
@@ -179,9 +181,8 @@
       />
       <!-- Delete Confirm Modal -->
     </div>
-    <TestLayout/>
+    <TestLayout />
   </AdminContentLayout>
-
 </template>
 
 <script setup>
@@ -201,7 +202,6 @@ import ContentPreviewModal from '@/components/content/ContentPreviewModal.vue'
 import ContentListCardMobile from '@/components/content/ContentListCardMobile.vue'
 
 import { useAdminContent } from '@/composables/useAdminContent'
-import TestLayout from '@/layouts/TestLayout.vue'
 
 const docStore = documentsStore()
 
