@@ -1,5 +1,6 @@
 <template>
   <div class="fixed inset-y-0 left-0 z-[1000] transition-all duration-300" :class="{ 'mobile-open': isMobileOpen }">
+    <!-- SidebarBreadcrumb se importa y usa aquí -->
     <nav
       class="flex h-screen flex-col overflow-hidden border-r bg-white/90 backdrop-blur shadow-xl dark:border-slate-700 dark:bg-slate-900/90 transform"
       :class="[
@@ -19,56 +20,27 @@
       </div>
 
       <!-- Breadcrumb de navegación -->
-      <div v-if="showBreadcrumbNativation && isExpanded" class="border-b bg-blue-50/30 px-4 py-3 dark:border-slate-700 dark:bg-blue-900/10">
-        <div class="flex items-center gap-2 text-[0.85rem]">
-          <span @click="goBack" class="flex cursor-pointer items-center gap-1 rounded px-2 py-1 text-slate-600 hover:bg-blue-100/50 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-blue-900/20" >
-            <i class="fas fa-arrow-left"></i>
-            <span>Volver</span>
-          </span>
-          <i class="fas fa-chevron-right text-[0.75rem] text-slate-400"></i>
-          <span class="flex items-center gap-1 rounded px-2 py-1 font-semibold text-blue-600 dark:text-blue-400">
-            <i :class="['fas fas', currentMenu.itemSelected?.icon]"></i>
-            <span>{{ currentMenu.itemSelected?.name }}</span>
-          </span>
-        </div>
-      </div>
+      <SidebarBreadcrumb
+        :show-breadcrumb="showBreadcrumbNativation && isExpanded"
+        :icon="currentMenu.itemSelected?.icon"
+        :name="currentMenu.itemSelected?.name"
+        @go-back="goBack"
+      />
 
-      <div class="flex-1 overflow-y-auto py-2">
-        <!-- Vista de submenús -->
-          <div v-for="child in currentMenu.itemsToShow" :key="child.id" class="px-0">
-            <div
-              class="relative my-1 flex h-12 cursor-pointer items-center rounded-lg px-4 text-slate-500 transition hover:-translate-y-0.5 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800"
-              :class="{ 'bg-gradient-to-tr from-blue-600 to-blue-700 text-white shadow': currentMenu.itemSelected?.id === child.id && !child.children }"
-              @click="selectSubmenu(child)"
-            >
-              <div class="grid min-w-12 place-items-center text-[1.25rem]">
-                <i :class="['fas fas', child.icon || 'fas fa-circle']"></i>
-              </div>
-              <span :class="['flex-1 truncate font-medium', isExpanded ? 'ml-2' : 'ml-0']" v-show="isExpanded">{{ child.name }}</span>
-              <div class="flex items-center gap-1" v-show="isExpanded">
-                <i v-if="child.children && child.children.length > 0" class="fas fa-chevron-right text-sm"></i>
-              </div>
-            </div>
-          </div>
+      <SidebarItems
+        :item-list="currentMenu.itemsToShow"
+        :item-selected="currentMenu.itemSelected"
+        :is-expanded="isExpanded"
+        @select-item="selectSubmenu"
+      />
 
-      </div>
+      <SidebarConfigMenus
+        :show="authStore.hasRole('ROLE_SUPER_USER')"
+        :is-expanded="isExpanded"
+        :is-selected="route.path === '/gestion-menus'"
+        @navigate-to-menu-manager="navigateToMenuManager"
+      />
 
-      <!-- Sección de administración (solo para SuperAdmin) -->
-      <div v-if="authStore.hasRole('ROLE_SUPER_USER')" class="mt-auto py-2">
-        <div class="mx-4 my-2 h-px scale-x-100 opacity-100 bg-slate-200 dark:bg-slate-700" v-show="isExpanded"></div>
-        <div class="px-0">
-          <div
-            class="relative my-1 flex h-10 cursor-pointer items-center rounded-lg border border-blue-200/60 bg-blue-50/50 px-4 text-slate-600 transition hover:border-blue-300 hover:bg-blue-100/60 dark:border-blue-900/30 dark:bg-blue-900/10 dark:text-slate-300"
-            :class="{ 'bg-gradient-to-tr from-blue-600 to-blue-700 text-white shadow border-blue-600': route.path === '/gestion-menus' }"
-            @click="navigateToMenuManager"
-          >
-            <div class="grid min-w-12 place-items-center text-[1rem]">
-              <i class="fas fa-edit"></i>
-            </div>
-            <span :class="['flex-1 truncate font-medium', isExpanded ? 'ml-2' : 'ml-0']" v-show="isExpanded">Editar</span>
-          </div>
-        </div>
-      </div>
     </nav>
 
     <div v-if="isMobile && isMobileOpen" class="fixed inset-0 z-[999] bg-black/50 md:hidden" @click="closeMobile"></div>
@@ -80,6 +52,9 @@ import { ref, onMounted, onUnmounted, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { documentsStore } from '@/stores/documentsStore'
+import SidebarBreadcrumb from '@/components/sidebar/SidebarBreadcrumb.vue'
+import SidebarItems from '@/components/sidebar/SidebarItems.vue'
+import SidebarConfigMenus from '@/components/sidebar/SidebarConfigMenus.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -131,10 +106,29 @@ const findItemParent = (childId, menuList = menus.value) => {
 
 const goBack = () => {
   const item = findItemParent(currentMenu.itemSelected.id, menus.value);
-  if (item) updateActiveState(item, item.children)
-  else updateActiveState(null, menus.value)
+  selectSubmenu(item)
 }
 
+const selectSubmenu = (childSelected) => {
+
+  if(!childSelected) {
+    updateActiveState(null, menus.value)
+    return
+  }
+
+  updateActiveState(childSelected, childSelected.children)
+
+  if(childSelected.path.includes('/documentacion')) {
+    console.log("estoy en el /documentacion: ", childSelected.path)
+    documentStore.setPathAndType(childSelected.name, childSelected.path, childSelected.view)
+    router.push('/admin/content');
+  } else {
+    console.log("estoy en el else: ", childSelected.path)
+    router.push(childSelected.path);
+  }
+
+  if (!childSelected.children && isMobile.value) closeMobile()
+}
 
 const expandMenu = () => {
   if (!isMobile.value) {
@@ -186,19 +180,6 @@ const closeMobile = () => {
 
 const navigateToMenuManager = () => {
   router.push('/gestion-menus')
-  if (isMobile.value) closeMobile()
-}
-
-const selectSubmenu = (childSelected) => {
-
-  updateActiveState(childSelected, childSelected.children)
-
-  if (childSelected.children.length > 0) {
-    router.push(childSelected.path);
-  } else {
-    documentStore.setPathAndType(childSelected.name, childSelected.path, childSelected.view)
-    router.push('/admin/content');
-  }
   if (isMobile.value) closeMobile()
 }
 
