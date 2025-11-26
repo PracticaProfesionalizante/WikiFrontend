@@ -119,11 +119,9 @@ const selectSubmenu = (childSelected) => {
   updateActiveState(childSelected, childSelected.children)
 
   if(childSelected.path.includes('/documentacion')) {
-    console.log("estoy en el /documentacion: ", childSelected.path)
     documentStore.setPathAndType(childSelected.name, childSelected.path, childSelected.view)
     router.push('/admin/content');
   } else {
-    console.log("estoy en el else: ", childSelected.path)
     router.push(childSelected.path);
   }
 
