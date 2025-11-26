@@ -19,94 +19,38 @@
       </div>
 
       <!-- Breadcrumb de navegación -->
-      <div v-if="currentView !== 'main' && isExpanded" class="border-b bg-blue-50/30 px-4 py-3 dark:border-slate-700 dark:bg-blue-900/10">
+      <div v-if="showBreadcrumbNativation && isExpanded" class="border-b bg-blue-50/30 px-4 py-3 dark:border-slate-700 dark:bg-blue-900/10">
         <div class="flex items-center gap-2 text-[0.85rem]">
-          <span class="flex cursor-pointer items-center gap-1 rounded px-2 py-1 text-slate-600 hover:bg-blue-100/50 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-blue-900/20" @click="goBackToMain">
+          <span @click="goBack" class="flex cursor-pointer items-center gap-1 rounded px-2 py-1 text-slate-600 hover:bg-blue-100/50 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-blue-900/20" >
             <i class="fas fa-arrow-left"></i>
             <span>Volver</span>
           </span>
           <i class="fas fa-chevron-right text-[0.75rem] text-slate-400"></i>
           <span class="flex items-center gap-1 rounded px-2 py-1 font-semibold text-blue-600 dark:text-blue-400">
-            <i :class="['fas fas', currentParentMenu?.icon]"></i>
-            <span>{{ currentParentMenu?.text }}</span>
+            <i :class="['fas fas', currentMenu.itemSelected?.icon]"></i>
+            <span>{{ currentMenu.itemSelected?.name }}</span>
           </span>
         </div>
       </div>
 
       <div class="flex-1 overflow-y-auto py-2">
-        <!-- Vista principal del menú -->
-        <template v-if="currentView === 'main'">
-          <div v-for="item in menuItems" :key="item.id" class="px-0">
-            <div
-              class="relative my-1 flex h-12 cursor-pointer items-center rounded-lg px-4 text-slate-500 transition hover:-translate-y-0.5 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800"
-              :class="{
-                'bg-gradient-to-tr from-blue-600 to-blue-700 text-white shadow': activeMenuId === item.id && !item.submenu,
-              }"
-              @click="selectItem(item)"
-            >
-              <div class="grid min-w-12 place-items-center text-[1.25rem]">
-                <i :class="['fas fas', item.icon]"></i>
-              </div>
-              <span
-              :class="['flex-1 truncate font-medium transition', isExpanded ? 'ml-2' : 'ml-0']"
-              v-show="isExpanded"
-            >{{ item.text }}</span>
-              <div class="flex items-center gap-1 transition" v-show="isExpanded">
-                <i v-if="item.submenu && item.submenu.length > 0" class="fas fa-chevron-right text-sm"></i>
-                <i v-else-if="item.children && item.children.length > 0" class="fas fa-chevron-right text-sm"></i>
-              </div>
-            </div>
-          </div>
-        </template>
-
         <!-- Vista de submenús -->
-        <template v-else-if="currentView === 'submenu'">
-          <div v-for="submenu in currentSubmenus" :key="submenu.id" class="px-0">
+          <div v-for="child in currentMenu.itemsToShow" :key="child.id" class="px-0">
             <div
               class="relative my-1 flex h-12 cursor-pointer items-center rounded-lg px-4 text-slate-500 transition hover:-translate-y-0.5 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800"
-              :class="{ 'bg-gradient-to-tr from-blue-600 to-blue-700 text-white shadow': activeSubmenuId === submenu.id && !submenu.submenu }"
-              @click="selectSubmenu(submenu)"
+              :class="{ 'bg-gradient-to-tr from-blue-600 to-blue-700 text-white shadow': currentMenu.itemSelected?.id === child.id && !child.children }"
+              @click="selectSubmenu(child)"
             >
               <div class="grid min-w-12 place-items-center text-[1.25rem]">
-                <i :class="['fas fas', submenu.icon || 'fas fa-circle']"></i>
+                <i :class="['fas fas', child.icon || 'fas fa-circle']"></i>
               </div>
-              <span :class="['flex-1 truncate font-medium', isExpanded ? 'ml-2' : 'ml-0']" v-show="isExpanded">{{ submenu.text }}</span>
+              <span :class="['flex-1 truncate font-medium', isExpanded ? 'ml-2' : 'ml-0']" v-show="isExpanded">{{ child.name }}</span>
               <div class="flex items-center gap-1" v-show="isExpanded">
-                <i v-if="submenu.submenu && submenu.submenu.length > 0" class="fas fa-chevron-right text-sm"></i>
-                <i v-else-if="submenu.children && submenu.children.length > 0" class="fas fa-chevron-right text-sm"></i>
+                <i v-if="child.children && child.children.length > 0" class="fas fa-chevron-right text-sm"></i>
               </div>
             </div>
           </div>
-        </template>
 
-        <!-- Vista de documentación (mantener existente) -->
-        <template v-else-if="currentView === 'documentation'">
-          <div class="px-0">
-            <div class="my-1 flex h-12 cursor-pointer items-center rounded-lg px-4 text-slate-500 transition hover:-translate-y-0.5 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800" @click="goBackToMain">
-              <div class="grid min-w-12 place-items-center text-[1.25rem]">
-                <i class="fas fa-arrow-left"></i>
-              </div>
-              <span :class="['flex-1 truncate font-medium', isExpanded ? 'ml-2' : 'ml-0']" v-show="isExpanded">Volver</span>
-            </div>
-          </div>
-
-          <div class="px-0 py-2" v-show="isExpanded">
-            <span class="px-4 text-sm font-semibold text-slate-700 dark:text-slate-200">Documentación</span>
-          </div>
-
-          <div v-for="item in documentationItems" :key="item.id" class="px-0">
-            <div
-              class="relative my-1 flex h-10 cursor-pointer items-center rounded-lg px-4 text-slate-500 transition hover:-translate-y-0.5 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-800"
-              :class="{ 'bg-gradient-to-tr from-blue-600 to-blue-700 text-white shadow': activeDocumentationId === item.id }"
-              @click="selectDocumentationItem(item)"
-            >
-              <div class="grid min-w-12 place-items-center text-[1rem]">
-                <i class="fas fa-circle"></i>
-              </div>
-              <span :class="['flex-1 truncate font-medium', isExpanded ? 'ml-2' : 'ml-0']" v-show="isExpanded">{{ item.text }}</span>
-            </div>
-          </div>
-        </template>
       </div>
 
       <!-- Sección de administración (solo para SuperAdmin) -->
@@ -132,7 +76,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import { ref, onMounted, onUnmounted, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { documentsStore } from '@/stores/documentsStore'
@@ -147,34 +91,50 @@ const emit = defineEmits(['sidebar-toggle'])
 const isExpanded = ref(false)
 const isMobile = ref(false)
 const isMobileOpen = ref(false)
-const currentView = ref('main')
 
 // Usar menús dinámicos del store en lugar de hardcodeados
-const menuItems = computed(() => {
-  if (!authStore.menus || authStore.menus.length === 0) {
-    return []
-  }
-  const transformMenu = (menu) => ({
-    id: menu.id,
-    icon: menu.icon || 'fas fa-circle',
-    text: menu.name,
-    active: false,
-    route: menu.path,
-    view: menu.view,
-    submenu: menu.children && menu.children.length > 0 ? menu.children.map((child) => transformMenu(child)) : null,
-    showSubmenu: false,
-    children: menu.children || [],
-  })
-  return authStore.menus.map((menu) => transformMenu(menu))
+const menus = computed(() => authStore.menus)
+
+const currentMenu = reactive({ itemSelected: null, itemsToShow: []})
+
+const showBreadcrumbNativation = computed(() => {
+  return currentMenu.itemSelected != null && (
+    currentMenu.itemSelected?.children != null && currentMenu.itemSelected?.parentId == null ||
+    currentMenu.itemSelected?.children == null && currentMenu.itemSelected?.parentId != null ||
+    currentMenu.itemSelected?.children != null && currentMenu.itemSelected?.parentId != null
+  )
 })
 
-const documentationItems = ref([
-  { id: 21, text: 'Institutos', route: '/institutos', active: false },
-  { id: 22, text: 'Status Page', route: '/status-page', active: false },
-  { id: 23, text: 'Reglas de Negocio', route: '/reglas-negocio', active: false },
-  { id: 24, text: 'Gestión de Incidencias', route: '/gestion-de-incidencias', active: false },
-  { id: 25, text: 'Stack Tecnologico', route: '/stack-tecnologico', active: false },
-])
+const updateActiveState = ( itemSelected, children ) => {
+  currentMenu.itemSelected = itemSelected;
+  if (children && children.length > 0) {
+    currentMenu.itemsToShow = children;
+  }
+};
+
+const findItemParent = (childId, menuList = menus.value) => {
+  for (const menu of menuList) {
+    if (menu.children && menu.children.some(child => child.id === childId)) {
+      return menu;
+    }
+
+    if (menu.children && menu.children.length > 0) {
+      const foundParent = findItemParent(childId, menu.children);
+
+      if (foundParent) {
+        return foundParent;
+      }
+    }
+  }
+  return null;
+}
+
+const goBack = () => {
+  const item = findItemParent(currentMenu.itemSelected.id, menus.value);
+  if (item) updateActiveState(item, item.children)
+  else updateActiveState(null, menus.value)
+}
+
 
 const expandMenu = () => {
   if (!isMobile.value) {
@@ -224,66 +184,21 @@ const closeMobile = () => {
   emitSidebarState()
 }
 
-const goBackToMain = () => {
-  currentView.value = 'main'
-  currentParentMenu.value = null
-  currentSubmenus.value = []
-  activeSubmenuId.value = null
-}
-
-// Estado reactivo para manejar elementos activos
-const activeMenuId = ref(null)
-const activeDocumentationId = ref(null)
-const activeSubmenuId = ref(null)
-
-// Estado para la vista de submenús
-const currentParentMenu = ref(null)
-const currentSubmenus = ref([])
-
-const selectItem = (item) => {
-  activeMenuId.value = null
-  activeDocumentationId.value = null
-  activeSubmenuId.value = null
-
-  if (item.submenu && item.submenu.length > 0) {
-    currentView.value = 'submenu'
-    currentParentMenu.value = item
-    currentSubmenus.value = item.submenu
-    activeMenuId.value = item.id
-    return
-  }
-
-  activeMenuId.value = item.id
-  if (item.route) {
-
-    if(item.route === '/admin/content') documentStore.setPathAndType("Administración de Contenidos")
-
-    router.push(item.route)
-    if (isMobile.value) closeMobile()
-  }
-}
-
-const selectDocumentationItem = (item) => {
-  activeDocumentationId.value = item.id
-  router.push(item.route)
-  if (isMobile.value) closeMobile()
-}
-
 const navigateToMenuManager = () => {
   router.push('/gestion-menus')
   if (isMobile.value) closeMobile()
 }
 
-const selectSubmenu = (submenu) => {
-  if (submenu.submenu && submenu.submenu.length > 0) {
-    currentSubmenus.value = submenu.submenu
-    return
+const selectSubmenu = (childSelected) => {
+
+  updateActiveState(childSelected, childSelected.children)
+
+  if (childSelected.children.length > 0) {
+    router.push(childSelected.path);
   } else {
-    documentStore.setPathAndType(submenu.text, submenu.route, submenu.view)
+    documentStore.setPathAndType(childSelected.name, childSelected.path, childSelected.view)
     router.push('/admin/content');
   }
-  currentParentMenu.value = submenu
-  activeSubmenuId.value = submenu.id
   if (isMobile.value) closeMobile()
 }
 
@@ -307,46 +222,6 @@ const checkMobile = () => {
   }
 }
 
-const updateActiveState = (currentRoute) => {
-  activeMenuId.value = null
-  activeDocumentationId.value = null
-  activeSubmenuId.value = null
-
-  let found = false
-  menuItems.value.forEach((item) => {
-    if (item.route === currentRoute) {
-      activeMenuId.value = item.id
-      found = true
-      currentView.value = 'main'
-      return
-    }
-    if (item.submenu) {
-      item.submenu.forEach((submenu) => {
-        if (submenu.route === currentRoute) {
-          activeSubmenuId.value = submenu.id
-          currentParentMenu.value = item
-          currentSubmenus.value = item.submenu
-          currentView.value = 'submenu'
-          found = true
-        }
-      })
-    }
-  })
-
-  if (!found) {
-    documentationItems.value.forEach((item) => {
-      if (item.route === currentRoute) {
-        activeDocumentationId.value = item.id
-        activeMenuId.value = 2
-        found = true
-        currentView.value = 'documentation'
-      }
-    })
-  }
-}
-
-watch(() => route.path, (newPath) => { updateActiveState(newPath) }, { immediate: true })
-
 const handleExternalToggle = () => {
   if (isMobile.value) {
     toggleMobile()
@@ -364,7 +239,7 @@ onMounted(() => {
   window.addEventListener('resize', checkMobile)
   window.addEventListener('sidebar:toggle', handleExternalToggle)
   window.addEventListener('sidebar:close', handleExternalClose)
-  updateActiveState(route.path)
+  updateActiveState(null, menus.value)
 })
 
 onUnmounted(() => {
