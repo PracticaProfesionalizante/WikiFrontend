@@ -118,14 +118,24 @@ const selectSubmenu = (childSelected) => {
 
   updateActiveState(childSelected, childSelected.children)
 
-  if(childSelected.path.includes('/documentacion')) {
-    documentStore.setPathAndType(childSelected.name, childSelected.path, childSelected.view)
-    router.push('/admin/content');
-  } else {
-    router.push(childSelected.path);
-  }
+  const hasChildren = Array.isArray(childSelected.children) && childSelected.children.length > 0
+  const basePath = (typeof childSelected.path === 'string' && childSelected.path) 
+    ? childSelected.path 
+    : (typeof childSelected.url === 'string' ? childSelected.url : '')
 
-  if (!childSelected.children && isMobile.value) closeMobile()
+  if (hasChildren) {
+    let target = `/folders${basePath?.startsWith('/') ? basePath : `/${basePath}`}`
+    target = target.replace(/\/{2,}/g, '/')
+    router.push(target)
+  } else {
+    if (basePath?.includes('/documentacion')) {
+      documentStore.setPathAndType(childSelected.name, basePath, childSelected.view)
+      router.push('/admin/content')
+    } else {
+      router.push(basePath)
+    }
+    if (isMobile.value) closeMobile()
+  }
 }
 
 const expandMenu = () => {

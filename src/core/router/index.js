@@ -106,6 +106,16 @@ const routes = [
     },
   },
   {
+    path: '/folders/:pathMatch(.*)*',
+    name: 'Folders',
+    component: () => import('@/views/FoldersView.vue'), // Lazy loading
+    beforeEnter: requireAuth,
+    meta: {
+      title: 'Navegación',
+      requiresAuth: true,
+    },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     redirect: '/login',
