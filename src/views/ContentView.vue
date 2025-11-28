@@ -217,6 +217,7 @@ import MarkdownIt from 'markdown-it'
 // Router
 const route = useRoute()
 const router = useRouter()
+const contentId = route.meta.contentId
 
 // Reactive data
 const document = ref(null)
@@ -231,6 +232,12 @@ const md = new MarkdownIt({
   typographer: true,
   breaks: true,
 })
+
+if (!contentId) {
+  // Si no hay ID en la meta, muestra el error de la imagen
+} else {
+  // Si hay ID, llama a la API: GET /api/content/${contentId}
+}
 
 // Computed
 const renderedMarkdown = computed(() => {

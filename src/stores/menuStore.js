@@ -1,6 +1,10 @@
 import { defineStore } from 'pinia'
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { addDynamicRoutes } from '@/core/router'
+
+// Variable para rastrear si las rutas ya fueron agregadas
+let dynamicRoutesAdded = false
 
 export const useMenuStore = defineStore('menu', () => {
   const authStore = useAuthStore()
@@ -8,6 +12,19 @@ export const useMenuStore = defineStore('menu', () => {
     const menus = authStore?.menus
     return Array.isArray(menus) ? menus : []
   })
+
+  watch(
+    menuItems,
+    (newMenus) => {
+      // Solo ejecuta la adición de rutas si hay menús Y no se han agregado previamente
+      if (newMenus.length > 0 && !dynamicRoutesAdded) {
+        console.log('✅ Registrando rutas dinámicas de menús...') // Llama a la función de tu router para agregar las rutas recursivamente
+        addDynamicRoutes(newMenus) // Previene la ejecución múltiple
+        dynamicRoutesAdded = true
+      }
+    },
+    { immediate: true },
+  ) // Ejecuta inmediatamente al crear el store
 
   const getSubmenusByPath = computed(() => {
     const normalizePath = (raw) => {
