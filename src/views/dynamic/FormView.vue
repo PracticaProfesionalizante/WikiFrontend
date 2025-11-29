@@ -1,15 +1,6 @@
 ﻿<template>
   <div class="form-view-layout">
-    <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
-    <AppHeader :sidebar-expanded="sidebarExpanded" />
-
-    <div
-      class="main-content"
-      :class="[
-        'with-header',
-        sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed',
-      ]"
-    >
+    <div class="main-content with-header">
       <div class="form-container">
         <div class="form-header">
           <h1 class="form-title">
@@ -188,12 +179,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import SidebarMenu from '@/components/common/SidebarMenu.vue'
-import AppHeader from '@/components/common/AppHeader.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
-const sidebarExpanded = ref(false)
 
 // Props dinámicos basados en el menú
 const menuTitle = ref('')
@@ -215,10 +203,6 @@ const isFormValid = computed(() => {
 })
 
 // Métodos
-const handleSidebarToggle = (expanded) => {
-  sidebarExpanded.value = expanded
-}
-
 const handleSubmit = async () => {
   try {
     // Aquí iría la lógica para enviar los datos al backend

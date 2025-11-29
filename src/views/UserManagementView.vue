@@ -1,10 +1,6 @@
 <template>
-  <div class="flex min-h-screen relative bg-slate-50 dark:bg-slate-800">
-    <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
-    <AppHeader :sidebar-expanded="sidebarExpanded" />
-
-    <div :class="['pt-20 flex-1 transition-all duration-300', sidebarExpanded ? 'ml-0 md:ml-[280px]' : 'ml-0 md:ml-20']">
-      <div class="mx-auto w-full max-w-[1800px] space-y-8 bg-white p-4 sm:p-6 lg:p-8 dark:bg-slate-900">
+  <div class="min-h-screen relative bg-slate-50 dark:bg-slate-800">
+    <div class="mx-auto w-full max-w-[1800px] space-y-8 bg-white p-4 sm:p-6 lg:p-8 dark:bg-slate-900">
         <!-- Header -->
         <div>
           <div class="flex flex-col gap-6 rounded-2xl border border-slate-200 bg-slate-100 p-6 shadow dark:border-slate-700 dark:bg-slate-800 lg:flex-row lg:items-center lg:justify-between">
@@ -542,7 +538,6 @@
           @created="handleUserCreated"
         />
       </div>
-    </div>
   </div>
 </template>
 
@@ -553,8 +548,6 @@ import EditUserModal from '@/components/modals/EditUserModal.vue'
 import DeleteUserModal from '@/components/modals/DeleteUserModal.vue'
 import StatusChangeModal from '@/components/modals/StatusChangeModal.vue'
 import CreateUserModal from '@/components/modals/CreateUserModal.vue'
-import SidebarMenu from '@/components/common/SidebarMenu.vue'
-import AppHeader from '@/components/common/AppHeader.vue'
 
 // Reactive data
 const users = ref([])
@@ -564,7 +557,6 @@ const searchQuery = ref('')
 const currentFilter = ref('all')
 const sortField = ref('username')
 const sortOrder = ref('asc')
-const sidebarExpanded = ref(false)
 const viewMode = ref('table')
 const hasManualViewSelection = ref(false)
 
@@ -872,10 +864,6 @@ const copyEmail = async (email) => {
   } catch (error) {
     console.error('❌ [USER MANAGEMENT] Error copiando email:', error)
   }
-}
-
-const handleSidebarToggle = (expanded) => {
-  sidebarExpanded.value = expanded
 }
 
 const handleResponsiveViewMode = () => {

@@ -1,10 +1,6 @@
 <template>
-  <div class="flex min-h-screen bg-white dark:bg-slate-900">
-    <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
-    <AppHeader :sidebar-expanded="sidebarExpanded" />
-
-    <main :class="['pt-20 flex-1 transition-all duration-300', sidebarExpanded ? 'ml-0 md:ml-[280px]' : 'ml-0 md:ml-20']">
-      <div class="p-8 max-w-[1400px] mx-auto">
+  <div class="min-h-screen bg-white dark:bg-slate-900">
+    <div class="p-8 max-w-[1400px] mx-auto">
         <!-- Header -->
         <div class="text-center mb-12">
           <h1 class="flex items-center justify-center gap-3 text-4xl font-bold m-0 mb-4 text-slate-900 dark:text-slate-100">
@@ -373,7 +369,7 @@
           </div>
         </transition>
       </div>
-    </main>
+    </div>
 
         <!-- Modal de eliminación avanzada -->
         <DeleteMenuModal
@@ -1085,7 +1081,6 @@
         </div>
       </div>
     </div>
-  </div>
 
   <!-- Modal de Progreso -->
   <ProgressModal
@@ -1105,8 +1100,6 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
-import SidebarMenu from '@/components/common/SidebarMenu.vue'
-import AppHeader from '@/components/common/AppHeader.vue'
 import MenuTreeNode from '@/components/menu/MenuTreeNode.vue'
 import MenuTreeSelector from '@/components/menu/MenuTreeSelector.vue'
 import DeleteMenuModal from '@/components/modals/DeleteMenuModal.vue'
@@ -1119,11 +1112,6 @@ const authStore = useAuthStore()
 const router = useRouter()
 
 // Estado del sidebar
-const sidebarExpanded = ref(false)
-const handleSidebarToggle = (expanded) => {
-  sidebarExpanded.value = expanded
-}
-
 // Estado del formulario
 const showDialog = ref(false)
 const isEditing = ref(false)
@@ -2597,4 +2585,3 @@ const handlePathInput = () => {
 <style scoped>
 /* Styles have been migrated to Tailwind CSS */
 </style>
-

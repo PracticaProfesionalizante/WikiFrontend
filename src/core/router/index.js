@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { requireAuth, requireGuest } from '@/middleware/auth'
 import { useAuthStore } from '@/stores/auth'
+import AppLayout from '@/layouts/AppLayout.vue'
 
 // Importar vistas (las crearemos después)
 import LoginView from '@/views/auth/LoginView.vue'
@@ -32,89 +33,94 @@ const routes = [
     },
   },
   {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: DashboardView,
-    beforeEnter: requireAuth, // Solo usuarios autenticados
-    meta: {
-      title: 'Dashboard',
-      requiresAuth: true,
-    },
-  },
-  {
-    path: '/configuracion',
-    name: 'Settings',
-    component: SettingsView,
+    path: '/',
+    component: AppLayout,
     beforeEnter: requireAuth,
     meta: {
-      title: 'Configuración',
       requiresAuth: true,
     },
-  },
-  {
-    path: '/admin',
-    name: 'Admin',
-    component: () => import('@/views/AdminView.vue'), // Lazy loading
-    beforeEnter: requireAuth,
-    meta: {
-      title: 'Administración',
-      requiresAuth: true,
-      roles: ['ROLE_SUPER_USER'], // Por el momento solo SuperUser, en el caso que quiera mas roles como por ejemplo Admin, lo añado aquí -> roles: ['ROLE_SUPER_USER', 'ROLE_ADMIN']
-    },
-  },
-  {
-    path: '/admin/content',
-    name: 'AdminContent',
-    component: () => import('@/views/AdminContentView.vue'), // Lazy loading
-    beforeEnter: requireAuth,
-    meta: {
-      title: 'Administración de Contenidos',
-      requiresAuth: true,
-      roles: ['ROLE_SUPER_USER'],
-    },
-  },
-  {
-    path: '/gestion-menus',
-    name: 'MenuManager',
-    component: () => import('@/views/MenuManagerView.vue'), // Lazy loading
-    beforeEnter: requireAuth,
-    meta: {
-      title: 'Gestión de Menús',
-      requiresAuth: true,
-      roles: ['ROLE_SUPER_USER'], // Solo usuarios con rol ROLE_SUPER_USER
-    },
-  },
-  {
-    path: '/gestion-usuarios',
-    name: 'UserManagement',
-    component: () => import('@/views/UserManagementView.vue'), // Lazy loading
-    beforeEnter: requireAuth,
-    meta: {
-      title: 'Gestión de Usuarios',
-      requiresAuth: true,
-      roles: ['ROLE_SUPER_USER'], // Solo usuarios con rol ROLE_SUPER_USER
-    },
-  },
-  {
-    path: '/document/:id',
-    name: 'ContentView',
-    component: () => import('@/views/ContentView.vue'), // Lazy loading
-    beforeEnter: requireAuth,
-    meta: {
-      title: 'Ver Documento',
-      requiresAuth: true,
-    },
+    children: [
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: DashboardView,
+        meta: {
+          title: 'Dashboard',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'configuracion',
+        name: 'Settings',
+        component: SettingsView,
+        meta: {
+          title: 'Configuración',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'admin',
+        name: 'Admin',
+        component: () => import('@/views/AdminView.vue'), // Lazy loading
+        meta: {
+          title: 'Administración',
+          requiresAuth: true,
+          roles: ['ROLE_SUPER_USER'], // Por el momento solo SuperUser, en el caso que quiera mas roles como por ejemplo Admin, lo añado aquí -> roles: ['ROLE_SUPER_USER', 'ROLE_ADMIN']
+        },
+      },
+      {
+        path: 'admin/content',
+        name: 'AdminContent',
+        component: () => import('@/views/AdminContentView.vue'), // Lazy loading
+        meta: {
+          title: 'Administración de Contenidos',
+          requiresAuth: true,
+          roles: ['ROLE_SUPER_USER'],
+        },
+      },
+      {
+        path: 'gestion-menus',
+        name: 'MenuManager',
+        component: () => import('@/views/MenuManagerView.vue'), // Lazy loading
+        meta: {
+          title: 'Gestión de Menús',
+          requiresAuth: true,
+          roles: ['ROLE_SUPER_USER'], // Solo usuarios con rol ROLE_SUPER_USER
+        },
+      },
+      {
+        path: 'gestion-usuarios',
+        name: 'UserManagement',
+        component: () => import('@/views/UserManagementView.vue'), // Lazy loading
+        meta: {
+          title: 'Gestión de Usuarios',
+          requiresAuth: true,
+          roles: ['ROLE_SUPER_USER'], // Solo usuarios con rol ROLE_SUPER_USER
+        },
+      },
+      {
+        path: 'document/:id',
+        name: 'ContentView',
+        component: () => import('@/views/ContentView.vue'), // Lazy loading
+        meta: {
+          title: 'Ver Documento',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'botonera-view',
+        name: 'BotoneraView',
+        component: UrlContentCardLayout, // Lazy loading
+        meta: {
+          requiresAuth: true,
+        },
+      },
+    ],
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     redirect: '/login',
-  },
-  {
-    path: '/botonera-view',
-    name: 'BotoneraView',
-    component: UrlContentCardLayout, // Lazy loading
-    beforeEnter: requireAuth,
   },
 ]
 

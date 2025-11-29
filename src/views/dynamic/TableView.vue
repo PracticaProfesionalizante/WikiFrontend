@@ -1,15 +1,6 @@
 ﻿<template>
   <div class="table-view-layout">
-    <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
-    <AppHeader :sidebar-expanded="sidebarExpanded" />
-
-    <div
-      class="main-content"
-      :class="[
-        'with-header',
-        sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed',
-      ]"
-    >
+    <div class="main-content with-header">
       <div class="table-container">
         <div class="table-header">
           <h1 class="table-title">
@@ -273,12 +264,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import SidebarMenu from '@/components/common/SidebarMenu.vue'
-import AppHeader from '@/components/common/AppHeader.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
-const sidebarExpanded = ref(false)
 
 // Props dinámicos basados en el menú
 const menuTitle = ref('')
@@ -406,10 +394,6 @@ const visiblePages = computed(() => {
 })
 
 // Métodos
-const handleSidebarToggle = (expanded) => {
-  sidebarExpanded.value = expanded
-}
-
 const sortBy = (field) => {
   if (sortField.value === field) {
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
