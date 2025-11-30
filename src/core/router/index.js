@@ -115,6 +115,13 @@ const routes = [
           requiresAuth: true,
         },
       },
+      //ruta dinamica para documentos es para pruebas y para tomar de ejemplos//
+      {
+        path: 'docs/:type',
+        name: 'DocumentList',
+        component: () => import('@/layouts/DocumentLayout.vue'),
+        meta: { requiresAuth: true },
+      }
     ],
   },
   {
