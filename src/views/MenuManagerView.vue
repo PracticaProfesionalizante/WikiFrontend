@@ -1348,21 +1348,21 @@ const viewTemplatesFijos = [
 
 const viewTemplatesDocuments = [
   {
-    value: 'docs/TYPE_PDF',
+    value: 'TYPE_PDF',
     name: 'PDF',
     description: 'Seccion especifica para PDF',
     icon: 'fa-file-pdf',
     features: ['Manuales', 'Instructivos'],
   },
   {
-    value: 'docs/TYPE_TEXT',
+    value: 'TYPE_TEXT',
     name: 'TEXTO',
     description: 'Seccion especifica para Textos planos',
     icon: 'fa-file-alt',
     features: ['Investigaciones', 'Informes', 'Reglas'],
   },
   {
-    value: 'docs/TYPE_URL',
+    value: 'TYPE_URL',
     name: 'BOTONERA',
     description: 'Seccion especifica para links externos',
     icon: 'fa-external-link-alt',

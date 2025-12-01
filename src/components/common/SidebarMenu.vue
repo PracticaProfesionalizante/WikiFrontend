@@ -120,10 +120,12 @@ const selectSubmenu = (childSelected) => {
   updateActiveState(childSelected, childSelected.children)
 
   if(childSelected.view != null) {
-    if(childSelected.view.includes('docs')){
+    let baseEndpoint = "/"
+    if(String(childSelected.view).includes('TYPE')){
       documentStore.setPathAndType(childSelected.name, childSelected.path, childSelected.view)
+      baseEndpoint = "/docs/"
     }
-    router.push(`/${childSelected.view}`);
+    router.push(`${baseEndpoint}${childSelected.view}`);
   } else {
     // router.push(childSelected.path);
   }

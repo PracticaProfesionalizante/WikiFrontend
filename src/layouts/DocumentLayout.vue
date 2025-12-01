@@ -121,17 +121,34 @@
           <div class="text-4xl text-slate-400"><i class="fas fa-folder-open"></i></div>
           <p class="mt-2 text-sm">No hay documentos para mostrar.</p>
         </div>
+          <ContentTable v-else
+          :items="paginatedItems"
+          :get-document-status="getDocumentStatus"
+          :get-type-display="getTypeDisplay"
+          :get-type-colors="getTypeColors"
+          :get-type-icon="getTypeIcon"
+          :get-document-author="getDocumentAuthor"
+          :get-document-editor="getDocumentEditor"
+          :format-date="formatDate"
+          @preview="previewContent"
+          @edit="openEditDialog"
+          @delete="openDeleteDialog"
+          @toggle-status="toggleDocumentStatus"
+        />
+
       </template>
     </main>
   </div>
 </template>
 
 <script setup>
+// import { watchDebounced } from '@vueuse/core'
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { documentsStore } from '@/stores/documentsStore'
 import { useDocumentList } from '@/composables/useDocumentList'
+import ContentTable from '@/components/content/ContentTable.vue'
 
 // Componentes por tipo (puedes reemplazar con implementaciones finales)
 const PdfList = {
@@ -247,8 +264,11 @@ const router = useRouter()
 const authStore = useAuthStore()
 const docStore = documentsStore()
 
-const { search, status, items, loading, error, filteredItems, paginatedItems, loadDocuments, getDocumentStatus, getTypeDisplay, getTypeIcon, getTypeColors, formatDate } =
-  useDocumentList()
+const {
+  search, status, items, loading, error, filteredItems, paginatedItems,
+  loadDocuments, getDocumentStatus, getTypeDisplay, getTypeIcon, getTypeColors, formatDate,
+  getDocumentAuthor, getDocumentEditor, previewContent, openEditDialog, openDeleteDialog, toggleDocumentStatus,
+} = useDocumentList()
 
 const type = computed(() => (route.params.type || '').toString())
 
@@ -284,9 +304,19 @@ const handleOpen = (item) => {
 }
 
 watch(
-  () => docStore.getPath,
-  (newPath) => {
-    loadDocuments({ type: type.value, path: newPath })
+  () => [docStore.getPath, docStore.getType],
+  () => {
+    loadDocuments({ slug: docStore.getPath, type: docStore.getType })
   },
-)
+  { immediate: true },
+);
+
+// watchDebounced(
+//   () => ({ path: docStore.getPath, type: docStore.getType }),
+//   ({ path, type }) => {
+//     const params = { slug: path, type: type }
+//     loadDocuments(params)
+//   },
+//   { debounce: 50, maxWait: 200, immediate: true }
+// );
 </script>

@@ -24,6 +24,12 @@ export function useDocumentList() {
     getTypeIcon,
     getTypeColors,
     formatDate,
+    getDocumentEditor,
+    getDocumentAuthor,
+    previewContent,
+    openEditDialog,
+    openDeleteDialog,
+    toggleDocumentStatus,
   } = useAdminContent()
 
   const filteredItems = computed(() => {
@@ -81,5 +87,11 @@ export function useDocumentList() {
     getTypeIcon,
     getTypeColors,
     formatDate,
+    getDocumentEditor,
+    getDocumentAuthor,
+    previewContent,
+    openEditDialog,
+    openDeleteDialog,
+    toggleDocumentStatus,
   }
 }
