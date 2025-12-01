@@ -11,7 +11,7 @@
           <p
             class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
           >
-            Documentos
+            Documentos - {{ docStore.getFolderName }}
           </p>
           <h1 class="m-0 text-2xl font-bold text-slate-900 dark:text-slate-50">
             {{ titleByType[type] || 'Documentos' }}
@@ -27,7 +27,7 @@
             @click="$emit('create')"
           >
             <i class="fas fa-plus"></i>
-            Cargar Nuevo Documento
+            {{ addDocumentByType[type] || 'Crear Nuevo Documento'}}
           </button>
         </div>
       </div>
@@ -232,9 +232,14 @@ const componentByType = {
 }
 
 const titleByType = {
-  pdf: 'Documentos PDF',
-  text: 'Documentos de Texto',
-  url: 'Enlaces Externos',
+  TYPE_PDF: 'Documentos PDF',
+  TYPE_TEXT: 'Documentos de Texto',
+  TYPE_URL: 'Enlaces Externos',
+}
+const addDocumentByType = {
+  TYPE_PDF: 'Subir PDF',
+  TYPE_TEXT: 'Crear Texto',
+  TYPE_URL: 'Crear Boton',
 }
 
 const route = useRoute()
