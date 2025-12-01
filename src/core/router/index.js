@@ -8,10 +8,6 @@ import DashboardView from '@/views/DashboardView.vue'
 import SettingsView from '@/views/SettingsView.vue'
 import UrlContentCardLayout from '@/layouts/UrlContentCardLayout.vue'
 
-// Importar vistas dinámicas
-import FoldersView from '@/views/FoldersView.vue'
-import ContentView from '@/views/ContentView.vue'
-
 const routes = [
   {
     path: '/',
@@ -99,16 +95,16 @@ const routes = [
       roles: ['ROLE_SUPER_USER'], // Solo usuarios con rol ROLE_SUPER_USER
     },
   },
-  // {
-  //   path: '/document/:id',
-  //   name: 'ContentView',
-  //   component: () => import('@/views/ContentView.vue'), // Lazy loading
-  //   beforeEnter: requireAuth,
-  //   meta: {
-  //     title: 'Ver Documento',
-  //     requiresAuth: true,
-  //   },
-  // },
+  {
+    path: '/document/:id',
+    name: 'ContentView',
+    component: () => import('@/views/ContentView.vue'), // Lazy loading
+    beforeEnter: requireAuth,
+    meta: {
+      title: 'Ver Documento',
+      requiresAuth: true,
+    },
+  },
   {
     path: '/folders/:pathMatch(.*)*',
     name: 'Folders',
@@ -136,59 +132,6 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 })
-
-// Función para mapear el valor 'view' del menú al componente Vue
-const mapComponent = (viewType) => {
-  if (viewType === 'showFolders') {
-    return FoldersView // Vista para mostrar las tarjetas de submenús
-  }
-  // Asumimos que cualquier otra configuración de vista existente (showMarkdown, showURL, showPDF, etc.) usa ContentView
-  if (viewType) {
-    return ContentView
-  }
-  // Valor por defecto si no hay vista o tipo conocido
-  return ContentView
-}
-
-/**
- * Función recursiva para agregar rutas dinámicas al router a partir de la estructura de menús.
- * @param {Array} menuItems
- */
-export function addDynamicRoutes(menuItems) {
-  if (!menuItems || menuItems.length === 0) return
-
-  menuItems.forEach((menuItem) => {
-    // Solo agrega la ruta si tiene una ruta definida
-    if (menuItem.path) {
-      const componentToUse = mapComponent(menuItem.view)
-
-      const newRoute = {
-        path: menuItem.path,
-        // Genera un nombre de ruta único basado en el path
-        name: menuItem.path.substring(1).replace(/\//g, '-'),
-        component: componentToUse,
-        meta: {
-          requiresAuth: true,
-          name: menuItem.name, // Usado para el título dinámico en FoldersView y ContentView
-          // roles: menuItem.roles,
-          viewType: menuItem.view,
-          contentId: menuItem.contentId || null, // Asegura que el ID del contenido se guarde en la meta
-        },
-      }
-
-      // Aseguramos que la ruta no haya sido agregada antes para evitar errores en HMR (desarrollo)
-      // Esto es importante si el menú se actualiza sin recargar la página
-      if (!router.hasRoute(newRoute.name)) {
-        router.addRoute(newRoute)
-      }
-    }
-
-    // Procesar hijos recursivamente
-    if (menuItem.children && menuItem.children.length > 0) {
-      addDynamicRoutes(menuItem.children)
-    }
-  })
-}
 
 // Guard global para inicializar autenticación
 router.beforeEach(async (to, from, next) => {
