@@ -59,16 +59,6 @@ const routes = [
         },
       },
       {
-        path: 'admin',
-        name: 'Admin',
-        component: () => import('@/views/AdminView.vue'), // Lazy loading
-        meta: {
-          title: 'Administración',
-          requiresAuth: true,
-          roles: ['ROLE_SUPER_USER'], // Por el momento solo SuperUser, en el caso que quiera mas roles como por ejemplo Admin, lo añado aquí -> roles: ['ROLE_SUPER_USER', 'ROLE_ADMIN']
-        },
-      },
-      {
         path: 'admin/content',
         name: 'AdminContent',
         component: () => import('@/views/AdminContentView.vue'), // Lazy loading
@@ -99,29 +89,17 @@ const routes = [
         },
       },
       {
-        path: 'document/:id',
-        name: 'ContentView',
-        component: () => import('@/views/ContentView.vue'), // Lazy loading
-        meta: {
-          title: 'Ver Documento',
-          requiresAuth: true,
-        },
+        path: 'folders',
+        name: 'DocumentList',
+        component: () => import('@/layouts/DocumentLayout.vue'),
+        meta: { requiresAuth: true },
       },
-      {
-        path: 'botonera-view',
-        name: 'BotoneraView',
-        component: UrlContentCardLayout, // Lazy loading
-        meta: {
-          requiresAuth: true,
-        },
-      },
-      //ruta dinamica para documentos es para pruebas y para tomar de ejemplos//
       {
         path: 'docs/:type',
         name: 'DocumentList',
         component: () => import('@/layouts/DocumentLayout.vue'),
         meta: { requiresAuth: true },
-      }
+      },
     ],
   },
   {

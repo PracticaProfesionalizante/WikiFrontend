@@ -1,10 +1,16 @@
 <template>
   <div class="min-h-screen bg-white dark:bg-slate-900">
     <!-- Header contextual -->
-    <header class="border-b bg-white/80 px-4 py-6 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
-      <div class="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <header
+      class="border-b bg-white/80 px-4 py-6 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/80"
+    >
+      <div
+        class="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      >
         <div>
-          <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <p
+            class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+          >
             Documentos
           </p>
           <h1 class="m-0 text-2xl font-bold text-slate-900 dark:text-slate-50">
@@ -29,7 +35,9 @@
 
     <!-- Filtros -->
     <section class="border-b bg-white/60 backdrop-blur dark:border-slate-800 dark:bg-slate-900/70">
-      <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div
+        class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+      >
         <div class="flex flex-1 flex-wrap gap-3">
           <input
             v-model="search"
@@ -47,7 +55,9 @@
           </select>
         </div>
         <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-          <span class="font-semibold text-slate-700 dark:text-slate-200">{{ filteredItems.length }}</span>
+          <span class="font-semibold text-slate-700 dark:text-slate-200">{{
+            filteredItems.length
+          }}</span>
           encontrados
         </div>
       </div>
@@ -59,7 +69,10 @@
       class="border-b bg-slate-50/80 px-4 py-3 text-sm text-slate-600 backdrop-blur dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300"
     >
       <div class="mx-auto flex max-w-6xl items-center gap-2">
-        <button class="font-semibold text-blue-600 hover:underline" @click="navigateToBreadcrumb(0)">
+        <button
+          class="font-semibold text-blue-600 hover:underline"
+          @click="navigateToBreadcrumb(0)"
+        >
           Raíz
         </button>
         <template v-for="(crumb, index) in breadcrumbs" :key="crumb.path">
@@ -77,11 +90,16 @@
     <!-- Contenido principal -->
     <main class="mx-auto max-w-6xl px-4 py-6">
       <div v-if="loading" class="grid min-h-[200px] place-items-center text-slate-500">
-        <div class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500"></div>
+        <div
+          class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500"
+        ></div>
         <p class="mt-3 text-sm">Cargando documentos...</p>
       </div>
 
-      <div v-else-if="error" class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-200">
+      <div
+        v-else-if="error"
+        class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-200"
+      >
         {{ error }}
       </div>
 
@@ -96,7 +114,10 @@
           :format-date="formatDate"
           @open="handleOpen"
         />
-        <div v-if="paginatedItems.length === 0" class="grid min-h-[200px] place-items-center rounded-lg border border-dashed border-slate-300 p-8 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
+        <div
+          v-if="paginatedItems.length === 0"
+          class="grid min-h-[200px] place-items-center rounded-lg border border-dashed border-slate-300 p-8 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400"
+        >
           <div class="text-4xl text-slate-400"><i class="fas fa-folder-open"></i></div>
           <p class="mt-2 text-sm">No hay documentos para mostrar.</p>
         </div>
@@ -114,7 +135,14 @@ import { useDocumentList } from '@/composables/useDocumentList'
 
 // Componentes por tipo (puedes reemplazar con implementaciones finales)
 const PdfList = {
-  props: ['items', 'getDocumentStatus', 'getTypeDisplay', 'getTypeIcon', 'getTypeColors', 'formatDate'],
+  props: [
+    'items',
+    'getDocumentStatus',
+    'getTypeDisplay',
+    'getTypeIcon',
+    'getTypeColors',
+    'formatDate',
+  ],
   template: `<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
     <article v-for="item in items" :key="item.id" class="rounded-xl border p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
       <div class="mb-3 flex items-center gap-3">
@@ -136,7 +164,14 @@ const PdfList = {
 }
 
 const TextList = {
-  props: ['items', 'getDocumentStatus', 'getTypeDisplay', 'getTypeIcon', 'getTypeColors', 'formatDate'],
+  props: [
+    'items',
+    'getDocumentStatus',
+    'getTypeDisplay',
+    'getTypeIcon',
+    'getTypeColors',
+    'formatDate',
+  ],
   template: `<div class="space-y-3">
     <article v-for="item in items" :key="item.id" class="rounded-xl border p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
       <div class="flex items-start gap-3">
@@ -160,7 +195,14 @@ const TextList = {
 }
 
 const UrlList = {
-  props: ['items', 'getDocumentStatus', 'getTypeDisplay', 'getTypeIcon', 'getTypeColors', 'formatDate'],
+  props: [
+    'items',
+    'getDocumentStatus',
+    'getTypeDisplay',
+    'getTypeIcon',
+    'getTypeColors',
+    'formatDate',
+  ],
   template: `<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
     <article v-for="item in items" :key="item.id" class="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4 shadow-sm transition hover:-translate-y-1 dark:border-slate-700 dark:from-slate-900 dark:to-slate-800">
       <div class="mb-3 flex items-center gap-3">
@@ -203,7 +245,7 @@ const docStore = documentsStore()
 const { search, status, items, loading, error, filteredItems, paginatedItems, loadDocuments, getDocumentStatus, getTypeDisplay, getTypeIcon, getTypeColors, formatDate } =
   useDocumentList()
 
-const type = computed(() => (route.params.type || '').toString().toLowerCase())
+const type = computed(() => (route.params.type || '').toString())
 
 const canCreate = computed(
   () => authStore.hasRole('ROLE_ADMIN') || authStore.hasRole('ROLE_SUPER_USER'),
@@ -229,22 +271,12 @@ const navigateToBreadcrumb = (index) => {
     const target = breadcrumbs.value[index - 1]
     docStore.setPathAndType(target.label, target.path, type.value)
   }
-  loadDocuments({ type: type.value, path: docStore.getPath })
 }
 
 const handleOpen = (item) => {
   if (!item?.id) return
   router.push({ name: 'ContentView', params: { id: item.id } })
 }
-
-watch(
-  () => type.value,
-  (newType) => {
-    if (!newType) return
-    loadDocuments({ type: newType, path: docStore.getPath })
-  },
-  { immediate: true },
-)
 
 watch(
   () => docStore.getPath,

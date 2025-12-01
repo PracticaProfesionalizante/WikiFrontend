@@ -113,16 +113,19 @@ const selectSubmenu = (childSelected) => {
 
   if(!childSelected) {
     updateActiveState(null, menus.value)
+    router.push(`/dashboard`);
     return
   }
 
   updateActiveState(childSelected, childSelected.children)
 
-  if(childSelected.path.includes('/documentacion')) {
-    documentStore.setPathAndType(childSelected.name, childSelected.path, childSelected.view)
-    router.push('/admin/content');
+  if(childSelected.view != null) {
+    if(childSelected.view.includes('docs')){
+      documentStore.setPathAndType(childSelected.name, childSelected.path, childSelected.view)
+    }
+    router.push(`/${childSelected.view}`);
   } else {
-    router.push(childSelected.path);
+    // router.push(childSelected.path);
   }
 
   if (!childSelected.children && isMobile.value) closeMobile()
