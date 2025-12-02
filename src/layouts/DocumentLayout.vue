@@ -145,8 +145,11 @@
 // import { watchDebounced } from '@vueuse/core'
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+
 import { useAuthStore } from '@/stores/auth'
 import { documentsStore } from '@/stores/documentsStore'
+import { useMenuStore } from '@/stores/menuStore'
+
 import { useDocumentList } from '@/composables/useDocumentList'
 import ContentTable from '@/components/content/ContentTable.vue'
 
@@ -263,6 +266,7 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const docStore = documentsStore()
+const menuStore = useMenuStore()
 
 const {
   search, status, items, loading, error, filteredItems, paginatedItems,
@@ -289,12 +293,32 @@ const breadcrumbs = computed(() => {
   return acc
 })
 
+const findMenuByPath = (menus, path) => {
+  for (const menu of menus) {
+    if (menu.path === path) {
+      return menu
+    }
+    if (menu.children && menu.children.length > 0) {
+      const found = findMenuByPath(menu.children, path)
+      if (found) {
+        return found
+      }
+    }
+  }
+  return null
+}
+
 const navigateToBreadcrumb = (index) => {
   if (index === 0) {
-    docStore.setPathAndType('', '', type.value)
+    menuStore.setFolder(null)
+    docStore.clearStore()
+    router.push('/dashboard')
   } else {
     const target = breadcrumbs.value[index - 1]
-    docStore.setPathAndType(target.label, target.path, type.value)
+    const menuSelected = findMenuByPath(authStore.menus, target.path)
+    menuStore.setFolder(menuSelected)
+    router.push('/folders')
+    docStore.clearStore()
   }
 }
 
@@ -310,13 +334,4 @@ watch(
   },
   { immediate: true },
 );
-
-// watchDebounced(
-//   () => ({ path: docStore.getPath, type: docStore.getType }),
-//   ({ path, type }) => {
-//     const params = { slug: path, type: type }
-//     loadDocuments(params)
-//   },
-//   { debounce: 50, maxWait: 200, immediate: true }
-// );
 </script>
