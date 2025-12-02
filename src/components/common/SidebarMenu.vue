@@ -55,11 +55,14 @@ import { documentsStore } from '@/stores/documentsStore'
 import SidebarBreadcrumb from '@/components/sidebar/SidebarBreadcrumb.vue'
 import SidebarItems from '@/components/sidebar/SidebarItems.vue'
 import SidebarConfigMenus from '@/components/sidebar/SidebarConfigMenus.vue'
+import { useMenuStore } from '@/stores/menuStore'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const documentStore = documentsStore()
+const menuStore = useMenuStore()
+
 
 const emit = defineEmits(['sidebar-toggle'])
 
@@ -69,6 +72,16 @@ const isMobileOpen = ref(false)
 
 // Usar menús dinámicos del store en lugar de hardcodeados
 const menus = computed(() => authStore.menus)
+// const currentMenu = computed(() => {
+//   if (folder.value == null)
+//     return { itemSelected: null, itemsToShow: menus.value}
+
+//   if (folder.value?.children && folder.value?.children.length > 0)
+//     return { itemSelected: folder.value, itemsToShow: folder.value?.children}
+
+//   return { itemSelected: folder.value, itemsToShow: currentMenu.value?.itemsToShow}
+// })
+
 
 const currentMenu = reactive({ itemSelected: null, itemsToShow: []})
 
@@ -110,6 +123,7 @@ const goBack = () => {
 }
 
 const selectSubmenu = (childSelected) => {
+  menuStore.setFolder(childSelected);
 
   if(!childSelected) {
     updateActiveState(null, menus.value)
@@ -126,8 +140,6 @@ const selectSubmenu = (childSelected) => {
       baseEndpoint = "/docs/"
     }
     router.push(`${baseEndpoint}${childSelected.view}`);
-  } else {
-    // router.push(childSelected.path);
   }
 
   if (!childSelected.children && isMobile.value) closeMobile()

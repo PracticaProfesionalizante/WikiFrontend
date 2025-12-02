@@ -90,8 +90,8 @@ const routes = [
       },
       {
         path: 'folders',
-        name: 'DocumentList',
-        component: () => import('@/layouts/DocumentLayout.vue'),
+        name: 'MenusFolders',
+        component: () => import('@/views/FoldersView.vue'),
         meta: { requiresAuth: true },
       },
       {
