@@ -623,19 +623,10 @@
                   </div>
 
                   <div class="space-y-4">
-                    <div>
-                      <label class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        <i class="fas fa-palette text-blue-600"></i>
-                        Icono del Menú
-                      </label>
-                      <div>
-                        <IconSelector v-model="menuForm.icon" @update:modelValue="validateForm" />
-                      </div>
-                      <div v-if="validationErrors.icon" class="mt-1 flex items-center gap-2 text-sm text-red-600 dark:text-red-400" role="alert">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ validationErrors.icon }}
-                      </div>
-                    </div>
+                    <SelectMenuIcon
+                    :model-value="menuForm.icon"
+                    @update:model-value="menuForm.icon = $event"
+                    />
 
                     <div>
                       <label class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -1120,10 +1111,10 @@ import { useRouter } from 'vue-router'
 import MenuTreeNode from '@/components/menu/MenuTreeNode.vue'
 import MenuTreeSelector from '@/components/menu/MenuTreeSelector.vue'
 import DeleteMenuModal from '@/components/modals/DeleteMenuModal.vue'
-import IconSelector from '@/components/common/IconSelector.vue'
 import ProgressModal from '@/components/modals/ProgressModal.vue'
 import menuService from '@/services/menuService'
 import authService from '@/services/auth'
+import SelectMenuIcon from '@/components/menu/SelectMenuIcon.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -1163,8 +1154,8 @@ const menuForm = ref({
   name: '',
   parentPath: '',
   path: '',
-  icon: '',
-  view: 'basic',
+  icon: 'fa-file',
+  view: null,
   order: 1,
   parentId: null,
   roles: [],
@@ -1517,10 +1508,15 @@ const previousStep = () => {
 // Funciones auxiliares para el resumen
 const getTemplateName = (template) => {
   const templateMap = {
-    basic: 'Vista Básica',
-    form: 'Vista de Formulario',
-    table: 'Vista de Tabla',
-    dashboard: 'Vista de Dashboard',
+    null: 'Sin Pantalla',
+    folders: 'Visualizar Carpetas',
+    dashboard: 'Pantalla de Bienvenida',
+    configuracion: 'Configurar Perfil',
+    gestionMenus: 'Gestionar Menues',
+    gestionUsuarios: 'Gestionar Usuarios',
+    TYPE_PDF: 'Visualizar PDF',
+    TYPE_TEXT: 'Visualizar TEXT',
+    TYPE_URL: 'Visualizar URL'
   }
   return templateMap[template] || 'No especificado'
 }
@@ -1932,6 +1928,7 @@ const resetForm = () => {
     path: '',
     icon: '',
     view: 'basic',
+    iconType: 'icon',
     order: 1,
     parentId: null,
     roles: ['ROLE_SUPER_USER'], // SUPER_USER se asigna automáticamente a todos los menús
@@ -2056,10 +2053,6 @@ const validateForm = () => {
     }
   }
 
-  // Validar icono con más detalles
-  if (menuForm.value.icon && !menuForm.value.icon.startsWith('fa-')) {
-    errors.icon = 'El icono debe ser válido (formato FontAwesome)'
-  }
 
   // Validar plantilla
   // if (!menuForm.value.view) {
