@@ -8,7 +8,7 @@
           @click="selectSubmenu(item)"
         >
           <div class="grid min-w-12 place-items-center text-[1.25rem]">
-            <i :class="['fas fas', item.icon || 'fas fa-circle']"></i>
+            <i :class="['fas fas', 'fa-caret-right']"></i>
           </div>
           <span :class="['flex-1 truncate font-medium', isExpanded ? 'ml-2' : 'ml-0']" v-show="isExpanded">{{ item.name }}</span>
           <div class="flex items-center gap-1" v-show="isExpanded">

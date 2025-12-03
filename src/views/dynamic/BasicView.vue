@@ -1,15 +1,6 @@
 ﻿<template>
   <div class="dynamic-view-layout">
-    <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
-    <AppHeader :sidebar-expanded="sidebarExpanded" />
-
-    <div
-      class="main-content"
-      :class="[
-        'with-header',
-        sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed',
-      ]"
-    >
+    <div class="main-content with-header">
       <div class="dynamic-container">
         <div class="view-header">
           <h1 class="view-title">
@@ -80,20 +71,13 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import SidebarMenu from '@/components/common/SidebarMenu.vue'
-import AppHeader from '@/components/common/AppHeader.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
-const sidebarExpanded = ref(false)
 
 // Props dinámicos basados en el menú
 const menuTitle = ref('')
 const menuIcon = ref('')
-
-const handleSidebarToggle = (expanded) => {
-  sidebarExpanded.value = expanded
-}
 
 onMounted(() => {
   // Buscar información del menú actual

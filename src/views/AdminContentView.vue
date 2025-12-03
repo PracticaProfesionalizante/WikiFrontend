@@ -40,7 +40,6 @@
               class="h-12 w-12 animate-spin rounded-full border-4 border-slate-300 border-t-blue-500"
             ></div>
           </div>
-          <!-- Loading -->
 
           <!-- Tabla -->
           <div v-if="viewMode === 'table'" class="space-y-4 p-4 pt-0">
@@ -76,7 +75,6 @@
               />
             </div>
           </div>
-          <!-- Tabla -->
 
           <!-- Grid -->
           <ContentGrid
@@ -148,7 +146,6 @@
         @close="closePreviewModal"
         @edit="editFromPreview"
       />
-      <!-- Preview Modal -->
 
       <!-- Status Confirm Modal -->
       <ContentStatusConfirmModal
@@ -158,17 +155,36 @@
         @cancel="cancelStatusChange"
       />
 
-      <!-- Content Form Modal -->
-      <ContentForm
-        v-model="editDialog"
-        :document="selectedItem"
-        :loading="editLoading"
-        :is-editing="isEditing"
-        :start-step="isEditing ? 2 : 1"
-        @saved="handleSaveDocument"
+      <!-- FORMULARIOS POR TIPO -->
+      <ContentTextForm
+        v-if="editDialog && currentFormType === 'TYPE_TEXT'"
+        :model-value="editDialog"
+        :roles="roles"
+        :initial-data="selectedItem"
+        @update:modelValue="editDialog = $event"
+        @success="handleSaveDocument"
         @close="closeEditDialog"
       />
-      <!-- Content Form Modal -->
+
+      <ContentUrlForm
+        v-if="editDialog && currentFormType === 'TYPE_URL'"
+        :model-value="editDialog"
+        :roles="roles"
+        :initial-data="selectedItem"
+        @update:modelValue="editDialog = $event"
+        @success="handleSaveDocument"
+        @close="closeEditDialog"
+      />
+
+      <ContentPdfForm
+        v-if="editDialog && currentFormType === 'TYPE_PDF'"
+        :model-value="editDialog"
+        :roles="roles"
+        :initial-data="selectedItem"
+        @update:modelValue="editDialog = $event"
+        @success="handleSaveDocument"
+        @close="closeEditDialog"
+      />
 
       <!-- Delete Confirm Modal -->
       <ContentDeleteModal
@@ -179,20 +195,17 @@
         @confirm="confirmDelete"
         @cancel="closeDeleteDialog"
       />
-      <!-- Delete Confirm Modal -->
     </div>
-    <TestLayout />
   </AdminContentLayout>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { documentsStore } from '@/stores/documentsStore'
 
 import AdminContentLayout from '@/layouts/AdminContentLayout.vue'
 import ContentAdminHeader from '@/components/content/ContentAdminHeader.vue'
 import ContentAlertToast from '@/components/common/ContentAlertToast.vue'
-import ContentForm from '@/components/forms/ContentForm.vue'
 import ContentFilters from '@/components/content/ContentFilters.vue'
 import ContentTable from '@/components/content/ContentTable.vue'
 import ContentGrid from '@/components/content/ContentGrid.vue'
@@ -201,18 +214,67 @@ import ContentDeleteModal from '@/components/content/ContentDeleteModal.vue'
 import ContentPreviewModal from '@/components/content/ContentPreviewModal.vue'
 import ContentListCardMobile from '@/components/content/ContentListCardMobile.vue'
 
+// Formularios nuevos
+import ContentTextForm from '@/components/content/form/types/ContentTextForm.vue'
+import ContentUrlForm from '@/components/content/form/types/ContentUrlForm.vue'
+import ContentPdfForm from '@/components/content/form/types/ContentPdfForm.vue'
+
+// Servicio para cargar documento completo al editar
+import documentService from '@/services/documentService'
+
+// Lógica principal del módulo
 import { useAdminContent } from '@/composables/useAdminContent'
 
 const docStore = documentsStore()
 
+// Control de tipo de formulario (TYPE_TEXT, TYPE_URL, TYPE_PDF)
+const currentFormType = ref(null)
+
+// Roles disponibles para los formularios (placeholder; luego puedes vincular al store)
+const roles = ref([])
+
+// --- Funciones específicas de la vista para abrir/cerrar formularios ---
+
+const openCreateDialog = () => {
+  selectedItem.value = null
+  isEditing.value = false
+  const resolvedType = docStore.getType || "TYPE_TEXT"
+  currentFormType.value = resolvedType // TYPE_TEXT / TYPE_URL / TYPE_PDF
+  editDialog.value = true
+}
+
+const openEditDialog = async (item) => {
+  selectedItem.value = { ...item }
+  isEditing.value = true
+  currentFormType.value = item.type // TYPE_TEXT / TYPE_URL / TYPE_PDF
+  editDialog.value = true
+
+  // Cargar contenido completo si no está presente
+  if (!item.content && item.id) {
+    try {
+      const full = await documentService.getDocumentById(item.id)
+      selectedItem.value = { ...full }
+    } catch (e) {
+      console.error('Error cargando documento completo', e)
+    }
+  }
+}
+
+const closeEditDialog = () => {
+  editDialog.value = false
+  selectedItem.value = null
+  currentFormType.value = null
+  isEditing.value = false
+}
+
+// --- Estado y lógica compartida desde el composable ---
+
 const {
-  // estado principal
   documents,
   loading,
   error,
   success,
 
-  // modales / selección
   deleteDialog,
   editDialog,
   showPreviewModal,
@@ -226,7 +288,6 @@ const {
   deleting,
   statusConfirmAction,
 
-  // pdf / preview
   currentPdfPage,
   totalPdfPages,
   pdfLoading,
@@ -237,7 +298,6 @@ const {
   pdfPanY,
   isDragging,
 
-  // filtros / vista / paginación
   searchQuery,
   filterType,
   filterStatus,
@@ -247,16 +307,13 @@ const {
   filteredItems,
   paginatedItems,
 
-  // computed
   renderedMarkdown,
 
-  // funciones generales
   handleResponsiveViewMode,
   onSearchInput,
   toggleSortOrder,
   loadDocuments,
 
-  // preview / pdf
   previewContent,
   closePreviewModal,
   editFromPreview,
@@ -279,21 +336,15 @@ const {
   downloadPdf,
   handleKeydown,
 
-  // status
   toggleDocumentStatus,
   confirmStatusChange,
   cancelStatusChange,
 
-  // diálogos / CRUD
-  openCreateDialog,
-  openEditDialog,
-  closeEditDialog,
   handleSaveDocument,
   openDeleteDialog,
   closeDeleteDialog,
   confirmDelete,
 
-  // utilidades
   getDocumentStatus,
   getTypeDisplay,
   getTypeIcon,
@@ -305,7 +356,7 @@ const {
   getDocumentAuthor,
 } = useAdminContent()
 
-// Reaccionar a cambios en path / type del store para recargar docs
+// Recarga automática al cambiar ruta/slug/type
 watch(
   () => [docStore.getPath, docStore.getType],
   ([path, type]) => {

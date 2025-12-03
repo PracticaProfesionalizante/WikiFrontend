@@ -48,18 +48,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, reactive, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { documentsStore } from '@/stores/documentsStore'
 import SidebarBreadcrumb from '@/components/sidebar/SidebarBreadcrumb.vue'
 import SidebarItems from '@/components/sidebar/SidebarItems.vue'
 import SidebarConfigMenus from '@/components/sidebar/SidebarConfigMenus.vue'
+import { useMenuStore } from '@/stores/menuStore'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const documentStore = documentsStore()
+const menuStore = useMenuStore()
+const folder = computed(() => menuStore.getFolder)
+
+
 
 const emit = defineEmits(['sidebar-toggle'])
 
@@ -70,22 +75,23 @@ const isMobileOpen = ref(false)
 // Usar menús dinámicos del store en lugar de hardcodeados
 const menus = computed(() => authStore.menus)
 
-const currentMenu = reactive({ itemSelected: null, itemsToShow: []})
+const currentMenu = computed(() => {
+  if (folder.value == null)
+    return { itemSelected: null, itemsToShow: menus.value}
 
-const showBreadcrumbNativation = computed(() => {
-  return currentMenu.itemSelected != null && (
-    currentMenu.itemSelected?.children != null && currentMenu.itemSelected?.parentId == null ||
-    currentMenu.itemSelected?.children == null && currentMenu.itemSelected?.parentId != null ||
-    currentMenu.itemSelected?.children != null && currentMenu.itemSelected?.parentId != null
-  )
+  if (folder.value?.children && folder.value?.children.length > 0)
+    return { itemSelected: folder.value, itemsToShow: folder.value?.children}
+
+  return { itemSelected: folder.value, itemsToShow: currentMenu.value?.itemsToShow}
 })
 
-const updateActiveState = ( itemSelected, children ) => {
-  currentMenu.itemSelected = itemSelected;
-  if (children && children.length > 0) {
-    currentMenu.itemsToShow = children;
-  }
-};
+const showBreadcrumbNativation = computed(() => {
+  return currentMenu.value.itemSelected != null && (
+    currentMenu.value.itemSelected?.children != null && currentMenu.value.itemSelected?.parentId == null ||
+    currentMenu.value.itemSelected?.children == null && currentMenu.value.itemSelected?.parentId != null ||
+    currentMenu.value.itemSelected?.children != null && currentMenu.value.itemSelected?.parentId != null
+  )
+})
 
 const findItemParent = (childId, menuList = menus.value) => {
   for (const menu of menuList) {
@@ -105,37 +111,30 @@ const findItemParent = (childId, menuList = menus.value) => {
 }
 
 const goBack = () => {
-  const item = findItemParent(currentMenu.itemSelected.id, menus.value);
+  const item = findItemParent(currentMenu.value.itemSelected.id, menus.value);
   selectSubmenu(item)
 }
 
 const selectSubmenu = (childSelected) => {
+  menuStore.setFolder(childSelected);
 
   if(!childSelected) {
-    updateActiveState(null, menus.value)
+    menuStore.setFolder(null);
+    router.push(`/dashboard`);
     return
   }
 
-  updateActiveState(childSelected, childSelected.children)
+  menuStore.setFolder(childSelected);
 
-  const hasChildren = Array.isArray(childSelected.children) && childSelected.children.length > 0
-  const basePath = (typeof childSelected.path === 'string' && childSelected.path) 
-    ? childSelected.path 
-    : (typeof childSelected.url === 'string' ? childSelected.url : '')
-
-  if (hasChildren) {
-    let target = `/folders${basePath?.startsWith('/') ? basePath : `/${basePath}`}`
-    target = target.replace(/\/{2,}/g, '/')
-    router.push(target)
-  } else {
-    if (basePath?.includes('/documentacion')) {
-      documentStore.setPathAndType(childSelected.name, basePath, childSelected.view)
-      router.push('/admin/content')
-    } else {
-      router.push(basePath)
+  if(childSelected.view != null) {
+    let baseEndpoint = "/"
+    if(String(childSelected.view).includes('TYPE')){
+      documentStore.setPathAndType(childSelected.name, childSelected.path, childSelected.view)
+      baseEndpoint = "/docs/"
     }
-    if (isMobile.value) closeMobile()
+    router.push(`${baseEndpoint}${childSelected.view}`);
   }
+  if (isMobile.value) closeMobile()
 }
 
 const expandMenu = () => {
@@ -228,7 +227,7 @@ onMounted(() => {
   window.addEventListener('resize', checkMobile)
   window.addEventListener('sidebar:toggle', handleExternalToggle)
   window.addEventListener('sidebar:close', handleExternalClose)
-  updateActiveState(null, menus.value)
+  menuStore.setFolder(null);
 })
 
 onUnmounted(() => {

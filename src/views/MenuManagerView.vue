@@ -1,10 +1,6 @@
 <template>
-  <div class="flex min-h-screen bg-white dark:bg-slate-900">
-    <SidebarMenu @sidebar-toggle="handleSidebarToggle" />
-    <AppHeader :sidebar-expanded="sidebarExpanded" />
-
-    <main :class="['pt-20 flex-1 transition-all duration-300', sidebarExpanded ? 'ml-0 md:ml-[280px]' : 'ml-0 md:ml-20']">
-      <div class="p-8 max-w-[1400px] mx-auto">
+  <div class="min-h-screen bg-white dark:bg-slate-900">
+    <div class="p-8 max-w-[1400px] mx-auto">
         <!-- Header -->
         <div class="text-center mb-12">
           <h1 class="flex items-center justify-center gap-3 text-4xl font-bold m-0 mb-4 text-slate-900 dark:text-slate-100">
@@ -373,7 +369,7 @@
           </div>
         </transition>
       </div>
-    </main>
+    </div>
 
         <!-- Modal de eliminación avanzada -->
         <DeleteMenuModal
@@ -627,19 +623,10 @@
                   </div>
 
                   <div class="space-y-4">
-                    <div>
-                      <label class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        <i class="fas fa-palette text-blue-600"></i>
-                        Icono del Menú
-                      </label>
-                      <div>
-                        <IconSelector v-model="menuForm.icon" @update:modelValue="validateForm" />
-                      </div>
-                      <div v-if="validationErrors.icon" class="mt-1 flex items-center gap-2 text-sm text-red-600 dark:text-red-400" role="alert">
-                        <i class="fas fa-exclamation-circle"></i>
-                        {{ validationErrors.icon }}
-                      </div>
-                    </div>
+                    <SelectMenuIcon
+                    :model-value="menuForm.icon"
+                    @update:model-value="menuForm.icon = $event"
+                    />
 
                     <div>
                       <label class="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -648,33 +635,50 @@
                       </label>
                       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <div
-                          v-for="template in viewTemplates"
+                          v-for="template in handlerTemplates"
                           :key="template.value"
                           class="cursor-pointer rounded-xl border-2 p-4 transition"
-                          :class="{ 'border-blue-600 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20': menuForm.view === template.value, 'border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500': menuForm.view !== template.value }"
-                          @click="selectTemplate(template.value)"
+                          :class="{ 'border-blue-600 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20': menuForm.handler === template.value, 'border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500': menuForm.handler !== template.value }"
+                          @click="selectHandler(template.value)"
                           role="radio"
-                          :aria-checked="menuForm.view === template.value"
+                          :aria-checked="menuForm.handler === template.value"
                           tabindex="0"
                         >
-                          <div class="mb-3 text-center">
-                            <i :class="['fas', template.icon, 'mb-2 text-3xl', menuForm.view === template.value ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500']"></i>
-                                </div>
-                          <div>
-                            <h4 class="mb-1 text-center font-semibold text-slate-900 dark:text-slate-100">{{ template.name }}</h4>
-                            <p class="mb-2 text-center text-xs text-slate-600 dark:text-slate-400">{{ template.description }}</p>
-                            <div class="flex flex-wrap gap-1 justify-center">
-                              <span
-                                v-for="feature in template.features"
-                                :key="feature"
-                                class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-slate-700 dark:text-slate-300"
-                              >
-                                {{ feature }}
-                              </span>
-                            </div>
+                          <h4 class="mb-1 text-center font-semibold text-slate-900 dark:text-slate-100">{{ template.name }}</h4>
+                        </div>
+                    </div>
+                    <!-- Separador visual -->
+                    <div class="my-4 border-t border-slate-200 dark:border-slate-700"></div>
+                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      <div
+                        v-for="template in viewTemplates"
+                        :key="template.value"
+                        class="cursor-pointer rounded-xl border-2 p-4 transition"
+                        :class="{ 'border-blue-600 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20': menuForm.view === template.value, 'border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500': menuForm.view !== template.value }"
+                        @click="selectTemplate(template.value)"
+                        role="radio"
+                        :aria-checked="menuForm.view === template.value"
+                        tabindex="0"
+                      >
+                        <div class="mb-3 text-center">
+                          <i :class="['fas', template.icon, 'mb-2 text-3xl', menuForm.view === template.value ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500']"></i>
+                              </div>
+                        <div>
+                          <h4 class="mb-1 text-center font-semibold text-slate-900 dark:text-slate-100">{{ template.name }}</h4>
+                          <p class="mb-2 text-center text-xs text-slate-600 dark:text-slate-400">{{ template.description }}</p>
+                          <div class="flex flex-wrap gap-1 justify-center">
+                            <span
+                              v-for="feature in template.features"
+                              :key="feature"
+                              class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                            >
+                              {{ feature }}
+                            </span>
                           </div>
                         </div>
                       </div>
+                    </div>
+
                       <div v-if="validationErrors.template" class="mt-1 flex items-center gap-2 text-sm text-red-600 dark:text-red-400" role="alert">
                         <i class="fas fa-exclamation-circle"></i>
                         {{ validationErrors.template }}
@@ -1085,7 +1089,6 @@
         </div>
       </div>
     </div>
-  </div>
 
   <!-- Modal de Progreso -->
   <ProgressModal
@@ -1105,25 +1108,18 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
-import SidebarMenu from '@/components/common/SidebarMenu.vue'
-import AppHeader from '@/components/common/AppHeader.vue'
 import MenuTreeNode from '@/components/menu/MenuTreeNode.vue'
 import MenuTreeSelector from '@/components/menu/MenuTreeSelector.vue'
 import DeleteMenuModal from '@/components/modals/DeleteMenuModal.vue'
-import IconSelector from '@/components/common/IconSelector.vue'
 import ProgressModal from '@/components/modals/ProgressModal.vue'
 import menuService from '@/services/menuService'
 import authService from '@/services/auth'
+import SelectMenuIcon from '@/components/menu/SelectMenuIcon.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
 
 // Estado del sidebar
-const sidebarExpanded = ref(false)
-const handleSidebarToggle = (expanded) => {
-  sidebarExpanded.value = expanded
-}
-
 // Estado del formulario
 const showDialog = ref(false)
 const isEditing = ref(false)
@@ -1158,12 +1154,13 @@ const menuForm = ref({
   name: '',
   parentPath: '',
   path: '',
-  icon: '',
-  view: 'basic',
+  icon: 'fa-file',
+  view: null,
   order: 1,
   parentId: null,
   roles: [],
   isActive: true,
+  handler: 'navigation',
   createSubmenus: false,
   submenus: [],
 })
@@ -1283,15 +1280,64 @@ const loadMenus = async () => {
 // Iconos ahora se manejan en IconSelector.vue
 
 // Plantillas de vista
+const handlerTemplates = [
+  { value: 'navigation', name: 'Navegación' },
+  { value: 'platform', name: 'Plataforma' },
+  { value: 'documentation', name: 'Documentación' },
+];
+const selectHandler = (handlerValue) => {
+  menuForm.value.handler = handlerValue;
+};
 
-const viewTemplates = [
+const viewTemplatesNavigation = [
   {
     value: null,
-    name: 'Completo',
+    name: 'Sin Pantalla',
+    description: '',
+    icon: '',
+    features: [],
+  },
+  {
+    value: "folders",
+    name: 'Folder',
     description: 'En la seccion se podran almacenar todo tipo de archivo',
     icon: 'fa-chart-pie',
     features: [],
+  }
+]
+
+const viewTemplatesFijos = [
+  {
+    value: 'dashboard',
+    name: 'Inicio',
+    description: 'Pantalla de bienvenida',
+    icon: '',
+    features: [],
   },
+  {
+    value: 'configuracion',
+    name: 'Configurar Perfil',
+    description: 'Configuracion Personal, cambio de tema, etc.',
+    icon: '',
+    features: [],
+  },
+  {
+    value: "gestion-menus",
+    name: 'Gestionar Menues',
+    description: 'Creacion y modificacion en la barra de Navegacion',
+    icon: 'fa-chart-pie',
+    features: [],
+  },
+  {
+    value: "gestion-usuarios",
+    name: 'Gestionar Usuarios',
+    description: 'Agregar, Editar, y Eliminar Usuarios',
+    icon: 'fa-chart-pie',
+    features: [],
+  },
+]
+
+const viewTemplatesDocuments = [
   {
     value: 'TYPE_PDF',
     name: 'PDF',
@@ -1314,6 +1360,19 @@ const viewTemplates = [
     features: ['Patrocinadores', 'Redes Sociales', 'Documentacion Externa'],
   },
 ]
+
+const viewTemplates = computed(() => {
+  switch (menuForm.value.handler) {
+    case 'navigation':
+      return viewTemplatesNavigation;
+    case 'platform':
+      return viewTemplatesFijos;
+    case 'documentation':
+      return viewTemplatesDocuments;
+    default:
+      return [];
+  }
+});
 
 // Roles disponibles (definidos como array de objetos para mejor UX)
 // SUPER_USER se asigna automáticamente a todos los menús, no es seleccionable
@@ -1449,10 +1508,15 @@ const previousStep = () => {
 // Funciones auxiliares para el resumen
 const getTemplateName = (template) => {
   const templateMap = {
-    basic: 'Vista Básica',
-    form: 'Vista de Formulario',
-    table: 'Vista de Tabla',
-    dashboard: 'Vista de Dashboard',
+    null: 'Sin Pantalla',
+    folders: 'Visualizar Carpetas',
+    dashboard: 'Pantalla de Bienvenida',
+    configuracion: 'Configurar Perfil',
+    gestionMenus: 'Gestionar Menues',
+    gestionUsuarios: 'Gestionar Usuarios',
+    TYPE_PDF: 'Visualizar PDF',
+    TYPE_TEXT: 'Visualizar TEXT',
+    TYPE_URL: 'Visualizar URL'
   }
   return templateMap[template] || 'No especificado'
 }
@@ -1864,10 +1928,12 @@ const resetForm = () => {
     path: '',
     icon: '',
     view: 'basic',
+    iconType: 'icon',
     order: 1,
     parentId: null,
     roles: ['ROLE_SUPER_USER'], // SUPER_USER se asigna automáticamente a todos los menús
     isActive: true,
+    handler: 'documentation',
     createSubmenus: false,
     submenus: [],
   }
@@ -1987,10 +2053,6 @@ const validateForm = () => {
     }
   }
 
-  // Validar icono con más detalles
-  if (menuForm.value.icon && !menuForm.value.icon.startsWith('fa-')) {
-    errors.icon = 'El icono debe ser válido (formato FontAwesome)'
-  }
 
   // Validar plantilla
   // if (!menuForm.value.view) {
@@ -2597,4 +2659,3 @@ const handlePathInput = () => {
 <style scoped>
 /* Styles have been migrated to Tailwind CSS */
 </style>
-

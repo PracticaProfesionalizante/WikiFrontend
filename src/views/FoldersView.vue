@@ -1,45 +1,40 @@
 <script setup>
 import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useMenuStore } from '@/stores/menuStore'
+import { documentsStore } from '@/stores/documentsStore'
 
-const route = useRoute()
 const router = useRouter()
 const menuStore = useMenuStore()
+const documentStore = documentsStore()
 
-// Submenús para la ruta actual
-const submenus = computed(() => menuStore.getSubmenusByPath(route.path))
+const folder = computed(() => menuStore.getFolder)
 
-// Título dinámico de la vista
-const title = computed(() => {
-  if (route.meta?.title) return route.meta.title
-  const segments = route.path.split('/').filter(Boolean)
-  const last = segments[segments.length - 1]
-  return last ? decodeURIComponent(last).replace(/[-_]/g, ' ') : 'Carpetas'
-})
+const isIcon = (icon) => typeof icon === 'string' && icon.startsWith('fa-')
 
-// Navegación al hacer clic en una carpeta
-const mapsTo = (path) => {
-  const target = typeof path === 'string' ? path.trim() : ''
-  if (target) {
-    router.push(target)
+const navigateTo = (childSelected) => {
+  let baseEndpoint = "/"
+  if(String(childSelected.view).includes('TYPE')){
+    documentStore.setPathAndType(childSelected.name, childSelected.path, childSelected.view)
+    baseEndpoint = "/docs/"
+  } else {
+    menuStore.setFolder(childSelected);
   }
+  router.push(`${baseEndpoint}${childSelected.view}`);
 }
 </script>
 
 <template>
   <div class="p-6 sm:p-8">
-    <!-- Header -->
     <div class="mb-6">
       <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100">
-        {{ title }}
+        {{ folder?.name || 'Selecciona una carpeta' }}
       </h1>
       <p class="m-0 text-slate-600 dark:text-slate-400">Selecciona una carpeta para navegar.</p>
     </div>
 
-    <!-- Estado vacío -->
     <div
-      v-if="submenus.length === 0"
+      v-if="folder?.children == null || folder?.children.length === 0"
       class="text-center py-16 rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40"
     >
       <div class="text-5xl mb-4">📁</div>
@@ -47,31 +42,32 @@ const mapsTo = (path) => {
       <p class="text-slate-600 dark:text-slate-400">Intenta volver atrás o elige otra sección del menú.</p>
     </div>
 
-    <!-- Grid de carpetas -->
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <div
-        v-for="item in submenus"
-        :key="item.id || item.path || item.url || item.name"
-        class="group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm hover:shadow-lg cursor-pointer transition"
-        @click="mapsTo(item.path || item.url)"
-        :title="item.path || item.url || ''"
+        v-for="item in folder?.children || []"
+        :key="item?.id"
+        class="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:shadow-xl cursor-pointer transition-all duration-300 hover:-translate-y-1"
+        @click="navigateTo(item)"
+        :title="item?.path || ''"
       >
-        <div class="flex items-center gap-4">
-          <div class="grid h-12 w-12 place-items-center rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
-            <!-- Usa emoji temporal de carpeta -->
-            <span class="text-2xl">📁</span>
-          </div>
-          <div class="flex-1">
-            <h3
-              class="m-0 font-semibold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400"
-            >
-              {{ item.name || 'Sin nombre' }}
-            </h3>
-            <p v-if="item.path || item.url" class="m-0 text-xs text-slate-500 dark:text-slate-400 truncate">
-              {{ item.path || item.url }}
-            </p>
-          </div>
+        <div v-if="isIcon(item?.icon)" class="flex h-32 items-center justify-center bg-blue-600 p-4 transition-colors group-hover:bg-blue-700">
+           <i :class="['fas', item.icon, 'text-6xl', 'text-black']"></i>
         </div>
+        <div v-else class="flex h-32 items-center justify-center bg-blue-600 p-4 transition-colors group-hover:bg-blue-700">
+          <img
+            :src="item.icon"
+            :alt="item.name"
+            class="h-full w-full object-contain p-1"
+            loading="lazy"
+          />
+        </div>
+
+
+        <div class="flex flex-1 flex-col justify-center p-4">
+          <h3 class="m-0 text-sm font-bold uppercase tracking-wide text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+            {{ item?.name || 'Sin nombre' }}
+          </h3>
+          </div>
       </div>
     </div>
   </div>
