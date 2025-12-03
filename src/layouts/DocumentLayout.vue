@@ -397,11 +397,24 @@ const openEditDialog = (item) => {
 const handleSaveDocument = async (data) => {
   if (!data) return
 
+  const normalizedRoles = (data.roles || []).map((role) => {
+    if (typeof role !== "string") return role
+    if (role.startsWith("ROLE_ROLE_")) return role.replace(/^ROLE_ROLE_/, "ROLE_")
+    if (!role.startsWith("ROLE_")) return `ROLE_${role}`
+    return role
+  })
+
+  const payload = {
+    ...data,
+    roles: normalizedRoles,
+    slug: data.slug || (data.name ? data.name.toString().trim().toLowerCase().replace(/\s+/g, "-") : undefined),
+  }
+
   try {
-    if (data.id) {
-      await documentService.updateDocument(data.id, data)
+    if (payload.id) {
+      await documentService.updateDocument(payload.id, payload)
     } else {
-      await documentService.createDocument(data)
+      await documentService.createDocument(payload)
     }
 
     await loadDocuments({ type: type.value, path: docStore.getPath })
