@@ -1,8 +1,9 @@
 <template>
   <ContentFormWrapper
-    :visible="modelValue"
+    :model-value="modelValue"
     :title="isEditing ? 'Editar documento de texto' : 'Nuevo documento de texto'"
     :loading="loading"
+    @update:modelValue="emit('update:modelValue', $event)"
     @close="close"
   >
     <div class="space-y-5">

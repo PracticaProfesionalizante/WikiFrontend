@@ -1,93 +1,23 @@
 <template>
   <div class="min-h-screen bg-white dark:bg-slate-900">
-    <!-- Header contextual -->
-    <header
-      class="border-b bg-white/80 px-4 py-6 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/80"
-    >
-      <div
-        class="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div>
-          <p
-            class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
-          >
-            Documentos - {{ docStore.getFolderName }}
-          </p>
-          <h1 class="m-0 text-2xl font-bold text-slate-900 dark:text-slate-50">
-            {{ titleByType[type] || "Documentos" }}
-          </h1>
-          <p class="m-0 text-sm text-slate-600 dark:text-slate-400">
-            Explora y gestiona los documentos según su tipo y carpeta.
-          </p>
-        </div>
+    <DocumentHeader
+      :folder-name="docStore.getFolderName"
+      :title="titleByType[type] || 'Documentos'"
+      :can-create="canCreate"
+      :create-label="addDocumentByType[type] || 'Crear Nuevo Documento'"
+      @create="openCreateDialog"
+    />
 
-        <!-- BOTÓN CREAR -->
-        <div class="flex flex-wrap items-center gap-3">
-          <button
-            v-if="canCreate"
-            class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5"
-            @click="openCreateDialog"
-          >
-            <i class="fas fa-plus"></i>
-            {{ addDocumentByType[type] || "Crear Nuevo Documento" }}
-          </button>
-        </div>
-      </div>
-    </header>
+    <DocumentFilters
+      v-model:search="search"
+      v-model:status="status"
+      :count="filteredItems.length"
+    />
 
-    <!-- Filtros -->
-    <section class="border-b bg-white/60 backdrop-blur dark:border-slate-800 dark:bg-slate-900/70">
-      <div
-        class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div class="flex flex-1 flex-wrap gap-3">
-          <input
-            v-model="search"
-            type="search"
-            placeholder="Buscar documentos..."
-            class="w-full min-w-[240px] flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-blue-400"
-          />
-          <select
-            v-model="status"
-            class="min-w-[160px] rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-blue-400"
-          >
-            <option value="">Estado: Todos</option>
-            <option value="Activo">Activos</option>
-            <option value="Inactivo">Inactivos</option>
-          </select>
-        </div>
-        <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-          <span class="font-semibold text-slate-700 dark:text-slate-200">
-            {{ filteredItems.length }}
-          </span>
-          encontrados
-        </div>
-      </div>
-    </section>
-
-    <!-- Breadcrumbs -->
-    <nav
-      v-if="breadcrumbs.length"
-      class="border-b bg-slate-50/80 px-4 py-3 text-sm text-slate-600 backdrop-blur dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300"
-    >
-      <div class="mx-auto flex max-w-6xl items-center gap-2">
-        <button
-          class="font-semibold text-blue-600 hover:underline"
-          @click="navigateToBreadcrumb(0)"
-        >
-          Raíz
-        </button>
-        <template v-for="(crumb, index) in breadcrumbs" :key="crumb.path">
-          <span class="text-slate-400">/</span>
-          <button
-            class="truncate text-blue-600 hover:underline"
-            @click="navigateToBreadcrumb(index + 1)"
-          >
-            {{ crumb.label }}
-          </button>
-        </template>
-      </div>
-    </nav>
+    <DocumentBreadcrumbs
+      :breadcrumbs="breadcrumbs"
+      @navigate="navigateToBreadcrumb"
+    />
 
     <!-- Contenido principal -->
     <main class="mx-auto max-w-6xl px-4 py-6">
@@ -107,8 +37,8 @@
 
       <!-- LISTAS POR TIPO -->
       <template v-else>
-        <component
-          :is="componentByType[type] || 'div'"
+        <DocumentTypeLists
+          :type="type"
           :items="paginatedItems"
           :get-document-status="getDocumentStatus"
           :get-type-display="getTypeDisplay"
@@ -183,15 +113,19 @@
 
 <script setup>
 // import { watchDebounced } from '@vueuse/core'
-import { computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, watch, ref } from "vue"
+import { useRoute, useRouter } from "vue-router"
 
-import { useAuthStore } from '@/stores/auth'
-import { documentsStore } from '@/stores/documentsStore'
-import { useMenuStore } from '@/stores/menuStore'
+import { useAuthStore } from "@/stores/auth"
+import { documentsStore } from "@/stores/documentsStore"
+import { useMenuStore } from "@/stores/menuStore"
 
-import { useDocumentList } from '@/composables/useDocumentList'
-import ContentTable from '@/components/content/ContentTable.vue'
+import { useDocumentList } from "@/composables/useDocumentList"
+import ContentTable from "@/components/content/ContentTable.vue"
+import DocumentHeader from "@/components/document/DocumentHeader.vue"
+import DocumentFilters from "@/components/document/DocumentFilters.vue"
+import DocumentBreadcrumbs from "@/components/document/DocumentBreadcrumbs.vue"
+import DocumentTypeLists from "@/components/document/DocumentTypeLists.vue"
 
 // Componentes por tipo (puedes reemplazar con implementaciones finales)
 const PdfList = {
@@ -350,12 +284,6 @@ const UrlList = {
   `,
 }
 
-const componentByType = {
-  TYPE_PDF: PdfList,
-  TYPE_TEXT: TextList,
-  TYPE_URL: UrlList,
-}
-
 const titleByType = {
   TYPE_PDF: "Documentos PDF",
   TYPE_TEXT: "Documentos de Texto",
@@ -376,9 +304,23 @@ const docStore = documentsStore()
 const menuStore = useMenuStore()
 
 const {
-  search, status, items, loading, error, filteredItems, paginatedItems,
-  loadDocuments, getDocumentStatus, getTypeDisplay, getTypeIcon, getTypeColors, formatDate,
-  getDocumentAuthor, getDocumentEditor, previewContent, openEditDialog, openDeleteDialog, toggleDocumentStatus,
+  search,
+  status,
+  loading,
+  error,
+  filteredItems,
+  paginatedItems,
+  loadDocuments,
+  getDocumentStatus,
+  getTypeDisplay,
+  getTypeIcon,
+  getTypeColors,
+  formatDate,
+  getDocumentAuthor,
+  getDocumentEditor,
+  previewContent,
+  openDeleteDialog,
+  toggleDocumentStatus,
 } = useDocumentList()
 
 const type = computed(() => (route.params.type || "").toString())

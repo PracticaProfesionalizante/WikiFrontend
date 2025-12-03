@@ -1,8 +1,9 @@
 <template>
   <ContentFormWrapper
-    :visible="modelValue"
+    :model-value="modelValue"
     :title="isEditing ? 'Editar enlace externo' : 'Nuevo enlace externo'"
     :loading="loading"
+    @update:modelValue="emit('update:modelValue', $event)"
     @close="close"
   >
     <div class="space-y-5">
