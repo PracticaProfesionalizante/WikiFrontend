@@ -95,6 +95,14 @@
       @success="handleSaveDocument"
       @close="closeEditDialog"
     />
+
+    <FeedbackModal
+      v-model="feedbackOpen"
+      :type="feedbackType"
+      :title="feedbackTitle"
+      :message="feedbackMessage"
+      :details="feedbackDetails"
+    />
   </div>
 </template>
 
@@ -113,6 +121,7 @@ import DocumentHeader from "@/components/document/DocumentHeader.vue"
 import DocumentFilters from "@/components/document/DocumentFilters.vue"
 import DocumentBreadcrumbs from "@/components/document/DocumentBreadcrumbs.vue"
 import DocumentTypeLists from "@/components/document/DocumentTypeLists.vue"
+import FeedbackModal from "@/components/common/FeedbackModal.vue"
 import documentService from "@/services/documentService"
 import ContentTextForm from "@/components/content/form/types/ContentTextForm.vue"
 import ContentUrlForm from "@/components/content/form/types/ContentUrlForm.vue"
@@ -376,6 +385,13 @@ const selectedItem = ref(null)
 const isEditing = ref(false)
 const roles = ["ROLE_ADMIN", "ROLE_SUPER_USER", "ROLE_USER"]
 
+// Feedback modal
+const feedbackOpen = ref(false)
+const feedbackType = ref("info")
+const feedbackTitle = ref("")
+const feedbackMessage = ref("")
+const feedbackDetails = ref("")
+
 // Crear nuevo documento
 const openCreateDialog = () => {
   selectedItem.value = null
@@ -418,9 +434,19 @@ const handleSaveDocument = async (data) => {
     }
 
     await loadDocuments({ type: type.value, path: docStore.getPath })
+    feedbackType.value = "success"
+    feedbackTitle.value = "Documento guardado"
+    feedbackMessage.value = "El documento se guardó correctamente."
+    feedbackDetails.value = ""
+    feedbackOpen.value = true
     closeEditDialog()
   } catch (err) {
     console.error("Error guardando documento", err)
+    feedbackType.value = "error"
+    feedbackTitle.value = "No se pudo guardar el documento"
+    feedbackMessage.value = "Ocurrió un error al guardar. Por favor intenta de nuevo."
+    feedbackDetails.value = ""
+    feedbackOpen.value = true
   }
 }
 
@@ -440,3 +466,11 @@ watch(
   { immediate: true },
 );
 </script>
+
+<FeedbackModal
+  v-model="feedbackOpen"
+  :type="feedbackType"
+  :title="feedbackTitle"
+  :message="feedbackMessage"
+  :details="feedbackDetails"
+/>
