@@ -349,25 +349,27 @@ export function useAdminContent() {
     editDialog.value = true
   }
 
-  const openEditDialog = async (item) => {
-    editDialog.value = true
-    isEditing.value = true
+ const openEditDialog = async (item) => {
+  // Seleccionar el documento actual
+  selectedItem.value = { ...item }
+  isEditing.value = true
 
-    if (!item.content && item.id) {
-      editLoading.value = true
-      try {
-        const fullDocument = await documentService.getDocumentById(item.id)
-        selectedItem.value = { ...fullDocument }
-      } catch (err) {
-        selectedItem.value = { ...item }
-      } finally {
-        editLoading.value = false
-      }
-    } else {
-      selectedItem.value = { ...item }
+  // Definir tipo de formulario según el documento
+  currentFormType.value = item.type // TYPE_TEXT / TYPE_URL / TYPE_PDF
+
+  // Mostrar el modal
+  editDialog.value = true
+
+  // Cargar contenido completo si es necesario
+  if (!item.content && item.id) {
+    try {
+      const full = await documentService.getDocumentById(item.id)
+      selectedItem.value = { ...full }
+    } catch (e) {
+      console.error("Error cargando documento completo", e)
     }
   }
-
+}
   // ahora sí definimos la referencia que usa editFromPreview
   nextTickOpenEdit = (item) => {
     if (!item) return
