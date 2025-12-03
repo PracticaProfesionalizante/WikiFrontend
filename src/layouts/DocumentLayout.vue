@@ -126,6 +126,21 @@
           <div class="text-4xl text-slate-400"><i class="fas fa-folder-open"></i></div>
           <p class="mt-2 text-sm">No hay documentos para mostrar.</p>
         </div>
+          <ContentTable v-else
+          :items="paginatedItems"
+          :get-document-status="getDocumentStatus"
+          :get-type-display="getTypeDisplay"
+          :get-type-colors="getTypeColors"
+          :get-type-icon="getTypeIcon"
+          :get-document-author="getDocumentAuthor"
+          :get-document-editor="getDocumentEditor"
+          :format-date="formatDate"
+          @preview="previewContent"
+          @edit="openEditDialog"
+          @delete="openDeleteDialog"
+          @toggle-status="toggleDocumentStatus"
+        />
+
       </template>
     </main>
 
@@ -167,19 +182,18 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue"
-import { useRoute, useRouter } from "vue-router"
-import { useAuthStore } from "@/stores/auth"
-import { documentsStore } from "@/stores/documentsStore"
-import { useDocumentList } from "@/composables/useDocumentList"
+// import { watchDebounced } from '@vueuse/core'
+import { computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-// Formularios
-import ContentTextForm from "@/components/content/form/types/ContentTextForm.vue"
-import ContentUrlForm from "@/components/content/form/types/ContentUrlForm.vue"
-import ContentPdfForm from "@/components/content/form/types/ContentPdfForm.vue"
+import { useAuthStore } from '@/stores/auth'
+import { documentsStore } from '@/stores/documentsStore'
+import { useMenuStore } from '@/stores/menuStore'
 
-// ----- LISTAS POR TIPO -----
+import { useDocumentList } from '@/composables/useDocumentList'
+import ContentTable from '@/components/content/ContentTable.vue'
 
+// Componentes por tipo (puedes reemplazar con implementaciones finales)
 const PdfList = {
   props: ["items", "getDocumentStatus", "getTypeDisplay", "getTypeIcon", "getTypeColors", "formatDate"],
   emits: ["open", "edit"],
@@ -359,21 +373,12 @@ const router = useRouter()
 
 const authStore = useAuthStore()
 const docStore = documentsStore()
+const menuStore = useMenuStore()
 
 const {
-  search,
-  status,
-  items,
-  loading,
-  error,
-  filteredItems,
-  paginatedItems,
-  loadDocuments,
-  getDocumentStatus,
-  getTypeDisplay,
-  getTypeIcon,
-  getTypeColors,
-  formatDate,
+  search, status, items, loading, error, filteredItems, paginatedItems,
+  loadDocuments, getDocumentStatus, getTypeDisplay, getTypeIcon, getTypeColors, formatDate,
+  getDocumentAuthor, getDocumentEditor, previewContent, openEditDialog, openDeleteDialog, toggleDocumentStatus,
 } = useDocumentList()
 
 const type = computed(() => (route.params.type || "").toString())
@@ -397,12 +402,32 @@ const breadcrumbs = computed(() => {
   return acc
 })
 
+const findMenuByPath = (menus, path) => {
+  for (const menu of menus) {
+    if (menu.path === path) {
+      return menu
+    }
+    if (menu.children && menu.children.length > 0) {
+      const found = findMenuByPath(menu.children, path)
+      if (found) {
+        return found
+      }
+    }
+  }
+  return null
+}
+
 const navigateToBreadcrumb = (index) => {
   if (index === 0) {
-    docStore.setPathAndType("", "", type.value)
+    menuStore.setFolder(null)
+    docStore.clearStore()
+    router.push('/dashboard')
   } else {
     const target = breadcrumbs.value[index - 1]
-    docStore.setPathAndType(target.label, target.path, type.value)
+    const menuSelected = findMenuByPath(authStore.menus, target.path)
+    menuStore.setFolder(menuSelected)
+    router.push('/folders')
+    docStore.clearStore()
   }
 }
 
@@ -450,10 +475,10 @@ const closeEditDialog = () => {
 }
 
 watch(
-  () => docStore.getPath,
-  (newPath) => {
-    loadDocuments({ type: type.value, path: newPath })
+  () => [docStore.getPath, docStore.getType],
+  () => {
+    loadDocuments({ slug: docStore.getPath, type: docStore.getType })
   },
-  { immediate: true }
-)
+  { immediate: true },
+);
 </script>
