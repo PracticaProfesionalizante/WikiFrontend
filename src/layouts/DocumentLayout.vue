@@ -56,20 +56,7 @@
           <div class="text-4xl text-slate-400"><i class="fas fa-folder-open"></i></div>
           <p class="mt-2 text-sm">No hay documentos para mostrar.</p>
         </div>
-          <ContentTable v-else
-          :items="paginatedItems"
-          :get-document-status="getDocumentStatus"
-          :get-type-display="getTypeDisplay"
-          :get-type-colors="getTypeColors"
-          :get-type-icon="getTypeIcon"
-          :get-document-author="getDocumentAuthor"
-          :get-document-editor="getDocumentEditor"
-          :format-date="formatDate"
-          @preview="previewContent"
-          @edit="openEditDialog"
-          @delete="openDeleteDialog"
-          @toggle-status="toggleDocumentStatus"
-        />
+
 
       </template>
     </main>
@@ -79,7 +66,7 @@
     <!-- TEXT -->
     <ContentTextForm
       v-if="editDialog && currentFormType === 'TYPE_TEXT'"
-      :modelValue="editDialog"
+      :model-value="editDialog"
       :initial-data="selectedItem"
       :roles="roles"
       @update:modelValue="editDialog = $event"
@@ -90,7 +77,7 @@
     <!-- URL -->
     <ContentUrlForm
       v-if="editDialog && currentFormType === 'TYPE_URL'"
-      :modelValue="editDialog"
+      :model-value="editDialog"
       :initial-data="selectedItem"
       :roles="roles"
       @update:modelValue="editDialog = $event"
@@ -101,7 +88,7 @@
     <!-- PDF -->
     <ContentPdfForm
       v-if="editDialog && currentFormType === 'TYPE_PDF'"
-      :modelValue="editDialog"
+      :model-value="editDialog"
       :initial-data="selectedItem"
       :roles="roles"
       @update:modelValue="editDialog = $event"
@@ -126,6 +113,10 @@ import DocumentHeader from "@/components/document/DocumentHeader.vue"
 import DocumentFilters from "@/components/document/DocumentFilters.vue"
 import DocumentBreadcrumbs from "@/components/document/DocumentBreadcrumbs.vue"
 import DocumentTypeLists from "@/components/document/DocumentTypeLists.vue"
+import documentService from "@/services/documentService"
+import ContentTextForm from "@/components/content/form/types/ContentTextForm.vue"
+import ContentUrlForm from "@/components/content/form/types/ContentUrlForm.vue"
+import ContentPdfForm from "@/components/content/form/types/ContentPdfForm.vue"
 
 // Componentes por tipo (puedes reemplazar con implementaciones finales)
 const PdfList = {
@@ -389,7 +380,8 @@ const roles = ["ROLE_ADMIN", "ROLE_SUPER_USER", "ROLE_USER"]
 const openCreateDialog = () => {
   selectedItem.value = null
   isEditing.value = false
-  currentFormType.value = type.value
+  const resolvedType = type.value || docStore.getType || "TYPE_TEXT"
+  currentFormType.value = resolvedType
   editDialog.value = true
 }
 
@@ -403,9 +395,20 @@ const openEditDialog = (item) => {
 
 // Guardado
 const handleSaveDocument = async (data) => {
-  await docStore.saveDocument(data)
-  await loadDocuments({ type: type.value, path: docStore.getPath })
-  closeEditDialog()
+  if (!data) return
+
+  try {
+    if (data.id) {
+      await documentService.updateDocument(data.id, data)
+    } else {
+      await documentService.createDocument(data)
+    }
+
+    await loadDocuments({ type: type.value, path: docStore.getPath })
+    closeEditDialog()
+  } catch (err) {
+    console.error("Error guardando documento", err)
+  }
 }
 
 // Cerrar modal

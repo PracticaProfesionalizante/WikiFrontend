@@ -4,6 +4,7 @@
     :title="isEditing ? 'Editar documento PDF' : 'Subir documento PDF'"
     :loading="loading"
     @update:modelValue="emit('update:modelValue', $event)"
+    @submit="submit"
     @close="close"
   >
     <div class="space-y-5">
@@ -79,6 +80,7 @@ const fileName = ref(null);
 const isEditing = computed(() => !!props.initialData);
 
 const localData = ref({
+  id: null,
   name: "",
   description: "",
   roles: [],
@@ -91,6 +93,7 @@ watch(
   (data) => {
     if (data) {
       localData.value = {
+        id: data.id ?? null,
         name: data.name,
         description: data.description || "",
         roles: data.roles || [],
@@ -99,6 +102,7 @@ watch(
       };
     } else {
       localData.value = {
+        id: null,
         name: "",
         description: "",
         roles: [],
@@ -121,9 +125,9 @@ const handleFileChange = (event) => {
 const close = () => emit("update:modelValue", false);
 
 const submit = async () => {
-  loading.value = true;
-  emit("success", { ...localData.value });
-  loading.value = false;
-  close();
-};
+  loading.value = true
+  emit("success", { ...localData.value })
+  loading.value = false
+  close()
+}
 </script>

@@ -4,6 +4,7 @@
     :title="isEditing ? 'Editar documento de texto' : 'Nuevo documento de texto'"
     :loading="loading"
     @update:modelValue="emit('update:modelValue', $event)"
+    @submit="submit"
     @close="close"
   >
     <div class="space-y-5">
@@ -52,13 +53,6 @@
         </select>
       </div>
     </div>
-
-    <div class="flex justify-end gap-3 pt-6">
-      <button class="btn-secondary" @click="close">Cancelar</button>
-      <button class="btn-primary" @click="submit" :disabled="loading">
-        {{ isEditing ? 'Guardar Cambios' : 'Crear' }}
-      </button>
-    </div>
   </ContentFormWrapper>
 </template>
 
@@ -78,6 +72,7 @@ const loading = ref(false);
 const isEditing = computed(() => !!props.initialData);
 
 const localData = ref({
+  id: null,
   name: "",
   description: "",
   content: "",
@@ -90,6 +85,7 @@ watch(
   (data) => {
     if (data) {
       localData.value = {
+        id: data.id ?? null,
         name: data.name,
         description: data.description || "",
         content: data.content || "",
@@ -98,6 +94,7 @@ watch(
       };
     } else {
       localData.value = {
+        id: null,
         name: "",
         description: "",
         content: "",
@@ -112,9 +109,9 @@ watch(
 const close = () => emit("update:modelValue", false);
 
 const submit = async () => {
-  loading.value = true;
-  emit("success", { ...localData.value });
-  loading.value = false;
-  close();
-};
+  loading.value = true
+  emit("success", { ...localData.value })
+  loading.value = false
+  close()
+}
 </script>

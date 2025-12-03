@@ -158,27 +158,30 @@
       <!-- FORMULARIOS POR TIPO -->
       <ContentTextForm
         v-if="editDialog && currentFormType === 'TYPE_TEXT'"
-        v-model="editDialog"
+        :model-value="editDialog"
         :roles="roles"
         :initial-data="selectedItem"
+        @update:modelValue="editDialog = $event"
         @success="handleSaveDocument"
         @close="closeEditDialog"
       />
 
       <ContentUrlForm
         v-if="editDialog && currentFormType === 'TYPE_URL'"
-        v-model="editDialog"
+        :model-value="editDialog"
         :roles="roles"
         :initial-data="selectedItem"
+        @update:modelValue="editDialog = $event"
         @success="handleSaveDocument"
         @close="closeEditDialog"
       />
 
       <ContentPdfForm
         v-if="editDialog && currentFormType === 'TYPE_PDF'"
-        v-model="editDialog"
+        :model-value="editDialog"
         :roles="roles"
         :initial-data="selectedItem"
+        @update:modelValue="editDialog = $event"
         @success="handleSaveDocument"
         @close="closeEditDialog"
       />
@@ -235,7 +238,8 @@ const roles = ref([])
 const openCreateDialog = () => {
   selectedItem.value = null
   isEditing.value = false
-  currentFormType.value = docStore.getType // TYPE_TEXT / TYPE_URL / TYPE_PDF
+  const resolvedType = docStore.getType || "TYPE_TEXT"
+  currentFormType.value = resolvedType // TYPE_TEXT / TYPE_URL / TYPE_PDF
   editDialog.value = true
 }
 
