@@ -60,10 +60,10 @@
             </div>
           </div>
 
-          <div>
+          <!-- <div>
             <label class="form-label">Icono</label>
             <IconSelector v-model="localData.icon" />
-          </div>
+          </div> -->
         </div>
       </section>
 
@@ -129,7 +129,6 @@
           </p>
         </div>
       </section>
-
       <!-- Paso 4: Resumen -->
       <section v-else-if="currentStep === 4" class="space-y-4">
         <div>
@@ -174,9 +173,8 @@
           </div>
         </div>
       </section>
-
       <!-- Controles inferiores -->
-      <div class="flex items-center justify-between pt-2">
+      <!-- <div class="flex items-center justify-between pt-2">
         <div class="text-xs text-slate-500 dark:text-slate-400">Paso {{ currentStep }} de {{ steps.length }}</div>
         <div class="flex gap-2">
           <button
@@ -196,7 +194,7 @@
             {{ submitLabel }}
           </button>
         </div>
-      </div>
+      </div> -->
     </div>
   </ContentFormWrapper>
 </template>
@@ -204,7 +202,7 @@
 <script setup>
 import { ref, watch, computed } from "vue"
 import ContentFormWrapper from "../../../forms/ContentFormWrapper.vue"
-import IconSelector from "@/components/common/IconSelector.vue"
+// import IconSelector from "@/components/common/IconSelector.vue"
 
 const props = defineProps({
   modelValue: Boolean,
