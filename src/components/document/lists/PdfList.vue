@@ -1,9 +1,9 @@
 <template>
-  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
     <article
       v-for="item in items"
       :key="item.id"
-      class="group relative cursor-pointer rounded-xl border p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
+      class="group relative flex h-full max-w-[400px] flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
       @click="openPdf(item)"
     >
       <!-- Overlay de carga -->
@@ -28,25 +28,40 @@
         </div>
       </div>
 
-      <div class="flex items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
-        <span class="truncate" :title="getDocumentStatus(item)">{{ getDocumentStatus(item) }}</span>
+      <p class="m-0 mb-3 line-clamp-2 text-sm text-slate-600 dark:text-slate-300">
+        {{ item.description }}
+      </p>
 
-        <div v-if="authStore.hasRole('ROLE_ADMIN') || authStore.hasRole('ROLE_SUPER_USER')" class="flex shrink-0 items-center gap-2">
+      <div class="mt-auto">
+        <div class="flex items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+          <span class="truncate" :title="getDocumentStatus(item)">{{ getDocumentStatus(item) }}</span>
           <button
-            class="inline-flex items-center gap-2 rounded-lg bg-blue-100 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-200 dark:bg-amber-600 dark:text-white dark:hover:bg-amber-700"
+            class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-1.5 text-white shadow hover:bg-blue-700"
+            @click.prevent.stop="openPdf(item)"
+          >
+            <i class="fas fa-eye"></i> Abrir
+          </button>
+        </div>
+
+        <div
+          v-if="authStore.hasRole('ROLE_ADMIN') || authStore.hasRole('ROLE_SUPER_USER')"
+          class="mt-3 flex items-center gap-2"
+        >
+          <button
+            class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white shadow hover:bg-amber-700"
             @click.prevent.stop="$emit('edit', item)"
             title="Editar documento"
           >
             <i class="fas fa-edit"></i>
-            <span class="hidden sm:inline">Editar</span>
+            Editar
           </button>
           <button
-            class="inline-flex items-center gap-2 rounded-lg bg-red-100 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-200 dark:bg-red-600 dark:text-white dark:hover:bg-red-700"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white shadow hover:bg-red-700"
             @click.prevent.stop="handleDelete(item)"
             title="Eliminar documento"
           >
             <i class="fas fa-trash-alt"></i>
-            <span class="hidden sm:inline">Eliminar</span>
+            Eliminar
           </button>
         </div>
       </div>
