@@ -20,9 +20,6 @@
         </div>
       </div>
 
-      <p class="text-sm text-slate-600 line-clamp-2 dark:text-slate-300">
-        {{ item.description }}
-      </p>
       <div class="flex items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
         <span class="truncate" :title="getDocumentStatus(item)">{{ getDocumentStatus(item) }}</span>
 
