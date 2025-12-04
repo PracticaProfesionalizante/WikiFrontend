@@ -9,6 +9,7 @@
     :format-date="formatDate"
     @open="$emit('open', $event)"
     @edit="$emit('edit', $event)"
+    @delete="$emit('delete', $event)"
   />
 </template>
 
@@ -48,7 +49,7 @@ defineProps({
   },
 })
 
-defineEmits(["open", "edit"])
+defineEmits(['open', 'edit', 'delete'])
 
 const componentByType = {
   TYPE_PDF: PdfList,
