@@ -60,10 +60,7 @@
             </div>
           </div>
 
-          <div>
-            <label class="form-label">Icono</label>
-            <IconSelector v-model="localData.icon" />
-          </div>
+
         </div>
       </section>
 
@@ -150,7 +147,7 @@
           <p class="m-0 text-sm text-slate-600 dark:text-slate-400">Revisa la información antes de crear</p>
         </div>
 
-        <div class="card-summary space-y-2">
+        <div class="space-y-3">
           <div class="rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
             <div class="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
               <i class="fas fa-info-circle text-blue-500"></i>
@@ -186,7 +183,7 @@
       </section>
 
       <!-- Controles inferiores -->
-      <div class="flex items-center justify-between pt-2">
+      <!-- <div class="flex items-center justify-between pt-2">
         <div class="text-xs text-slate-500 dark:text-slate-400">Paso {{ currentStep }} de {{ steps.length }}</div>
         <div class="flex gap-2">
           <button
@@ -205,7 +202,7 @@
             {{ submitLabel }}
           </button>
         </div>
-      </div>
+      </div> -->
     </div>
   </ContentFormWrapper>
 </template>
@@ -213,7 +210,6 @@
 <script setup>
 import { ref, watch, computed } from "vue"
 import ContentFormWrapper from "../../../forms/ContentFormWrapper.vue"
-import IconSelector from "@/components/common/IconSelector.vue"
 
 const props = defineProps({
   modelValue: Boolean,
@@ -241,9 +237,9 @@ const localData = ref({
   id: null,
   name: "",
   content: "",
+  description: "",
   roles: [],
   icon: "",
-  status: true,
   type: "TYPE_URL",
 })
 
@@ -264,9 +260,9 @@ const resetForm = () => {
     id: null,
     name: "",
     content: "",
+    description: "",
     roles: [],
     icon: "",
-    status: true,
     type: "TYPE_URL",
   }
   currentStep.value = 1
@@ -281,9 +277,9 @@ watch(
         id: data.id ?? null,
         name: data.name || "",
         content: data.content || data.url || "",
+        description: data.description || "",
         roles: data.roles || [],
         icon: data.icon || "",
-        status: data.status || true,
         type: "TYPE_URL",
       }
     } else {

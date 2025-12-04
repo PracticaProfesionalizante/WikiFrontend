@@ -6,7 +6,7 @@
   >
     <!-- Modal Card -->
     <div
-      class="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-3xl overflow-hidden animate-fadeInUp"
+      class="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-4xl overflow-hidden animate-fadeInUp"
     >
       <!-- HEADER -->
       <header
