@@ -265,7 +265,7 @@ const handleDelete = async () => {
 
   try {
     if (itemToDelete.value.type === 'TYPE_PDF') {
-      await documentService.deleteDocument(itemToDelete.value.id)
+      await documentService.deleteDocumentWithFile(itemToDelete.value.id)
     } else {
       await documentService.deleteDocument(itemToDelete.value.id)
     }

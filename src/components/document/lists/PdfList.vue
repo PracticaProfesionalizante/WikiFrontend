@@ -23,22 +23,28 @@
       <p class="text-sm text-slate-600 line-clamp-2 dark:text-slate-300">
         {{ item.description }}
       </p>
-<!--
-      <div class="mt-3 text-xs text-slate-500 dark:text-slate-400">
-        {{ formatDate(item.updatedAt || item.createdAt) }}
-      </div> -->
+      <div class="flex items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+        <span class="truncate" :title="getDocumentStatus(item)">{{ getDocumentStatus(item) }}</span>
 
-      <!-- <div class="flex gap-2 mt-4"> -->
-        <!-- El botón de editar detiene la propagación para no abrir el documento al mismo tiempo -->
-        <button
-          class="inline-flex items-center gap-2 rounded-lg bg-blue-100 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-200 dark:bg-amber-600 dark:text-white dark:hover:bg-amber-700"
-          @click.stop="$emit('edit', item)"
-          v-if="authStore.hasRole('ROLE_ADMIN') || authStore.hasRole('ROLE_SUPER_USER')"
-          title="Editar documento"
-        >
-          <i class="fas fa-edit"></i> Editar
-        </button>
-      <!-- </div> -->
+        <div v-if="authStore.hasRole('ROLE_ADMIN') || authStore.hasRole('ROLE_SUPER_USER')" class="flex shrink-0 items-center gap-2">
+          <button
+            class="inline-flex items-center gap-2 rounded-lg bg-blue-100 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-200 dark:bg-amber-600 dark:text-white dark:hover:bg-amber-700"
+            @click.prevent.stop="$emit('edit', item)"
+            title="Editar documento"
+          >
+            <i class="fas fa-edit"></i>
+            <span class="hidden sm:inline">Editar</span>
+          </button>
+          <button
+            class="inline-flex items-center gap-2 rounded-lg bg-red-100 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-200 dark:bg-red-600 dark:text-white dark:hover:bg-red-700"
+            @click.prevent.stop="handleDelete(item)"
+            title="Eliminar documento"
+          >
+            <i class="fas fa-trash-alt"></i>
+            <span class="hidden sm:inline">Eliminar</span>
+          </button>
+        </div>
+      </div>
     </article>
   </div>
 </template>
@@ -75,5 +81,10 @@ defineProps({
   },
 })
 
-defineEmits(["open", "edit"])
+const emit = defineEmits(["open", "edit", 'delete'])
+
+const handleDelete = (item) => {
+  if (!item) return
+  emit('delete', item)
+}
 </script>

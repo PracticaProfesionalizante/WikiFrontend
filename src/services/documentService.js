@@ -90,7 +90,7 @@ class DocumentService {
       console.log('📄 [DOCUMENT SERVICE] Datos actualizados:', {
         name: documentData.name,
         type: documentData.type,
-        slug: documentData.slug
+        slug: documentData.slug,
       })
 
       const response = await api.put(`/documents/${id}`, documentData)
@@ -123,6 +123,24 @@ class DocumentService {
   }
 
   /**
+   * Eliminar un documento con PDF
+   * @param {string|number} id - ID del documento
+   * @returns {Promise<void>}
+   */
+  async deleteDocumentWithFile(id) {
+    try {
+      console.log('📄 [DOCUMENT SERVICE] Eliminando documento:', id)
+
+      await api.delete(`/documents/file/${id}`)
+
+      console.log('✅ [DOCUMENT SERVICE] Documento eliminado exitosamente')
+    } catch (error) {
+      console.error('❌ [DOCUMENT SERVICE] Error eliminando documento:', error)
+      throw error
+    }
+  }
+
+  /**
    * Obtener documentos por tipo
    * @param {string} type - Tipo de documento (TEXT, URL, PDF)
    * @param {Object} params - Parámetros adicionales
@@ -136,7 +154,11 @@ class DocumentService {
       const response = await api.get('/documents', { params: queryParams })
 
       console.log('✅ [DOCUMENT SERVICE] Documentos por tipo obtenidos exitosamente')
-      console.log('📄 [DOCUMENT SERVICE] Total documentos tipo', type + ':', response.data?.length || 0)
+      console.log(
+        '📄 [DOCUMENT SERVICE] Total documentos tipo',
+        type + ':',
+        response.data?.length || 0,
+      )
 
       return response.data
     } catch (error) {
@@ -159,7 +181,11 @@ class DocumentService {
       const response = await api.get('/documents', { params: queryParams })
 
       console.log('✅ [DOCUMENT SERVICE] Documentos por slug obtenidos exitosamente')
-      console.log('📄 [DOCUMENT SERVICE] Total documentos en slug', slug + ':', response.data?.length || 0)
+      console.log(
+        '📄 [DOCUMENT SERVICE] Total documentos en slug',
+        slug + ':',
+        response.data?.length || 0,
+      )
 
       return response.data
     } catch (error) {
@@ -197,16 +223,31 @@ class DocumentService {
   debugAuthState() {
     const authStore = useAuthStore()
     console.log('🔍 [DOCUMENT SERVICE] Estado de autenticación:')
-    console.log('🔍 [DOCUMENT SERVICE] - Access Token:', authStore.accessToken ? 'Presente' : 'Ausente')
-    console.log('🔍 [DOCUMENT SERVICE] - Refresh Token:', authStore.refreshToken ? 'Presente' : 'Ausente')
+    console.log(
+      '🔍 [DOCUMENT SERVICE] - Access Token:',
+      authStore.accessToken ? 'Presente' : 'Ausente',
+    )
+    console.log(
+      '🔍 [DOCUMENT SERVICE] - Refresh Token:',
+      authStore.refreshToken ? 'Presente' : 'Ausente',
+    )
     console.log('🔍 [DOCUMENT SERVICE] - Usuario:', authStore.user ? 'Presente' : 'Ausente')
     console.log('🔍 [DOCUMENT SERVICE] - Autenticado:', authStore.isAuthenticated)
 
     // Verificar localStorage también
     console.log('🔍 [DOCUMENT SERVICE] localStorage:')
-    console.log('🔍 [DOCUMENT SERVICE] - access_token:', localStorage.getItem('access_token') ? 'Presente' : 'Ausente')
-    console.log('🔍 [DOCUMENT SERVICE] - refresh_token:', localStorage.getItem('refresh_token') ? 'Presente' : 'Ausente')
-    console.log('🔍 [DOCUMENT SERVICE] - user:', localStorage.getItem('user') ? 'Presente' : 'Ausente')
+    console.log(
+      '🔍 [DOCUMENT SERVICE] - access_token:',
+      localStorage.getItem('access_token') ? 'Presente' : 'Ausente',
+    )
+    console.log(
+      '🔍 [DOCUMENT SERVICE] - refresh_token:',
+      localStorage.getItem('refresh_token') ? 'Presente' : 'Ausente',
+    )
+    console.log(
+      '🔍 [DOCUMENT SERVICE] - user:',
+      localStorage.getItem('user') ? 'Presente' : 'Ausente',
+    )
   }
 
   /**
@@ -238,8 +279,8 @@ class DocumentService {
       const response = await api.get(`/documents/file/${id}`, {
         responseType: 'blob',
         headers: {
-          'Accept': 'application/pdf, */*'
-        }
+          Accept: 'application/pdf, */*',
+        },
       })
 
       console.log('✅ [DOCUMENT SERVICE] Archivo PDF obtenido exitosamente')
@@ -269,11 +310,15 @@ class DocumentService {
             console.error('🔍 [DOCUMENT SERVICE] Error JSON parseado:', errorJson)
 
             // Crear un error más descriptivo basado en el tipo de error
-            let errorMessage = errorJson.detail || errorJson.message || 'Error 422: Documento no encontrado o no válido'
+            let errorMessage =
+              errorJson.detail ||
+              errorJson.message ||
+              'Error 422: Documento no encontrado o no válido'
 
             // Detectar errores específicos del Mock Storage
             if (errorJson.detail && errorJson.detail.includes('Mock Storage')) {
-              errorMessage = 'El archivo PDF no se encuentra en el servidor. Puede haber sido eliminado o nunca se subió correctamente.'
+              errorMessage =
+                'El archivo PDF no se encuentra en el servidor. Puede haber sido eliminado o nunca se subió correctamente.'
             } else if (errorJson.detail && errorJson.detail.includes('no fue encontrado')) {
               errorMessage = 'El archivo PDF no existe en el servidor.'
             }
@@ -281,10 +326,14 @@ class DocumentService {
             const enhancedError = new Error(errorMessage)
             enhancedError.status = 422
             enhancedError.details = errorJson
-            enhancedError.isFileNotFound = errorJson.detail && errorJson.detail.includes('no fue encontrado')
+            enhancedError.isFileNotFound =
+              errorJson.detail && errorJson.detail.includes('no fue encontrado')
             throw enhancedError
           } catch (parseError) {
-            console.error('🔍 [DOCUMENT SERVICE] No se pudo parsear el error como JSON:', parseError)
+            console.error(
+              '🔍 [DOCUMENT SERVICE] No se pudo parsear el error como JSON:',
+              parseError,
+            )
             const enhancedError = new Error(`Error 422: ${errorContent}`)
             enhancedError.status = 422
             enhancedError.rawContent = errorContent
@@ -392,8 +441,8 @@ class DocumentService {
 
       const response = await api.put(`/documents/file/${id}`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+          'Content-Type': 'multipart/form-data',
+        },
       })
 
       console.log('✅ [DOCUMENT SERVICE] Archivo PDF subido exitosamente')
