@@ -431,6 +431,8 @@ const handleSaveDocument = async (data) => {
   const payload = {
     ...data,
     roles: getRolesSimplificado(data.roles),
+    icon: data.icon || "fa-link",
+    status: true,
     slug: getNewSlug(data.name),
   }
 

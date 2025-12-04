@@ -317,6 +317,9 @@ const handleSubmit = () => {
     currentStep.value += 1
     return
   }
+  if (!localData.value.icon) {
+    localData.value.icon = "fa-link"
+  }
   loading.value = true
   emit("success", { ...localData.value })
   loading.value = false
@@ -341,3 +344,17 @@ const stepCircleClass = (id) => {
 
 const close = () => emit("update:modelValue", false)
 </script>
+
+<style scoped>
+.form-label {
+  @apply block text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1;
+}
+.form-input {
+  @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition placeholder:text-slate-400
+    focus:border-blue-500 focus:ring-2 focus:ring-blue-100
+    dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-900/40;
+}
+.card-summary {
+  @apply space-y-2;
+}
+</style>
