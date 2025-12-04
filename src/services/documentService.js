@@ -62,14 +62,6 @@ class DocumentService {
     try {
       console.log('📄 [DOCUMENT SERVICE] Creando nuevo documento...')
       console.log('📄 [DOCUMENT SERVICE] Datos completos:', documentData)
-      console.log('📄 [DOCUMENT SERVICE] Estructura:', {
-        name: documentData.name,
-        type: documentData.type,
-        slug: documentData.slug,
-        content: documentData.content,
-        icon: documentData.icon,
-        roles: documentData.roles
-      })
 
       const response = await api.post('/documents', documentData)
 

@@ -383,7 +383,7 @@ const editDialog = ref(false)
 const currentFormType = ref(null)
 const selectedItem = ref(null)
 const isEditing = ref(false)
-const roles = ["ROLE_ADMIN", "ROLE_SUPER_USER", "ROLE_USER"]
+const roles = ["ROLE_ADMIN", "ROLE_SUPER_USER", "ROLE_COLLABORATOR"]
 
 // Feedback modal
 const feedbackOpen = ref(false)
@@ -412,18 +412,21 @@ const openEditDialog = (item) => {
 // Guardado
 const handleSaveDocument = async (data) => {
   if (!data) return
+  console.log("handleSaveDocument", data)
+
 
   const normalizedRoles = (data.roles || []).map((role) => {
-    if (typeof role !== "string") return role
     if (role.startsWith("ROLE_ROLE_")) return role.replace(/^ROLE_ROLE_/, "ROLE_")
-    if (!role.startsWith("ROLE_")) return `ROLE_${role}`
+    if (role.startsWith("ROLE_")) return role.replace(/^ROLE_/, "")
     return role
   })
+
+  const slugContent = `${menuStore.getFolder.path}/${data.slug}`
 
   const payload = {
     ...data,
     roles: normalizedRoles,
-    slug: data.slug || (data.name ? data.name.toString().trim().toLowerCase().replace(/\s+/g, "-") : undefined),
+    slug: slugContent,
   }
 
   try {

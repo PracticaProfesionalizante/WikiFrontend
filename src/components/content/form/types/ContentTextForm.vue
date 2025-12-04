@@ -235,6 +235,7 @@ const localData = ref({
   content: "",
   roles: [],
   icon: "",
+  status: true,
   type: "TYPE_TEXT",
 })
 
@@ -252,6 +253,7 @@ const resetForm = () => {
     content: "",
     roles: [],
     icon: "",
+    status: true,
     type: "TYPE_TEXT",
   }
   currentStep.value = 1
@@ -269,6 +271,7 @@ watch(
         content: data.content || "",
         roles: data.roles || [],
         icon: data.icon || "",
+        status: data.status || true,
         type: "TYPE_TEXT",
       }
     } else {

@@ -263,6 +263,7 @@ const localForm = reactive({
   description: "",
   slug: "",
   icon: null,
+  status: true,
   roles: [],
 })
 
@@ -306,6 +307,7 @@ const resetForm = () => {
   localForm.description = ""
   localForm.slug = ""
   localForm.icon = null
+  localForm.status = true
   localForm.roles = []
   file.value = null
   fileName.value = ""
@@ -324,6 +326,7 @@ watch(
       localForm.description = data.description || ""
       localForm.slug = data.slug || ""
       localForm.icon = data.icon || null
+      localForm.status = data.status || true
       localForm.roles = data.roles ? [...data.roles] : []
       localForm.type = "TYPE_PDF"
     } else {
@@ -403,6 +406,7 @@ const handleSubmit = () => {
   formData.append("description", localForm.description)
   formData.append("slug", localForm.slug)
   formData.append("icon", localForm.icon || "")
+  formData.append("status", localForm.status)
   formData.append("roles", JSON.stringify(localForm.roles))
 
   emit("success", formData)
