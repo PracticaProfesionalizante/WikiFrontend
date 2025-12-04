@@ -54,27 +54,6 @@
               Documento PDF
             </div>
           </div>
-
-          <div>
-            <label class="form-label">Icono</label>
-            <div class="grid grid-cols-6 gap-3 sm:grid-cols-8 mt-3 h-[200px] overflow-y-auto pr-2">
-              <button class="icon-card" :class="{ active: !localForm.icon }" @click="localForm.icon = null">
-                <i class="fas fa-ban"></i>
-                <span class="icon-label">Sin icono</span>
-              </button>
-
-              <button
-                v-for="icon in filteredIcons"
-                :key="icon"
-                class="icon-card"
-                :class="{ active: localForm.icon === icon }"
-                @click="localForm.icon = icon"
-              >
-                <i :class="['fas', 'fa-' + icon]"></i>
-                <span class="icon-label">{{ icon }}</span>
-              </button>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -101,29 +80,27 @@
             @drop.prevent="onDrop"
           >
             <i class="fas fa-cloud-upload-alt text-4xl text-slate-500"></i>
-            <p class="mt-2 text-slate-300">Arrastra tu archivo PDF aquí o haz clic para seleccionar</p>
-            <p class="text-xs text-slate-500">Solo archivos PDF (máx 10MB)</p>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">Arrastra tu archivo PDF aquí o haz clic para seleccionar</p>
+            <p class="text-xs text-slate-500 dark:text-slate-500">Solo archivos PDF (máx 10MB)</p>
           </div>
 
           <div
             v-else
-            class="bg-green-900/30 border border-green-500/40 rounded-lg p-4 mt-4 flex items-center justify-between"
+            class="mt-4 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-500/40 dark:bg-green-900/30"
           >
             <div class="flex items-center gap-3">
-              <div class="grid place-items-center bg-green-700/40 text-green-300 w-12 h-12 rounded-lg">
+              <div class="grid h-12 w-12 place-items-center rounded-lg bg-green-100 text-green-600 dark:bg-green-700/40 dark:text-green-300">
                 <i class="fas fa-file-pdf text-2xl"></i>
               </div>
 
               <div>
-                <p class="font-semibold text-slate-100">{{ fileName }}</p>
-                <p class="text-xs text-slate-400">{{ fileSizeFormatted }}</p>
+                <p class="font-semibold text-slate-800 dark:text-slate-100">{{ fileName }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">{{ fileSizeFormatted }}</p>
               </div>
             </div>
 
             <button
-              @click="removeFile"
-              class="w-10 h-10 grid place-items-center rounded-full bg-red-600 hover:bg-red-700 text-white"
-            >
+              @click="removeFile" class="grid h-10 w-10 place-items-center rounded-full bg-red-100 text-red-600 transition hover:bg-red-200 dark:bg-red-600 dark:text-white dark:hover:bg-red-700">
               <i class="fas fa-times"></i>
             </button>
           </div>
@@ -191,20 +168,20 @@
           <p class="m-0 text-sm text-slate-600 dark:text-slate-400">Revisa la información antes de crear</p>
         </div>
 
-        <div class="card-summary">
-          <p><strong>Nombre:</strong> {{ localForm.name || "—" }}</p>
-          <p><strong>Tipo:</strong> Documento PDF</p>
-          <p><strong>Carpeta:</strong> {{ localForm.slug || "Raíz" }}</p>
-          <p><strong>Icono:</strong> {{ localForm.icon || "Sin icono" }}</p>
+        <div class="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+          <p class="text-sm text-slate-800 dark:text-slate-100"><strong class="font-semibold text-slate-600 dark:text-slate-300">Nombre:</strong> {{ localForm.name || "—" }}</p>
+          <p class="text-sm text-slate-800 dark:text-slate-100"><strong class="font-semibold text-slate-600 dark:text-slate-300">Tipo:</strong> Documento PDF</p>
+          <p class="text-sm text-slate-800 dark:text-slate-100"><strong class="font-semibold text-slate-600 dark:text-slate-300">Carpeta:</strong> {{ localForm.slug || "Raíz" }}</p>
+          <p class="text-sm text-slate-800 dark:text-slate-100"><strong class="font-semibold text-slate-600 dark:text-slate-300">Icono:</strong> {{ localForm.icon || "Sin icono" }}</p>
 
           <div v-if="file" class="mt-3 space-y-1">
-            <p><strong>Archivo PDF:</strong></p>
-            <p>{{ fileName }} ({{ fileSizeFormatted }})</p>
+            <p class="text-sm text-slate-800 dark:text-slate-100"><strong class="font-semibold text-slate-600 dark:text-slate-300">Archivo PDF:</strong></p>
+            <p class="text-sm text-slate-800 dark:text-slate-100">{{ fileName }} ({{ fileSizeFormatted }})</p>
           </div>
 
           <div>
-            <p><strong>Roles:</strong></p>
-            <p>{{ localForm.roles.join(", ") || "Sin restricciones" }}</p>
+            <p class="text-sm text-slate-800 dark:text-slate-100"><strong class="font-semibold text-slate-600 dark:text-slate-300">Roles:</strong></p>
+            <p class="text-sm text-slate-800 dark:text-slate-100">{{ localForm.roles.join(", ") || "Sin restricciones" }}</p>
           </div>
         </div>
       </section>
@@ -442,16 +419,16 @@ const close = () => {
 
 <style scoped>
 .form-label {
-  @apply block text-sm font-medium text-slate-300 mb-1;
+  @apply mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300;
 }
 .form-input {
-  @apply w-full rounded-lg border border-slate-600 bg-slate-800 text-slate-200 px-3 py-2;
+  @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100;
 }
 .dropzone {
-  @apply border-2 border-dashed border-slate-600 bg-slate-800 rounded-lg p-8 text-center cursor-pointer transition;
+  @apply rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center cursor-pointer transition dark:border-slate-600 dark:bg-slate-800;
 }
 .dropzone--active {
-  @apply border-blue-500 bg-blue-900/20;
+  @apply border-blue-500 bg-blue-100 dark:bg-blue-900/20;
 }
 .icon-card {
   @apply flex flex-col items-center justify-center p-3 rounded-lg cursor-pointer bg-slate-800 border border-slate-700 hover:border-blue-500 transition;
@@ -461,8 +438,5 @@ const close = () => {
 }
 .icon-label {
   @apply text-xs text-slate-300 mt-1 truncate;
-}
-.card-summary {
-  @apply bg-slate-800 border border-slate-600 rounded-lg p-4 space-y-1;
 }
 </style>
