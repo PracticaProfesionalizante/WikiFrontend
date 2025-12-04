@@ -111,7 +111,6 @@ import { documentsStore } from '@/stores/documentsStore'
 import { useMenuStore } from '@/stores/menuStore'
 
 import { useDocumentList } from '@/composables/useDocumentList'
-import ContentTable from '@/components/content/ContentTable.vue'
 import DocumentHeader from '@/components/document/DocumentHeader.vue'
 import DocumentFilters from '@/components/document/DocumentFilters.vue'
 import DocumentBreadcrumbs from '@/components/document/DocumentBreadcrumbs.vue'
@@ -415,11 +414,21 @@ const openCreateDialog = () => {
 }
 
 // Editar documento
-const openEditDialog = (item) => {
-  selectedItem.value = { ...item }
-  isEditing.value = true
-  currentFormType.value = item.type
-  editDialog.value = true
+// Editar documento
+const openEditDialog = async (item) => {
+  if (!item.id) return
+  try {
+
+      const dato = await documentService.getDocumentById(item.id)
+
+      selectedItem.value = { ...dato }
+      isEditing.value = true
+      currentFormType.value = item.type
+      editDialog.value = true
+  } catch (err) {
+    console.error('Error guardando documento', err)
+  }
+
 }
 
 // Guardado
