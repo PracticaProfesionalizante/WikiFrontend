@@ -421,7 +421,13 @@ const handleSaveDocument = async (data) => {
     return role
   })
 
-  const slugContent = `${menuStore.getFolder.path}/${data.slug}`
+  const name = data.name
+    .toLowerCase() // Pasar a minúscula
+    .replace(/\s+/g, '-') // Reemplazar espacios con guiones
+    .replace(/[^\w-]+/g, '') // Eliminar caracteres especiales
+    .replace(/--+/g, '-') // Reemplazar múltiples guiones con uno solo
+    .replace(/^-+|-+$/g, ''); // Eliminar guiones al inicio y al final
+  const slugContent = `${menuStore.getFolder.path}/${name}`
 
   const payload = {
     ...data,
@@ -436,7 +442,7 @@ const handleSaveDocument = async (data) => {
       await documentService.createDocument(payload)
     }
 
-    await loadDocuments({ type: type.value, path: docStore.getPath })
+    await loadDocuments({ type: docStore.getType, slug: docStore.getPath })
     feedbackType.value = "success"
     feedbackTitle.value = "Documento guardado"
     feedbackMessage.value = "El documento se guardó correctamente."
