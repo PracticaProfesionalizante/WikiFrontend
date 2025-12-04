@@ -354,30 +354,15 @@ class DocumentService {
    * @param {File} file - Archivo PDF
    * @returns {Promise<Object>} Documento creado
    */
-  async createDocumentWithFile(documentData, file) {
+  async createDocumentWithFile(documentData) {
     try {
-      console.log('📄 [DOCUMENT SERVICE] Creando documento PDF con archivo:', file.name)
-
       // Validar autenticación antes de hacer la petición
       this.validateAuthentication()
 
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('name', documentData.name)
-      formData.append('type', documentData.type)
-      formData.append('slug', documentData.slug)
-      formData.append('status', documentData.status.toString())
-      formData.append('icon', documentData.icon)
-
-      // Enviar roles como array individual, no como JSON string
-      documentData.roles.forEach(role => {
-        formData.append('roles', role)
-      })
-
-      const response = await api.post('/documents/file', formData, {
+      const response = await api.post('/documents/file', documentData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+          'Content-Type': 'multipart/form-data',
+        },
       })
 
       console.log('✅ [DOCUMENT SERVICE] Documento PDF creado exitosamente')

@@ -14,10 +14,7 @@
       :count="filteredItems.length"
     />
 
-    <DocumentBreadcrumbs
-      :breadcrumbs="breadcrumbs"
-      @navigate="navigateToBreadcrumb"
-    />
+    <DocumentBreadcrumbs :breadcrumbs="breadcrumbs" @navigate="navigateToBreadcrumb" />
 
     <!-- Contenido principal -->
     <main class="mx-auto max-w-6xl px-4 py-6">
@@ -56,8 +53,6 @@
           <div class="text-4xl text-slate-400"><i class="fas fa-folder-open"></i></div>
           <p class="mt-2 text-sm">No hay documentos para mostrar.</p>
         </div>
-
-
       </template>
     </main>
 
@@ -92,7 +87,7 @@
       :initial-data="selectedItem"
       :roles="roles"
       @update:modelValue="editDialog = $event"
-      @success="handleSaveDocument"
+      @success="handleSaveDocumentWithFile"
       @close="closeEditDialog"
     />
 
@@ -108,29 +103,36 @@
 
 <script setup>
 // import { watchDebounced } from '@vueuse/core'
-import { computed, watch, ref } from "vue"
-import { useRoute, useRouter } from "vue-router"
+import { computed, watch, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-import { useAuthStore } from "@/stores/auth"
-import { documentsStore } from "@/stores/documentsStore"
-import { useMenuStore } from "@/stores/menuStore"
+import { useAuthStore } from '@/stores/auth'
+import { documentsStore } from '@/stores/documentsStore'
+import { useMenuStore } from '@/stores/menuStore'
 
-import { useDocumentList } from "@/composables/useDocumentList"
-import ContentTable from "@/components/content/ContentTable.vue"
-import DocumentHeader from "@/components/document/DocumentHeader.vue"
-import DocumentFilters from "@/components/document/DocumentFilters.vue"
-import DocumentBreadcrumbs from "@/components/document/DocumentBreadcrumbs.vue"
-import DocumentTypeLists from "@/components/document/DocumentTypeLists.vue"
-import FeedbackModal from "@/components/common/FeedbackModal.vue"
-import documentService from "@/services/documentService"
-import ContentTextForm from "@/components/content/form/types/ContentTextForm.vue"
-import ContentUrlForm from "@/components/content/form/types/ContentUrlForm.vue"
-import ContentPdfForm from "@/components/content/form/types/ContentPdfForm.vue"
+import { useDocumentList } from '@/composables/useDocumentList'
+import ContentTable from '@/components/content/ContentTable.vue'
+import DocumentHeader from '@/components/document/DocumentHeader.vue'
+import DocumentFilters from '@/components/document/DocumentFilters.vue'
+import DocumentBreadcrumbs from '@/components/document/DocumentBreadcrumbs.vue'
+import DocumentTypeLists from '@/components/document/DocumentTypeLists.vue'
+import FeedbackModal from '@/components/common/FeedbackModal.vue'
+import documentService from '@/services/documentService'
+import ContentTextForm from '@/components/content/form/types/ContentTextForm.vue'
+import ContentUrlForm from '@/components/content/form/types/ContentUrlForm.vue'
+import ContentPdfForm from '@/components/content/form/types/ContentPdfForm.vue'
 
 // Componentes por tipo (puedes reemplazar con implementaciones finales)
 const PdfList = {
-  props: ["items", "getDocumentStatus", "getTypeDisplay", "getTypeIcon", "getTypeColors", "formatDate"],
-  emits: ["open", "edit"],
+  props: [
+    'items',
+    'getDocumentStatus',
+    'getTypeDisplay',
+    'getTypeIcon',
+    'getTypeColors',
+    'formatDate',
+  ],
+  emits: ['open', 'edit'],
   template: `
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <article
@@ -181,8 +183,15 @@ const PdfList = {
 }
 
 const TextList = {
-  props: ["items", "getDocumentStatus", "getTypeDisplay", "getTypeIcon", "getTypeColors", "formatDate"],
-  emits: ["open", "edit"],
+  props: [
+    'items',
+    'getDocumentStatus',
+    'getTypeDisplay',
+    'getTypeIcon',
+    'getTypeColors',
+    'formatDate',
+  ],
+  emits: ['open', 'edit'],
   template: `
     <div class="space-y-3">
       <article v-for="item in items" :key="item.id" class="rounded-xl border p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
@@ -232,8 +241,15 @@ const TextList = {
 }
 
 const UrlList = {
-  props: ["items", "getDocumentStatus", "getTypeDisplay", "getTypeIcon", "getTypeColors", "formatDate"],
-  emits: ["open", "edit"],
+  props: [
+    'items',
+    'getDocumentStatus',
+    'getTypeDisplay',
+    'getTypeIcon',
+    'getTypeColors',
+    'formatDate',
+  ],
+  emits: ['open', 'edit'],
   template: `
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <article
@@ -285,15 +301,15 @@ const UrlList = {
 }
 
 const titleByType = {
-  TYPE_PDF: "Documentos PDF",
-  TYPE_TEXT: "Documentos de Texto",
-  TYPE_URL: "Enlaces Externos",
+  TYPE_PDF: 'Documentos PDF',
+  TYPE_TEXT: 'Documentos de Texto',
+  TYPE_URL: 'Enlaces Externos',
 }
 
 const addDocumentByType = {
-  TYPE_PDF: "Subir PDF",
-  TYPE_TEXT: "Crear Texto",
-  TYPE_URL: "Crear Botón",
+  TYPE_PDF: 'Subir PDF',
+  TYPE_TEXT: 'Crear Texto',
+  TYPE_URL: 'Crear Botón',
 }
 
 const route = useRoute()
@@ -323,20 +339,18 @@ const {
   toggleDocumentStatus,
 } = useDocumentList()
 
-const type = computed(() => (route.params.type || "").toString())
+const type = computed(() => (route.params.type || '').toString())
 
 const canCreate = computed(
-  () =>
-    authStore.hasRole("ROLE_ADMIN") ||
-    authStore.hasRole("ROLE_SUPER_USER")
+  () => authStore.hasRole('ROLE_ADMIN') || authStore.hasRole('ROLE_SUPER_USER'),
 )
 
 const breadcrumbs = computed(() => {
-  const path = docStore.getPath || ""
+  const path = docStore.getPath || ''
   if (!path) return []
-  const segments = path.split("/").filter(Boolean)
+  const segments = path.split('/').filter(Boolean)
   const acc = []
-  let current = ""
+  let current = ''
   for (const seg of segments) {
     current += `/${seg}`
     acc.push({ label: seg, path: current })
@@ -375,7 +389,7 @@ const navigateToBreadcrumb = (index) => {
 
 const handleOpen = (item) => {
   if (!item?.id) return
-  router.push({ name: "ContentView", params: { id: item.id } })
+  router.push({ name: 'ContentView', params: { id: item.id } })
 }
 
 // -------- FORMULARIOS --------
@@ -383,21 +397,20 @@ const editDialog = ref(false)
 const currentFormType = ref(null)
 const selectedItem = ref(null)
 const isEditing = ref(false)
-const roles = ["ROLE_ADMIN", "ROLE_SUPER_USER", "ROLE_COLLABORATOR"]
+const roles = ['ROLE_ADMIN', 'ROLE_SUPER_USER', 'ROLE_COLLABORATOR']
 
 // Feedback modal
 const feedbackOpen = ref(false)
-const feedbackType = ref("info")
-const feedbackTitle = ref("")
-const feedbackMessage = ref("")
-const feedbackDetails = ref("")
+const feedbackType = ref('info')
+const feedbackTitle = ref('')
+const feedbackMessage = ref('')
+const feedbackDetails = ref('')
 
 // Crear nuevo documento
 const openCreateDialog = () => {
   selectedItem.value = null
   isEditing.value = false
-  const resolvedType = type.value || docStore.getType || "TYPE_TEXT"
-  currentFormType.value = resolvedType
+  currentFormType.value = docStore.getType
   editDialog.value = true
 }
 
@@ -411,28 +424,14 @@ const openEditDialog = (item) => {
 
 // Guardado
 const handleSaveDocument = async (data) => {
+  console.log('handleSaveDocument', data)
   if (!data) return
-  console.log("handleSaveDocument", data)
-
-
-  const normalizedRoles = (data.roles || []).map((role) => {
-    if (role.startsWith("ROLE_ROLE_")) return role.replace(/^ROLE_ROLE_/, "ROLE_")
-    if (role.startsWith("ROLE_")) return role.replace(/^ROLE_/, "")
-    return role
-  })
-
-  const name = data.name
-    .toLowerCase() // Pasar a minúscula
-    .replace(/\s+/g, '-') // Reemplazar espacios con guiones
-    .replace(/[^\w-]+/g, '') // Eliminar caracteres especiales
-    .replace(/--+/g, '-') // Reemplazar múltiples guiones con uno solo
-    .replace(/^-+|-+$/g, ''); // Eliminar guiones al inicio y al final
-  const slugContent = `${menuStore.getFolder.path}/${name}`
+  console.log('handleSaveDocument', data)
 
   const payload = {
     ...data,
-    roles: normalizedRoles,
-    slug: slugContent,
+    roles: getRolesSimplificado(data.roles),
+    slug: getNewSlug(data.name),
   }
 
   try {
@@ -443,20 +442,88 @@ const handleSaveDocument = async (data) => {
     }
 
     await loadDocuments({ type: docStore.getType, slug: docStore.getPath })
-    feedbackType.value = "success"
-    feedbackTitle.value = "Documento guardado"
-    feedbackMessage.value = "El documento se guardó correctamente."
-    feedbackDetails.value = ""
+    feedbackType.value = 'success'
+    feedbackTitle.value = 'Documento guardado'
+    feedbackMessage.value = 'El documento se guardó correctamente.'
+    feedbackDetails.value = ''
     feedbackOpen.value = true
     closeEditDialog()
   } catch (err) {
-    console.error("Error guardando documento", err)
-    feedbackType.value = "error"
-    feedbackTitle.value = "No se pudo guardar el documento"
-    feedbackMessage.value = "Ocurrió un error al guardar. Por favor intenta de nuevo."
-    feedbackDetails.value = ""
+    console.error('Error guardando documento', err)
+    feedbackType.value = 'error'
+    feedbackTitle.value = 'No se pudo guardar el documento'
+    feedbackMessage.value = 'Ocurrió un error al guardar. Por favor intenta de nuevo.'
+    feedbackDetails.value = ''
     feedbackOpen.value = true
   }
+}
+
+const handleSaveDocumentWithFile = async (data) => {
+  if (!data) return
+
+  console.log('antes de generar el paylod - data:', data)
+
+  const payload = {
+    ...data,
+    slug: getNewSlug(data.name),
+    roles: getRolesSimplificado(data.roles),
+  }
+  console.log('antes de generar el formData - payload:', payload)
+
+  const formData = new FormData()
+  formData.append('name', payload.name)
+  formData.append('type', payload.type)
+  formData.append('slug', payload.slug)
+  formData.append('file', payload.file)
+  formData.append('icon', payload.icon)
+  formData.append('status', payload.status)
+  formData.append('roles', payload.roles)
+
+  console.log('despues de generar el formData', formData)
+
+  try {
+    if (data.id) {
+      await documentService.uploadDocumentFile(data.id, formData)
+    } else {
+      await documentService.createDocumentWithFile(formData)
+    }
+
+
+    await loadDocuments({ type: docStore.getType, slug: docStore.getPath })
+    feedbackType.value = 'success'
+    feedbackTitle.value = 'Documento guardado'
+    feedbackMessage.value = 'El documento se guardó correctamente.'
+    feedbackDetails.value = ''
+    feedbackOpen.value = true
+    closeEditDialog()
+  } catch (err) {
+    console.error('Error guardando documento', err)
+    feedbackType.value = 'error'
+    feedbackTitle.value = 'No se pudo guardar el documento'
+    feedbackMessage.value = 'Ocurrió un error al guardar. Por favor intenta de nuevo.'
+    feedbackDetails.value = ''
+    feedbackOpen.value = true
+  }
+}
+
+const getNewSlug = (docName) => {
+  if (!docName) return ''
+  const name = docName
+    .toLowerCase() // Pasar a minúscula
+    .replace(/\s+/g, '-') // Reemplazar espacios con guiones
+    .replace(/[^\w-]+/g, '') // Eliminar caracteres especiales
+    .replace(/--+/g, '-') // Reemplazar múltiples guiones con uno solo
+    .replace(/^-+|-+$/g, '') // Eliminar guiones al inicio y al final
+  const slugContent = `${docStore.getPath}/${name}`
+  return slugContent
+}
+
+const getRolesSimplificado = (roles) => {
+  return (roles || []).map((role) => {
+    if (role.startsWith('ROLE_ROLE_')) return role.replace(/^ROLE_ROLE_/, 'ROLE_')
+    if (role.startsWith('ROLE_')) return role.replace(/^ROLE_/, '')
+    return role
+  })
 }
 
 // Cerrar modal
@@ -473,7 +540,7 @@ watch(
     loadDocuments({ slug: docStore.getPath, type: docStore.getType })
   },
   { immediate: true },
-);
+)
 </script>
 
 <FeedbackModal

@@ -185,28 +185,6 @@
           </div>
         </div>
       </section>
-
-      <!-- Controles inferiores -->
-      <div class="flex items-center justify-between pt-2">
-        <div class="text-xs text-slate-500 dark:text-slate-400">Paso {{ currentStep }} de {{ steps.length }}</div>
-        <div class="flex gap-2">
-          <button
-            type="button"
-            class="btn-secondary"
-            :disabled="currentStep === 1"
-            @click="goPrev"
-          >
-            Anterior
-          </button>
-          <button
-            type="button"
-            class="btn-primary"
-            @click="handleSubmit"
-          >
-            {{ submitLabel }}
-          </button>
-        </div>
-      </div>
     </div>
   </ContentFormWrapper>
 </template>
@@ -235,6 +213,7 @@ const steps = [
 const isEditing = computed(() => !!(props.initialData && Object.keys(props.initialData).length))
 
 const localForm = reactive({
+  id: null,
   name: "",
   type: "TYPE_PDF",
   description: "",
@@ -279,6 +258,7 @@ const fileSizeFormatted = computed(() => {
 })
 
 const resetForm = () => {
+  localForm.id = null
   localForm.name = ""
   localForm.type = "TYPE_PDF"
   localForm.description = ""
@@ -299,6 +279,7 @@ watch(
   () => props.initialData,
   (data) => {
     if (data && Object.keys(data).length) {
+      localForm.id = data.id || null
       localForm.name = data.name || ""
       localForm.description = data.description || ""
       localForm.slug = data.slug || ""
@@ -370,23 +351,21 @@ const validateStep = (step) => {
 }
 
 const handleSubmit = () => {
+  console.log("antes del if", localForm)
   if (!validateStep(currentStep.value)) return
   if (currentStep.value < steps.length) {
     currentStep.value += 1
     return
   }
 
-  const formData = new FormData()
-  formData.append("file", file.value)
-  formData.append("name", localForm.name)
-  formData.append("type", localForm.type)
-  formData.append("description", localForm.description)
-  formData.append("slug", localForm.slug)
-  formData.append("icon", localForm.icon || "")
-  formData.append("status", localForm.status)
-  formData.append("roles", JSON.stringify(localForm.roles))
+  console.log("Aca llegue muchachos", localForm)
+  const dataResponse = {
+    ...localForm,
+    file: file.value,
+    icon: "fa-file-pdf"
+  }
 
-  emit("success", formData)
+  emit("success", dataResponse)
   close()
 }
 
