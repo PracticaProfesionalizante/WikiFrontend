@@ -3,11 +3,19 @@
     <article
       v-for="item in items"
       :key="item.id"
-      class="group cursor-pointer rounded-xl border p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
-      @click="$emit('open', item)"
+      class="group relative cursor-pointer rounded-xl border p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
+      @click="openPdf(item)"
     >
+      <!-- Overlay de carga -->
+      <div
+        v-if="loadingPdfId === item.id"
+        class="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl bg-slate-900/60 text-white backdrop-blur-sm"
+      >
+        <i class="fas fa-spinner fa-spin text-2xl"></i>
+        <span class="mt-2 text-sm font-medium">Abriendo PDF...</span>
+      </div>
       <div class="mb-3 flex items-center gap-3">
-        <div class="grid h-10 w-10 place-items-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-300">
+        <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-300">
           <i :class="getTypeIcon(item.type)"></i>
         </div>
         <div>
@@ -15,7 +23,7 @@
             {{ item.name }}
           </h3>
           <p class="m-0 text-xs text-slate-500 dark:text-slate-400">
-            {{ getDocumentStatus(item) }}
+            {{ formatDate(item.updatedAt || item.createdAt) }}
           </p>
         </div>
       </div>
@@ -47,7 +55,9 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import documentService from '@/services/documentService'
 
 const authStore = useAuthStore()
 
@@ -80,6 +90,29 @@ defineProps({
 
 const emit = defineEmits(["open", "edit", 'delete'])
 
+// --- Lógica para abrir PDF ---
+const loadingPdfId = ref(null)
+
+const openPdf = async (item) => {
+  if (loadingPdfId.value) return // Evitar múltiples clics
+
+  loadingPdfId.value = item.id
+  try {
+    const blobUrl = await documentService.getDocumentFileUrl(item.id)
+    window.open(blobUrl, '_blank', 'noopener,noreferrer')
+  } catch (error) {
+    console.error('Error al abrir el PDF:', error)
+    let errorMessage = 'No se pudo abrir el archivo PDF. '
+    if (error.isFileNotFound) {
+      errorMessage += 'El archivo no fue encontrado en el servidor.'
+    } else {
+      errorMessage += 'Por favor, inténtalo de nuevo.'
+    }
+    alert(errorMessage)
+  } finally {
+    loadingPdfId.value = null
+  }
+}
 const handleDelete = (item) => {
   if (!item) return
   emit('delete', item)
